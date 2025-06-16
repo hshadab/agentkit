@@ -1,0 +1,282 @@
+[
+  {
+    "id": "d83e3dbe-b437-4c4b-9081-b4ce8ddc5c21",
+    "proof_id": "29b46cdf-303b-4df4-95a7-acf981dbfafc",
+    "timestamp": "2025-06-06T11:43:47.074107538Z",
+    "is_valid": true,
+    "verification_time_secs": 14.18541048,
+    "error": null
+  },
+  {
+    "id": "6fe286ab-deff-4abf-a4c0-e4f58f5b8ddc",
+    "proof_id": "3e43fadd-358d-4323-8703-5fcdd0da1d40",
+    "timestamp": "2025-06-06T13:59:49.092740257Z",
+    "is_valid": true,
+    "verification_time_secs": 12.198705423,
+    "error": null
+  },
+  {
+    "id": "4428e8eb-b5b9-48a5-b7ac-6b9cd31cf8f7",
+    "proof_id": "21e46a69-6e08-4081-9802-a9395940719f",
+    "timestamp": "2025-06-06T14:15:52.141951519Z",
+    "is_valid": true,
+    "verification_time_secs": 11.287366801,
+    "error": null
+  },
+  {
+    "id": "30777c25-e3fc-4548-91b9-719a96655bac",
+    "proof_id": "320ee7f1-9e51-47d4-8616-bcd3f3114354",
+    "timestamp": "2025-06-06T18:57:57.706609601Z",
+    "is_valid": true,
+    "verification_time_secs": 16.637747073,
+    "error": null
+  },
+  {
+    "id": "0d5d8d19-c4e5-481d-b925-1a91bec019ae",
+    "proof_id": "72e889dd-10e3-4c9d-bc1d-42a7ee97323b",
+    "timestamp": "2025-06-07T23:43:26.358762714Z",
+    "is_valid": true,
+    "verification_time_secs": 17.193974895,
+    "error": null
+  },
+  {
+    "id": "c07efeb8-9e3d-4268-94f9-af77d6678e3f",
+    "proof_id": "e0855c3c-b060-4adb-85e4-e1bd915d45f8",
+    "timestamp": "2025-06-07T23:49:28.008061404Z",
+    "is_valid": true,
+    "verification_time_secs": 17.14681462,
+    "error": null
+  },
+  {
+    "id": "4260263e-aaab-4f7f-ba0f-61c5329ba96f",
+    "proof_id": "bcbcaa7e-c78e-4512-87f7-df93e96b80a5",
+    "timestamp": "2025-06-09T16:36:38.715487751Z",
+    "is_valid": true,
+    "verification_time_secs": 18.160989248,
+    "error": null
+  },
+  {
+    "id": "fabe56dc-0f8f-4df1-bc17-56677a654196",
+    "proof_id": "13a002b7-42b6-4913-a6a6-8b5c19477677",
+    "timestamp": "2025-06-09T17:13:17.232309218Z",
+    "is_valid": true,
+    "verification_time_secs": 15.285220367,
+    "error": null
+  },
+  {
+    "id": "20c65000-b28e-488d-8cc3-0043f9ddb521",
+    "proof_id": "86f2d867-688b-4b86-bae1-e73d0292e884",
+    "timestamp": "2025-06-09T17:14:45.544386183Z",
+    "is_valid": true,
+    "verification_time_secs": 12.010549894,
+    "error": null
+  },
+  {
+    "id": "83ec3569-9526-47d2-8d43-4593965b0f77",
+    "proof_id": "7b65051b-96c8-411b-a8fb-78b141ca587f",
+    "timestamp": "2025-06-09T17:33:26.164889338Z",
+    "is_valid": true,
+    "verification_time_secs": 11.893262532,
+    "error": null
+  },
+  {
+    "id": "33246eee-438a-4c09-91b4-cfba6485bf12",
+    "proof_id": "5a71af47-c6c5-4a5c-909f-10e760d146fa",
+    "timestamp": "2025-06-09T17:44:44.578646830Z",
+    "is_valid": true,
+    "verification_time_secs": 11.470750076,
+    "error": null
+  },
+  {
+    "id": "ffbe339b-21be-4c3b-aa4c-7bb8445948fd",
+    "proof_id": "e0855c3c-b060-4adb-85e4-e1bd915d45f8",
+    "timestamp": "2025-06-09T17:48:21.480477781Z",
+    "is_valid": true,
+    "verification_time_secs": 15.035494024,
+    "error": null
+  },
+  {
+    "id": "d8c77866-0a9d-4bcd-9f33-09a73bbc433a",
+    "proof_id": "96476e61-26a8-45d5-9a8d-132223ae0161",
+    "timestamp": "2025-06-09T17:57:08.308976897Z",
+    "is_valid": true,
+    "verification_time_secs": 11.559088729,
+    "error": null
+  },
+  {
+    "id": "56854aab-325c-4c5c-9523-d5ae29f95ec0",
+    "proof_id": "ca11e5e3-8c0f-4fff-b414-139fa7209dc8",
+    "timestamp": "2025-06-09T19:03:50.175344611Z",
+    "is_valid": true,
+    "verification_time_secs": 13.707869953,
+    "error": null
+  },
+  {
+    "id": "ef29c1b2-2cb4-4cc6-aaf2-d569ca136921",
+    "proof_id": "23e4cbb0-0b88-441d-9f29-ce5a7714bf93",
+    "timestamp": "2025-06-09T22:05:30.875736829Z",
+    "is_valid": true,
+    "verification_time_secs": 11.858024477,
+    "error": null
+  },
+  {
+    "id": "8cd25b27-f8d8-4805-8d65-6745ee0676ef",
+    "proof_id": "39208ae0-2c96-4ed9-8be1-df411bd283a2",
+    "timestamp": "2025-06-10T00:33:24.352958011Z",
+    "is_valid": true,
+    "verification_time_secs": 13.873515393,
+    "error": null
+  },
+  {
+    "id": "40f97e11-91f6-431e-b08a-91d88cb6a63f",
+    "proof_id": "6015d0a2-ed90-4162-918e-9ef3a97bfe06",
+    "timestamp": "2025-06-10T01:45:26.538382321Z",
+    "is_valid": true,
+    "verification_time_secs": 13.697088079,
+    "error": null
+  },
+  {
+    "id": "0ea9f308-7920-42d8-ada6-821bebc02e43",
+    "proof_id": "4e4d2f28-6036-493f-9274-df92801e8d71",
+    "timestamp": "2025-06-11T19:31:56.072742295Z",
+    "is_valid": false,
+    "verification_time_secs": 0.016637878,
+    "error": "error: unexpected argument '--wasm' found\n\n  tip: to pass '--wasm' as a value, use '-- --wasm'\n\nUsage: wasm_file verify --step <STEP> <PROOF> <PUBLIC>\n\nFor more information, try '--help'.\n"
+  },
+  {
+    "id": "745f80c9-009d-4dcc-a6bb-a76124ba47a1",
+    "proof_id": "8611990f-12ae-4497-a686-5326619f9adb",
+    "timestamp": "2025-06-11T19:39:42.044945260Z",
+    "is_valid": false,
+    "verification_time_secs": 0.014809252,
+    "error": "error: unexpected argument '--wasm' found\n\n  tip: to pass '--wasm' as a value, use '-- --wasm'\n\nUsage: wasm_file verify --step <STEP> <PROOF> <PUBLIC>\n\nFor more information, try '--help'.\n"
+  },
+  {
+    "id": "97d39f97-f772-4403-ae9d-d9e870531a94",
+    "proof_id": "ec78bdc9-5c8e-479c-b034-b44eeaddf648",
+    "timestamp": "2025-06-11T19:58:10.572444991Z",
+    "is_valid": false,
+    "verification_time_secs": 0.026482415,
+    "error": "error: unexpected argument 'san francisco' found\n\nUsage: wasm_file verify --step <STEP> <PROOF> <PUBLIC>\n\nFor more information, try '--help'.\n"
+  },
+  {
+    "id": "48f72cf1-c99a-4290-a478-04bc1acc4a10",
+    "proof_id": "e5eb99bb-5132-4ff7-88c1-1cd927a3ae39",
+    "timestamp": "2025-06-11T20:30:16.129850703Z",
+    "is_valid": false,
+    "verification_time_secs": 0.023952554,
+    "error": "error: unexpected argument '1' found\n\nUsage: wasm_file verify --step <STEP> <PROOF> <PUBLIC>\n\nFor more information, try '--help'.\n"
+  },
+  {
+    "id": "ac049ad6-ee28-45b0-bea8-b6e1afb82479",
+    "proof_id": "b3dff125-cf72-4ea7-85b7-7ef9c59db68c",
+    "timestamp": "2025-06-11T21:39:42.244566511Z",
+    "is_valid": true,
+    "verification_time_secs": 11.1297333,
+    "error": null
+  },
+  {
+    "id": "25532b9b-214d-4a90-bb75-6e6999ddba23",
+    "proof_id": "b3dff125-cf72-4ea7-85b7-7ef9c59db68c",
+    "timestamp": "2025-06-11T21:39:59.884796303Z",
+    "is_valid": true,
+    "verification_time_secs": 11.657265451,
+    "error": null
+  },
+  {
+    "id": "04bdd72b-5b48-4abb-a3a6-7cda3d2498d1",
+    "proof_id": "7709cf8a-5cb3-4d68-942b-0cc39580e34a",
+    "timestamp": "2025-06-11T21:40:28.220816606Z",
+    "is_valid": true,
+    "verification_time_secs": 11.363831023,
+    "error": null
+  },
+  {
+    "id": "6efbcc3c-552c-4aaf-a747-71145f0beaa6",
+    "proof_id": "4c55f544-e8dd-4ec3-982c-2bc6175785f8",
+    "timestamp": "2025-06-11T21:52:29.042375254Z",
+    "is_valid": true,
+    "verification_time_secs": 10.879094272,
+    "error": null
+  },
+  {
+    "id": "5c08224a-2076-4d6f-bb86-8ed825decfc3",
+    "proof_id": "99894934-d8c7-4e74-a488-376d624b0b8d",
+    "timestamp": "2025-06-12T00:28:11.140601848Z",
+    "is_valid": true,
+    "verification_time_secs": 14.108469666,
+    "error": null
+  },
+  {
+    "id": "0b5d0e37-cbf5-46c9-b088-c16c3e855963",
+    "proof_id": "db7c03a4-9c44-4d73-9a99-eb4f77fb8b3e",
+    "timestamp": "2025-06-12T03:30:14.901714323Z",
+    "is_valid": true,
+    "verification_time_secs": 14.107383443,
+    "error": null
+  },
+  {
+    "id": "2b9d8626-eb72-4c7f-9094-8e04573fbdb8",
+    "proof_id": "3578d825-27ce-4a16-bdcd-4f3a45618a71",
+    "timestamp": "2025-06-12T16:31:22.639223756Z",
+    "is_valid": true,
+    "verification_time_secs": 12.036411138,
+    "error": null
+  },
+  {
+    "id": "109655f6-a4dd-4ab3-9e20-4c81eccb7646",
+    "proof_id": "1a9b767f-a96a-4bf4-91eb-5e2bc3296d3b",
+    "timestamp": "2025-06-13T01:32:14.177388991Z",
+    "is_valid": true,
+    "verification_time_secs": 13.887140889,
+    "error": null
+  },
+  {
+    "id": "ddf78189-5d9f-45c6-ba6b-809fc9f630f1",
+    "proof_id": "1a9b767f-a96a-4bf4-91eb-5e2bc3296d3b",
+    "timestamp": "2025-06-13T01:34:16.233473609Z",
+    "is_valid": true,
+    "verification_time_secs": 14.271377299,
+    "error": null
+  },
+  {
+    "id": "6c01ff0c-9346-434f-a049-9f2248951cf9",
+    "proof_id": "96260b7a-c441-4534-ab3b-da5807fb9433",
+    "timestamp": "2025-06-13T02:05:49.938365690Z",
+    "is_valid": true,
+    "verification_time_secs": 14.530954765,
+    "error": null
+  },
+  {
+    "id": "e2cb8119-bc38-4efc-b3e5-15e22b64952c",
+    "proof_id": "46fd171a-6419-4a99-ab27-63f485b49afb",
+    "timestamp": "2025-06-13T15:47:50.051008265Z",
+    "is_valid": true,
+    "verification_time_secs": 12.835535722,
+    "error": null
+  },
+  {
+    "id": "a7334806-f202-4244-91ce-2c101f84cc6d",
+    "proof_id": "3a3e7886-43ff-4433-92f2-a0567263084b",
+    "timestamp": "2025-06-15T01:38:14.972543278Z",
+    "is_valid": true,
+    "verification_time_secs": 14.041973355,
+    "error": null
+  },
+  {
+    "id": "5f7e8e23-75eb-461e-82c3-1c8c94799e4d",
+    "proof_id": "75212018-a8ce-40f4-8a4c-10924497a1e8",
+    "timestamp": "2025-06-15T19:43:55.226455876Z",
+    "is_valid": true,
+    "verification_time_secs": 11.477608767,
+    "error": null
+  },
+  {
+    "id": "583569b1-8a7c-4592-aa32-3a7233f8bc7a",
+    "proof_id": "f27c8b77-c9cb-4242-8a71-6847ca41cb6b",
+    "timestamp": "2025-06-16T00:56:07.893819086Z",
+    "is_valid": true,
+    "verification_time_secs": 14.00483045,
+    "error": null
+  }
+]

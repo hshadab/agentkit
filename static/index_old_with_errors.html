@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>zkEngine - ZKP Agent Kit</title>
+    
+    <!-- Prism.js for syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #0a0a0a;
+            color: #e2e8f0;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        
+        .sidebar {
+            width: 320px;
+            background: linear-gradient(180deg, #1a1a2e 0%, #0f0f23 100%);
+            padding: 24px;
+            overflow-y: auto;
+            border-right: 1px solid rgba(139, 92, 246, 0.2);
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+        }
+        
+        .sidebar h3 {
+            background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+        }
+        
+        .info-box {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-bottom: 24px;
+            padding: 12px;
+            background: rgba(139, 92, 246, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+        
+        .example-category {
+            margin-bottom: 28px;
+        }
+        
+        .example-category h4 {
+            color: #a78bfa;
+            font-size: 11px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+        
+        .example-item {
+            background: rgba(139, 92, 246, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            padding: 14px 18px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .example-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.3);
+            transform: translateX(4px);
+        }
+        
+        .example-item strong {
+            color: #c084fc;
+            font-weight: 600;
+        }
+        
+        
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0a0a0a;
+        }
+        
+        
+        .header {
+            padding: 20px 32px;
+            background: linear-gradient(180deg, #1a1a2e 0%, transparent 100%);
+            border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            font-size: 26px;
+            background: linear-gradient(135deg, #c084fc 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.9); }
+        }
+        
+        
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+            background: #0a0a0a;
+        }
+        
+        #messages {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        
+        .message {
+            margin: 24px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px) scale(0.95); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+        }
+        
+        .message.user {
+            flex-direction: row-reverse;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 16px 24px;
+            border-radius: 20px;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        
+        .message.user .message-content {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
+        }
+        
+        .message.assistant .message-content {
+            background: rgba(30, 30, 46, 0.6);
+            color: #e2e8f0;
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            border-bottom-left-radius: 4px;
+            backdrop-filter: blur(10px);
+            white-space: pre-wrap;
+        }
+        
+        
+        .loading-dots {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            margin: 20px 0;
+            padding: 20px;
+        }
+        
+        .loading-dots .dot {
+            width: 8px;
+            height: 8px;
+            background-color: #a78bfa;
+            border-radius: 50%;
+            animation: dotBounce 1.4s ease-in-out infinite both;
+        }
+        
+        .loading-dots .dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dots .dot:nth-child(2) { animation-delay: -0.16s; }
+        .loading-dots .dot:nth-child(3) { animation-delay: 0; }
+        
+        @keyframes dotBounce {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        
+        .thinking-animation {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 20px 0;
+            padding: 16px 24px;
+            background: rgba(30, 30, 46, 0.6);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            border-radius: 20px;
+            border-bottom-left-radius: 4px;
+            backdrop-filter: blur(10px);
+            max-width: 70%;
+        }
+
+        .thinking-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .thinking-dots .dot {
+            width: 6px;
+            height: 6px;
+            background-color: #a78bfa;
+            border-radius: 50%;
+            animation: thinkingBounce 1.2s ease-in-out infinite;
+        }
+
+        .thinking-dots .dot:nth-child(1) { animation-delay: 0s; }
+        .thinking-dots .dot:nth-child(2) { animation-delay: 0.2s; }
+        .thinking-dots .dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes thinkingBounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            30% {
+                transform: translateY(-8px);
+                opacity: 1;
+            }
+        }
+        
+        
+        .proof-card {
+            background: linear-gradient(135deg, rgba(30, 30, 46, 0.8) 0%, rgba(20, 20, 36, 0.8) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 20px 0;
+            max-width: 800px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            animation: cardSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes cardSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .proof-card.running {
+            border-color: rgba(139, 92, 246, 0.4);
+            background: linear-gradient(135deg, rgba(30, 30, 46, 0.9) 0%, rgba(26, 17, 71, 0.9) 100%);
+        }
+        
+        .proof-card.success {
+            border-color: rgba(16, 185, 129, 0.4);
+            background: linear-gradient(135deg, rgba(30, 30, 46, 0.9) 0%, rgba(6, 78, 59, 0.9) 100%);
+        }
+
+        
+        .proof-card.running::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.1), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .card-title-text {
+            background: linear-gradient(135deg, #c084fc 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .card-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        
+        .card-icon.spinning {
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .card-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .badge-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .badge-processing {
+            background: rgba(251, 191, 36, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        .badge-verify {
+            background: rgba(139, 92, 246, 0.15);
+            color: #8b5cf6;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        
+        .metrics-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .metric-item-inline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .metric-label-inline {
+            color: #a78bfa;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .metric-value-inline {
+            color: #f3e8ff;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+        }
+
+        
+        .card-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .action-btn.secondary {
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: #a78bfa;
+        }
+
+        .action-btn.secondary:hover {
+            background: rgba(139, 92, 246, 0.25);
+        }
+
+        
+        .code-viewer {
+            margin-top: 16px;
+            border-top: 1px solid rgba(139, 92, 246, 0.2);
+            padding-top: 16px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        .code-viewer.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .code-title {
+            font-size: 14px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #c084fc 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .code-block {
+            background: #0f0f23;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #e2e8f0;
+            overflow-x: auto;
+            white-space: pre;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .code-description {
+            color: #94a3b8;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+        
+        
+        .data-table {
+            background: rgba(30, 30, 46, 0.8);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 20px 0;
+            max-width: 900px;
+            overflow-x: auto;
+            backdrop-filter: blur(10px);
+            animation: cardSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .table-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .table-title {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #c084fc 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .table-count {
+            background: rgba(139, 92, 246, 0.15);
+            color: #a78bfa;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        th {
+            background: rgba(139, 92, 246, 0.1);
+            color: #a78bfa;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+            color: #e2e8f0;
+        }
+        
+        tr:hover {
+            background: rgba(139, 92, 246, 0.05);
+        }
+        
+        .clickable {
+            color: #c084fc;
+            cursor: pointer;
+            font-family: 'SF Mono', monospace;
+            font-weight: 600;
+        }
+        
+        .clickable:hover {
+            color: #8b5cf6;
+            text-decoration: underline;
+        }
+        
+        .status-success {
+            color: #10b981;
+            font-weight: 600;
+        }
+        
+        .status-failed {
+            color: #ef4444;
+            font-weight: 600;
+        }
+        
+        .status-running {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+        
+        .verify-btn {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .verify-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+        
+        
+        .input-container {
+            padding: 24px 32px;
+            background: linear-gradient(180deg, transparent 0%, #1a1a2e 100%);
+            border-top: 1px solid rgba(139, 92, 246, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .input-wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        #user-input {
+            flex: 1;
+            padding: 18px 28px;
+            background: rgba(30, 30, 46, 0.6);
+            border: 2px solid rgba(139, 92, 246, 0.2);
+            border-radius: 30px;
+            color: #f3e8ff;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+        
+        #user-input::placeholder {
+            color: #6b7280;
+        }
+        
+        #user-input:focus {
+            border-color: rgba(139, 92, 246, 0.5);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+            background: rgba(30, 30, 46, 0.8);
+        }
+        
+        #send-button {
+            padding: 18px 36px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
+        }
+        
+        #send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(139, 92, 246, 0.4);
+        }
+    #upload-button {
+    padding: 18px 20px;
+    background: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 30px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-right: 10px;
+}
+#upload-button:hover {
+    background: rgba(139, 92, 246, 0.3);
+    transform: translateY(-1px);
+}#upload-button {
+    padding: 18px 20px;
+    background: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 30px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-right: 10px;
+}
+#upload-button:hover {
+    background: rgba(139, 92, 246, 0.3);
+    transform: translateY(-1px);
+}#upload-button {
+    padding: 18px 20px;
+    background: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 30px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-right: 10px;
+}
+#upload-button:hover {
+    background: rgba(139, 92, 246, 0.3);
+    transform: translateY(-1px);
+}
+        
+        #paste-button {
+            padding: 18px 20px;
+            background: rgba(139, 92, 246, 0.2);
+            color: #a78bfa;
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            border-radius: 30px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+        }
+        #paste-button:hover {
+            background: rgba(139, 92, 246, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        
+        .paste-container {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 800px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f23 100%);
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+            z-index: 100;
+        }
+        .paste-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .paste-header h3 {
+            margin: 0;
+            color: #c084fc;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        
+        .code-editor-wrapper {
+            position: relative;
+            display: flex;
+            background: #0f0f23;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            font-family: 'SF Mono', 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .line-numbers {
+            background: #0a0a1a;
+            color: #4a5568;
+            padding: 15px 10px;
+            text-align: right;
+            user-select: none;
+            border-right: 1px solid rgba(139, 92, 246, 0.2);
+            min-width: 40px;
+        }
+        .code-editor-container {
+            position: relative;
+            flex: 1;
+            overflow: hidden;
+        }
+        #code-paste {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            background: transparent;
+            border: none;
+            color: transparent;
+            caret-color: #a78bfa;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            white-space: pre;
+            overflow: auto;
+            z-index: 2;
+        }
+        .code-highlight {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            margin: 0;
+            pointer-events: none;
+            overflow: auto;
+            white-space: pre;
+            z-index: 1;
+        }
+        .code-highlight code {
+            background: none !important;
+            padding: 0 !important;
+        }
+        
+        
+        .token.comment { color: #6b7280; }
+        .token.string { color: #10b981; }
+        .token.number { color: #f59e0b; }
+        .token.keyword { color: #c084fc; }
+        .token.function { color: #60a5fa; }
+        .token.operator { color: #94a3b8; }
+        .token.macro { color: #f472b6; }
+        
+        
+        .paste-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+        }
+        .paste-actions button {
+            padding: 10px 20px;
+            background: rgba(139, 92, 246, 0.2);
+            color: #a78bfa;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .paste-actions button.primary {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+        }
+        .paste-actions button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h3>✨ ZKP Agent Kit - 3 Core Proofs</h3>
+        <div class="info-box">
+            Generate real cryptographic proofs for three key use cases: Circle KYC compliance verification, AI content authenticity, and DePIN location verification. All metrics shown are actual values from proof generation - no simulations.
+        </div>
+        
+        <div class="example-category">
+<h4>🌐 Generate Zero-Knowledge Proofs</h4>
+            <div class="example-item" data-example="prove kyc compliance">
+                <strong>Prove KYC</strong> - Generate Circle KYC compliance proof
+            </div>
+            <div class="example-item" data-example="prove ai content authenticity">
+                <strong>Prove AI Content</strong> - Generate AI authenticity proof
+            </div>
+            <div class="example-item" data-example="prove device location in San Francisco">
+                <strong>Prove Location</strong> - Generate location proof (SF, NYC, London)
+            </div>
+        <div class='example-item' onclick='window.open("http://localhost:8002/upload", "_blank")'>
+                <strong>📤 Upload Program</strong> - Create custom proof
+            </div>
+        </div>
+        
+        <div class="example-category">
+            <h4>📊 Proof Management</h4>
+            <div class="example-item" data-example="list all proofs">
+                <strong>📋 View All Proofs</strong> - Show proof history
+            </div>
+            <div class="example-item" data-example="list verifications">
+                <strong>✅ View Verifications</strong> - Show verification history
+            </div>
+            <div class="example-item" data-example="verify">
+                <strong>🔍 Verify</strong> - Verify last proof
+            </div>
+            <div class="example-item" data-example="status">
+                <strong>🔧 Status</strong> - System health
+            </div>
+            <div class="example-item" data-example="help">
+                <strong>❓ Help</strong> - Show commands
+            </div>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="header">
+            <h1>🚀 zkEngine Agent Kit</h1>
+            <div class="status">
+                <div class="status-dot" id="status-dot"></div>
+                <span id="connection-status">Connecting...</span>
+            </div>
+        </div>
+        
+        <div class="messages-container">
+            <div id="messages"></div>
+        </div>
+        
+        <div class="input-container">
+            <div class="input-wrapper">
+            <input type="file" id="file-upload" accept=".c" style="display: none;" onchange="handleFileUpload(event)">
+            <button id="upload-button" onclick="document.getElementById('file-upload').click()" title="Upload C file">
+                📤
+            </button>
+            <button id="paste-button" onclick="togglePasteArea()" title="Paste C code">
+                📋
+            </button>
+            <input type="text" id="user-input" placeholder="Ask me to prove a computation..." autofocus>
+            <button id="send-button">Send</button>
+        </div>
+        </div>
+    </div>
+    
+    
+
+
+    <!-- Paste Container -->
+    <div id="paste-area" style="display: none;" class="paste-container">
+        <div class="paste-header">
+            <h3>📋 Paste C Code</h3>
+            <button class="close-btn" onclick="togglePasteArea()">×</button>
+        </div>
+        
+        <div class="code-editor-wrapper">
+            <div class="line-numbers" id="line-numbers">1</div>
+            <div class="code-editor-container">
+                <textarea id="code-paste" 
+                    placeholder="// Paste your C code here..."
+                    spellcheck="false"
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"></textarea>
+                <pre class="code-highlight" id="code-highlight"><code class="language-c"></code></pre>
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <span style="color: #94a3b8; font-size: 13px;">Try an example:</span>
+            <button onclick="loadPasteExample('simple')">🔢 Prime Check</button>
+            <button onclick="loadPasteExample('range')">🔄 Collatz Steps</button>
+            <button onclick="loadPasteExample('hash')">➕ Digital Root</button>
+        </div>
+        
+        <div class="paste-actions">
+            <button onclick="togglePasteArea()">Cancel</button>
+            <button class="primary" onclick="processCodePaste()">Transform & Compile</button>
+        </div>
+    </div>
+
+
+
+<!-- Paste Container (if missing) -->
+<div id="paste-area" style="display: none;" class="paste-container">
+    <div class="paste-header">
+        <h3>📋 Paste C Code</h3>
+        <button class="close-btn" onclick="togglePasteArea()">×</button>
+    </div>
+    
+    <div class="code-editor-wrapper">
+        <div class="line-numbers" id="line-numbers">1</div>
+        <div class="code-editor-container">
+            <textarea id="code-paste" 
+                placeholder="// Paste your C code here..."
+                spellcheck="false"
+                autocomplete="off"
+                autocorrect="off"
+                autocapitalize="off"></textarea>
+            <pre class="code-highlight" id="code-highlight"><code class="language-c"></code></pre>
+        </div>
+    </div>
+    
+    <div style="margin-bottom: 15px;">
+        <span style="color: #94a3b8; font-size: 13px;">Try an example:</span>
+        <button onclick="loadPasteExample('simple')" style="margin: 0 5px; padding: 4px 12px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.2); color: #a78bfa; border-radius: 6px; cursor: pointer; font-size: 12px;">🔢 Prime Check</button>
+        <button onclick="loadPasteExample('range')" style="margin: 0 5px; padding: 4px 12px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.2); color: #a78bfa; border-radius: 6px; cursor: pointer; font-size: 12px;">🔄 Collatz Steps</button>
+        <button onclick="loadPasteExample('hash')" style="margin: 0 5px; padding: 4px 12px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.2); color: #a78bfa; border-radius: 6px; cursor: pointer; font-size: 12px;">➕ Digital Root</button>
+    </div>
+    
+    <div class="paste-actions">
+        <button onclick="togglePasteArea()">Cancel</button>
+        <button class="primary" onclick="processCodePaste()">Transform & Compile</button>
+    </div>
+</div>
+
+<!-- CLEAN JAVASCRIPT - All functions properly defined -->
+<script>
+// Global state
+let ws = null;
+let proofStates = {};
+let waitingForResponse = false;
+let thinkingAnimation = null;
+
+// WebSocket connection
+function connect() {
+    try {
+        ws = new WebSocket('ws://localhost:8001/ws');
+        
+        ws.onopen = () => {
+            console.log('Connected to zkEngine');
+            document.getElementById('connection-status').textContent = 'Connected';
+            document.getElementById('status-dot').style.backgroundColor = '#10b981';
+        };
+        
+        ws.onmessage = (event) => {
+            console.log('Received:', event.data);
+            try {
+                const data = JSON.parse(event.data);
+                handleMessage(data);
+            } catch (e) {
+                console.error('Failed to parse message:', e);
+                addMessage(event.data, 'assistant');
+            }
+        };
+        
+        ws.onclose = () => {
+            console.log('Disconnected from zkEngine');
+            document.getElementById('connection-status').textContent = 'Disconnected';
+            document.getElementById('status-dot').style.backgroundColor = '#ef4444';
+        };
+        
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            document.getElementById('connection-status').textContent = 'Error';
+            document.getElementById('status-dot').style.backgroundColor = '#ef4444';
+        };
+    } catch (error) {
+        console.error('Failed to create WebSocket connection:', error);
+    }
+}
+
+// Message handling
+function handleMessage(data) {
+    removeThinkingAnimation();
+    removeLoadingDots();
+    
+    if (data.data && data.data.type) {
+        const dataType = data.data.type;
+        
+        if (dataType === 'proof_start') {
+            createProofCard(data.data.proof_id, 'running', data.content, data.data);
+            return;
+        } else if (dataType === 'proof_complete') {
+            updateProofCard(data.data.proof_id, 'success', data.content, data.data);
+            return;
+        } else if (dataType === 'proof_list') {
+            displayProofsList(data.data.proofs);
+            return;
+        } else if (dataType === 'verification_list') {
+            displayVerificationsList(data.data.verifications);
+            return;
+        } else if (dataType === 'verification_complete') {
+            displayVerificationResult(data.data);
+            return;
+        }
+    }
+    
+    if (data.content) {
+        addMessage(data.content, 'assistant');
+    }
+}
+
+// Basic message functions
+function addMessage(content, sender) {
+    const messagesDiv = document.getElementById('messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}`;
+    
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'message-content';
+    contentDiv.textContent = content;
+    
+    messageDiv.appendChild(contentDiv);
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.parentElement.scrollTop = messagesDiv.parentElement.scrollHeight;
+}
+
+function sendMessage(text) {
+    const input = document.getElementById('user-input');
+    const message = text || input.value.trim();
+    
+    if (message && ws && ws.readyState === WebSocket.OPEN) {
+        addMessage(message, 'user');
+        showThinkingAnimation();
+        ws.send(JSON.stringify({ message }));
+        if (!text) input.value = '';
+    }
+}
+
+function showThinkingAnimation() {
+    if (thinkingAnimation) return;
+    
+    const messagesDiv = document.getElementById('messages');
+    thinkingAnimation = document.createElement('div');
+    thinkingAnimation.className = 'thinking-animation';
+    thinkingAnimation.innerHTML = `
+        <span style="color: #a78bfa; font-size: 14px;">Thinking</span>
+        <div class="thinking-dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    `;
+    messagesDiv.appendChild(thinkingAnimation);
+    messagesDiv.parentElement.scrollTop = messagesDiv.parentElement.scrollHeight;
+}
+
+function removeThinkingAnimation() {
+    if (thinkingAnimation) {
+        thinkingAnimation.remove();
+        thinkingAnimation = null;
+    }
+}
+
+function removeLoadingDots() {
+    const dots = document.querySelector('.loading-dots');
+    if (dots) {
+        dots.remove();
+    }
+    waitingForResponse = false;
+}
+
+// Paste functionality
+function togglePasteArea() {
+    const pasteArea = document.getElementById('paste-area');
+    if (!pasteArea) {
+        console.error('Paste area element not found');
+        return;
+    }
+    
+    const isVisible = pasteArea.style.display !== 'none';
+    pasteArea.style.display = isVisible ? 'none' : 'block';
+    
+    if (!isVisible) {
+        const textarea = document.getElementById('code-paste');
+        if (textarea) {
+            textarea.focus();
+            textarea.value = '';
+            updateSyntaxHighlight();
+        }
+    }
+}
+
+function updateSyntaxHighlight() {
+    const textarea = document.getElementById('code-paste');
+    const highlight = document.getElementById('code-highlight');
+    const lineNumbers = document.getElementById('line-numbers');
+    
+    if (!textarea || !highlight || !lineNumbers) return;
+    
+    const code = textarea.value || textarea.placeholder;
+    
+    if (highlight) {
+        highlight.textContent = code;
+        if (typeof Prism !== 'undefined' && Prism.highlightElement) {
+            Prism.highlightElement(highlight);
+        }
+    }
+    
+    const lines = code.split('\n');
+    let lineNumbersText = '';
+    for (let i = 1; i <= lines.length; i++) {
+        lineNumbersText += i + '\n';
+    }
+    lineNumbers.textContent = lineNumbersText.trim();
+}
+
+function loadPasteExample(type) {
+    const examples = {
+        'simple': `#include <stdint.h>
+
+// Prime number checker
+// Returns 1 if prime, 0 if not prime
+int32_t is_prime(int32_t n) {
+    if (n <= 1) return 0;
+    if (n == 2) return 1;
+    if (n % 2 == 0) return 0;
+    
+    // Check odd divisors up to sqrt(n)
+    for (int32_t i = 3; i * i <= n; i += 2) {
+        if (n % i == 0) return 0;
+    }
+    return 1;
+}
+
+int32_t main(int32_t n) {
+    return is_prime(n);
+}`,
+        
+        'range': `#include <stdint.h>
+
+// Collatz conjecture steps calculator
+// Returns number of steps to reach 1
+int32_t collatz_steps(int32_t n) {
+    int32_t steps = 0;
+    
+    // Ensure positive number
+    if (n <= 0) n = 1;
+    
+    while (n != 1 && steps < 1000) {
+        if (n % 2 == 0) {
+            n = n / 2;
+        } else {
+            n = 3 * n + 1;
+        }
+        steps++;
+    }
+    
+    return steps;
+}
+
+int32_t main(int32_t n) {
+    return collatz_steps(n);
+}`,
+        
+        'hash': `#include <stdint.h>
+
+// Digital root calculator
+// Repeatedly sums digits until single digit
+int32_t digit_sum(int32_t n) {
+    int32_t sum = 0;
+    
+    // Make positive
+    if (n < 0) n = -n;
+    
+    while (n > 0) {
+        sum += n % 10;
+        n /= 10;
+    }
+    return sum;
+}
+
+int32_t digital_root(int32_t n) {
+    while (n >= 10) {
+        n = digit_sum(n);
+    }
+    return n;
+}
+
+int32_t main(int32_t n) {
+    return digital_root(n);
+}`
+    };
+    
+    const textarea = document.getElementById('code-paste');
+    if (textarea && examples[type]) {
+        textarea.value = examples[type];
+        updateSyntaxHighlight();
+    }
+});
+</script>
+
+</body>
+</html>

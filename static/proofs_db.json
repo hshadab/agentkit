@@ -1,0 +1,209 @@
+{
+  "3417bea7-2cb6-42d9-91d9-0a8eca0999b5": {
+    "id": "3417bea7-2cb6-42d9-91d9-0a8eca0999b5",
+    "timestamp": "2025-06-15T09:43:42.825188679Z",
+    "metadata": {
+      "wasm_path": "/home/hshadab/agentkit/zkengine/example_wasms/prove_ai_content.wat",
+      "function": "main",
+      "arguments": [
+        "42",
+        "1"
+      ],
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 32.858871544,
+      "file_size_mb": 18.156627655029297,
+      "file_hash": "acd8fc9a0cd929b2044eeb11c2dada1e2d69f52907e330d134f34d27508d274d",
+      "peak_memory_mb": null
+    },
+    "status": "complete",
+    "file_path": "/home/hshadab/agentkit/proofs/3417bea7-2cb6-42d9-91d9-0a8eca0999b5/proof.bin"
+  },
+  "6d53c888-0bff-4bf4-8ab2-d443e9bae407": {
+    "id": "6d53c888-0bff-4bf4-8ab2-d443e9bae407",
+    "timestamp": "2025-06-15T17:14:02.324302600Z",
+    "metadata": {
+      "wasm_path": "/home/hshadab/agentkit/zkengine/example_wasms/pasted_1750007643015_f5ff4af7.wat",
+      "function": "main",
+      "arguments": [
+        "0"
+      ],
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 19.170440879,
+      "file_size_mb": 18.156627655029297,
+      "file_hash": "ea980b07cbd29af69058c87d988518a670a92980f86cb3fe9a0cf4d3ce2f43dd",
+      "peak_memory_mb": null
+    },
+    "status": "complete",
+    "file_path": "/home/hshadab/agentkit/proofs/6d53c888-0bff-4bf4-8ab2-d443e9bae407/proof.bin"
+  },
+  "0091e8a6-ad3a-461a-863d-58c21ec67c3f": {
+    "id": "0091e8a6-ad3a-461a-863d-58c21ec67c3f",
+    "timestamp": "2025-06-15T09:45:12.450844294Z",
+    "metadata": {
+      "wasm_path": "/home/hshadab/agentkit/zkengine/example_wasms/prove_location.wat",
+      "function": "main",
+      "arguments": [
+        "san francisco",
+        "18203"
+      ],
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 17.929159793,
+      "file_size_mb": 18.156627655029297,
+      "file_hash": "a537e6441db4f49105f4b81deae440126bc2da207413c4c1d93781aa4935c0b6",
+      "peak_memory_mb": null
+    },
+    "status": "complete",
+    "file_path": "/home/hshadab/agentkit/proofs/0091e8a6-ad3a-461a-863d-58c21ec67c3f/proof.bin"
+  },
+  "a17c0342-fc7e-404e-858b-f32d0a75cecd": {
+    "id": "a17c0342-fc7e-404e-858b-f32d0a75cecd",
+    "timestamp": "2025-06-15T13:11:42.127851266Z",
+    "metadata": {
+      "wasm_path": "/home/hshadab/agentkit/zkengine/example_wasms/prove_kyc.wat",
+      "function": "main",
+      "arguments": [
+        "12345",
+        "1"
+      ],
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 5.711409412,
+      "file_size_mb": 18.156627655029297,
+      "file_hash": "f4740318c2bb4e39d7fd3e553b3257245066371b71eddd05a7bfed21ee1c7634",
+      "peak_memory_mb": null
+    },
+    "status": "complete",
+    "file_path": "/home/hshadab/agentkit/proofs/a17c0342-fc7e-404e-858b-f32d0a75cecd/proof.bin"
+  },
+  "845d8f68-1ae9-420c-b2a4-fab6fdccce30": {
+    "id": "845d8f68-1ae9-420c-b2a4-fab6fdccce30",
+    "timestamp": "2025-06-15T09:45:15.007749254Z",
+    "metadata": {
+      "wasm_path": "/home/hshadab/agentkit/zkengine/example_wasms/prove_location.wat",
+      "function": "main",
+      "arguments": [
+        "san francisco",
+        "19432"
+      ],
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 18.074603111,
+      "file_size_mb": 18.156627655029297,
+      "file_hash": "f130d504b0f528336cf4383347a4d721b98a52a53b593b5eda03becd33c9af43",
+      "peak_memory_mb": null
+    },
+    "status": "complete",
+    "file_path": "/home/hshadab/agentkit/proofs/845d8f68-1ae9-420c-b2a4-fab6fdccce30/proof.bin"
+  },
+  "5bf5bca6-2eae-44a3-8618-14f6f31c844f": {
+    "id": "5bf5bca6-2eae-44a3-8618-14f6f31c844f",
+    "timestamp": "2025-06-15T09:43:40.399381773Z",
+    "metadata": {
+      "wasm_path": "/home/hshadab/agentkit/zkengine/example_wasms/prove_ai_content.wat",
+      "function": "main",
+      "arguments": [
+        "42",
+        "1"
+      ],
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 32.916698758,
+      "file_size_mb": 18.156627655029297,
+      "file_hash": "9bd047b6a5fef58405b91fe97df1fb18e33fb58269168b888b96a14c55a8ee32",
+      "peak_memory_mb": null
+    },
+    "status": "complete",
+    "file_path": "/home/hshadab/agentkit/proofs/5bf5bca6-2eae-44a3-8618-14f6f31c844f/proof.bin"
+  },
+  "6143d419-3ea3-4734-93ed-bb0d4cdef294": {
+    "id": "6143d419-3ea3-4734-93ed-bb0d4cdef294",
+    "timestamp": "2025-06-15T07:05:38.874003745Z",
+    "metadata": {
+      "wasm_path": "/home/hshadab/agentkit/zkengine/example_wasms/prove_location.wat",
+      "function": "main",
+      "arguments": [
+        "san francisco",
+        "6854"
+      ],
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.667032962,
+      "file_size_mb": 18.156627655029297,
+      "file_hash": "85069c7d3e9bdb7067c4be70e18d299cd43cc0afc66777c87aca7b953e839ebf",
+      "peak_memory_mb": null
+    },
+    "status": "complete",
+    "file_path": "/home/hshadab/agentkit/proofs/6143d419-3ea3-4734-93ed-bb0d4cdef294/proof.bin"
+  },
+  "442ccde5-6245-4bb7-9fe8-9fdc706f79aa": {
+    "id": "442ccde5-6245-4bb7-9fe8-9fdc706f79aa",
+    "timestamp": "2025-06-15T18:58:38.720373973Z",
+    "metadata": {
+      "wasm_path": "/home/hshadab/agentkit/zkengine/example_wasms/pasted_1750013918182_1bb4002b.wat",
+      "function": "main",
+      "arguments": [
+        "0"
+      ],
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 58.048536113,
+      "file_size_mb": 18.156627655029297,
+      "file_hash": "184404c2ab0291b3e547a6eaea08d3ea0ced8c95facd4d069584f62ec9520d60",
+      "peak_memory_mb": null
+    },
+    "status": "complete",
+    "file_path": "/home/hshadab/agentkit/proofs/442ccde5-6245-4bb7-9fe8-9fdc706f79aa/proof.bin"
+  },
+  "bb665e56-473b-4b06-b9b7-ed5e0a1fe745": {
+    "id": "bb665e56-473b-4b06-b9b7-ed5e0a1fe745",
+    "timestamp": "2025-06-15T09:44:24.529726953Z",
+    "metadata": {
+      "wasm_path": "/home/hshadab/agentkit/zkengine/example_wasms/pasted_1749980664614_7fbbb178.wat",
+      "function": "main",
+      "arguments": [
+        "0"
+      ],
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.191634327,
+      "file_size_mb": 18.156627655029297,
+      "file_hash": "28ef35ba8d2d5048cc80f155a127800c55bbefbef58a3a040ca030ebef9b76e2",
+      "peak_memory_mb": null
+    },
+    "status": "complete",
+    "file_path": "/home/hshadab/agentkit/proofs/bb665e56-473b-4b06-b9b7-ed5e0a1fe745/proof.bin"
+  },
+  "a5c229ba-c43c-4e19-bd08-c4ef582e0c0b": {
+    "id": "a5c229ba-c43c-4e19-bd08-c4ef582e0c0b",
+    "timestamp": "2025-06-15T18:57:59.350684272Z",
+    "metadata": {
+      "wasm_path": "/home/hshadab/agentkit/zkengine/example_wasms/prove_ai_content.wat",
+      "function": "main",
+      "arguments": [
+        "42",
+        "1"
+      ],
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 24.350182555,
+      "file_size_mb": 18.156627655029297,
+      "file_hash": "246a6f7636621669dd1feaf00f8fe10b1b07fbadfeb9b8eafa45f17b71f3f40e",
+      "peak_memory_mb": null
+    },
+    "status": "complete",
+    "file_path": "/home/hshadab/agentkit/proofs/a5c229ba-c43c-4e19-bd08-c4ef582e0c0b/proof.bin"
+  }
+}
