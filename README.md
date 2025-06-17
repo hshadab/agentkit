@@ -1,9 +1,9 @@
-# 🔮 Novanet ZKP Agent Kit
+#   <img src="https://cdn.prod.website-files.com/65d52b07d5bc41614daa723f/665df12739c532f45b665fe7_logo-novanet.svg" alt="Novanet ZKP Logo" width="200"/>
 
 <div align="center">
-  <img src="https://via.placeholder.com/200x200/8b5cf6/ffffff?text=ZKP" alt="Novanet ZKP Logo" width="200"/>
-  
-  <h3>The First Natural Language AI Interface for Zero-Knowledge Proofs</h3>
+
+ <h1>ZKP Agent Kit</h1>  
+ <h3>The First Natural Language AI Interface for Zero-Knowledge Proofs</h3>
   
   [![Version](https://img.shields.io/badge/version-1.0.0-purple.svg)](https://github.com/hshadab/ZKP-agentkit)
   [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -11,7 +11,7 @@
   [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
 </div>
 
-## 🚀 The Breakthrough
+## The Breakthrough
 
 For the first time ever, **anyone can generate zero-knowledge proofs using natural language**. No cryptography PhD required. No complex mathematics. Just describe what you want to prove, and our AI agent handles the rest.
 
@@ -26,11 +26,11 @@ You: "Prove my location without revealing it"
 Agent: ✅ Generating privacy-preserving location proof...
 ```
 
-This is the **ChatGPT moment for zero-knowledge proofs** - making advanced cryptography accessible to everyone through the power of natural language AI.
+This makes advanced cryptography accessible to everyone through the power of natural language AI.
 
 ## 🌟 Why This Matters
 
-Zero-knowledge proofs are the future of privacy-preserving computation, but they've been locked away behind complex mathematics and specialized languages. The Novanet ZKP Agent Kit breaks down these barriers by:
+Zero-knowledge proofs are the future of privacy-preserving verifiable computation, but they've been locked away behind complex mathematics and specialized languages. The Novanet ZKP Agent Kit breaks down these barriers by:
 
 1. **Speaking Human** - Interact with ZK proofs using plain English
 2. **Thinking Like a Developer** - Understands intent and context
@@ -46,17 +46,17 @@ Our breakthrough is built on **NovaNet's cutting-edge zkVM technology**, which b
   - Scalable multi-proof workflows
   - Resource-constrained environments
 
-- **Private Agentic Workflows** - Keep your AI agent's decision-making completely private:
+- **Private Agentic Workflows** - Keep your AI agent's verifiable decision-making completely private:
   - Prove an agent took correct actions without revealing its strategy
   - Verify multi-step reasoning without exposing intermediate thoughts
   - Maintain competitive advantage while ensuring compliance
   - Enable trustless AI agent interactions
 
 - **Lightning-Fast Execution** - NovaNet's optimized zkVM achieves:
-  - 13-20 second proof generation for complex algorithms
+  - Speedy proof generation for complex algorithms
   - Sub-second verification
   - Parallel proof processing capabilities
-  - Efficient batch proving for multiple operations
+  - Efficient proof aggregation for multiple operations
 
 ### 🎯 Current Capabilities
 
@@ -144,7 +144,7 @@ NovaNet's zkVM provides unique benefits for agentic applications:
 
 ## 🗺️ Roadmap: The Future of Natural Language ZK
 
-### Phase 1: Enhanced Natural Language (Q2 2024)
+### Phase 1: Enhanced Natural Language 
 - [ ] **Natural Language to C Generation** 
   - "Prove that 17 is prime" → Generates complete C code → Creates ZK proof
   - "Verify my age is between 18-65" → Writes verification logic → Proof
@@ -157,11 +157,11 @@ NovaNet's zkVM provides unique benefits for agentic applications:
   - Conditional proof generation based on context
   - Stateful conversations about proof requirements
 - [ ] **Memory-Optimized Proving**
-  - Streaming proof generation for large computations
+  - Parallel proof generation for large computations
   - Incremental proving for complex workflows
   - Proof compression for efficient storage
 
-### Phase 2: Model Context Protocol Integration (Q3 2024)
+### Phase 2: Model Context Protocol Integration 
 - [ ] **MCP Foundation** - Revolutionizing how AI models interact with ZK systems:
   - **Standardized ZK Tools**: Any AI model can generate/verify proofs through unified protocol
   - **Cross-Model Compatibility**: Claude, GPT, Llama all speak the same ZK language
@@ -179,23 +179,23 @@ NovaNet's zkVM provides unique benefits for agentic applications:
   - Verify decision trees while keeping logic private
   - Enable competitive AI strategies with public verification
 
-### Phase 3: Agent Ecosystem Integration (Q4 2024)
-- [ ] **Multi-Agent Orchestration**
+### Phase 3: Agent Ecosystem Integration
+- [ ] **Multi-Agent and Multi-Chain Orchestration**
   - Google Agent Kit: Leverage search and knowledge for proof generation
-  - Solana Agent Kit: On-chain proof verification and smart contract integration
-  - Base Agent Kit: Deploy proofs as Base smart contracts via natural language
+  - Solana Agent Kit: Solana on-chain proof verification and smart contract integration
+  - Base Agent Kit: EVM blockchain proof verification and smart contract integration
   
 - [ ] **zkML Integration**
   - "Prove this image is AI-generated without showing the image"
   - "Verify model inference without revealing the model"
   - Memory-efficient ML model proving on edge devices
   
-- [ ] **Goose Framework Integration**
+- [ ] **Block's Goose AI Framework Integration**
   - Advanced agent reasoning for complex multi-party proofs
   - Automated proof strategy optimization
   - Private multi-agent negotiations with public outcomes
 
-### Phase 4: Financial & Compliance AI (2025)
+### Phase 4: Financial & Compliance AI 
 - [ ] **Circle USDC Integration**
   - "Send $100 USDC with automatic KYC proof"
   - "Create recurring payments with privacy-preserving compliance"
@@ -206,20 +206,12 @@ NovaNet's zkVM provides unique benefits for agentic applications:
   - "Prove Basel III compliance without revealing positions"
   - "Create MiCA-compliant token transfer proofs"
 
-### Phase 5: The Autonomous ZK Agent (2025+)
+### Phase 5: The Autonomous ZK Agent  
 - [ ] **Self-Improving Proofs** - Agent learns optimal proof strategies
 - [ ] **Cross-Language Support** - Python, Rust, JavaScript, Solidity
 - [ ] **Proof Recommendation Engine** - "You might also want to prove..."
 - [ ] **Natural Language Circuits** - Describe custom ZK circuits in English
 - [ ] **Distributed Agent Networks** - Private coordination with public verification
-
-## 🤝 Contributing
-
-Help us make zero-knowledge proofs accessible to everyone! We need:
-- AI/NLP experts to enhance natural language understanding
-- ZK developers to expand proof capabilities
-- UI/UX designers to simplify the experience
-- Technical writers to document use cases
 
 ## 📊 Technical Specifications
 
@@ -246,16 +238,9 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgments
 
-- [zkEngine](https://github.com/zkEngine/zkEngine) - The zkVM powering our proofs
+- [zkEngine](https://github.com/zkEngine/zkEngine) - The zkVM powering the zero knowledge proofs
 - [LangChain](https://langchain.com/) - Natural language processing framework
-- [Model Context Protocol](https://modelcontextprotocol.io/) - Future-proofing AI interoperability
-- [Novanet](https://novanet.xyz) - Democratizing zero-knowledge proofs
-
-## 📞 Contact
-
-- **Issues**: [github.com/hshadab/ZKP-agentkit/issues](https://github.com/hshadab/ZKP-agentkit/issues)
-- **Website**: [novanet.xyz](https://novanet.xyz)
-- **Twitter**: [@novanet_xyz](https://twitter.com/novanet_xyz)
+- [OpenAI](https://openai.com/) - LLM powering the natural language interactions
 
 ---
 
