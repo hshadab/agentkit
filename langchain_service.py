@@ -1,1001 +1,1097 @@
 #!/usr/bin/env python3
-"""
-FIXED Integrated LangChain + Transform Service for zkEngine
-Fixed WAT generation for custom proofs
-"""
 
-from fastapi import FastAPI, HTTPException, Response
+print("✅ Script starting up...")
+
+import base64
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any, Union, Tuple
-import os
+from typing import List, Optional, Dict, Any
+import time
 import re
 import subprocess
-import tempfile
-import uuid
-from datetime import datetime
 import json
-import random
-import shutil
+from pathlib import Path
+import httpx
+import uvicorn
+import uuid
+import os
+from dotenv import load_dotenv
 
-from langchain_openai import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.output_parsers import PydanticOutputParser
-from langchain.memory import ConversationBufferMemory
-from langchain.schema import SystemMessage, HumanMessage, AIMessage
-from langchain.chains import LLMChain
-from langchain.schema.runnable import RunnablePassthrough
+# Load environment variables
+load_dotenv()
 
-app = FastAPI(title="zkEngine Integrated Service - FIXED WAT Generation")
+from openai import OpenAI
 
-# Enable CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# ===== MODELS (unchanged) =====
-
+# Models
 class ProofIntent(BaseModel):
-    """Structured output for proof generation intent"""
-    function: str = Field(description="The proof function to call: prove_kyc, prove_ai_content, prove_location")
-    arguments: List[str] = Field(description="Arguments for the function as strings")
-    step_size: int = Field(description="Computation steps: 50 for all current proof types")
-    explanation: str = Field(description="Human-friendly explanation of what will be proved")
-    complexity_reasoning: Optional[str] = Field(description="Why this step size was chosen")
-    additional_context: Optional[Dict[str, Any]] = Field(description="Additional context or insights", default={})
+    function: str
+    arguments: List[str]
+    step_size: int = 50
+    explanation: str
+    additional_context: Dict[str, Any] = {}
 
 class ChatRequest(BaseModel):
     message: str
-    session_id: Optional[str] = "default"
-    context: Optional[Dict[str, Any]] = None
 
 class ChatResponse(BaseModel):
     intent: Optional[ProofIntent] = None
     response: str
-    session_id: str
-    requires_proof: bool = False
-    additional_analysis: Optional[str] = None
-    suggestions: Optional[List[str]] = None
+    metadata: Optional[Dict[str, Any]] = None
 
-class TransformRequest(BaseModel):
-    code: str
-    auto_transform: bool = True
+# Configuration
+app = FastAPI(title="ZKP Agent Service")
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-class TransformResponse(BaseModel):
-    success: bool
-    transformed_code: str
-    changes: List[str]
-    error: Optional[str] = None
+# Initialize OpenAI client
+openai_client = None
+openai_available = False
 
-class CompileRequest(BaseModel):
-    code: str
-    filename: str
-
-class CompileResponse(BaseModel):
-    success: bool
-    wat_content: Optional[str] = None
-    wasm_file: Optional[str] = None
-    wasm_size: Optional[int] = None
-    error: Optional[str] = None
-
-# Initialize LangChain components
 api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    print("WARNING: OPENAI_API_KEY not found in environment variables!")
-
-llm = ChatOpenAI(
-    model="gpt-4o-mini",
-    temperature=0.7,
-    api_key=api_key
-)
-
-# Memory storage per session
-memory_store: Dict[str, ConversationBufferMemory] = {}
-
-# Streamlined system prompt (unchanged)
-SYSTEM_PROMPT = """You are an intelligent assistant for zkEngine, a zero-knowledge proof system..."""
-
-# ===== TRANSFORM SERVICE FUNCTIONS =====
-
-def transform_for_zkengine(code: str) -> Tuple[str, List[str]]:
-    """Auto-transforms normal C to zkEngine-compatible code"""
-    changes = []
-    
-    # Add stdint.h if not present and we're using int32_t
-    if 'int32_t' not in code and ('int ' in code or 'float ' in code):
-        if '#include <stdint.h>' not in code:
-            include_pos = code.rfind('#include')
-            if include_pos >= 0:
-                newline_pos = code.find('\n', include_pos)
-                if newline_pos >= 0:
-                    code = code[:newline_pos+1] + '#include <stdint.h>\n' + code[newline_pos+1:]
-                else:
-                    code = code + '\n#include <stdint.h>\n'
-            else:
-                code = '#include <stdint.h>\n\n' + code
-            changes.append("Added #include <stdint.h>")
-    
-    # Type conversions
-    code = re.sub(r'\bint\s+', 'int32_t ', code)
-    code = re.sub(r'\bfloat\s+', 'int32_t ', code)
-    changes.append("Converted int/float to int32_t")
-    
-    # Remove I/O operations
-    if 'printf' in code:
-        code = re.sub(r'printf\s*\([^;]+\);', '/* printf removed */;', code)
-        changes.append("Removed printf statements")
-    
-    if 'scanf' in code:
-        code = re.sub(r'scanf\s*\([^;]+\);', '/* scanf removed */;', code)
-        changes.append("Removed scanf statements")
-    
-    # Fix main function for hardcoded values
-    # Since values are now hardcoded, main doesn't need parameters
-    main_match = re.search(r'int32_t\s+main\s*\([^)]*\)', code)
-    if main_match:
-        # Replace with parameterless main
-        code = re.sub(r'int32_t\s+main\s*\([^)]*\)', 'int32_t main()', code)
-        changes.append("Fixed main signature for hardcoded values")
-    
-    # Convert malloc to stack allocations
-    if 'malloc' in code:
-        if '#define BUFFER_SIZE' not in code:
-            includes_end = 0
-            for match in re.finditer(r'#include\s*<[^>]+>', code):
-                includes_end = match.end()
-            
-            if includes_end > 0:
-                code = code[:includes_end] + '\n#define BUFFER_SIZE 1000\n' + code[includes_end:]
-            else:
-                code = '#define BUFFER_SIZE 1000\n' + code
-        
-        code = re.sub(r'(\w+)\s*=\s*malloc\([^)]+\)', r'\1 = (int32_t*)stack_buffer', code)
-        code = re.sub(r'free\s*\([^)]+\);', '/* free removed */;', code)
-        
-        main_start = code.find('{', code.find('main'))
-        if main_start > 0:
-            code = code[:main_start+1] + '\n    int32_t stack_buffer[BUFFER_SIZE];\n' + code[main_start+1:]
-        
-        changes.append("Converted dynamic allocation to stack")
-    
-    return code, changes
-
-def generate_wat_from_c_analysis(code: str) -> str:
-    """Generate PROPER WAT that implements actual algorithms"""
-    
-    import re
-    
-    # Extract value from different patterns
-    def extract_value(code, var_names, func_name=None, default=0):
-        for var in var_names:
-            # Check for variable assignment
-            match = re.search(rf'{var}\s*=\s*(\d+)', code)
-            if match:
-                return int(match.group(1))
-            # Check for direct function call
-            if func_name:
-                match = re.search(rf'{func_name}\s*\(\s*(\d+)\s*\)', code)
-                if match:
-                    return int(match.group(1))
-        return default
-    
-    if 'is_prime' in code:
-        value = extract_value(code, ['number_to_check', 'n', 'num'], 'is_prime', 17)
-        
-        return f"""(module
-  ;; Prime checker for {value} - REAL ALGORITHM
-  (func (export "main") (param $dummy i32) (result i32)
-    (local $n i32)
-    (local $i i32)
-    
-    ;; Set n = {value}
-    (local.set $n (i32.const {value}))
-    
-    ;; Check if less than 2
-    (if (i32.lt_s (local.get $n) (i32.const 2))
-      (then (return (i32.const 0)))
-    )
-    
-    ;; Check if equals 2
-    (if (i32.eq (local.get $n) (i32.const 2))
-      (then (return (i32.const 1)))
-    )
-    
-    ;; Check if even
-    (if (i32.eq (i32.rem_s (local.get $n) (i32.const 2)) (i32.const 0))
-      (then (return (i32.const 0)))
-    )
-    
-    ;; Loop from 3 to sqrt(n)
-    (local.set $i (i32.const 3))
-    (block $exit
-      (loop $continue
-        ;; If i*i > n, exit loop
-        (br_if $exit (i32.gt_s (i32.mul (local.get $i) (local.get $i)) (local.get $n)))
-        
-        ;; If n % i == 0, not prime
-        (if (i32.eq (i32.rem_s (local.get $n) (local.get $i)) (i32.const 0))
-          (then (return (i32.const 0)))
-        )
-        
-        ;; i += 2
-        (local.set $i (i32.add (local.get $i) (i32.const 2)))
-        (br $continue)
-      )
-    )
-    
-    ;; Is prime
-    (i32.const 1)
-  )
-)"""
-    
-    elif 'collatz' in code.lower():
-        value = extract_value(code, ['starting_number', 'start', 'n'], 'collatz', 27)
-        
-        return f"""(module
-  ;; Collatz sequence steps for {value} - REAL ALGORITHM
-  (func (export "main") (param $dummy i32) (result i32)
-    (local $n i32)
-    (local $steps i32)
-    
-    ;; Initialize
-    (local.set $n (i32.const {value}))
-    (local.set $steps (i32.const 0))
-    
-    ;; Loop until n = 1
-    (block $exit
-      (loop $continue
-        ;; Exit if n = 1
-        (br_if $exit (i32.eq (local.get $n) (i32.const 1)))
-        
-        ;; Exit if steps > 1000 (safety)
-        (br_if $exit (i32.gt_s (local.get $steps) (i32.const 1000)))
-        
-        ;; If even: n = n / 2
-        ;; If odd: n = 3n + 1
-        (if (i32.eq (i32.rem_s (local.get $n) (i32.const 2)) (i32.const 0))
-          (then
-            ;; Even: n = n / 2
-            (local.set $n (i32.div_s (local.get $n) (i32.const 2)))
-          )
-          (else
-            ;; Odd: n = 3n + 1
-            (local.set $n 
-              (i32.add 
-                (i32.mul (local.get $n) (i32.const 3))
-                (i32.const 1)
-              )
-            )
-          )
-        )
-        
-        ;; Increment steps
-        (local.set $steps (i32.add (local.get $steps) (i32.const 1)))
-        
-        (br $continue)
-      )
-    )
-    
-    (local.get $steps)
-  )
-)"""
-    
-    elif 'digital_root' in code or 'digit_sum' in code:
-        value = extract_value(code, ['input_number', 'num', 'n'], 'digital_root', 12345)
-        
-        return f"""(module
-  ;; Digital root calculator for {value} - REAL ALGORITHM
-  (func (export "main") (param $dummy i32) (result i32)
-    (local $n i32)
-    (local $sum i32)
-    (local $digit i32)
-    
-    ;; Initialize
-    (local.set $n (i32.const {value}))
-    
-    ;; Loop until single digit
-    (block $outer_exit
-      (loop $outer_continue
-        ;; Exit if n < 10 (single digit)
-        (br_if $outer_exit (i32.lt_s (local.get $n) (i32.const 10)))
-        
-        ;; Calculate digit sum
-        (local.set $sum (i32.const 0))
-        (block $inner_exit
-          (loop $inner_continue
-            ;; Exit if n = 0
-            (br_if $inner_exit (i32.eq (local.get $n) (i32.const 0)))
-            
-            ;; Get last digit
-            (local.set $digit (i32.rem_s (local.get $n) (i32.const 10)))
-            ;; Add to sum
-            (local.set $sum (i32.add (local.get $sum) (local.get $digit)))
-            ;; Remove last digit
-            (local.set $n (i32.div_s (local.get $n) (i32.const 10)))
-            
-            (br $inner_continue)
-          )
-        )
-        
-        ;; Set n to sum for next iteration
-        (local.set $n (local.get $sum))
-        
-        (br $outer_continue)
-      )
-    )
-    
-    (local.get $n)
-  )
-)"""
-    
-    elif 'fibonacci' in code:
-        value = extract_value(code, ['n', 'num', 'value'], 'fibonacci', 10)
-        
-        return f"""(module
-  ;; Fibonacci calculator for n={value} - ITERATIVE
-  (func (export "main") (param $dummy i32) (result i32)
-    (local $n i32)
-    (local $a i32)
-    (local $b i32)
-    (local $temp i32)
-    (local $i i32)
-    
-    (local.set $n (i32.const {value}))
-    
-    ;; Base cases
-    (if (i32.le_s (local.get $n) (i32.const 1))
-      (then (return (local.get $n)))
-    )
-    
-    ;; Initialize
-    (local.set $a (i32.const 0))
-    (local.set $b (i32.const 1))
-    (local.set $i (i32.const 2))
-    
-    ;; Loop
-    (block $exit
-      (loop $continue
-        ;; temp = a + b
-        (local.set $temp (i32.add (local.get $a) (local.get $b)))
-        ;; a = b
-        (local.set $a (local.get $b))
-        ;; b = temp
-        (local.set $b (local.get $temp))
-        ;; i++
-        (local.set $i (i32.add (local.get $i) (i32.const 1)))
-        ;; Continue if i <= n
-        (br_if $continue (i32.le_s (local.get $i) (local.get $n)))
-      )
-    )
-    
-    (local.get $b)
-  )
-)"""
-    
-    elif 'factorial' in code:
-        value = extract_value(code, ['n', 'num', 'value'], 'factorial', 5)
-        
-        return f"""(module
-  ;; Factorial calculator for n={value}
-  (func (export "main") (param $dummy i32) (result i32)
-    (local $n i32)
-    (local $result i32)
-    (local $i i32)
-    
-    (local.set $n (i32.const {value}))
-    (local.set $result (i32.const 1))
-    (local.set $i (i32.const 1))
-    
-    ;; Handle 0! = 1
-    (if (i32.eq (local.get $n) (i32.const 0))
-      (then (return (i32.const 1)))
-    )
-    
-    ;; Loop from 1 to n
-    (block $exit
-      (loop $continue
-        ;; result *= i
-        (local.set $result (i32.mul (local.get $result) (local.get $i)))
-        ;; i++
-        (local.set $i (i32.add (local.get $i) (i32.const 1)))
-        ;; Continue if i <= n
-        (br_if $continue (i32.le_s (local.get $i) (local.get $n)))
-      )
-    )
-    
-    (local.get $result)
-  )
-)"""
-    
-    elif 'gcd' in code or 'greatest_common' in code:
-        # Try to find two values
-        a_match = re.search(r'(?:a|x|first)\s*=\s*(\d+)', code)
-        b_match = re.search(r'(?:b|y|second)\s*=\s*(\d+)', code)
-        a = int(a_match.group(1)) if a_match else 48
-        b = int(b_match.group(1)) if b_match else 18
-        
-        return f"""(module
-  ;; GCD calculator for {a} and {b} - Euclidean algorithm
-  (func (export "main") (param $dummy i32) (result i32)
-    (local $a i32)
-    (local $b i32)
-    (local $temp i32)
-    
-    (local.set $a (i32.const {a}))
-    (local.set $b (i32.const {b}))
-    
-    ;; Euclidean algorithm
-    (block $exit
-      (loop $continue
-        ;; Exit if b = 0
-        (br_if $exit (i32.eq (local.get $b) (i32.const 0)))
-        
-        ;; temp = a % b
-        (local.set $temp (i32.rem_s (local.get $a) (local.get $b)))
-        ;; a = b
-        (local.set $a (local.get $b))
-        ;; b = temp
-        (local.set $b (local.get $temp))
-        
-        (br $continue)
-      )
-    )
-    
-    (local.get $a)
-  )
-)"""
-    
-    else:
-        # Default case - just return 42
-        print(f"No specific pattern detected in code. Using default.")
-        return """(module
-  ;; Default computation
-  (func (export "main") (param $dummy i32) (result i32)
-    i32.const 42
-  )
-)"""
-
-async def compile_to_wasm(code: str, filename: str) -> Dict[str, Any]:
-    """Compile transformed C code to WebAssembly TEXT format with REAL algorithms"""
+if api_key:
     try:
-        print(f"Generating proper WAT with real algorithms for {filename}")
-        
-        # Generate proper WAT with real algorithm implementations
-        wat_content = generate_wat_from_c_analysis(code)
-        
-        # Create temporary directory for file operations
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # Generate unique filename
-            base_name = filename.replace('.c', '')
-            unique_id = str(uuid.uuid4())[:8]
-            wat_file = os.path.join(tmpdir, f"{base_name}_{unique_id}.wat")
-            
-            # Write WAT content
-            with open(wat_file, 'w') as f:
-                f.write(wat_content)
-            
-            # Copy to zkEngine wasm directory
-            wasm_dir = os.path.expanduser('~/agentkit/zkengine/example_wasms')
-            os.makedirs(wasm_dir, exist_ok=True)
-            
-            final_wat_name = f"{base_name}_{unique_id}.wat"
-            final_wat_path = os.path.join(wasm_dir, final_wat_name)
-            
-            # Write the WAT content
-            with open(final_wat_path, 'w') as f:
-                f.write(wat_content)
-            
-            # Get file size
-            file_size = len(wat_content.encode('utf-8'))
-            
-            print(f"Generated WAT file: {final_wat_name} ({file_size} bytes)")
-            print(f"Algorithm detected and implemented with real logic")
-            
-            return {
-                'success': True,
-                'wat_content': wat_content,
-                'wasm_file': final_wat_name,
-                'wasm_size': file_size
-            }
-            
-    except Exception as e:
-        print(f"Error in compile_to_wasm: {e}")
-        import traceback
-        traceback.print_exc()
-        return {
-            'success': False,
-            'error': str(e)
-        }
-
-# ===== LANGCHAIN FUNCTIONS (unchanged) =====
-
-def get_memory(session_id: str) -> ConversationBufferMemory:
-    if session_id not in memory_store:
-        memory_store[session_id] = ConversationBufferMemory(
-            return_messages=True,
-            memory_key="history"
+        openai_client = OpenAI(api_key=api_key)
+        # Test the connection with gpt-4o-mini
+        test_response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": "test"}],
+            max_tokens=5
         )
-    return memory_store[session_id]
+        openai_available = True
+        print("✅ OpenAI client initialized and tested successfully with GPT-4o-mini")
+    except Exception as e:
+        print(f"⚠️ OpenAI initialization failed: {e}")
+        openai_available = False
+else:
+    print("⚠️ WARNING: OPENAI_API_KEY environment variable not set!")
+    print("   The system will work but without natural language capabilities.")
 
-def analyze_proof_complexity(function: str, args: List[str], custom_step_size: Optional[int] = None) -> Tuple[int, str]:
-    """Analyze the computational complexity of a proof request"""
-    if custom_step_size:
-        if custom_step_size < 10:
-            return (50, f"Custom step size {custom_step_size} too low, using minimum 50.")
-        elif custom_step_size > 10000:
-            return (1000, f"Custom step size {custom_step_size} too high, capping at 1000.")
-        else:
-            return (custom_step_size, f"Using custom step size: {custom_step_size}")
+CIRCLE_DIR = Path(__file__).parent / "circle"
+TEST_ADDRESSES = {
+    "alice": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    "alice_solana": "7UX2i7SucgLMQcfZ75s3VXmZZY4YRUyJN9X1RgfMoDUi",
+    "bob": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+    "bob_solana": "GsbwXfJraMomNxBcjYLcG3mxkBUiyWXAB32fGbSMQRdW",
+    "charlie": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+    "charlie_solana": "2sWRYvL8M4S9XPvKNfUdy2Qvn6LYaXjqXDvMv9KsxbUa"
+}
+
+# System prompt for OpenAI - Enhanced for better mixed prompt detection
+SYSTEM_PROMPT = """You are an AI assistant for a Zero-Knowledge Proof (ZKP) system. You can:
+1. Have natural conversations on any topic
+2. Generate ZK proofs for: KYC compliance, AI content authenticity, and device location
+3. Execute USDC transfers (with or without KYC verification depending on request)
+4. List and verify existing proofs
+
+When users ask for proof generation, transfers, or verification, you should detect their intent and respond appropriately.
+Be helpful, conversational, and can add personality, humor, or detailed explanations as requested.
+
+IMPORTANT: Even if a message contains extra words like "with humor", "and explain", etc., you should still detect the core intent.
+For example:
+- "Prove Collatz steps with raunchy humor" -> Still a proof request for Collatz
+- "prove kyc and make it funny" -> Still a KYC proof request
+- "explain how to prove location" -> Still a location proof request
+
+USDC Transfer Rules:
+- If a transfer mentions "proof", "verify", "verified" AND "KYC" or "compliant" -> Requires KYC proof
+- Otherwise, USDC transfers should be direct without proof generation
+- Examples:
+  - "Send 0.1 USDC to Alice if KYC compliant" -> Requires KYC proof
+  - "Send 0.1 USDC to Alice" -> Direct transfer, no proof needed
+
+Available commands you can detect:
+- Prove KYC compliance
+- Prove AI content authenticity
+- Prove device location (supports San Francisco/SF, New York/NYC, London, Tokyo)
+- Send USDC to addresses/names (alice, bob, charlie) - with or without KYC
+- Verify proof [proof_id]
+- List all proofs/verifications (or "Proof History"/"Verification History")
+- Custom proof requests with C code
+- Prove Collatz steps / prime check / digital root
+
+You can combine natural conversation with these commands. For example, if someone asks "prove my location with humor", 
+you should both detect the location proof intent AND provide a humorous response."""
+
+# Helper Functions
+def extract_transfer_details(message: str) -> Dict[str, str]:
+    amount_match = re.search(r"(\d+(?:\.\d+)?)", message)
+    amount = amount_match.group(1) if amount_match else "0.1"
     
-    if function == "prove_location":
-        return (50, f"Location proof for DePIN network.")
-    elif function == "prove_kyc":
-        return (50, f"Circle KYC compliance proof with wallet_hash: {args[0] if len(args) > 0 else '12345'}, kyc_status: {args[1] if len(args) > 1 else '1'} (1=approved).")
-    elif function == "prove_ai_content":
-        return (50, f"AI content authenticity proof with content_hash: {args[0] if len(args) > 0 else '42'}, auth_type: {args[1] if len(args) > 1 else '1'}.")
+    # Determine blockchain first
+    blockchain = "SOL" if ("solana" in message.lower() or " sol" in message.lower()) else "ETH"
+    
+    # Initialize recipient
+    recipient_address = None
+    
+    # Check for explicit addresses first
+    eth_addr_match = re.search(r"0x[a-fA-F0-9]{40}", message)
+    sol_addr_match = re.search(r"[1-9A-HJ-NP-Za-km-z]{32,44}", message)
+    
+    if eth_addr_match and blockchain == "ETH":
+        recipient_address = eth_addr_match.group(0)
+    elif sol_addr_match and blockchain == "SOL":
+        recipient_address = sol_addr_match.group(0)
     else:
-        return (50, f"Simple operation: {function}.")
-
-def extract_proof_intent(message: str) -> Optional[Dict[str, Any]]:
-    """Extract proof intent from message using pattern matching"""
-    message_lower = message.lower()
-    
-    # LOCATION PATTERNS FIRST - highest priority
-    if 'location' in message_lower:
-        cities = ['san francisco', 'sf', 'new york', 'nyc', 'london']
-        detected_city = None
-        for city in cities:
-            if city in message_lower:
-                detected_city = city
-                break
+        # Look for named recipients
+        msg_lower = message.lower()
         
-        if detected_city:
-            device_match = re.search(r'device.*?(\d+)', message_lower)
-            device_id = device_match.group(1) if device_match else str(random.randint(1000, 99999))
-            
-            return {
-                'function': 'prove_location',
-                'arguments': [detected_city, device_id],
-                'step_size': 50,
-                'location_based': True
-            }
+        if blockchain == "SOL":
+            # For Solana, look for _solana suffixed addresses
+            for name, addr in TEST_ADDRESSES.items():
+                if "_solana" in name:
+                    base_name = name.replace("_solana", "")
+                    if base_name in msg_lower:
+                        recipient_address = addr
+                        break
+        else:
+            # For Ethereum, look for addresses without _solana suffix
+            for name, addr in TEST_ADDRESSES.items():
+                if "_solana" not in name and name in msg_lower:
+                    recipient_address = addr
+                    break
     
-    # Check for custom step size specification
-    custom_step_size = None
-    step_size_patterns = [
-        r'(?:with\s+)?step\s+size\s+(\d+)',
-        r'(?:using\s+)?(\d+)\s+step\s+size',
-        r'step\s+(\d+)',
-    ]
+    # Default to alice if nothing found
+    if not recipient_address:
+        recipient_address = TEST_ADDRESSES["alice_solana" if blockchain == "SOL" else "alice"]
     
-    for pattern in step_size_patterns:
-        match = re.search(pattern, message_lower)
-        if match:
-            custom_step_size = int(match.group(1))
-            break
+    # DEBUG: Print what we're returning
+    print(f"DEBUG extract_transfer_details: blockchain={blockchain}, recipient={recipient_address}, amount={amount}")
     
-    # Pattern matching for 3 main proof types
-    patterns = {
-        'prove_kyc': [
-            r'prove\s+kyc\s+compliance',
-            r'kyc\s+compliance',
-            r'verify\s+kyc\s+status',
-            r'prove\s+kyc',
-            r'kyc\s+proof',
-            r'kyc\s+verification',
-            r'circle\s+kyc',
-            r'regulatory\s+compliance',
-            r'compliance\s+proof',
-            r'kyc\s+approved',
-            r'prove\s+compliance'
-        ],
-        'prove_ai_content': [
-            r'prove\s+ai\s+content\s+authenticity',
-            r'ai\s+content\s+authenticity', 
-            r'verify\s+ai\s+content',
-            r'prove\s+content\s+authenticity',
-            r'ai\s+authenticity',
-            r'content\s+verification',
-            r'verify\s+ai\s+generated',
-            r'prove\s+ai\s+generated',
-            r'ai\s+content\s+proof',
-            r'authenticate\s+ai\s+content',
-            r'ai\s+content',
-            r'content\s+authenticity'
-        ]
-    }
-    
-    for func, func_patterns in patterns.items():
-        for pattern in func_patterns:
-            match = re.search(pattern, message_lower)
-            if match:
-                # Handle functions with no capture groups
-                if match.groups():
-                    args = list(match.groups())
-                else:
-                    # Set default arguments for each proof type
-                    if func == 'prove_kyc':
-                        args = ["12345", "1"]  # wallet_hash=12345, kyc_approved=1
-                    elif func == 'prove_ai_content':
-                        args = ["42", "1"]  # content_hash=42, auth_type=1
-                    else:
-                        args = []
-                
-                step_size, _ = analyze_proof_complexity(func, args, custom_step_size)
-                return {
-                    'function': func,
-                    'arguments': args,
-                    'step_size': step_size,
-                    'custom_step_size': custom_step_size is not None
-                }
-    
-    return None
+    return {"amount": amount, "recipient": recipient_address, "blockchain": blockchain}
 
-# ===== API ENDPOINTS =====
+def get_openai_response(message: str, context: str = "") -> tuple[str, Dict[str, Any]]:
+    """Get response from OpenAI and extract any intents"""
+    if not openai_available:
+        return None, {}
+    
+    try:
+        # Create a more specific prompt based on the message
+        analysis_prompt = f"""Analyze this message and determine:
+1. What the user wants (natural conversation, proof generation, transfer, etc.)
+2. Generate an appropriate response (if they ask for humor, be funny!)
+3. If it's a command, identify which type
 
+IMPORTANT: Look for proof keywords even if mixed with other words:
+- "prove collatz" or "collatz steps" or "collatz proof" -> custom_proof (Collatz)
+- "prove prime" or "prime check" -> custom_proof (prime)
+- "prove digital root" -> custom_proof (digital root)
+- These work even with extra words like "with humor", "and explain", etc.
+
+For list commands:
+- "Proof History" or "list all proofs" -> list (proofs)
+- "Verification History" or "list verifications" -> list (verifications)
+
+For USDC transfers:
+- If message contains "proof/verify/verified" AND "KYC/compliant" -> transfer with KYC proof required (requires_kyc: true)
+- Otherwise -> direct transfer without proof (requires_kyc: false)
+
+Message: "{message}"
+
+Respond in JSON format:
+{{
+    "response": "Your natural language response to the user",
+    "intent_type": "none|kyc_proof|ai_proof|location_proof|transfer|verify|list|custom_proof",
+    "details": {{
+        // Any relevant details based on intent_type
+        // For location: {{"location": "city_name"}}
+        // For transfer: {{"amount": "0.1", "recipient": "alice", "requires_kyc": true/false}}
+        // For verify: {{"proof_id": "proof_xxx"}}
+        // For custom_proof: {{"proof_type": "collatz|prime|digital_root"}}
+        // For list: {{"list_type": "proofs" or "verifications"}}
+    }},
+    "personality": {{
+        "add_humor": true/false,
+        "add_explanation": true/false,
+        "tone": "friendly|professional|humorous|educational"
+    }}
+}}"""
+        
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": analysis_prompt}
+            ],
+            temperature=0.7,
+            max_tokens=500,
+            response_format={ "type": "json_object" }
+        )
+        
+        result = json.loads(response.choices[0].message.content)
+        return result.get("response", "I'll help you with that."), result
+        
+    except Exception as e:
+        print(f"OpenAI API error: {e}")
+        return None, {}
+
+def is_transfer_request(message: str) -> tuple[bool, bool]:
+    """
+    Check if message is a transfer request and if it requires KYC proof.
+    Returns: (is_transfer, requires_kyc)
+    """
+    msg_lower = message.lower()
+    has_usdc = "usdc" in msg_lower
+    has_transfer_verb = any(k in msg_lower for k in ["send", "transfer", "pay"])
+    
+    if has_usdc and has_transfer_verb:
+        # Check if KYC proof is explicitly requested
+        has_proof_keyword = any(k in msg_lower for k in ["proof", "prove", "verified", "verify"])
+        has_kyc_keyword = any(k in msg_lower for k in ["kyc", "compliant", "compliance"])
+        requires_kyc = has_proof_keyword and has_kyc_keyword
+        
+        # Additional check for "if KYC compliant" pattern
+        if "if kyc" in msg_lower:
+            requires_kyc = True
+        
+        return True, requires_kyc
+    
+    return False, False
+
+def is_kyc_proof_request(message: str) -> bool:
+    msg_lower = message.lower()
+    return "kyc" in msg_lower and ("prove" in msg_lower or "proof" in msg_lower) and "usdc" not in msg_lower
+
+def is_ai_content_proof_request(message: str) -> bool:
+    msg_lower = message.lower()
+    return (("ai" in msg_lower or "content" in msg_lower) and 
+            ("authenticity" in msg_lower or "authentic" in msg_lower) and 
+            ("prove" in msg_lower or "proof" in msg_lower))
+
+def is_location_proof_request(message: str) -> bool:
+    msg_lower = message.lower()
+    return (("location" in msg_lower or "device" in msg_lower or 
+             any(city in msg_lower for city in ["sf", "san francisco", "new york", "nyc", "london", "tokyo"])) and 
+            ("prove" in msg_lower or "proof" in msg_lower))
+
+def is_collatz_proof_request(message: str) -> bool:
+    """Check if message is requesting a Collatz proof"""
+    msg_lower = message.lower()
+    return ("collatz" in msg_lower and ("prove" in msg_lower or "proof" in msg_lower or "steps" in msg_lower))
+
+def is_prime_proof_request(message: str) -> bool:
+    """Check if message is requesting a prime number proof"""
+    msg_lower = message.lower()
+    return ("prime" in msg_lower and ("prove" in msg_lower or "proof" in msg_lower or "check" in msg_lower))
+
+def is_digital_root_proof_request(message: str) -> bool:
+    """Check if message is requesting a digital root proof"""
+    msg_lower = message.lower()
+    return ("digital" in msg_lower and "root" in msg_lower and ("prove" in msg_lower or "proof" in msg_lower))
+
+def is_custom_proof_request(message: str) -> tuple:
+    """Check if message is a custom proof request with base64 encoded C code"""
+    if message.startswith("prove custom "):
+        try:
+            encoded_code = message.replace("prove custom ", "").strip()
+            decoded_code = base64.b64decode(encoded_code).decode('utf-8')
+            return True, decoded_code
+        except:
+            return False, None
+    return False, None
+
+def is_verification_request(message: str) -> tuple:
+    """Check if message is a verification request"""
+    msg_lower = message.lower()
+    if "verify" in msg_lower and "proof" in msg_lower:
+        # Extract proof ID
+        proof_match = re.search(r"proof_\d+_[a-f0-9]+", message)
+        if proof_match:
+            return True, proof_match.group(0)
+    return False, None
+
+# API Endpoints
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
-    """Process natural language and return structured proof intent with rich contextual response"""
-    try:
-        memory = get_memory(request.session_id)
-        
-        # First, check if this might involve a proof or verification
-        lower_msg = request.message.lower()
-        
-        # Check for verification requests
-        is_verification = any(word in lower_msg for word in ["verify", "check", "validate"])
-        
-        # Check for proof-related content
-        proof_intent = extract_proof_intent(request.message)
-        
-        # Determine if additional context is requested
-        has_language_request = any(lang in lower_msg for lang in [
-            "spanish", "español", "french", "français", "german", "deutsch",
-            "italian", "italiano", "portuguese", "português", "chinese", "中文",
-            "japanese", "日本語", "russian", "русский", "arabic", "عربي",
-            "persian", "farsi", "فارسی"
-        ])
-        
-        has_analysis_request = any(word in lower_msg for word in [
-            "explain", "market", "trends", "analysis", "significance",
-            "philosophy", "cultural", "economic", "business", "industry",
-            "what is", "tell me", "describe"
-        ])
-        
-        # If we have a proof intent OR special request, process with LLM
-        if proof_intent or has_language_request or has_analysis_request or is_verification:
-            # Build the enhanced prompt
-            enhanced_prompt = ChatPromptTemplate.from_messages([
-                ("system", SYSTEM_PROMPT),
-                MessagesPlaceholder(variable_name="history"),
-                ("human", "{input}"),
-                ("system", """Analyze this request carefully. The user said: "{input}"
+    user_message = request.message
+    msg_lower = user_message.lower()
+    
+    proof_id = f"proof_{int(time.time() * 1000)}_{uuid.uuid4().hex[:6]}"
 
-ABSOLUTELY CRITICAL: 
-- Use ONLY plain text
-- NO markdown formatting whatsoever
-- NO asterisks, hashtags, backticks, underscores, or any other formatting symbols
-- Write everything as simple, clean plain text
-
-If they're asking for a proof (kyc, ai content, location), extract these details:
-- Function name
-- Arguments
-- Provide a rich explanation in the language they requested
-
-If they're asking for verification:
-- Acknowledge the verification request
-- Explain what proof verification means
-- Let them know the system will verify the proof
-- DO NOT say you cannot verify proofs
-
-Always provide a conversational, helpful response that addresses ALL aspects of their request.
-If they ask in a specific language, respond in that language (except technical terms).""")
-            ])
-            
-            # Get conversation history
-            messages = memory.chat_memory.messages
-            
-            # Create the prompt
-            prompt_value = enhanced_prompt.format_prompt(
-                input=request.message,
-                history=messages
-            )
-            
-            # Get LLM response
-            response = llm.invoke(prompt_value.to_messages())
-            response_content = response.content
-            
-            # Clean any remaining markdown that might slip through
-            response_content = re.sub(r'\*+', '', response_content)
-            response_content = re.sub(r'#+', '', response_content)
-            response_content = re.sub(r'`+', '', response_content)
-            response_content = re.sub(r'_+', '', response_content)
-            response_content = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', response_content)
-            
-            # Initialize response components
-            intent = None
-            requires_proof = False
-            main_response = response_content
-            
-            # If we detected a proof intent, create the structured intent
-            if proof_intent:
-                step_size, complexity_reasoning = analyze_proof_complexity(
-                    proof_intent['function'], 
-                    proof_intent['arguments'],
-                    proof_intent.get('step_size') if proof_intent.get('custom_step_size') else None
-                )
-                
-                explanation = f"Generating proof for {proof_intent['function']}({', '.join(proof_intent['arguments'])})"
-                if proof_intent.get('custom_step_size'):
-                    explanation += f" with custom step size {step_size}"
-                
-                intent = ProofIntent(
-                    function=proof_intent['function'],
-                    arguments=proof_intent['arguments'],
-                    step_size=step_size,
-                    explanation=explanation,
-                    complexity_reasoning=complexity_reasoning
-                )
-                requires_proof = True
-            
-            # Save to memory
-            memory.save_context(
-                {"input": request.message},
-                {"output": main_response}
-            )
-            
+    # First, try to get OpenAI's analysis if available
+    ai_response, ai_analysis = get_openai_response(user_message)
+    
+    # If OpenAI is available and detected an intent, use its analysis
+    if ai_response and ai_analysis.get("intent_type") != "none":
+        intent_type = ai_analysis.get("intent_type")
+        details = ai_analysis.get("details", {})
+        
+        # Handle different intent types based on OpenAI's analysis
+        if intent_type == "verify":
+            verify_proof_id = details.get("proof_id") or proof_id
             return ChatResponse(
-                intent=intent,
-                response=main_response,
-                session_id=request.session_id,
-                requires_proof=requires_proof
-            )
-        
-        else:
-            # For non-proof queries, still use LLM for natural conversation
-            conversation_prompt = ChatPromptTemplate.from_messages([
-                ("system", SYSTEM_PROMPT + "\n\nThe user is having a general conversation. Be helpful and conversational. Remember: NO markdown formatting whatsoever. Use only plain text."),
-                MessagesPlaceholder(variable_name="history"),
-                ("human", "{input}")
-            ])
-            
-            # Use invoke method
-            chain = conversation_prompt | llm
-            
-            # Get history
-            messages = memory.chat_memory.messages
-            
-            # Invoke the chain
-            response = chain.invoke({
-                "input": request.message,
-                "history": messages
-            })
-            
-            # Clean any markdown from response
-            cleaned_content = response.content
-            cleaned_content = re.sub(r'\*+', '', cleaned_content)
-            cleaned_content = re.sub(r'#+', '', cleaned_content)
-            cleaned_content = re.sub(r'`+', '', cleaned_content)
-            cleaned_content = re.sub(r'_+', '', cleaned_content)
-            cleaned_content = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', cleaned_content)
-            
-            # Save to memory
-            memory.save_context(
-                {"input": request.message},
-                {"output": cleaned_content}
-            )
-            
-            return ChatResponse(
-                intent=None,
-                response=cleaned_content,
-                session_id=request.session_id or "default",
-                requires_proof=False
-            )
-        
-    except Exception as e:
-        print(f"Error in chat endpoint: {e}")
-        import traceback
-        traceback.print_exc()
-        
-        # Return a helpful error response
-        return ChatResponse(
-            intent=None,
-            response=f"I understand you're asking about: {request.message}. Let me help you with that. Could you please rephrase your request or try one of the examples from the sidebar?",
-            session_id=request.session_id or "default",
-            requires_proof=False
-        )
-
-@app.get("/sessions/{session_id}/history")
-async def get_history(session_id: str):
-    """Get conversation history for a session"""
-    if session_id in memory_store:
-        memory = memory_store[session_id]
-        messages = memory.chat_memory.messages
-        return {
-            "session_id": session_id,
-            "messages": [
-                {
-                    "type": type(msg).__name__,
-                    "content": msg.content
+                response=ai_response,
+                intent=ProofIntent(
+                    function="prove_kyc",
+                    arguments=["1"],
+                    explanation=f"Verify existing proof {verify_proof_id}",
+                    additional_context={
+                        "action": "verify",
+                        "proof_id": verify_proof_id,
+                        "is_verification": True
+                    }
+                ),
+                metadata={
+                    "type": "verification_request",
+                    "proof_id": verify_proof_id,
+                    "action": "verify"
                 }
-                for msg in messages
-            ]
-        }
-    return {"session_id": session_id, "messages": []}
-
-@app.delete("/sessions/{session_id}")
-async def clear_session(session_id: str):
-    """Clear conversation history for a session"""
-    if session_id in memory_store:
-        del memory_store[session_id]
-    return {"message": f"Session {session_id} cleared"}
-
-@app.get("/health")
-async def health():
-    """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "service": "integrated",
-        "model": "gpt-4o-mini",
-        "active_sessions": len(memory_store),
-        "features": [
-            "multilingual", 
-            "market_analysis", 
-            "educational_content", 
-            "kyc_proofs", 
-            "ai_content_proofs", 
-            "location_proofs",
-            "code_transformation",
-            "wasm_compilation"
-        ]
-    }
-
-@app.post("/analyze")
-async def analyze_concept(request: Dict[str, str]):
-    """Analyze a mathematical concept with market and philosophical perspectives"""
-    concept = request.get("concept", "")
-    domain = request.get("domain", "general")
-    language = request.get("language", "english")
-    
-    analysis_prompt = ChatPromptTemplate.from_template("""
-    Analyze the concept: {concept}
-    Domain focus: {domain}
-    Response language: {language}
-    
-    CRITICAL: Use ONLY plain text. NO markdown formatting. No asterisks, hashtags, backticks, or any other formatting.
-    
-    Provide:
-    1. A clear explanation of the concept
-    2. How it relates to zkEngine proofs and zero-knowledge systems
-    3. Domain-specific insights ({domain})
-    4. Suggested proofs to demonstrate this concept
-    5. Real-world applications and implications
-    
-    Make the analysis engaging and accessible while maintaining technical accuracy.
-    If the language is not English, provide the entire response in {language}.
-    """)
-    
-    response = llm.invoke(analysis_prompt.format(
-        concept=concept,
-        domain=domain,
-        language=language
-    ))
-    
-    # Clean any markdown that might appear
-    cleaned_content = response.content
-    cleaned_content = re.sub(r'\*+', '', cleaned_content)
-    cleaned_content = re.sub(r'#+', '', cleaned_content)
-    cleaned_content = re.sub(r'`+', '', cleaned_content)
-    cleaned_content = re.sub(r'_+', '', cleaned_content)
-    cleaned_content = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', cleaned_content)
-    
-    return {
-        "concept": concept,
-        "domain": domain,
-        "language": language,
-        "analysis": cleaned_content
-    }
-
-# ===== TRANSFORM SERVICE ENDPOINTS =====
-
-@app.post("/api/transform-code", response_model=TransformResponse)
-async def transform_code(request: TransformRequest):
-    """Transform C code to zkEngine-compatible format"""
-    try:
-        if request.auto_transform:
-            transformed_code, changes = transform_for_zkengine(request.code)
-            return TransformResponse(
-                success=True,
-                transformed_code=transformed_code,
-                changes=changes
             )
-        else:
-            return TransformResponse(
-                success=True,
-                transformed_code=request.code,
-                changes=["No transformation applied (auto_transform=False)"]
-            )
-    except Exception as e:
-        return TransformResponse(
-            success=False,
-            transformed_code=request.code,
-            changes=[],
-            error=str(e)
-        )
-
-@app.post("/api/compile-transformed", response_model=CompileResponse)
-async def compile_transformed(request: CompileRequest):
-    """Compile transformed C code to WebAssembly TEXT format"""
-    try:
-        result = await compile_to_wasm(request.code, request.filename)
         
-        if result['success']:
-            return CompileResponse(
-                success=True,
-                wat_content=result.get('wat_content'),
-                wasm_file=result.get('wasm_file'),
-                wasm_size=result.get('wasm_size')
+        elif intent_type == "transfer":
+            transfer_details = extract_transfer_details(user_message)
+            print(f"DEBUG 1: After extract_transfer_details: {transfer_details}")
+            if details.get("amount"):
+                transfer_details["amount"] = details["amount"]
+            print(f"DEBUG 2: AI details.recipient = {details.get('recipient')}")
+            if details.get("recipient") in TEST_ADDRESSES:
+                # Recipient already set correctly by extract_transfer_details
+                pass
+            
+            # Check if KYC is required based on the message or AI detection
+            requires_kyc = details.get("requires_kyc", False)
+            if not requires_kyc:
+                # Double-check with our pattern matching
+                _, requires_kyc = is_transfer_request(user_message)
+            
+            if requires_kyc:
+                return ChatResponse(
+                    response=ai_response,
+                    intent=ProofIntent(
+                        function="prove_kyc",
+                        arguments=["1"],
+                        explanation="Automated KYC proof for USDC transfer.",
+                        additional_context={
+                        "is_automated_transfer": True,
+                            "transfer_details": transfer_details
+                        }
+                    ),
+                    metadata={
+                        "type": "kyc_transfer_automation_start",
+                    "is_automated_transfer": True,
+                        "proof_id": proof_id,
+                        "is_automated_transfer": True,
+                        "transfer_details": transfer_details
+                    }
+                )
+            else:
+                # Direct transfer without KYC
+                return ChatResponse(
+                    response=ai_response or f"Initiating direct transfer of {transfer_details['amount']} USDC to {transfer_details['recipient'][:10]}...",
+                    metadata={
+                        "type": "direct_transfer",
+                        "transfer_details": transfer_details
+                    }
+                )
+            
+        elif intent_type == "kyc_proof":
+            return ChatResponse(
+                response=ai_response,
+                intent=ProofIntent(
+                    function="prove_kyc",
+                    arguments=["1"],
+                    explanation="Manual KYC compliance proof",
+                    additional_context={"is_automated_transfer": False}
+                ),
+                metadata={
+                    "type": "manual_proof",
+                    "proof_id": proof_id,
+                    "proof_type": "kyc"
+                }
             )
-        else:
-            return CompileResponse(
-                success=False,
-                error=result.get('error', 'Unknown compilation error')
+            
+        elif intent_type == "ai_proof":
+            return ChatResponse(
+                response=ai_response,
+                intent=ProofIntent(
+                    function="prove_ai_content",
+                    arguments=["987654321", "1000"],
+                    explanation="AI content authenticity verification",
+                    additional_context={"is_automated_transfer": False}
+                ),
+                metadata={
+                    "type": "manual_proof",
+                    "proof_id": proof_id,
+                    "proof_type": "ai_content"
+                }
             )
-    except Exception as e:
-        return CompileResponse(
-            success=False,
-            error=str(e)
+            
+        elif intent_type == "location_proof":
+            location = details.get("location", "New York")
+            lat, lon = 103, 182  # NYC default
+            
+            if "london" in location.lower():
+                lat, lon = 130, 242
+            elif "new york" in location.lower() or "nyc" in location.lower():
+                lat, lon = 103, 182
+            elif "tokyo" in location.lower():
+                lat, lon = 90, 140
+            elif "san francisco" in location.lower() or "sf" in location.lower():
+                lat, lon = 96, 122
+                
+            device_id = 1234
+            packed_input = (lat << 24) | (lon << 16) | device_id
+            
+            return ChatResponse(
+                response=ai_response,
+                intent=ProofIntent(
+                    function="prove_location",
+                    arguments=[str(packed_input)],
+                    explanation=f"Device location proof for {location} - Zone verification",
+                    additional_context={
+                        "is_automated_transfer": False,
+                        "location": location,
+                        "zone_type": "city boundary verification"
+                    }
+                ),
+                metadata={
+                    "type": "manual_proof",
+                    "proof_id": proof_id,
+                    "proof_type": "location"
+                }
+            )
+            
+        elif intent_type == "custom_proof":
+            proof_type = details.get("proof_type", "custom")
+            
+            # Generate the appropriate C code for the proof type
+            if proof_type == "collatz":
+                c_code = """// Collatz Conjecture Steps
+int main() {
+    int n = 27;
+    int steps = 0;
+    while (n != 1 && steps < 1000) {
+        if (n % 2 == 0) n = n / 2;
+        else n = 3 * n + 1;
+        steps++;
+    }
+    return steps;
+}"""
+                description = "Collatz conjecture computation"
+                wasm_file = "collatz"
+                default_arg = "27"
+                
+            elif proof_type == "prime":
+                c_code = """// Prime Number Checker Example
+int main() {
+    int n = 17;
+    if (n <= 1) return 0;
+    if (n <= 3) return 1;
+    if (n % 2 == 0 || n % 3 == 0) return 0;
+    for (int i = 5; i * i <= n; i = i + 6) {
+        if (n % i == 0 || n % (i + 2) == 0) return 0;
+    }
+    return 1;
+}"""
+                description = "prime number check"
+                wasm_file = "prime_checker"
+                default_arg = "17"
+                
+            elif proof_type == "digital_root":
+                c_code = """// Digital Root Calculator
+int main() {
+    int n = 12345;
+    if (n == 0) return 0;
+    return (n - 1) % 9 + 1;
+}"""
+                description = "digital root calculation"
+                wasm_file = "digital_root"
+                default_arg = "12345"
+                
+            else:
+                # Generic custom proof
+                c_code = "// Custom proof"
+                description = "custom computation"
+                wasm_file = "custom_proof"
+                default_arg = "1"
+            
+            return ChatResponse(
+                response=ai_response,
+                intent=ProofIntent(
+                    function="prove_custom",
+                    arguments=[default_arg],
+                    explanation=f"Custom proof: {description}",
+                    additional_context={
+                        "is_automated_transfer": False,
+                        "c_code": c_code,
+                        "proof_type": "custom",
+                        "is_custom": True,
+                        "custom_description": description,
+                        "wasm_file": wasm_file
+                    }
+                ),
+                metadata={
+                    "type": "manual_proof",
+                    "proof_id": proof_id,
+                    "proof_type": "custom",
+                    "description": description,
+                    "is_custom": True
+                }
+            )
+            
+        elif intent_type == "list":
+            # Handle both "list all proofs" and "Proof History" styles
+            list_type = "verifications" if ("verification" in msg_lower or details.get("list_type") == "verifications") else "proofs"
+            return ChatResponse(
+                response=ai_response,
+                intent=ProofIntent(
+                    function="list_proofs",
+                    arguments=[list_type],
+                    explanation=f"List all {list_type}",
+                    additional_context={"list_type": list_type}
+                ),
+                metadata={
+                    "type": "list_request",
+                    "list_type": list_type
+                }
+            )
+    
+    # If OpenAI didn't detect an intent or is unavailable, fall back to pattern matching
+    # Check for verification request first
+    is_verify, verify_proof_id = is_verification_request(user_message)
+    if is_verify:
+        response_text = ai_response or f"I'll verify the proof {verify_proof_id} for you."
+        return ChatResponse(
+            response=response_text,
+            intent=ProofIntent(
+                function="prove_kyc",
+                arguments=["1"],
+                explanation=f"Verify existing proof {verify_proof_id}",
+                additional_context={
+                    "action": "verify",
+                    "proof_id": verify_proof_id,
+                    "is_verification": True
+                }
+            ),
+            metadata={
+                "type": "verification_request",
+                "proof_id": verify_proof_id,
+                "action": "verify"
+            }
         )
 
-# Upload interface endpoint (optional)
-@app.get("/upload")
-async def upload_interface():
-    """Simple upload interface for testing"""
-    html_content = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>zkEngine Code Upload</title>
-        <style>
-            body { font-family: Arial; margin: 40px; background: #0a0a0a; color: #e2e8f0; }
-            .container { max-width: 800px; margin: 0 auto; }
-            h1 { color: #c084fc; }
-            .info { background: rgba(139, 92, 246, 0.1); padding: 20px; border-radius: 8px; margin: 20px 0; }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>zkEngine Code Upload</h1>
-            <div class="info">
-                <p>The upload functionality is integrated into the main UI.</p>
-                <p>Use the 📤 button next to the input field in the main interface.</p>
-                <p>Or use the 📋 paste button to paste C code directly.</p>
-            </div>
-            <a href="http://localhost:8001" style="color: #a78bfa;">← Back to Main Interface</a>
-        </div>
-    </body>
-    </html>
-    """
-    return HTMLResponse(content=html_content)
+    # Check for specific proof types (Collatz, Prime, Digital Root)
+    if is_collatz_proof_request(user_message):
+        c_code = """// Collatz Conjecture Steps
+int main() {
+    int n = 27;
+    int steps = 0;
+    while (n != 1 && steps < 1000) {
+        if (n % 2 == 0) n = n / 2;
+        else n = 3 * n + 1;
+        steps++;
+    }
+    return steps;
+}"""
+        response_text = ai_response or "I'll generate a proof for the Collatz conjecture computation. Processing..."
+        return ChatResponse(
+            response=response_text,
+            intent=ProofIntent(
+                function="prove_custom",
+                arguments=["27"],
+                explanation="Custom proof: Collatz conjecture computation",
+                additional_context={
+                    "is_automated_transfer": False,
+                    "c_code": c_code,
+                    "proof_type": "custom",
+                    "is_custom": True,
+                    "custom_description": "Collatz conjecture computation",
+                    "wasm_file": "collatz"
+                }
+            ),
+            metadata={
+                "type": "manual_proof",
+                "proof_id": proof_id,
+                "proof_type": "custom",
+                "description": "Collatz conjecture computation",
+                "is_custom": True
+            }
+        )
+    
+    elif is_prime_proof_request(user_message):
+        c_code = """// Prime Number Checker Example
+int main() {
+    int n = 17;
+    if (n <= 1) return 0;
+    if (n <= 3) return 1;
+    if (n % 2 == 0 || n % 3 == 0) return 0;
+    for (int i = 5; i * i <= n; i = i + 6) {
+        if (n % i == 0 || n % (i + 2) == 0) return 0;
+    }
+    return 1;
+}"""
+        response_text = ai_response or "I'll generate a proof for prime number checking. Processing..."
+        return ChatResponse(
+            response=response_text,
+            intent=ProofIntent(
+                function="prove_custom",
+                arguments=["17"],
+                explanation="Custom proof: prime number check",
+                additional_context={
+                    "is_automated_transfer": False,
+                    "c_code": c_code,
+                    "proof_type": "custom",
+                    "is_custom": True,
+                    "custom_description": "prime number check",
+                    "wasm_file": "prime_checker"
+                }
+            ),
+            metadata={
+                "type": "manual_proof",
+                "proof_id": proof_id,
+                "proof_type": "custom",
+                "description": "prime number check",
+                "is_custom": True
+            }
+        )
+    
+    elif is_digital_root_proof_request(user_message):
+        c_code = """// Digital Root Calculator
+int main() {
+    int n = 12345;
+    if (n == 0) return 0;
+    return (n - 1) % 9 + 1;
+}"""
+        response_text = ai_response or "I'll generate a proof for digital root calculation. Processing..."
+        return ChatResponse(
+            response=response_text,
+            intent=ProofIntent(
+                function="prove_custom",
+                arguments=["12345"],
+                explanation="Custom proof: digital root calculation",
+                additional_context={
+                    "is_automated_transfer": False,
+                    "c_code": c_code,
+                    "proof_type": "custom",
+                    "is_custom": True,
+                    "custom_description": "digital root calculation",
+                    "wasm_file": "digital_root"
+                }
+            ),
+            metadata={
+                "type": "manual_proof",
+                "proof_id": proof_id,
+                "proof_type": "custom",
+                "description": "digital root calculation",
+                "is_custom": True
+            }
+        )
+
+    # Check for transfer requests
+    is_transfer, requires_kyc = is_transfer_request(user_message)
+    if is_transfer:
+        details = extract_transfer_details(user_message)
+        
+        if requires_kyc:
+            response_text = ai_response or f"Got it. Initiating a {details['amount']} USDC transfer to {details['recipient'][:10]}..., pending KYC verification. This process is fully automated."
+            
+            return ChatResponse(
+                response=response_text,
+                intent=ProofIntent(
+                    function="prove_kyc",
+                    arguments=["1"],
+                    explanation="Automated KYC proof for USDC transfer.",
+                    additional_context={
+                        "is_automated_transfer": True,
+                        "transfer_details": details
+                    }
+                ),
+                metadata={
+                    "type": "kyc_transfer_automation_start",
+                    "is_automated_transfer": True,
+                    "proof_id": proof_id,
+                    "is_automated_transfer": True,
+                    "transfer_details": details
+                }
+            )
+        else:
+            # Direct transfer without KYC - Execute immediately
+            response_text = ai_response or f"Initiating direct transfer of {details['amount']} USDC to {details['recipient'][:10]}... No KYC verification required."
+            
+            try:
+                transfer_result = await execute_direct_transfer_internal(details)
+                
+                return ChatResponse(
+                    response=response_text,
+                    metadata={
+                        "type": "direct_transfer_complete",
+                        "transfer_details": details,
+                        "transaction_result": transfer_result,
+                        "success": True
+                    }
+                )
+            except Exception as e:
+                return ChatResponse(
+                    response=f"Direct transfer initiated but encountered an error: {str(e)}",
+                    metadata={
+                        "type": "direct_transfer_error",
+                        "transfer_details": details,
+                        "error": str(e)
+                    }
+                )
+    
+    elif is_kyc_proof_request(user_message):
+        response_text = ai_response or "I'll generate a KYC compliance proof for you. This will create a zero-knowledge proof of your verification status."
+        return ChatResponse(
+            response=response_text,
+            intent=ProofIntent(
+                function="prove_kyc",
+                arguments=["1"],
+                explanation="Manual KYC compliance proof",
+                additional_context={"is_automated_transfer": False}
+            ),
+            metadata={
+                "type": "manual_proof",
+                "proof_id": proof_id,
+                "proof_type": "kyc"
+            }
+        )
+    
+    elif is_ai_content_proof_request(user_message):
+        response_text = ai_response or "I'll generate a proof of AI content authenticity. This will verify that content was generated by an authorized AI system."
+        return ChatResponse(
+            response=response_text,
+            intent=ProofIntent(
+                function="prove_ai_content",
+                arguments=["987654321", "1000"],
+                explanation="AI content authenticity verification",
+                additional_context={"is_automated_transfer": False}
+            ),
+            metadata={
+                "type": "manual_proof",
+                "proof_id": proof_id,
+                "proof_type": "ai_content"
+            }
+        )
+    
+    elif is_location_proof_request(user_message):
+        # Extract location from message or use default
+        location = "New York"
+        lat, lon = 103, 182  # NYC normalized coordinates
+        
+        if "san francisco" in msg_lower or "sf" in msg_lower:
+            location = "San Francisco"
+            lat, lon = 96, 122
+        elif "new york" in msg_lower or "nyc" in msg_lower:
+            location = "New York"
+            lat, lon = 103, 182
+        elif "london" in msg_lower:
+            location = "London"
+            lat, lon = 130, 242
+        elif "tokyo" in msg_lower:
+            location = "Tokyo"
+            lat, lon = 90, 140
+        
+        device_id = 1234
+        packed_input = (lat << 24) | (lon << 16) | device_id
+        
+        response_text = ai_response or f"I'll generate a location proof for {location}. This will create a zero-knowledge proof of device location without revealing exact coordinates."
+        return ChatResponse(
+            response=response_text,
+            intent=ProofIntent(
+                function="prove_location",
+                arguments=[str(packed_input)],
+                explanation=f"Device location proof for {location} - Zone verification",
+                additional_context={
+                    "is_automated_transfer": False,
+                    "location": location,
+                    "zone_type": "city boundary verification"
+                }
+            ),
+            metadata={
+                "type": "manual_proof",
+                "proof_id": proof_id,
+                "proof_type": "location"
+            }
+        )
+    
+    elif ("list" in msg_lower and ("proof" in msg_lower or "verification" in msg_lower)) or "proof history" in msg_lower or "verification history" in msg_lower:
+        list_type = "verifications" if "verification" in msg_lower else "proofs"
+        response_text = ai_response or f"Here are your recent {list_type}. Use the proof IDs to verify or inspect specific proofs."
+        return ChatResponse(
+            response=response_text,
+            intent=ProofIntent(
+                function="list_proofs",
+                arguments=[list_type],
+                explanation=f"List all {list_type}",
+                additional_context={
+                    "list_type": list_type,
+                    "limit": 20  # Add limit for history
+                }
+            ),
+            metadata={
+                "type": "list_request",
+                "list_type": list_type
+            }
+        )
+    
+    elif is_custom_proof_request(user_message)[0]:
+        is_custom, c_code = is_custom_proof_request(user_message)
+        description = "custom computation"
+        wasm_file = "custom_proof"  # Default
+        default_arg = "27"  # Default argument
+        
+        # Detect which example based on the C code
+        if "prime" in c_code.lower():
+            description = "prime number check"
+            wasm_file = "prime_checker"
+            default_arg = "17"
+        elif "collatz" in c_code.lower():
+            description = "Collatz conjecture computation"
+            wasm_file = "collatz"
+            default_arg = "27"
+        elif "digital" in c_code.lower() and "root" in c_code.lower():
+            description = "digital root calculation"
+            wasm_file = "digital_root"
+            default_arg = "12345"
+        
+        response_text = ai_response or f"I'll generate a proof for your {description}. Processing your custom C code..."
+        return ChatResponse(
+            response=response_text,
+            intent=ProofIntent(
+                function="prove_custom",
+                arguments=[default_arg],  # Use numeric argument
+                explanation=f"Custom proof: {description}",
+                additional_context={
+                    "is_automated_transfer": False,
+                    "c_code": c_code,
+                    "proof_type": "custom",
+                    "is_custom": True,
+                    "custom_description": description,
+                    "wasm_file": wasm_file  # Store which WASM to use in metadata
+                }
+            ),
+            metadata={
+                "type": "manual_proof",
+                "proof_id": proof_id,
+                "proof_type": "custom",
+                "description": description,
+                "is_custom": True
+            }
+        )
+    
+    else:
+        # This is a pure natural language query - use OpenAI if available
+        if ai_response:
+            return ChatResponse(
+                response=ai_response,
+                metadata={"type": "conversation"}
+            )
+        else:
+            # Fallback if OpenAI is not available
+            return ChatResponse(
+                response="I can help you with:\n• Generating ZK proofs (KYC, AI content, location)\n• USDC transfers with KYC verification\n• Listing your proofs\n• Custom proofs (Collatz, prime check, digital root)\n\nTry: 'prove KYC compliance' or 'send 0.5 USDC to bob'",
+                metadata={"type": "help"}
+            )
+
+@app.post("/execute_verified_transfer")
+async def execute_verified_transfer(request: Dict[str, Any]):
+    transfer_details = request.get("transfer_details", {})
+    amount = transfer_details.get("amount", "0.01")
+    recipient = transfer_details.get("recipient")
+    blockchain = transfer_details.get("blockchain", "ETH")
+
+    if not recipient:
+        raise HTTPException(status_code=400, detail="Recipient address is missing.")
+
+    try:
+        # Construct the command string
+        command_str = f"send {amount} USDC to {recipient}"
+        if blockchain == "SOL":
+            command_str += " on solana"
+        
+        cmd = ["node", str(CIRCLE_DIR / "executeTransfer.js"), command_str]
+        print(f"DEBUG: Executing command: {' '.join(cmd)}")
+        
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True, timeout=60, env=os.environ.copy(), cwd=str(CIRCLE_DIR))
+        
+        output_lines = result.stdout.strip().split('\n')
+        json_output = None
+        
+        print(f"Circle script output: {result.stdout}")
+        
+        for line in output_lines:
+            if line.strip().startswith('{'):
+                try:
+                    json_output = json.loads(line)
+                    print(f"Parsed Circle response: {json_output}")
+                    break
+                except Exception as e:
+                    print(f"Failed to parse line as JSON: {line}, error: {e}")
+                    continue
+        
+        if json_output:
+            response_data = {
+                "success": True,
+                "blockchain": blockchain,
+                "message": "Transfer successful via Circle SDK.",
+                "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+                "amount": amount,
+                "recipient": recipient
+            }
+            
+            if json_output:
+                response_data.update(json_output)
+                
+            print(f"Returning to Rust: {response_data}")
+            return response_data
+        else:
+            return {
+                "success": True,
+                "message": "Transfer completed successfully.",
+                "amount": amount,
+                "recipient": recipient,
+                "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188"
+            }
+            
+    except subprocess.CalledProcessError as e:
+        raise HTTPException(status_code=500, detail=f"Transfer script failed: {e.stderr}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An internal error occurred: {str(e)}")
+
+
+@app.post("/execute_direct_transfer")
+async def execute_direct_transfer(request: Dict[str, Any]):
+    """Execute a direct USDC transfer without KYC verification"""
+    transfer_details = request.get("transfer_details", {})
+    amount = transfer_details.get("amount", "0.01")
+    recipient = transfer_details.get("recipient")
+    blockchain = transfer_details.get("blockchain", "ETH")
+
+    if not recipient:
+        raise HTTPException(status_code=400, detail="Recipient address is missing.")
+
+    try:
+        command_str = f"send {amount} USDC to {recipient}"
+        if blockchain == "SOL":
+            command_str += " on solana"
+        
+        cmd = ["node", str(CIRCLE_DIR / "executeTransfer.js"), command_str]
+        
+        print(f"DEBUG: Executing direct transfer: {' '.join(cmd)}")
+        
+        result = subprocess.run(
+            cmd, 
+            capture_output=True, 
+            text=True, 
+            check=True, 
+            timeout=60, 
+            env=os.environ.copy(), 
+            cwd=str(CIRCLE_DIR)
+        )
+        
+        output_lines = result.stdout.strip().split('\n')
+        json_output = None
+        
+        for line in output_lines:
+            if line.strip().startswith('{'):
+                try:
+                    json_output = json.loads(line)
+                    break
+                except:
+                    continue
+        
+        response_data = {
+            "success": True,
+            "blockchain": blockchain,
+            "message": "Direct transfer successful.",
+            "transfer_type": "direct",
+            "from": "0x82a26a6d847e7e0961ab432b9a5a209e0db41040" if blockchain == "ETH" else "HsZdbBxZVNzEn4qR9Ebx5XxDSZ136Mu14VlH1nbXGhfG",
+            "amount": amount,
+            "recipient": recipient
+        }
+        
+        if json_output:
+            response_data.update(json_output)
+            
+        return response_data
+        
+    except subprocess.CalledProcessError as e:
+        raise HTTPException(status_code=500, detail=f"Transfer failed: {e.stderr}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def execute_direct_transfer_internal(transfer_details: dict) -> dict:
+    """Internal function to execute direct transfer"""
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "http://localhost:8002/execute_direct_transfer",
+            json={"transfer_details": transfer_details},
+            timeout=30.0
+        )
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            raise Exception(f"Transfer failed: {response.text}")
+
+
+@app.post("/check_transfer_status")
+async def check_transfer_status(request: Dict[str, Any]):
+    """Check the status of a Circle transfer"""
+    transfer_id = request.get("transferId")
+    if not transfer_id:
+        raise HTTPException(status_code=400, detail="Transfer ID is required")
+    
+    try:
+        # Create a temporary script to check status
+        script_path = CIRCLE_DIR / "check_status_temp.js"
+        script_content = f"""
+import CircleUSDCHandler from './circleHandler.js';
+
+const handler = new CircleUSDCHandler();
+await handler.initialize();
+
+const status = await handler.getTransactionStatus('{transfer_id}');
+const txHash = await handler.getTransactionHash('{transfer_id}');
+
+console.log(JSON.stringify({{
+    status: status,
+    transactionHash: txHash
+}}));
+"""
+        
+        with open(script_path, "w") as f:
+            f.write(script_content)
+        
+        # Execute the script
+        cmd = ["node", str(script_path)]
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=10, env=os.environ.copy(), cwd=str(CIRCLE_DIR))
+        
+        # Clean up
+        script_path.unlink(missing_ok=True)
+        
+        if result.returncode == 0:
+            try:
+                # Parse the last line of output (in case there are debug messages)
+                output_lines = result.stdout.strip().split('\n')
+                last_line = output_lines[-1] if output_lines else '{}'
+                data = json.loads(last_line)
+                return data
+            except:
+                return {"status": "unknown", "transactionHash": None}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to check transfer status")
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
-    import uvicorn
-    print("🚀 Starting FIXED Integrated zkEngine Service on port 8002...")
-    print("Features enabled:")
-    print("✓ Natural language processing with GPT-4o-mini")
-    print("✓ Circle KYC compliance proofs")
-    print("✓ AI content authenticity proofs")
-    print("✓ DePIN location proofs")
-    print("✓ C code transformation to zkEngine format")
-    print("✓ WebAssembly TEXT (WAT) compilation with REAL ALGORITHMS!")
-    print("✓ Prime checking, Collatz sequences, Digital root - all with actual logic")
-    print("✓ Support for Fibonacci, Factorial, and GCD")
-    print("✓ Multilingual support")
-    print("✓ Educational content generation")
-    print("\nzkEngine is proven to be a proper zkVM! 🎉")
-    uvicorn.run(app, host="0.0.0.0", port=8002)
+    print("✅ Checking main execution block...")
+    
+    # Check if OpenAI API key is set
+    if not openai_available:
+        print("\n⚠️ OpenAI is NOT available!")
+        print("   To enable natural language conversations:")
+        print("   1. Set your API key: export OPENAI_API_KEY='sk-...'")
+        print("   2. Restart this service")
+    else:
+        print("\n✅ OpenAI is connected and ready!")
+        print("   You can now have natural conversations and use AI-enhanced responses.")
+    
+    try:
+        uvicorn.run(app, host="0.0.0.0", port=8002)
+    except NameError:
+        print("\n❌ FATAL ERROR: 'uvicorn' is not defined.")
+        print("   It seems the uvicorn library is not installed correctly.")
+        print("   Please run: pip install 'uvicorn[standard]'")

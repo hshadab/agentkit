@@ -3,1449 +3,1770 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Novanet - ZKP Agent Kit</title>
+    <title>Novanet - Verifiable Agent Kit</title>
     
-    <!-- Prism.js for syntax highlighting -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* --- COMPLETE AND CORRECTED CSS --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #000000; color: #ffffff; height: 100vh; display: flex; overflow: hidden; }
+        .sidebar { width: 280px; background: #111111; padding: 24px; overflow-y: auto; border-right: 1px solid rgba(107, 124, 255, 0.3); }
+        .sidebar h3 { background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; text-transform: uppercase; font-size: 13px; letter-spacing: 0.1em; font-weight: 700; }
+        .info-box { font-size: 11px; color: #a0a0a0; margin-bottom: 24px; padding: 12px; background: rgba(107, 124, 255, 0.08); border: 1px solid rgba(107, 124, 255, 0.2); border-radius: 8px; line-height: 1.6; }
+        .example-category { margin-bottom: 28px; }
+        .example-category h4 { color: #8B9AFF; font-size: 11px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
+        .example-item { word-wrap: break-word; overflow-wrap: break-word; white-space: normal; width: 100%; box-sizing: border-box; background: rgba(107, 124, 255, 0.05); border: 1px solid rgba(107, 124, 255, 0.15); padding: 14px 18px; margin-bottom: 8px; border-radius: 10px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-size: 13px; color: #ffffff; }
+        .example-item:hover { background: rgba(107, 124, 255, 0.15); border-color: rgba(107, 124, 255, 0.4); transform: translateX(4px); }
+        .main-container { flex: 1; display: flex; flex-direction: column; background: #000000; }
+        .header { padding: 20px 32px; background: rgba(17, 17, 17, 0.8); border-bottom: 1px solid rgba(107, 124, 255, 0.2); display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(10px); }
+        .header h1 { font-size: 26px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+        .header h1 span { background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 24px; font-size: 13px; }
+        .status.connected { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status.disconnected { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .status.connected .status-dot { background-color: #10b981; animation: pulse 2s infinite; }
+        .status.disconnected .status-dot { background-color: #ef4444; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .messages-container { flex: 1; overflow-y: auto; padding: 32px; }
+        #messages { max-width: 1000px; margin: 0 auto; }
+        .message { margin: 24px 0; display: flex; align-items: flex-start; gap: 12px; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .message.assistant { flex-direction: row-reverse; }
+        .message-content { max-width: 70%; padding: 16px 24px; border-radius: 20px; line-height: 1.6; font-size: 15px; }
+        .message.user .message-content { background: #1e1e1e; border: 1px solid rgba(107, 124, 255, 0.2); border-bottom-left-radius: 4px; white-space: pre-wrap; }
+        .message.assistant .message-content { background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%); color: white; border-bottom-right-radius: 4px; }
         
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #000000;
-            color: #ffffff;
-            height: 100vh;
-            display: flex;
-            overflow: hidden;
-        }
-        
-        /* Left sidebar */
-        .sidebar {
-            width: 320px;
-            background: #111111;
-            padding: 24px;
-            overflow-y: auto;
-            border-right: 1px solid rgba(107, 124, 255, 0.3);
-            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.8);
-        }
-        
-        .sidebar h3 {
-            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            font-size: 14px;
-            letter-spacing: 0.1em;
-            font-weight: 700;
-        }
-        
-        .info-box {
-            font-size: 11px;
-            color: #a0a0a0;
-            margin-bottom: 24px;
-            padding: 12px;
-            background: rgba(107, 124, 255, 0.08);
-            border: 1px solid rgba(107, 124, 255, 0.2);
-            border-radius: 8px;
-            line-height: 1.6;
-        }
-        
-        .example-category {
-            margin-bottom: 28px;
-        }
-        
-        .example-category h4 {
-            color: #8B9AFF;
-            font-size: 11px;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            font-weight: 600;
-        }
-        
-        .example-item {
-            background: rgba(107, 124, 255, 0.05);
-            border: 1px solid rgba(107, 124, 255, 0.15);
-            padding: 14px 18px;
-            margin-bottom: 8px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 14px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .example-item:hover {
-            background: rgba(107, 124, 255, 0.15);
-            border-color: rgba(107, 124, 255, 0.4);
-            transform: translateX(4px);
-            box-shadow: 0 0 20px rgba(107, 124, 255, 0.3);
-        }
-        
-        .example-item strong {
-            color: #8B9AFF;
-            font-weight: 600;
-        }
-        
-        /* Main container */
-        .main-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #000000;
-        }
-        
-        /* Header */
-        .header {
-            padding: 20px 32px;
-            background: rgba(17, 17, 17, 0.8);
-            border-bottom: 1px solid rgba(107, 124, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            backdrop-filter: blur(10px);
-        }
-        
-        .header h1 {
-            font-size: 26px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .header h1 span {
-            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .status {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            border-radius: 24px;
-            font-size: 13px;
-            font-weight: 500;
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
-        }
-        
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background-color: #10b981;
-            border-radius: 50%;
-            box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(0.9); }
-        }
-        
-        /* Messages area */
-        .messages-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 32px;
-            background: #000000;
-        }
-        
-        #messages {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-        
-        /* Message styles */
-        .message {
-            margin: 24px 0;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        @keyframes fadeIn {
-            from { 
-                opacity: 0; 
-                transform: translateY(20px) scale(0.95); 
-            }
-            to { 
-                opacity: 1; 
-                transform: translateY(0) scale(1); 
-            }
-        }
-        
-        .message.user {
-            flex-direction: row-reverse;
-        }
-        
-        .message-content {
-            max-width: 70%;
-            padding: 16px 24px;
-            border-radius: 20px;
-            line-height: 1.6;
-            font-size: 15px;
-        }
-        
-        .message.user .message-content {
-            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
-            color: white;
-            border-bottom-right-radius: 4px;
-            box-shadow: 0 8px 24px rgba(107, 124, 255, 0.4);
-        }
-        
-        .message.assistant .message-content {
-            background: rgba(17, 17, 17, 0.8);
-            color: #ffffff;
-            border: 1px solid rgba(107, 124, 255, 0.2);
-            border-bottom-left-radius: 4px;
-            backdrop-filter: blur(10px);
-            white-space: pre-wrap;
-        }
-        
-        /* Thinking animation */
-        .thinking-animation {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin: 20px 0;
-            padding: 16px 24px;
-            background: rgba(17, 17, 17, 0.8);
-            border: 1px solid rgba(107, 124, 255, 0.2);
-            border-radius: 20px;
-            border-bottom-left-radius: 4px;
-            backdrop-filter: blur(10px);
-            max-width: 70%;
-        }
-        
-        .thinking-dots {
-            display: flex;
-            gap: 3px;
-        }
-        
-        .thinking-dots .dot {
-            width: 6px;
-            height: 6px;
-            background-color: #6B7CFF;
-            border-radius: 50%;
-            animation: thinkingBounce 1.2s ease-in-out infinite;
-        }
-        
-        .thinking-dots .dot:nth-child(1) { animation-delay: 0s; }
-        .thinking-dots .dot:nth-child(2) { animation-delay: 0.2s; }
-        .thinking-dots .dot:nth-child(3) { animation-delay: 0.4s; }
-        
-        @keyframes thinkingBounce {
-            0%, 60%, 100% {
-                transform: translateY(0);
-                opacity: 0.4;
-            }
-            30% {
-                transform: translateY(-8px);
-                opacity: 1;
-            }
-        }
-        
-        /* Loading animation */
-        .loading-card {
-            background: linear-gradient(135deg, rgba(17, 17, 17, 0.9) 0%, rgba(0, 0, 0, 0.9) 100%);
-            border: 1px solid rgba(107, 124, 255, 0.3);
-            border-radius: 16px;
-            padding: 24px;
-            margin: 20px 0;
-            max-width: 800px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            animation: cardSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .loading-content {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .loading-spinner {
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
-            border-radius: 12px;
-            animation: spin 2s linear infinite;
-        }
-
-        .loading-text {
-            font-size: 16px;
-            color: #6B7CFF;
-            font-weight: 600;
-        }
-
-        .loading-ellipses {
-            display: inline-block;
-            width: 30px;
-            text-align: left;
-        }
-
-        .loading-ellipses::after {
+        /* Animated ellipsis for waiting state */
+        .message.waiting .message-content::after {
             content: '';
-            animation: ellipses 1.5s infinite;
+            animation: ellipsis 1.5s infinite;
         }
-
-        @keyframes ellipses {
+        @keyframes ellipsis {
             0% { content: ''; }
             25% { content: '.'; }
             50% { content: '..'; }
             75% { content: '...'; }
-            100% { content: ''; }
-        }
-
-        /* Code display modal */
-        .code-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            padding: 40px;
-        }
-
-        .code-modal-content {
-            background: linear-gradient(135deg, #111111 0%, #000000 100%);
-            border: 2px solid rgba(107, 124, 255, 0.4);
-            border-radius: 16px;
-            padding: 30px;
-            max-width: 900px;
-            max-height: 80vh;
-            width: 100%;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .code-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .code-modal-title {
-            font-size: 20px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .code-display {
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(107, 124, 255, 0.2);
-            border-radius: 12px;
-            padding: 20px;
-            overflow-y: auto;
-            flex: 1;
-            font-family: 'SF Mono', 'Monaco', monospace;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        .code-display pre {
-            margin: 0;
-            color: #ffffff;
-        }
-
-        .code-info {
-            margin-bottom: 15px;
-            color: #a0a0a0;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .code-info strong {
-            color: #6B7CFF;
         }
         
-        /* Proof Card */
-        .proof-card {
-            background: linear-gradient(135deg, rgba(17, 17, 17, 0.9) 0%, rgba(0, 0, 0, 0.9) 100%);
-            border: 1px solid rgba(107, 124, 255, 0.3);
-            border-radius: 16px;
-            padding: 24px;
-            margin: 20px 0;
-            max-width: 800px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-            animation: cardSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            transition: all 0.3s ease;
+        .proof-card, .transaction-card, .verification-card { margin-left: auto; margin-right: 0; background: rgba(30, 30, 30, 0.9); border: 1px solid rgba(107, 124, 255, 0.3); border-radius: 16px; padding: 24px; margin: 20px 0; max-width: 800px; }
+        .message.user .proof-card, .message.user .transaction-card, .message.user .verification-card { margin-right: auto; margin-left: 0; }
+        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .card-title { font-size: 18px; font-weight: 700; color: #c4b5fd; }
+        .card-actions { display: flex; gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(107, 124, 255, 0.1); flex-wrap: wrap; }
+        .action-btn { background: rgba(107, 124, 255, 0.15); color: #a78bfa; border: 1px solid rgba(107, 124, 255, 0.2); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+        .action-btn:hover { background: rgba(107, 124, 255, 0.25); border-color: #8B9AFF; color: #c4b5fd; transform: translateY(-1px); }
+        .input-container { padding: 24px 32px; background: rgba(17, 17, 17, 0.9); border-top: 1px solid rgba(107, 124, 255, 0.2); }
+        .input-wrapper { max-width: 1000px; margin: 0 auto; display: flex; gap: 16px; align-items: center; }
+        #user-input { flex: 1; padding: 18px 28px; background: rgba(0, 0, 0, 0.6); border: 2px solid rgba(107, 124, 255, 0.3); border-radius: 30px; color: #ffffff; font-size: 16px; outline: none; }
+        #user-input:focus { border-color: #8B9AFF; }
+        #send-button { padding: 18px 36px; background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%); color: white; border: none; border-radius: 30px; font-size: 16px; font-weight: 700; cursor: pointer; }
+        #upload-button, #paste-button { padding: 18px 20px; background: rgba(107, 124, 255, 0.2); color: #a78bfa; border: 2px solid rgba(107, 124, 255, 0.3); border-radius: 30px; font-size: 20px; cursor: pointer; }
+        .paste-container { display: none; flex-direction: column; position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 800px; background: #111; border: 2px solid #6B7CFF; border-radius: 20px; padding: 20px; z-index: 1000; box-shadow: 0 -5px 30px rgba(0,0,0,0.5); }
+        .paste-header { display:flex; justify-content: space-between; align-items:center; margin-bottom: 15px;}
+        .paste-header h3 { color: #8B9AFF; margin:0;}
+        .close-btn { background:none; border:none; color:#666; font-size:24px; cursor:pointer;}
+        .code-editor-wrapper { position: relative; height: 300px; margin-bottom: 15px; }
+        #code-paste-wrapper { width: 100%; height: 100%; position: relative; background: #0d0d0d; border: 1px solid #444; border-radius: 8px; overflow: hidden; }
+        #code-paste { width: 100%; height: 100%; background: transparent; color: white; border: none; padding: 15px 15px 15px 50px; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 13px; resize: none; outline: none; line-height: 1.5; overflow-y: auto; }
+        .line-numbers { position: absolute; left: 0; top: 0; width: 40px; height: 100%; background: #1a1a1a; border-right: 1px solid #333; padding: 15px 5px; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 13px; line-height: 1.5; color: #666; text-align: right; user-select: none; overflow: hidden; }
+        .paste-actions { display:flex; justify-content: flex-end; gap: 10px;}
+        .paste-actions button { padding: 8px 16px; border-radius: 8px; border: 1px solid #6B7CFF; background: transparent; color: #6B7CFF; cursor: pointer; }
+        .paste-actions button.primary { background: #6B7CFF; color: white;}
+        
+        /* Progress Steps for Automated Flow */
+        .progress-steps { display: flex; gap: 20px; margin-top: 16px; }
+        .step { padding: 8px 16px; background: rgba(107, 124, 255, 0.1); border: 1px solid rgba(107, 124, 255, 0.2); border-radius: 20px; font-size: 13px; color: #666; transition: all 0.3s ease; }
+        .step.active { background: rgba(107, 124, 255, 0.2); border-color: #6B7CFF; color: #8B9AFF; animation: pulse 2s infinite; }
+        .step.complete { background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: #10b981; }
+        
+        /* Status Badge */
+        .status-badge { padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+        .status-badge.generating { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .status-badge.complete { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .status-badge.error { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .status-badge.verifying { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .status-badge.verified { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        
+        /* Status Indicator for Cards */
+        .status-indicator { display: flex; align-items: center; gap: 8px; }
+        .card-content { margin-top: 16px; }
+        .status-message { color: #a0a0a0; font-size: 13px; line-height: 1.6; }
+        
+        /* Proof Metrics */
+        .proof-metrics { display: flex; gap: 24px; margin-top: 16px; padding: 12px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; }
+        .metric { display: flex; align-items: center; gap: 8px; }
+        .metric-label { color: #666; font-size: 13px; }
+        .metric-value { color: #8B9AFF; font-weight: 600; }
+        
+        /* Inline code display */
+        .inline-code-display { margin-top: 20px; }
+        
+        /* History Table Styles */
+        .history-table-container { margin-top: 20px; background: rgba(30, 30, 30, 0.9); border: 1px solid rgba(107, 124, 255, 0.3); border-radius: 16px; padding: 24px; overflow-x: auto; }
+        .history-table { width: 100%; border-collapse: collapse; }
+        .history-table th { background: rgba(107, 124, 255, 0.1); color: #8B9AFF; padding: 12px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid rgba(107, 124, 255, 0.3); }
+        .history-table td { padding: 12px; border-bottom: 1px solid rgba(107, 124, 255, 0.1); color: #a0a0a0; font-size: 13px; }
+        .history-table tr:hover { background: rgba(107, 124, 255, 0.05); }
+        .history-table .proof-id { color: #8B9AFF; font-family: monospace; font-size: 13px; }
+        .history-table .function-badge { display: inline-block; padding: 3px 8px; background: rgba(107, 124, 255, 0.2); color: #a78bfa; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .history-table .timestamp { color: #666; font-size: 13px; }
+        .history-table .action-link { color: #8B9AFF; text-decoration: none; cursor: pointer; font-weight: 500; }
+        .history-table .action-link:hover { text-decoration: underline; }
+        
+        /* Update history table styles for better column widths */
+        .history-table th:first-child,
+        .history-table td:first-child {
+            width: 20%; /* Function column */
         }
         
-        .proof-card:hover {
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.9), 0 0 40px rgba(107, 124, 255, 0.1);
-            transform: translateY(-2px);
+        .history-table th:nth-child(2),
+        .history-table td:nth-child(2) {
+            width: 45%; /* Proof ID column */
         }
         
-        @keyframes cardSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(30px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+        .history-table th:nth-child(3),
+        .history-table td:nth-child(3) {
+            width: 25%; /* Timestamp column */
         }
         
-        .proof-card.running {
-            border-color: rgba(107, 124, 255, 0.5);
-            background: linear-gradient(135deg, rgba(17, 17, 17, 0.95) 0%, rgba(107, 124, 255, 0.05) 100%);
+        .history-table th:nth-child(4),
+        .history-table td:nth-child(4) {
+            width: 10%; /* Actions column (only in Proof History) */
+            text-align: center;
         }
         
-        .proof-card.success {
-            border-color: rgba(16, 185, 129, 0.5);
-            background: linear-gradient(135deg, rgba(17, 17, 17, 0.95) 0%, rgba(16, 185, 129, 0.05) 100%);
-        }
-        
-        .proof-card.failed {
-            border-color: rgba(239, 68, 68, 0.5);
-            background: linear-gradient(135deg, rgba(17, 17, 17, 0.95) 0%, rgba(239, 68, 68, 0.05) 100%);
-        }
-        
-        .card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-        
-        .card-title {
-            font-size: 18px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .card-title-text {
-            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .card-icon {
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
-            border-radius: 12px;
-            color: white;
-            font-size: 18px;
-            box-shadow: 0 4px 12px rgba(107, 124, 255, 0.4);
-        }
-        
-        .card-icon.spinning {
-            animation: spin 2s linear infinite;
-        }
-        
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        .card-badge {
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
+        /* Ensure function badges are properly styled */
+        .history-table .function-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(107, 124, 255, 0.2);
+            color: #a78bfa;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            letter-spacing: 0.03em;
         }
         
-        .badge-success {
-            background: rgba(16, 185, 129, 0.15);
-            color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
-        }
-        
-        .badge-processing {
-            background: rgba(251, 191, 36, 0.15);
-            color: #fbbf24;
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            animation: pulse 2s infinite;
-            box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
-        }
-        
-        .badge-failed {
-            background: rgba(239, 68, 68, 0.15);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
-        }
-        
-        .metrics-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-        
-        .metric-item-inline {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .metric-label-inline {
-            color: #6B7CFF;
-            font-size: 13px;
+        /* Style for verified status in Actions column */
+        .history-table td:last-child {
             font-weight: 500;
         }
         
-        .metric-value-inline {
-            color: #ffffff;
-            font-size: 16px;
-            font-weight: 600;
-            font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
-        }
+        /* Debug console */
+        .debug-console { position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.9); border: 1px solid #333; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 11px; color: #0f0; max-width: 300px; z-index: 10000; }
+        .debug-console.minimized { height: 30px; overflow: hidden; }
+        .debug-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+        .debug-messages { max-height: 200px; overflow-y: auto; margin-top: 5px; }
+        .debug-console.minimized .debug-messages { display: none; }
         
-        .card-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid rgba(107, 124, 255, 0.2);
-        }
+        /* Syntax highlighted code in paste area */
+        pre[class*="language-"] { margin: 0; background: transparent; }
+        .code-editor-wrapper pre { padding: 15px 15px 15px 50px !important; }
+        .code-editor-wrapper .line-numbers-rows { left: 0 !important; top: 15px !important; }
         
-        .action-btn {
-            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
         
-        .action-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(107, 124, 255, 0.4);
-        }
-        
-        .action-btn.secondary {
-            background: rgba(107, 124, 255, 0.15);
-            border: 1px solid rgba(107, 124, 255, 0.3);
+        .demo-notice h2 {
             color: #8B9AFF;
+            margin-bottom: 20px;
+            font-size: 24px;
         }
         
-        /* Data Tables */
-        .data-table {
-            background: rgba(17, 17, 17, 0.9);
-            border: 1px solid rgba(107, 124, 255, 0.3);
-            border-radius: 16px;
-            padding: 24px;
-            margin: 20px 0;
-            max-width: 900px;
-            overflow-x: auto;
-            backdrop-filter: blur(10px);
-            animation: cardSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .table-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        .demo-notice p {
+            color: #a0a0a0;
+            line-height: 1.6;
             margin-bottom: 20px;
         }
         
-        .table-title {
-            font-size: 18px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .table-count {
-            background: rgba(107, 124, 255, 0.15);
-            color: #6B7CFF;
-            padding: 4px 12px;
-            border-radius: 16px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-        
-        th {
-            background: rgba(107, 124, 255, 0.1);
-            color: #6B7CFF;
-            padding: 12px 16px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        
-        td {
-            padding: 12px 16px;
-            border-bottom: 1px solid rgba(107, 124, 255, 0.1);
-            color: #ffffff;
-        }
-        
-        tr:hover {
-            background: rgba(107, 124, 255, 0.05);
-        }
-        
-        .clickable {
-            color: #8B9AFF;
-            cursor: pointer;
-            font-family: 'SF Mono', monospace;
-            font-weight: 600;
-        }
-        
-        .clickable:hover {
-            color: #6B7CFF;
-            text-decoration: underline;
-        }
-        
-        .status-success {
-            color: #10b981;
-            font-weight: 600;
-        }
-        
-        .status-failed {
-            color: #ef4444;
-            font-weight: 600;
-        }
-        
-        .status-running {
-            color: #fbbf24;
-            font-weight: 600;
-        }
-        
-        /* Input area */
-        .input-container {
-            padding: 24px 32px;
-            background: rgba(17, 17, 17, 0.9);
-            border-top: 1px solid rgba(107, 124, 255, 0.2);
-            backdrop-filter: blur(10px);
-        }
-        
-        .input-wrapper {
-            max-width: 1000px;
-            margin: 0 auto;
-            display: flex;
-            gap: 16px;
-            align-items: center;
-        }
-        
-        #user-input {
-            flex: 1;
-            padding: 18px 28px;
-            background: rgba(0, 0, 0, 0.6);
-            border: 2px solid rgba(107, 124, 255, 0.3);
-            border-radius: 30px;
-            color: #ffffff;
-            font-size: 16px;
-            outline: none;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(10px);
-        }
-        
-        #user-input::placeholder {
-            color: #666666;
-        }
-        
-        #user-input:focus {
-            border-color: rgba(107, 124, 255, 0.6);
-            box-shadow: 0 0 0 4px rgba(107, 124, 255, 0.15);
-            background: rgba(0, 0, 0, 0.8);
-        }
-        
-        #send-button {
-            padding: 18px 36px;
+        .demo-notice button {
             background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
             color: white;
             border: none;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 8px 24px rgba(107, 124, 255, 0.4), 0 0 40px rgba(107, 124, 255, 0.2);
-        }
-        
-        #send-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 32px rgba(107, 124, 255, 0.5), 0 0 60px rgba(107, 124, 255, 0.3);
-        }
-        
-        #upload-button {
-            padding: 18px 20px;
-            background: rgba(107, 124, 255, 0.2);
-            color: #6B7CFF;
-            border: 2px solid rgba(107, 124, 255, 0.3);
-            border-radius: 30px;
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-right: 10px;
-        }
-        
-        #upload-button:hover {
-            background: rgba(107, 124, 255, 0.3);
-            transform: translateY(-1px);
-        }
-        
-        /* Paste Button */
-        #paste-button {
-            padding: 18px 20px;
-            background: rgba(107, 124, 255, 0.2);
-            color: #6B7CFF;
-            border: 2px solid rgba(107, 124, 255, 0.3);
-            border-radius: 30px;
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-right: 10px;
-        }
-        
-        #paste-button:hover {
-            background: rgba(107, 124, 255, 0.3);
-            transform: translateY(-1px);
-        }
-        
-        /* Paste Container */
-        .paste-container {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 800px;
-            background: linear-gradient(135deg, #111111 0%, #000000 100%);
-            border: 2px solid rgba(107, 124, 255, 0.4);
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.9);
-            z-index: 1000;
-        }
-        
-        .paste-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .paste-header h3 {
-            margin: 0;
-            color: #6B7CFF;
-        }
-        
-        .close-btn {
-            background: none;
-            border: none;
-            color: #666666;
-            font-size: 24px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .close-btn:hover {
-            color: #6B7CFF;
-        }
-        
-        /* Syntax Highlighting */
-        .code-editor-wrapper {
-            position: relative;
-            display: flex;
-            flex-direction: row;  /* Ensure horizontal layout */
-            background: #000000;
-            border: 1px solid rgba(107, 124, 255, 0.3);
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 15px;
-            font-family: 'SF Mono', 'Monaco', monospace;
-            font-size: 13px;
-            line-height: 1.5;
-            height: 400px;
-        }
-        
-        .line-numbers {
-            background: #0a0a0a;
-            color: #4a5568;
-            padding: 15px 10px;
-            text-align: right;
-            user-select: none;
-            border-right: 1px solid rgba(107, 124, 255, 0.2);
-            min-width: 50px;
-            overflow-y: auto;
-            overflow-x: hidden;
-            white-space: pre-line;
-            flex-shrink: 0;
-        }
-        
-        .code-editor-container {
-            position: relative;
-            flex: 1;
-            overflow: hidden;
-        }
-        
-        #code-paste {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            padding: 15px;
-            background: transparent;
-            border: none;
-            color: transparent;
-            caret-color: #6B7CFF;
-            resize: none;
-            outline: none;
-            font-family: inherit;
-            font-size: inherit;
-            line-height: inherit;
-            white-space: pre;
-            overflow: auto;
-            z-index: 2;
-        }
-        
-        .code-highlight {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            padding: 15px;
-            margin: 0;
-            pointer-events: none;
-            overflow: auto;
-            white-space: pre;
-            z-index: 1;
-            color: #ffffff;
-        }
-        
-        .code-highlight code {
-            background: none !important;
-            padding: 0 !important;
-            font-family: inherit;
-            font-size: inherit;
-            line-height: inherit;
-        }
-        
-        /* Paste Actions */
-        .paste-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-        
-        .paste-actions button {
-            padding: 10px 24px;
-            background: rgba(107, 124, 255, 0.2);
-            color: #6B7CFF;
-            border: 1px solid rgba(107, 124, 255, 0.3);
+            padding: 12px 24px;
             border-radius: 8px;
+            font-size: 16px;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.2s;
         }
-        
-        .paste-actions button.primary {
-            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
-            color: white;
-            border: none;
-        }
-        
-        .paste-actions button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(107, 124, 255, 0.4);
-        }
-/* Paste Dialog Styles */
-.paste-dialog {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.paste-content {
-    background: #111111;
-    border: 2px solid rgba(107, 124, 255, 0.3);
-    border-radius: 16px;
-    padding: 30px;
-    width: 600px;
-    max-height: 80vh;
-    overflow-y: auto;
-}
-
-.paste-examples {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.paste-examples button {
-    padding: 8px 16px;
-    background: rgba(107, 124, 255, 0.2);
-    color: #6B7CFF;
-    border: 1px solid rgba(107, 124, 255, 0.3);
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.paste-examples button:hover {
-    background: rgba(107, 124, 255, 0.3);
-}
-
-#paste-code {
-    width: 100%;
-    height: 300px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(107, 124, 255, 0.3);
-    border-radius: 8px;
-    color: #ffffff;
-    font-family: "Monaco", "Menlo", monospace;
-    font-size: 14px;
-    padding: 15px;
-    margin-bottom: 20px;
-}
-
-.argument-section {
-    margin-bottom: 20px;
-}
-
-.argument-section h4 {
-    color: #6B7CFF;
-    margin-bottom: 10px;
-}
-
-#paste-args {
-    width: 100%;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(107, 124, 255, 0.3);
-    border-radius: 8px;
-    color: #ffffff;
-    font-size: 16px;
-}
-
-.arg-hints {
-    margin-top: 8px;
-    color: #a0a0a0;
-}
-
-.paste-options {
-    margin-bottom: 20px;
-}
-
-.paste-options label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #a0a0a0;
-}
-
-.paste-buttons {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-}
-
-.paste-buttons button {
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-.paste-buttons button:first-child {
-    background: rgba(107, 124, 255, 0.2);
-    color: #6B7CFF;
-    border: 2px solid rgba(107, 124, 255, 0.3);
-}
-
-.paste-buttons button:first-child:hover {
-    background: rgba(107, 124, 255, 0.3);
-}
-
-.paste-buttons button:last-child {
-    background: rgba(239, 68, 68, 0.2);
-    color: #f87171;
-    border: 2px solid rgba(239, 68, 68, 0.3);
-}
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <h3>✨ Novanet ZKP Agent Kit</h3>
-        <div class="info-box">
-            Generate real cryptographic proofs for three key use cases: Circle KYC compliance verification, AI content authenticity, and DePIN location verification. All metrics shown are actual values from proof generation - no simulations.
-        </div>
+        <h3>SAMPLE PROMPTS</h3>
         
         <div class="example-category">
-            <h4>🌐 Generate Zero-Knowledge Proofs</h4>
-            <div class="example-item" data-example="prove kyc compliance">
-                <strong>Prove KYC</strong> - Generate Circle KYC compliance proof
-            </div>
-            <div class="example-item" data-example="prove ai content authenticity">
-                <strong>Prove AI Content</strong> - Generate AI authenticity proof
-            </div>
-            <div class="example-item" data-example="prove device location in San Francisco">
-                <strong>Prove Location</strong> - Generate location proof (SF, NYC, London)
-            </div>
+            <div class="example-item" data-example="Prove AI content authenticity">Prove AI content authenticity</div>
+            <div class="example-item" data-example="Prove location: NYC (40.7°, -74.0°)">Prove location: NYC (40.7°, -74.0°)</div>
         </div>
-        
+
         <div class="example-category">
-            <h4>📊 Proof Management</h4>
-            <div class="example-item" data-example="list all proofs">
-                <strong>📋 View All Proofs</strong> - Show proof history
-            </div>
-            <div class="example-item" data-example="list verifications">
-                <strong>✅ View Verifications</strong> - Show verification history
-            </div>
-            <div class="example-item" data-example="verify">
-                <strong>🔍 Verify</strong> - Verify last proof
-            </div>
-            <div class="example-item" data-example="help">
-                <strong>❓ Help</strong> - Show commands
-            </div>
+            <div class="example-item" data-example="Send 0.1 USDC to Alice on Ethereum if KYC compliant">Send 0.1 USDC to Alice on Ethereum if KYC compliant</div>
+            <div class="example-item" data-example="Send 0.1 USDC to Alice on Solana if KYC compliant">Send 0.1 USDC to Alice on Solana if KYC compliant</div>
+        </div>
+
+        <div class="example-category">
+            <h4>Proof Management</h4>
+            <div class="example-item" data-example="Proof History">Proof History</div>
+            <div class="example-item" data-example="Verification History">Verification History</div>
         </div>
     </div>
     
     <div class="main-container">
         <div class="header">
             <h1 style="display: flex; align-items: center; gap: 12px;">
-                <img src="https://cdn.prod.website-files.com/65d52b07d5bc41614daa723f/665df12739c532f45b665fe7_logo-novanet.svg" 
-                     alt="Novanet" 
-                     style="height: 32px; width: auto;">
-                <span>ZKP Agent Kit</span>
+                <img src="https://cdn.prod.website-files.com/65d52b07d5bc41614daa723f/665df12739c532f45b665fe7_logo-novanet.svg" alt="Novanet" style="height: 32px;">
+                <span>Verifiable Agent Kit</span>
             </h1>
-            <div class="status">
-                <div class="status-dot" id="status-dot"></div>
+            <div class="status" id="status-indicator">
+                <div class="status-dot"></div>
                 <span id="connection-status">Connecting...</span>
             </div>
         </div>
         
-        <div class="messages-container">
-            <div id="messages"></div>
-        </div>
+        <div class="messages-container"><div id="messages"></div></div>
         
         <div class="input-container">
             <div class="input-wrapper">
                 <input type="file" id="file-upload" accept=".c" style="display: none;" onchange="handleFileUpload(event)">
-                <button id="upload-button" onclick="document.getElementById('file-upload').click()" title="Upload C file">
-                    📤
-                </button>
-                <button id="paste-button" onclick="togglePasteArea()" title="Paste C code">
-                    📋
-                </button>
+                <button id="upload-button" onclick="document.getElementById('file-upload').click()" title="Upload C file">📤</button>
+                <button id="paste-button" onclick="togglePasteArea()" title="Paste C code">📋</button>
                 <input type="text" id="user-input" placeholder="Ask me to prove a computation..." autofocus>
                 <button id="send-button">Send</button>
             </div>
         </div>
     </div>
-    
-    <!-- Paste Container -->
-    <div id="paste-area" style="display: none;" class="paste-container">
+
+    <div id="paste-area" class="paste-container">
         <div class="paste-header">
-            <h3>📋 Paste C Code</h3>
+            <h3>Paste C Code</h3>
             <button class="close-btn" onclick="togglePasteArea()">×</button>
         </div>
-        
         <div class="code-editor-wrapper">
-            <div class="line-numbers" id="line-numbers">1</div>
-            <div class="code-editor-container">
-                <textarea id="code-paste" 
-                    placeholder="// Paste your C code here or try an example below"
-                    spellcheck="false"
-                    autocomplete="off"
-                    autocorrect="off"
-                    autocapitalize="off"></textarea>
-                <pre class="code-highlight" id="code-highlight"><code class="language-c"></code></pre>
+            <div id="code-paste-wrapper">
+                <div class="line-numbers" id="line-numbers">1</div>
+                <textarea id="code-paste" placeholder="// Your C code with a main() function..." oninput="updateLineNumbers()"></textarea>
             </div>
         </div>
-        
-        <div style="margin-bottom: 15px;">
-            <span style="color: #a0a0a0; font-size: 13px;">Try an example:</span>
-            <button onclick="loadPasteExample('simple')" style="margin: 0 5px; padding: 6px 16px; background: rgba(107, 124, 255, 0.1); border: 1px solid rgba(107, 124, 255, 0.2); color: #6B7CFF; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500;">🔢 Prime Check</button>
-            <button onclick="loadPasteExample('range')" style="margin: 0 5px; padding: 6px 16px; background: rgba(107, 124, 255, 0.1); border: 1px solid rgba(107, 124, 255, 0.2); color: #6B7CFF; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500;">🔄 Collatz Steps</button>
-            <button onclick="loadPasteExample('hash')" style="margin: 0 5px; padding: 6px 16px; background: rgba(107, 124, 255, 0.1); border: 1px solid rgba(107, 124, 255, 0.2); color: #6B7CFF; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500;">➕ Digital Root</button>
+        <div style="margin-bottom:15px; font-size:13px;">
+            <span style="color: #a0a0a0;">Examples:</span>
+            <button class="action-btn" onclick="loadPasteExample('simple')">Prime Check</button>
+            <button class="action-btn" onclick="loadPasteExample('range')">Collatz</button>
+            <button class="action-btn" onclick="loadPasteExample('hash')">Digital Root</button>
         </div>
-        
         <div class="paste-actions">
             <button onclick="togglePasteArea()">Cancel</button>
-            <button class="primary" onclick="processCodePaste()">Transform & Compile</button>
+            <button class="primary" onclick="processCodePaste()">Prepare Code</button>
         </div>
     </div>
     
-    <!-- Load Prism.js -->
+    <div id="debug-console" class="debug-console" style="display:none;">
+        <div class="debug-header" onclick="toggleDebugMinimize()">
+            <div style="color:#ff0;">DEBUG CONSOLE</div>
+            <div id="debug-toggle" style="color:#0f0;">▼</div>
+        </div>
+        <div id="debug-messages" class="debug-messages"></div>
+    </div>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
-    
-    <!-- Main JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-wasm.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+
     <script>
-        let lastPastedCode = "";
-        // Global state
+        // --- DEBUGGING ENABLED VERSION ---
+
         let ws = null;
-        let proofStates = {};
-        let waitingForResponse = false;
-        let thinkingAnimation = null;
+        const proofStates = {};
+        const activeCards = {};
+        let debugMode = true; // Enable debug mode
+        let debugMinimized = false;
+        const verificationTimes = {}; // Store verification start times
+        let waitingMessageId = null; // Track waiting message
         
-        // WebSocket connection
-        function connect() {
-            try {
-                ws = new WebSocket('ws://localhost:8001/ws');
-                
-                ws.onopen = () => {
-                    console.log('Connected to Novanet ZKP Agent Kit');
-                    document.getElementById('connection-status').textContent = 'Connected';
-                    document.getElementById('status-dot').style.backgroundColor = '#10b981';
-                };
-                
-                ws.onmessage = (event) => {
-                    console.log('Received:', event.data);
-                    try {
-                        const data = JSON.parse(event.data);
-                        handleMessage(data);
-                    } catch (e) {
-                        console.error('Failed to parse message:', e);
-                        addMessage(event.data, 'assistant');
-                    }
-                };
-                
-                ws.onclose = () => {
-                    console.log('Disconnected from Novanet ZKP Agent Kit');
-                    document.getElementById('connection-status').textContent = 'Disconnected';
-                    document.getElementById('status-dot').style.backgroundColor = '#ef4444';
-                    // Reconnect after 3 seconds
-                    setTimeout(connect, 3000);
-                };
-                
-                ws.onerror = (error) => {
-                    console.error('WebSocket error:', error);
-                    document.getElementById('connection-status').textContent = 'Error';
-                    document.getElementById('status-dot').style.backgroundColor = '#ef4444';
-                };
-            } catch (error) {
-                console.error('Failed to create WebSocket connection:', error);
+        // Toggle debug console minimize state
+        function toggleDebugMinimize() {
+            const console = document.getElementById('debug-console');
+            const toggle = document.getElementById('debug-toggle');
+            debugMinimized = !debugMinimized;
+            if (debugMinimized) {
+                console.classList.add('minimized');
+                toggle.textContent = '▲';
+            } else {
+                console.classList.remove('minimized');
+                toggle.textContent = '▼';
             }
         }
         
-        // Loading animation functions
-        function showLoadingCard() {
-            const messagesDiv = document.getElementById('messages');
-            const loadingCard = document.createElement('div');
-            loadingCard.className = 'loading-card';
-            loadingCard.id = 'loading-card';
-            
-            loadingCard.innerHTML = `
-                <div class="loading-content">
-                    <div class="loading-spinner">⚡</div>
-                    <span class="loading-text">Generating proof<span class="loading-ellipses"></span></span>
-                </div>
-            `;
-            
-            messagesDiv.appendChild(loadingCard);
-            messagesDiv.parentElement.scrollTop = messagesDiv.parentElement.scrollHeight;
+        // Debug logging
+        function debug(message) {
+            console.log(`[ZKP Agent] ${message}`);
+            if (debugMode) {
+                const debugDiv = document.getElementById('debug-console');
+                const messagesDiv = document.getElementById('debug-messages');
+                debugDiv.style.display = 'block';
+                const time = new Date().toLocaleTimeString();
+                messagesDiv.innerHTML += `<div>[${time}] ${message}</div>`;
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
         }
 
-        function removeLoadingCard() {
-            const loadingCard = document.getElementById('loading-card');
-            if (loadingCard) {
-                loadingCard.remove();
-            }
+        function addMessage(html, sender) {
+            const messages = document.getElementById('messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${sender}`;
+            const contentEl = document.createElement('div');
+            contentEl.className = 'message-content';
+            contentEl.innerHTML = html.replace(/\n/g, '<br>');
+            messageEl.appendChild(contentEl);
+            messages.appendChild(messageEl);
+            messages.scrollTop = messages.scrollHeight;
+            return messageEl;
         }
         
-        // Message handling
-        function handleMessage(data) {
-            removeThinkingAnimation();
-            removeLoadingDots();
-            removeLoadingCard();
-            
-            // Handle structured data
-            if (data.data && data.data.type) {
-                const dataType = data.data.type;
-                console.log('Handling data type:', dataType);
-                
-                switch(dataType) {
-                    case 'proof_start':
-                        removeLoadingCard();
-                        createProofCard(data.data.proof_id, 'running', data.content, data.data);
-                        break;
-                    case 'proof_complete':
-                        updateProofCard(data.data.proof_id, 'success', data.content, data.data);
-                        break;
-                    case 'proof_list':
-                        displayProofsList(data.data.proofs || []);
-                        break;
-                    case 'verification_list':
-                        displayVerificationsList(data.data.verifications || []);
-                        break;
-                    case 'verification_complete':
-                        displayVerificationResult(data.data);
-                        break;
-                    default:
-                        console.log('Unknown data type:', dataType);
+        function addWaitingMessage() {
+            removeWaitingMessage(); // Remove any existing waiting message
+            const messages = document.getElementById('messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message assistant waiting';
+            messageEl.id = 'waiting-message';
+            const contentEl = document.createElement('div');
+            contentEl.className = 'message-content';
+            contentEl.innerHTML = 'Thinking';
+            messageEl.appendChild(contentEl);
+            messages.appendChild(messageEl);
+            messages.scrollTop = messages.scrollHeight;
+            waitingMessageId = 'waiting-message';
+        }
+        
+        function removeWaitingMessage() {
+            if (waitingMessageId) {
+                const waitingEl = document.getElementById(waitingMessageId);
+                if (waitingEl) {
+                    waitingEl.remove();
                 }
+                waitingMessageId = null;
+            }
+        }
+
+        function sendMessage(messageText = null) {
+            const input = document.getElementById('user-input');
+            const message = messageText || input.value.trim();
+            if (!message) return;
+            
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                debug('WebSocket not connected, attempting to reconnect...');
+                addMessage('⚠️ Connection lost. Attempting to reconnect...', 'assistant');
+                connect();
                 return;
             }
             
-            // Handle regular messages
-            if (data.content) {
-                addMessage(data.content, 'assistant');
+            addMessage(message, 'user');
+            addWaitingMessage(); // Show waiting animation
+            
+            debug('Sending message: ' + (message) + '');
+            ws.send(JSON.stringify({ message: message }));
+            if (!messageText) input.value = '';
+        }
+
+        function connect() {
+            const statusIndicator = document.getElementById('status-indicator');
+            const statusText = document.getElementById('connection-status');
+            
+            debug('Attempting WebSocket connection to ws://localhost:8001/ws');
+            
+            try {
+                ws = new WebSocket('ws://localhost:8001/ws');
+
+                ws.onopen = () => {
+                    debug('WebSocket connected successfully');
+                    statusText.textContent = 'Connected';
+                    statusIndicator.className = 'status connected';
+                    
+                    // Send a test message
+                    setTimeout(() => {
+                        if (ws.readyState === WebSocket.OPEN) {
+                            debug('Connection stable');
+                        }
+                    }, 1000);
+                };
+
+                ws.onmessage = (event) => {
+                    debug('Received: ' + (event.data.substring(0, 100)) + '...');
+                    try {
+                        const data = JSON.parse(event.data);
+                        handleMessage(data);
+                    } catch (e) { 
+                        debug('JSON Parse Error: ' + (e.message) + '');
+                        console.error('JSON Parse Error:', event.data, e); 
+                    }
+                };
+
+                ws.onclose = (event) => {
+                    debug('WebSocket closed: Code ${event.code}, Reason: ' + (event.reason) + '');
+                    statusText.textContent = 'Disconnected';
+                    statusIndicator.className = 'status disconnected';
+                    
+                    // Reconnect after 3 seconds
+                    setTimeout(() => {
+                        debug('Attempting reconnection...');
+                        connect();
+                    }, 3000);
+                };
+                
+                ws.onerror = (error) => {
+                    debug('WebSocket error: ' + (error.message || 'Unknown error') + '');
+                    console.error('WebSocket Error:', error);
+                    statusText.textContent = 'Error';
+                    statusIndicator.className = 'status disconnected';
+                };
+                
+            } catch (e) {
+                debug('Failed to create WebSocket: ' + (e.message) + '');
+                statusText.textContent = 'Connection Failed';
+                statusIndicator.className = 'status disconnected';
+            }
+        }
+
+        // Enhanced message handler
+        function handleMessage(data) {
+            debug('Handling message type: ' + (data.type || 'unknown') + '');
+            
+            // Remove waiting message when we get a response
+            if (data.type === 'chat_response' || data.type === 'error') {
+                removeWaitingMessage();
+            }
+            
+            switch(data.type) {
+                case 'chat_response':
+                    handleChatResponse(data);
+                    break;
+                case 'proof_status':
+                    updateProofStatus(data);
+                    break;
+                case 'proof_complete':
+                    handleProofComplete(data);
+                    break;
+                case 'proof_error':
+                    handleProofError(data);
+                    break;
+                case 'verification_status':
+                    updateVerificationStatus(data);
+                    break;
+                case 'verification_complete':
+                    handleVerificationComplete(data);
+                    break;
+                case 'transfer_status':
+                    updateTransferStatus(data);
+                    break;
+                case 'transfer_complete':
+                    handleTransferComplete(data);
+                    break;
+                case 'transfer_error':
+                    handleTransferError(data);
+                    break;
+                case 'list_response':
+                    handleListResponse(data);
+                    break;
+                case 'error':
+                    addMessage(data.response || 'An error occurred', 'assistant');
+                    break;
+                default:
+                    // Handle verification requests
+                    if (data.metadata && data.metadata.type === 'verification_request') {
+                        sendMessage(`verify proof ${data.metadata.proof_id}`);
+                    } else if (data.response) {
+                        addMessage(data.response, 'assistant');
+                    }
+            }
+        }
+
+        function handleChatResponse(data) {
+            // Only add the message if it's not a custom proof (which already added its own clean message)
+            if (!data.metadata || data.metadata.type !== 'custom_proof') {
+                addMessage(data.response, 'assistant');
+            } else {
+                // For custom proofs, still show the AI response but not the encoded message
+                addMessage(data.response, 'assistant');
+            }
+            
+            // Check if this is starting an automated transfer
+            if (data.metadata && data.metadata.is_automated_transfer) {
+                // Extract transfer details
+                const transferDetails = data.metadata.transfer_details || {};
+                createTransactionCard(data.metadata.proof_id, transferDetails);
+            }
+            
+            // Handle direct transfers
+            if (data.metadata && data.metadata.type === 'direct_transfer') {
+                // For direct transfers, execute immediately without proof
+                const transferDetails = data.metadata.transfer_details || {};
+                handleDirectTransfer(data);
+            }
+            
+            // Handle verification requests
+            if (data.metadata && data.metadata.type === 'verification_request') {
+                // The Rust server should handle the actual verification
+                debug('Verification requested for ' + (data.metadata.proof_id) + '');
             }
         }
         
-        // Basic message functions
-        function addMessage(content, sender) {
-            const messagesDiv = document.getElementById('messages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}`;
+        function handleDirectTransfer(data) {
+            const transferDetails = data.metadata.transfer_details || {};
+            const transferId = `transfer_${Date.now()}`;
             
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'message-content';
-            contentDiv.textContent = content;
-            
-            messageDiv.appendChild(contentDiv);
-            messagesDiv.appendChild(messageDiv);
-            messagesDiv.parentElement.scrollTop = messagesDiv.parentElement.scrollHeight;
-        }
-        
-        function sendMessage(text) {
-            const input = document.getElementById('user-input');
-            const message = text || input.value.trim();
-            
-            if (message && ws && ws.readyState === WebSocket.OPEN) {
-                addMessage(message, 'user');
-                
-                // Show loading card for proof commands, thinking animation for others
-                if (message.toLowerCase().includes('prove')) {
-                    showLoadingCard();
-                } else {
-                    showThinkingAnimation();
-                }
-                
-                ws.send(JSON.stringify({ message }));
-                if (!text) input.value = '';
-            }
-        }
-        
-        function showThinkingAnimation() {
-            if (thinkingAnimation) return;
-            
-            const messagesDiv = document.getElementById('messages');
-            thinkingAnimation = document.createElement('div');
-            thinkingAnimation.className = 'thinking-animation';
-            thinkingAnimation.innerHTML = `
-                                    <span style="color: #6B7CFF; font-size: 14px;">Thinking</span>
-                <div class="thinking-dots">
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
+            const cardHtml = `
+                <div class="transaction-card" id="card-${transferId}">
+                    <div class="card-header">
+                        <div class="card-title">💸 Direct USDC Transfer</div>
+                        <div class="status-indicator">
+                            <span class="status-dot" style="background: #fbbf24; animation: pulse 2s infinite;"></span>
+                            <span class="status-text">Processing...</span>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="status-message">Executing direct USDC transfer...</div>
+                        <div style="margin-top: 12px; padding: 12px; background: rgba(107, 124, 255, 0.1); border-radius: 8px; font-size: 13px;">
+                            <div style="color: #8B9AFF; margin-bottom: 4px;">Transfer Details:</div>
+                            <div style="color: #a0a0a0;">From: 0x37b6c846...cd131188 (Your Wallet)</div>
+                            <div style="color: #a0a0a0;">To: ${transferDetails.recipient ? transferDetails.recipient.slice(0,10) + '...' + transferDetails.recipient.slice(-8) : '0x70997970...17dc79C8'}</div>
+                            <div style="color: #a0a0a0;">Blockchain: ${transferDetails.blockchain === "SOL" ? "Solana Devnet" : "Ethereum Sepolia"}</div>
+                            <div style="color: #a0a0a0;">Amount: ${transferDetails.amount || '0.1'} USDC</div>
+                            <div style="color: #a0a0a0; margin-top: 8px; font-style: italic;">No KYC verification required</div>
+                        </div>
+                    </div>
                 </div>
             `;
-            messagesDiv.appendChild(thinkingAnimation);
-            messagesDiv.parentElement.scrollTop = messagesDiv.parentElement.scrollHeight;
-        }
-        
-        function removeThinkingAnimation() {
-            if (thinkingAnimation) {
-                thinkingAnimation.remove();
-                thinkingAnimation = null;
-            }
-        }
-        
-        function removeLoadingDots() {
-            const dots = document.querySelector('.loading-dots');
-            if (dots) {
-                dots.remove();
-            }
-            waitingForResponse = false;
-        }
-        
-        // File display functions - Updated for inline display
-        function showCProgram(proofId) {
-            console.log('showCProgram called with:', proofId);
             
-            const card = document.getElementById(`proof-${proofId}`);
+            const messages = document.getElementById('messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message assistant';
+            messageEl.innerHTML = cardHtml;
+            messages.appendChild(messageEl);
+            messages.scrollTop = messages.scrollHeight;
+            
+            // Simulate successful transfer after a delay
+            setTimeout(() => {
+                const card = document.getElementById(`card-${transferId}`);
+                if (card) {
+                    const statusDot = card.querySelector('.status-dot');
+                    const statusText = card.querySelector('.status-text');
+                    const content = card.querySelector('.card-content');
+                    
+                    if (statusDot) statusDot.style.background = '#10b981';
+                    if (statusText) {
+                        statusText.textContent = 'Complete';
+                        statusText.style.color = '#10b981';
+                    }
+                    
+                    const explorerUrl = transferDetails.blockchain === "SOL" 
+                        ? `https://explorer.solana.com/address/${transferDetails.recipient}?cluster=devnet`
+                        : `https://sepolia.etherscan.io/address/${transferDetails.recipient}`;
+                    
+                    const detailsHtml = `
+                        <div style="margin-top: 20px; padding: 16px; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
+                            <div style="font-weight: 600; color: #10b981; margin-bottom: 8px;">✅ Transfer Successful!</div>
+                            <div style="font-size: 13px; color: #a0a0a0;">
+                                <div>Amount: ${transferDetails.amount || '0.1'} USDC</div>
+                                <div>From: 0x37b6c846ca0483a0fc6c7702707372ebcd131188</div>
+                                <div>To: ${transferDetails.recipient || 'Unknown'}</div>
+                                <div>Blockchain: ${transferDetails.blockchain === "SOL" ? "Solana Devnet" : "Ethereum Sepolia"}</div>
+                                <div style="margin-top: 8px;">
+                                    <a href="${explorerUrl}" target="_blank" style="color: #8B9AFF; text-decoration: underline; font-weight: 600;">
+                                        View on ${transferDetails.blockchain === "SOL" ? "Solana Explorer" : "Sepolia Etherscan"} →
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    content.innerHTML += detailsHtml;
+                }
+            }, 3000);
+        }
+
+        function createTransactionCard(proofId, transferDetails = {}) {
+            const cardHtml = `
+                <div class="transaction-card" id="card-${proofId}">
+                    <div class="card-header">
+                        <div class="card-title">🔄 Proof and Transaction Status</div>
+                        <div class="status-indicator">
+                            <span class="status-dot" style="background: #fbbf24; animation: pulse 2s infinite;"></span>
+                            <span class="status-text">Initializing...</span>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="status-message">Starting automated KYC verification and transfer process...</div>
+                        <div style="margin-top: 12px; padding: 12px; background: rgba(107, 124, 255, 0.1); border-radius: 8px; font-size: 13px;">
+                            <div style="color: #8B9AFF; margin-bottom: 4px;">Transfer Details:</div>
+                            <div style="color: #a0a0a0;">From: 0x37b6c846...cd131188 (Your Wallet)</div>
+                            <div style="color: #a0a0a0;">To: ${transferDetails.recipient ? transferDetails.recipient.slice(0,10) + '...' + transferDetails.recipient.slice(-8) : '0x70997970...17dc79C8'}</div>
+                            <div style="color: #a0a0a0;">Blockchain: ${transferDetails.blockchain === "SOL" ? "Solana Devnet" : "Ethereum Sepolia"}</div>
+                            <div style="color: #a0a0a0;">Amount: ${transferDetails.amount || '0.1'} USDC</div>
+                        </div>
+                        <div class="progress-steps" style="margin-top: 16px;">
+                            <div class="step active" id="step-proof-${proofId}">📝 Generate Proof</div>
+                            <div class="step" id="step-verify-${proofId}">✅ Verify Proof</div>
+                            <div class="step" id="step-transfer-${proofId}">💸 Execute Transfer</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const messages = document.getElementById('messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message assistant';
+            messageEl.innerHTML = cardHtml;
+            messages.appendChild(messageEl);
+            messages.scrollTop = messages.scrollHeight;
+            
+            activeCards[proofId] = document.getElementById(`card-${proofId}`);
+        }
+
+        function updateProofStatus(data) {
+            debug('Proof status update: ' + (data.proof_id) + '');
+            
+            if (data.proof_id) {
+                proofStates[data.proof_id] = proofStates[data.proof_id] || {};
+                if (data.metadata) {
+                    proofStates[data.proof_id].functionName = data.metadata.function;
+                    proofStates[data.proof_id].arguments = data.metadata.arguments;
+                    proofStates[data.proof_id].isCustom = data.metadata.is_custom || false;
+                    
+                    // Map WASM names back to logical names for display
+                    if (data.metadata.function === 'kyc_compliance') {
+                        proofStates[data.proof_id].displayFunction = 'prove_kyc';
+                    } else if (data.metadata.function === 'ai_content_verification') {
+                        proofStates[data.proof_id].displayFunction = 'prove_ai_content';
+                    } else if (data.metadata.function === 'depin_location') {
+                        proofStates[data.proof_id].displayFunction = 'prove_location';
+                    } else if (data.metadata.function === 'prove_custom' || data.metadata.is_custom) {
+                        // For custom proofs, try to get the description
+                        if (data.metadata.additional_context && data.metadata.additional_context.custom_description) {
+                            const customDesc = data.metadata.additional_context.custom_description;
+                            if (customDesc === "prime number check") {
+                                proofStates[data.proof_id].displayFunction = 'prime_check';
+                            } else if (customDesc === "Collatz conjecture computation") {
+                                proofStates[data.proof_id].displayFunction = 'collatz_steps';
+                            } else if (customDesc === "digital root calculation") {
+                                proofStates[data.proof_id].displayFunction = 'digital_root';
+                            } else {
+                                proofStates[data.proof_id].displayFunction = 'custom_proof';
+                            }
+                        } else {
+                            proofStates[data.proof_id].displayFunction = 'custom_proof';
+                        }
+                    } else {
+                        proofStates[data.proof_id].displayFunction = data.metadata.function;
+                    }
+                }
+            }
+            
+            const card = activeCards[data.proof_id];
+            if (card) {
+                const statusText = card.querySelector('.status-text');
+                const statusMessage = card.querySelector('.status-message');
+                if (statusText) statusText.textContent = 'Generating Proof...';
+                if (statusMessage) statusMessage.textContent = data.message || 'Generating zero-knowledge proof...';
+            } else {
+                createProofCard(data.proof_id, 'generating');
+            }
+        }
+
+        function createProofCard(proofId, status) {
+            const proofState = proofStates[proofId] || {};
+            const functionName = proofState.displayFunction || proofState.functionName || 'Unknown';
+            
+            const cardHtml = `
+                <div class="proof-card" id="card-${proofId}">
+                    <div class="card-header">
+                        <div class="card-title">🔐 Zero-Knowledge Proof</div>
+                        <div class="status-badge ${status}">${status.toUpperCase()}</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="status-message">Generating zero-knowledge proof...</div>
+                        <div class="proof-metrics" style="margin-top: 16px;">
+                            <div class="metric">
+                                <span class="metric-label">Function:</span>
+                                <span class="metric-value">${functionName}</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Step Size:</span>
+                                <span class="metric-value">50</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Status:</span>
+                                <span class="metric-value">Computing...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const messages = document.getElementById('messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message assistant';
+            messageEl.innerHTML = cardHtml;
+            messages.appendChild(messageEl);
+            messages.scrollTop = messages.scrollHeight;
+            
+            activeCards[proofId] = document.getElementById(`card-${proofId}`);
+            proofStates[proofId] = proofStates[proofId] || {};
+        }
+
+        function createVerificationCard(proofId) {
+            const proofState = proofStates[proofId] || {};
+            const functionName = proofState.displayFunction || 'Unknown';
+            
+            const cardHtml = `
+                <div class="verification-card" id="verify-card-${proofId}">
+                    <div class="card-header">
+                        <div class="card-title">✅ Proof Verification</div>
+                        <div class="status-badge verifying">VERIFYING</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="status-message">Verifying proof validity...</div>
+                        <div class="proof-metrics" style="display: none;">
+                            <div class="metric">
+                                <span class="metric-label">Proof ID:</span>
+                                <span class="metric-value" style="font-family: monospace;">${proofId}</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Function:</span>
+                                <span class="metric-value">${functionName}</span>
+                            </div>
+                            <div class="metric" id="verify-time-${proofId}" style="display: none;">
+                                <span class="metric-label">Time:</span>
+                                <span class="metric-value">0s</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const messages = document.getElementById('messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message assistant';
+            messageEl.innerHTML = cardHtml;
+            messages.appendChild(messageEl);
+            messages.scrollTop = messages.scrollHeight;
+            
+            return document.getElementById(`verify-card-${proofId}`);
+        }
+
+        function handleProofComplete(data) {
+            debug('Proof complete: ' + (data.proof_id) + '');
+            
+            // Ensure we have the function name stored
+            if (data.proof_id) {
+                const existingState = proofStates[data.proof_id] || {};
+                
+                // Preserve the function name from earlier status updates
+                if (data.metadata && data.metadata.function) {
+                    existingState.functionName = data.metadata.function;
+                    existingState.arguments = data.metadata.arguments;
+                    existingState.isCustom = data.metadata.is_custom || false;
+                    
+                    // For custom proofs, get the description from metadata
+                    if (data.metadata.is_custom && data.metadata.additional_context) {
+                        const customDesc = data.metadata.additional_context.custom_description;
+                        if (customDesc === "prime number check") {
+                            existingState.displayFunction = 'prime_check';
+                        } else if (customDesc === "Collatz conjecture computation") {
+                            existingState.displayFunction = 'collatz_steps';
+                        } else if (customDesc === "digital root calculation") {
+                            existingState.displayFunction = 'digital_root';
+                        } else {
+                            existingState.displayFunction = 'custom_proof';
+                        }
+                    }
+                }
+                
+                // Also check if function was stored during updateProofStatus
+                proofStates[data.proof_id] = existingState;
+                debug('Stored function for ${data.proof_id}: ' + (existingState.functionName) + '');
+            }
+            
+            const card = activeCards[data.proof_id];
+            if (card) {
+                const statusBadge = card.querySelector('.status-badge');
+                if (statusBadge) {
+                    statusBadge.textContent = 'COMPLETE';
+                    statusBadge.className = 'status-badge complete';
+                }
+                
+                if (card.classList.contains('transaction-card')) {
+                    const statusText = card.querySelector('.status-text');
+                    const statusMessage = card.querySelector('.status-message');
+                    const proofStep = document.getElementById(`step-proof-${data.proof_id}`);
+                    
+                    if (statusText) statusText.textContent = 'Proof Generated';
+                    if (statusMessage) statusMessage.textContent = 'KYC proof generated successfully. Verifying...';
+                    if (proofStep) {
+                        proofStep.classList.remove('active');
+                        proofStep.classList.add('complete');
+                        proofStep.textContent = '✅ Proof Generated';
+                    }
+                    
+                    const verifyStep = document.getElementById(`step-verify-${data.proof_id}`);
+                    if (verifyStep) {
+                        verifyStep.classList.add('active');
+                    }
+                } else {
+                    const metricsHtml = `
+                        <div class="proof-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Time:</span>
+                                <span class="metric-value">${Math.round((data.metrics?.time_ms || 0) / 1000)}s</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Size:</span>
+                                <span class="metric-value">${data.metrics ? (data.metrics.proof_size / (1024 * 1024)).toFixed(1) : 0}MB</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Function:</span>
+                                <span class="metric-value">${proofStates[data.proof_id]?.displayFunction || 'Unknown'}</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    const actionsHtml = `
+                        <div class="card-actions">
+                            <button class="action-btn" onclick="sendMessage('verify proof ${data.proof_id}')">✅ Verify Proof</button>
+                            ${!proofStates[data.proof_id]?.isCustom ? `
+                                <button class="action-btn" onclick="showCProgram('${data.proof_id}')">📄 C Program</button>
+                                <button class="action-btn" onclick="showWasmFile('${data.proof_id}')">⚙️ WASM Program</button>
+                            ` : ''}
+                            <button class="action-btn" onclick="copyToClipboard('${data.proof_id}')">📋 Copy ID</button>
+                        </div>
+                    `;
+                    
+                    const content = card.querySelector('.card-content');
+                    content.innerHTML = metricsHtml + actionsHtml;
+                }
+            }
+        }
+
+        function handleProofError(data) {
+            debug('Proof error: ${data.proof_id} - ' + (data.error) + '');
+            const card = activeCards[data.proof_id];
+            if (card) {
+                const statusBadge = card.querySelector('.status-badge');
+                const statusText = card.querySelector('.status-text');
+                const statusMessage = card.querySelector('.status-message');
+                
+                if (statusBadge) {
+                    statusBadge.textContent = 'ERROR';
+                    statusBadge.className = 'status-badge error';
+                }
+                if (statusText) {
+                    statusText.textContent = 'Error';
+                    statusText.style.color = '#ef4444';
+                }
+                if (statusMessage) {
+                    statusMessage.textContent = data.error || 'An error occurred during proof generation';
+                    statusMessage.style.color = '#ef4444';
+                }
+            } else {
+                addMessage(`❌ Proof Error: ${data.error}`, 'assistant');
+            }
+        }
+
+        function updateVerificationStatus(data) {
+            // Start timing the verification
+            verificationTimes[data.proof_id] = Date.now();
+            
+            const card = activeCards[data.proof_id];
+            if (card && card.classList.contains('transaction-card')) {
+                const statusText = card.querySelector('.status-text');
+                const statusMessage = card.querySelector('.status-message');
+                if (statusText) statusText.textContent = 'Verifying...';
+                if (statusMessage) statusMessage.textContent = data.message || 'Verifying proof validity...';
+            } else {
+                // Create a verification card if it doesn't exist
+                const verifyCard = createVerificationCard(data.proof_id);
+                activeCards[`verify-${data.proof_id}`] = verifyCard;
+            }
+        }
+
+        function handleVerificationComplete(data) {
+            debug('Verification complete: ${data.proof_id} - ' + (data.result) + '');
+            
+            // Calculate verification time
+            const verificationTime = verificationTimes[data.proof_id] ? 
+                ((Date.now() - verificationTimes[data.proof_id]) / 1000).toFixed(1) : '< 1';
+            
+            const card = activeCards[data.proof_id];
+            const verifyCard = activeCards[`verify-${data.proof_id}`];
+            
+            if (data.result === 'VALID') {
+                if (card && card.classList.contains('transaction-card')) {
+                    const verifyStep = document.getElementById(`step-verify-${data.proof_id}`);
+                    if (verifyStep) {
+                        verifyStep.classList.remove('active');
+                        verifyStep.classList.add('complete');
+                        verifyStep.textContent = '✅ Proof Verified';
+                    }
+                    
+                    const transferStep = document.getElementById(`step-transfer-${data.proof_id}`);
+                    if (transferStep) {
+                        transferStep.classList.add('active');
+                    }
+                    
+                    const statusText = card.querySelector('.status-text');
+                    const statusMessage = card.querySelector('.status-message');
+                    if (statusText) statusText.textContent = 'Proof Verified';
+                    if (statusMessage) statusMessage.textContent = 'KYC verification successful. Initiating transfer...';
+                } else if (verifyCard) {
+                    // Update verification card
+                    const statusBadge = verifyCard.querySelector('.status-badge');
+                    const statusMessage = verifyCard.querySelector('.status-message');
+                    const metricsDiv = verifyCard.querySelector('.proof-metrics');
+                    const timeMetric = document.getElementById(`verify-time-${data.proof_id}`);
+                    
+                    if (statusBadge) {
+                        statusBadge.textContent = 'VERIFIED';
+                        statusBadge.className = 'status-badge verified';
+                    }
+                    if (statusMessage) {
+                        statusMessage.textContent = 'Proof verification successful!';
+                        statusMessage.style.color = '#10b981';
+                    }
+                    if (metricsDiv) {
+                        metricsDiv.style.display = 'flex';
+                    }
+                    if (timeMetric) {
+                        timeMetric.style.display = 'flex';
+                        timeMetric.querySelector('.metric-value').textContent = `${verificationTime}s`;
+                    }
+                } else {
+                    addMessage('✅ Proof verification: **VALID**', 'assistant');
+                }
+            } else {
+                if (verifyCard) {
+                    const statusBadge = verifyCard.querySelector('.status-badge');
+                    const statusMessage = verifyCard.querySelector('.status-message');
+                    
+                    if (statusBadge) {
+                        statusBadge.textContent = 'INVALID';
+                        statusBadge.className = 'status-badge error';
+                    }
+                    if (statusMessage) {
+                        statusMessage.textContent = 'Proof verification failed';
+                        statusMessage.style.color = '#ef4444';
+                    }
+                } else if (card) {
+                    const statusText = card.querySelector('.status-text');
+                    const statusMessage = card.querySelector('.status-message');
+                    if (statusText) {
+                        statusText.textContent = 'Verification Failed';
+                        statusText.style.color = '#ef4444';
+                    }
+                    if (statusMessage) {
+                        statusMessage.textContent = 'Proof verification failed';
+                        statusMessage.style.color = '#ef4444';
+                    }
+                } else {
+                    addMessage('❌ Proof verification: **INVALID**', 'assistant');
+                }
+            }
+            
+            // Clean up timing
+            delete verificationTimes[data.proof_id];
+        }
+
+        function updateTransferStatus(data) {
+            const card = activeCards[data.proof_id];
+            if (card) {
+                const statusText = card.querySelector('.status-text');
+                const statusMessage = card.querySelector('.status-message');
+                if (statusText) statusText.textContent = 'Executing Transfer...';
+                if (statusMessage) statusMessage.textContent = data.message || 'Executing USDC transfer via Circle...';
+            }
+        }
+
+        function handleTransferComplete(data) {
+            debug('Transfer complete: ' + (data.proof_id) + '');
+            const card = activeCards[data.proof_id];
+            if (card) {
+                const transferStep = document.getElementById(`step-transfer-${data.proof_id}`);
+                if (transferStep) {
+                    transferStep.classList.remove('active');
+                    transferStep.classList.add('complete');
+                    transferStep.textContent = '✅ Transfer Complete';
+                }
+                
+                const statusDot = card.querySelector('.status-dot');
+                const statusText = card.querySelector('.status-text');
+                const content = card.querySelector('.card-content');
+                
+                if (statusDot) statusDot.style.background = '#10b981';
+                if (statusText) {
+                    statusText.textContent = 'Complete';
+                    statusText.style.color = '#10b981';
+                }
+                
+                const txDetails = data.result;
+                const blockchain = txDetails.blockchain || 'ETH';
+                
+                // Check if we have a real transaction hash (not "pending")
+                const txHash = txDetails.transactionId || txDetails.txHash || txDetails.hash || txDetails.id;
+                const hasTxHash = txHash && txHash !== 'pending';
+                
+                // Determine the correct explorer URL based on blockchain
+                let explorerUrl = '';
+                let explorerName = '';
+                
+                if (hasTxHash) {
+                    if (blockchain === 'SOL') {
+                        explorerUrl = `https://explorer.solana.com/tx/${txHash}?cluster=devnet`;
+                        explorerName = 'Solana Explorer';
+                    } else {
+                        explorerUrl = `https://sepolia.etherscan.io/tx/${txHash}`;
+                        explorerName = 'Sepolia Etherscan';
+                    }
+                }
+                
+                const detailsHtml = `
+                    <div style="margin-top: 20px; padding: 16px; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
+                        <div style="font-weight: 600; color: #10b981; margin-bottom: 8px;">✅ Transfer Successful!</div>
+                        <div style="font-size: 13px; color: #a0a0a0;">
+                            <div>Amount: ${txDetails.amount || '0.1'} USDC</div>
+                            <div>From: ${txDetails.from || '0x37b6c846ca0483a0fc6c7702707372ebcd131188'}</div>
+                            <div>To: ${txDetails.recipient || 'Unknown'}</div>
+                            <div>Blockchain: ${blockchain === 'SOL' ? 'Solana' : 'Ethereum'}</div>
+                            ${hasTxHash ? `
+                                <div style="margin-top: 8px;">TX: ${txHash.slice(0, 20)}...</div>
+                                <div style="margin-top: 8px;">
+                                    <a href="${explorerUrl}" 
+                                       target="_blank" 
+                                       style="color: #8B9AFF; text-decoration: underline; font-weight: 600;">
+                                       View on ${explorerName} →
+                                    </a>
+                                </div>
+                            ` : `
+                                <div style="margin-top: 8px; font-style: italic; color: #666;">
+                                    A link will be available when the transaction is completed on chain.
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+                
+                content.innerHTML += detailsHtml;
+                
+                // Start polling if we don't have a transaction hash yet
+                if (!hasTxHash && txDetails.transferId) {
+                    pollTransferStatus(txDetails.transferId, data.proof_id, blockchain);
+                }
+            }
+        }
+
+        // Store active polling intervals
+        const activePolls = {};
+
+        // Function to poll for transfer status
+        async function pollTransferStatus(transferId, proofId, blockchain) {
+            debug('Starting to poll for transfer ' + (transferId) + '');
+            
+            let pollCount = 0;
+            const maxPolls = 30; // Poll for up to 5 minutes (30 * 10 seconds)
+            
+            const pollInterval = setInterval(async () => {
+                pollCount++;
+                
+                try {
+                    // Call backend to check transfer status
+                    const response = await fetch('http://localhost:8002/check_transfer_status', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ transferId: transferId })
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        debug('Poll ${pollCount}: Status = ${data.status}, TxHash = ' + (data.transactionHash) + '');
+                        
+                        // Check if we have a real transaction hash
+                        if (data.transactionHash && data.transactionHash !== 'pending') {
+                            // Update the UI with the transaction hash
+                            updateTransferWithTxHash(proofId, data.transactionHash, blockchain);
+                            
+                            // Stop polling
+                            clearInterval(pollInterval);
+                            delete activePolls[transferId];
+                            debug('Got transaction hash for ' + (transferId) + ', stopping poll');
+                        } else if (data.status === 'failed') {
+                            // Handle failed transfer
+                            updateTransferFailed(proofId, data.error || 'Transfer failed');
+                            clearInterval(pollInterval);
+                            delete activePolls[transferId];
+                        }
+                    }
+                } catch (error) {
+                    debug('Error polling transfer status: ' + (error.message) + '');
+                }
+                
+                // Stop polling after max attempts
+                if (pollCount >= maxPolls) {
+                    clearInterval(pollInterval);
+                    delete activePolls[transferId];
+                    debug('Stopped polling for ${transferId} after ' + (maxPolls) + ' attempts');
+                }
+            }, 10000); // Poll every 10 seconds
+            
+            // Store the interval so we can cancel it if needed
+            activePolls[transferId] = pollInterval;
+        }
+
+        // Function to update UI with transaction hash
+        function updateTransferWithTxHash(proofId, txHash, blockchain) {
+            const card = activeCards[proofId];
             if (!card) return;
             
-            // Check if code display already exists
+            debug(`Updating transfer ${proofId} with txHash: ${txHash}`);
+            
+            // Find the transfer details section more reliably
+            const content = card.querySelector('.card-content');
+            const detailsSections = content.querySelectorAll('div[style*="background: rgba(16, 185, 129"]');
+            
+            let existingDetails = null;
+            for (let section of detailsSections) {
+                if (section.textContent.includes('Transfer Successful')) {
+                    existingDetails = section;
+                    break;
+                }
+            }
+            
+            if (existingDetails) {
+                // Determine explorer URL based on blockchain
+                let explorerUrl = '';
+                let explorerName = '';
+                
+                if (blockchain === 'SOL') {
+                    explorerUrl = `https://explorer.solana.com/tx/${txHash}?cluster=devnet`;
+                    explorerName = 'Solana Explorer';
+                } else {
+                    explorerUrl = `https://sepolia.etherscan.io/tx/${txHash}`;
+                    explorerName = 'Sepolia Etherscan';
+                }
+                
+                // Find the details div more reliably
+                const detailsDivs = existingDetails.querySelectorAll('div');
+                let detailsDiv = null;
+                
+                for (let div of detailsDivs) {
+                    if (div.textContent.includes('Amount:') && div.textContent.includes('USDC')) {
+                        detailsDiv = div;
+                        break;
+                    }
+                }
+                
+                if (detailsDiv) {
+                    // Remove any existing "processing" message
+                    const existingMessages = detailsDiv.querySelectorAll('div');
+                    for (let msg of existingMessages) {
+                        if (msg.textContent.includes('A link will be available')) {
+                            msg.remove();
+                        }
+                    }
+                    
+                    // Check if we already have the tx info
+                    let hasTxInfo = false;
+                    for (let div of existingMessages) {
+                        if (div.textContent.includes('TX:')) {
+                            hasTxInfo = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!hasTxInfo) {
+                        // Add the transaction hash and explorer link
+                        const txInfoHtml = `
+                            <div style="margin-top: 8px;">TX: ${txHash.slice(0, 20)}...</div>
+                            <div style="margin-top: 8px;">
+                                <a href="${explorerUrl}" 
+                                   target="_blank" 
+                                   style="color: #8B9AFF; text-decoration: underline; font-weight: 600;">
+                                   View on ${explorerName} →
+                                </a>
+                            </div>
+                        `;
+                        
+                        detailsDiv.insertAdjacentHTML('beforeend', txInfoHtml);
+                        
+                        // Add a subtle animation to draw attention
+                        existingDetails.style.animation = 'pulse 1s ease-in-out 2';
+                        
+                        debug(`Successfully updated transfer ${proofId} with explorer link`);
+                    }
+                } else {
+                    debug('Could not find details div to update');
+                }
+            } else {
+                debug('Could not find existing transfer details section');
+            }
+        }
+
+        // Function to handle failed transfers
+        function updateTransferFailed(proofId, errorMessage) {
+            const card = activeCards[proofId];
+            if (!card) return;
+            
+            const statusDot = card.querySelector('.status-dot');
+            const statusText = card.querySelector('.status-text');
+            
+            if (statusDot) {
+                statusDot.style.background = '#ef4444';
+                statusDot.style.animation = 'none';
+            }
+            if (statusText) {
+                statusText.textContent = 'Failed';
+                statusText.style.color = '#ef4444';
+            }
+            
+            // Update the content with error message
+            const content = card.querySelector('.card-content');
+            const existingDetails = content.querySelector('div[style*="background: rgba(16, 185, 129, 0.1)"]');
+            
+            if (existingDetails) {
+                existingDetails.style.background = 'rgba(239, 68, 68, 0.1)';
+                const titleDiv = existingDetails.querySelector('div[style*="font-weight: 600"]');
+                if (titleDiv) {
+                    titleDiv.textContent = '❌ Transfer Failed';
+                    titleDiv.style.color = '#ef4444';
+                }
+                
+                // Add error message
+                const detailsDiv = existingDetails.querySelector('div[style*="font-size: 13px"]');
+                if (detailsDiv) {
+                    detailsDiv.innerHTML += `
+                        <div style="margin-top: 8px; color: #ef4444; font-weight: 500;">
+                            Error: ${errorMessage}
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function handleTransferError(data) {
+            debug('Transfer error: ${data.proof_id} - ' + (data.error) + '');
+            const card = activeCards[data.proof_id];
+            if (card) {
+                const statusDot = card.querySelector('.status-dot');
+                const statusText = card.querySelector('.status-text');
+                const statusMessage = card.querySelector('.status-message');
+                
+                if (statusDot) {
+                    statusDot.style.background = '#ef4444';
+                    statusDot.style.animation = 'none';
+                }
+                if (statusText) {
+                    statusText.textContent = 'Transfer Failed';
+                    statusText.style.color = '#ef4444';
+                }
+                if (statusMessage) {
+                    statusMessage.textContent = data.error || 'Transfer failed';
+                    statusMessage.style.color = '#ef4444';
+                }
+            }
+        }
+        
+        function handleListResponse(data) {
+            debug('List response: ' + (data.list_type) + '');
+            
+            if (data.proofs && data.proofs.length > 0) {
+                // Different columns for Proof History vs Verification History
+                const isVerificationHistory = data.list_type === 'verifications';
+                
+                let tableHtml = '';
+                
+                if (isVerificationHistory) {
+                    // Verification History: Function, Proof ID, Timestamp
+                    tableHtml = `
+                        <div class="history-table-container">
+                            <h3 style="color: #8B9AFF; margin-bottom: 16px; font-size: 16px;">
+                                ✅ Verification History
+                            </h3>
+                            <table class="history-table">
+                                <thead>
+                                    <tr>
+                                        <th>FUNCTION</th>
+                                        <th>PROOF ID</th>
+                                        <th>TIMESTAMP</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.proofs.map(proof => {
+                                        // Format function name for display
+                                        let displayFunction = proof.function || 'unknown';
+                                        if (displayFunction === 'prove_kyc') displayFunction = 'KYC Compliance';
+                                        else if (displayFunction === 'prove_ai_content') displayFunction = 'AI Content';
+                                        else if (displayFunction === 'prove_location') displayFunction = 'Location';
+                                        else if (displayFunction === 'prove_custom') displayFunction = 'Custom';
+                                        else if (displayFunction === 'unknown') displayFunction = 'Unknown';
+                                        
+                                        return `
+                                            <tr>
+                                                <td><span class="function-badge">${displayFunction}</span></td>
+                                                <td class="proof-id">${proof.proof_id}</td>
+                                                <td class="timestamp">${new Date(proof.timestamp * 1000).toLocaleString()}</td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                } else {
+                    // Proof History: Function, Proof ID, Timestamp, Actions
+                    tableHtml = `
+                        <div class="history-table-container">
+                            <h3 style="color: #8B9AFF; margin-bottom: 16px; font-size: 16px;">
+                                📋 Proof History
+                            </h3>
+                            <table class="history-table">
+                                <thead>
+                                    <tr>
+                                        <th>FUNCTION</th>
+                                        <th>PROOF ID</th>
+                                        <th>TIMESTAMP</th>
+                                        <th>ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.proofs.map(proof => {
+                                        // Format function name for display
+                                        let displayFunction = proof.function || 'unknown';
+                                        if (displayFunction === 'prove_kyc') displayFunction = 'KYC Compliance';
+                                        else if (displayFunction === 'prove_ai_content') displayFunction = 'AI Content';
+                                        else if (displayFunction === 'prove_location') displayFunction = 'Location';
+                                        else if (displayFunction === 'prove_custom') displayFunction = 'Custom';
+                                        else if (displayFunction === 'unknown') displayFunction = 'Unknown';
+                                        
+                                        return `
+                                            <tr>
+                                                <td><span class="function-badge">${displayFunction}</span></td>
+                                                <td class="proof-id">${proof.proof_id}</td>
+                                                <td class="timestamp">${new Date(proof.timestamp * 1000).toLocaleString()}</td>
+                                                <td>
+                                                    ${proof.verified 
+                                                        ? '<span style="color: #10b981;">✓ Verified</span>' 
+                                                        : '<a class="action-link" onclick="sendMessage(\'verify proof ' + proof.proof_id + '\')">Verify</a>'
+                                                    }
+                                                </td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+                
+                const messages = document.getElementById('messages');
+                const messageEl = document.createElement('div');
+                messageEl.className = 'message assistant';
+                messageEl.innerHTML = tableHtml;
+                messages.appendChild(messageEl);
+                messages.scrollTop = messages.scrollHeight;
+            } else {
+                addMessage(data.response + '\n\n<em style="color: #666;">No proofs found yet.</em>', 'assistant');
+            }
+        }
+        
+        function togglePasteArea() {
+            const pasteArea = document.getElementById('paste-area');
+            const isHidden = pasteArea.style.display === 'none' || pasteArea.style.display === '';
+            pasteArea.style.display = isHidden ? 'flex' : 'none';
+            if (isHidden) {
+                updateLineNumbers();
+            }
+        }
+
+        function updateLineNumbers() {
+            const textarea = document.getElementById('code-paste');
+            const lineNumbers = document.getElementById('line-numbers');
+            const lines = textarea.value.split('\n').length;
+            
+            let lineNumbersHtml = '';
+            for (let i = 1; i <= lines; i++) {
+                lineNumbersHtml += i + '\n';
+            }
+            lineNumbers.textContent = lineNumbersHtml;
+            
+            // Sync scroll
+            textarea.onscroll = function() {
+                lineNumbers.scrollTop = textarea.scrollTop;
+            };
+        }
+
+        function processCodePaste() {
+            const code = document.getElementById('code-paste').value;
+            if (!code.trim()) return alert('Please paste code first.');
+            
+            // Detect which example this is
+            let proofType = "custom proof";
+            let cleanType = "custom";
+            
+            if (code.includes("prime")) {
+                proofType = "prime number check";
+                cleanType = "prime check";
+            } else if (code.includes("collatz") || code.includes("Collatz")) {
+                proofType = "Collatz conjecture";
+                cleanType = "Collatz steps";
+            } else if (code.includes("digital") && code.includes("root")) {
+                proofType = "digital root calculation";
+                cleanType = "digital root";
+            }
+            
+            // Store that this is a custom proof
+            const customProofId = `proof_${Date.now()}_custom`;
+            proofStates[customProofId] = {
+                functionName: 'prove_custom',
+                displayFunction: proofType,
+                isCustom: true
+            };
+            
+            // Encode the code
+            const encodedCode = btoa(code);
+            const message = `prove custom ${encodedCode}`;
+            
+            // Put the encoded message in the input field
+            document.getElementById('user-input').value = message;
+            
+            // Clear and close
+            togglePasteArea();
+            document.getElementById('code-paste').value = '';
+            
+            // Focus on input so user can hit Send
+            document.getElementById('user-input').focus();
+        }
+        
+        function loadPasteExample(type) {
+            const examples = {
+                'simple': `// Prime Number Checker Example
+int main() {
+    int n = 17;
+    if (n <= 1) return 0;
+    if (n <= 3) return 1;
+    if (n % 2 == 0 || n % 3 == 0) return 0;
+    for (int i = 5; i * i <= n; i = i + 6) {
+        if (n % i == 0 || n % (i + 2) == 0) return 0;
+    }
+    return 1;
+}`,
+                'range': `// Collatz Conjecture Steps
+int main() {
+    int n = 27;
+    int steps = 0;
+    while (n != 1 && steps < 1000) {
+        if (n % 2 == 0) n = n / 2;
+        else n = 3 * n + 1;
+        steps++;
+    }
+    return steps;
+}`,
+                'hash': `// Digital Root Calculator
+int main() {
+    int n = 12345;
+    if (n == 0) return 0;
+    return (n - 1) % 9 + 1;
+}`
+            };
+            document.getElementById('code-paste').value = examples[type];
+            updateLineNumbers();
+        }
+
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const code = await file.text();
+            
+            // Put the encoded code in the input field instead of sending directly
+            const encodedCode = btoa(code);
+            document.getElementById('user-input').value = `prove custom ${encodedCode}`;
+            document.getElementById('user-input').focus();
+            
+            event.target.value = '';
+        }
+
+        function showCProgram(proofId) {
+            const card = document.getElementById(`card-${proofId}`);
+            if (!card) return;
+            
             const existingDisplay = card.querySelector('.inline-code-display');
             if (existingDisplay) {
                 existingDisplay.remove();
                 return;
             }
             
-            // Remove any other code displays
-            card.querySelectorAll('.inline-code-display').forEach(el => el.remove());
-            
-            // Get the state
             const state = proofStates[proofId] || {};
-            
-            // Determine the C code based on the function
             let cCode = '';
-            let fileName = state.wasmFile ? state.wasmFile.replace('.wat', '.c') : 'program.c';
+            let fileName = 'program.c';
             
-            if (state.wasmFile && state.wasmFile.includes('pasted_')) {
-                cCode = window.lastPastedCode || '// Original pasted C code\n// Code not available in this session';
-            } else if (state.wasmFile && state.wasmFile.includes('location')) {
-                cCode = getLocationCProgram();
-            } else if (state.wasmFile && state.wasmFile.includes('kyc')) {
-                cCode = getKYCProgram();
-            } else if (state.wasmFile && state.wasmFile.includes('ai_content')) {
-                cCode = getAIContentProgram();
+            // Use the stored function name
+            const funcName = state.functionName || state.displayFunction;
+            debug('Showing C program for ${proofId}, function: ' + (funcName) + '');
+            
+            if (funcName === 'prove_kyc' || funcName === 'kyc_compliance') {
+                cCode = '// KYC Compliance Verification\n' +
+                        '#include <stdint.h>\n\n' +
+                        'int32_t main(int32_t wallet_hash, int32_t kyc_approved) {\n' +
+                        '    // Privacy-preserving KYC proof\n' +
+                        '    // wallet_hash: Hash of wallet address (preserves privacy)\n' +
+                        '    // kyc_approved: 1=approved by Circle, 0=rejected\n' +
+                        '    \n' +
+                        '    int32_t base_computation = wallet_hash * 31;\n' +
+                        '    int32_t kyc_factor = kyc_approved * 1000;\n' +
+                        '    int32_t combined = base_computation + kyc_factor;\n' +
+                        '    \n' +
+                        '    // Modular arithmetic for zero-knowledge property\n' +
+                        '    int32_t proof_result = combined % 999983;\n' +
+                        '    \n' +
+                        '    return proof_result;\n' +
+                        '}';
+                fileName = 'prove_kyc.c';
+            } else if (funcName === 'prove_location' || funcName === 'depin_location') {
+                cCode = '// Location Verification for DePIN\n' +
+                        'int main(int packed_input) {\n' +
+                        '    // Extract components from packed input\n' +
+                        '    int lat = (packed_input >> 24) & 0xFF;      // Normalized latitude\n' +
+                        '    int lon = (packed_input >> 16) & 0xFF;      // Normalized longitude\n' +
+                        '    int device_id = packed_input & 0xFFFF;      // Device ID\n' +
+                        '    \n' +
+                        '    // Device ID validation (prevent spoofing)\n' +
+                        '    if (device_id <= 100 || device_id >= 65000) return 0;\n' +
+                        '    \n' +
+                        '    // San Francisco bounds (lat: 37.7-37.8, lon: -122.5 to -122.4)\n' +
+                        '    if (lat >= 95 && lat <= 98 && lon >= 120 && lon <= 125) return 1;\n' +
+                        '    \n' +
+                        '    // New York bounds (lat: 40.7-40.8, lon: -74.1 to -74.0)\n' +
+                        '    if (lat >= 102 && lat <= 105 && lon >= 180 && lon <= 185) return 2;\n' +
+                        '    \n' +
+                        '    // London bounds (lat: 51.4-51.6, lon: -0.2 to 0.1)\n' +
+                        '    if (lat >= 128 && lat <= 132 && lon >= 240 && lon <= 245) return 3;\n' +
+                        '    \n' +
+                        '    return 0; // Not in any supported city\n' +
+                        '}';
+                fileName = 'prove_location.c';
+            } else if (funcName === 'prove_ai_content' || funcName === 'ai_content_verification') {
+                cCode = '// AI Content Authenticity Verification\n' +
+                        '#include <stdint.h>\n\n' +
+                        'int32_t main(int32_t content_hash, int32_t provider_signature) {\n' +
+                        '    // Check authorized AI providers\n' +
+                        '    // 1000 = OpenAI\n' +
+                        '    // 2000 = Anthropic\n' +
+                        '    if (provider_signature != 1000 && provider_signature != 2000) {\n' +
+                        '        return 0; // Unauthorized provider\n' +
+                        '    }\n' +
+                        '    \n' +
+                        '    // Validate content hash (must be non-trivial)\n' +
+                        '    if (content_hash <= 1000) {\n' +
+                        '        return 0; // Invalid content\n' +
+                        '    }\n' +
+                        '    \n' +
+                        '    return 1; // Valid AI-generated content\n' +
+                        '}';
+                fileName = 'prove_ai_content.c';
+            } else if (state.isCustom) {
+                // For custom proofs, show generic custom code
+                cCode = '// Custom Proof Program\n' +
+                        'int main(int input) {\n' +
+                        '    // Custom proof logic\n' +
+                        '    // This would be your actual C code\n' +
+                        '    return input; // Example computation\n' +
+                        '}';
+                fileName = 'custom_proof.c';
             } else {
-                cCode = '// C program source code\nint main() {\n    return 1;\n}';
+                cCode = '// Custom Proof Program\n' +
+                        'int main() {\n' +
+                        '    // Custom proof logic\n' +
+                        '    return 1;\n' +
+                        '}';
+                fileName = 'custom_proof.c';
             }
             
-            // Create inline display
             const codeDisplay = document.createElement('div');
             codeDisplay.className = 'inline-code-display';
             codeDisplay.innerHTML = `
-                <div style="margin-top: 20px; padding: 20px; background: rgba(17, 17, 17, 0.8); border: 1px solid rgba(107, 124, 255, 0.2); border-radius: 12px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 20px;">📄</span>
-                            <h3 style="margin: 0; color: #6B7CFF; font-size: 16px; font-weight: 600;">Original C Program: ${fileName}</h3>
+                <div style="margin-top:20px;padding:20px;background:rgba(17,17,17,0.8);border:1px solid rgba(107,124,255,0.2);border-radius:12px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:20px;">📄</span>
+                            <h3 style="margin:0;color:#6B7CFF;font-size:16px;font-weight:600;">${fileName}</h3>
                         </div>
-                        <button onclick="this.closest('.inline-code-display').remove()" style="background: none; border: none; color: #666666; font-size: 24px; cursor: pointer; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">×</button>
+                        <button onclick="this.closest('.inline-code-display').remove()" style="background:none;border:none;color:#666;font-size:24px;cursor:pointer;">×</button>
                     </div>
-                    <div style="color: #a0a0a0; font-size: 13px; margin-bottom: 15px; line-height: 1.5;">
-                        This is the original C program that was compiled to WebAssembly. Users upload C code which gets compiled to WASM for cryptographic proof generation.
-                    </div>
-                    <pre style="background: rgba(0, 0, 0, 0.5); color: #ffffff; padding: 20px; border-radius: 8px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', monospace; font-size: 13px; line-height: 1.6; margin: 0; border: 1px solid rgba(107, 124, 255, 0.1);">${escapeHtml(cCode)}</pre>
+                    <pre style="background:rgba(0,0,0,0.5);color:#fff;padding:20px;border-radius:8px;overflow-x:auto;font-family:monospace;font-size:13px;line-height:1.6;margin:0;"><code class="language-c">${escapeHtml(cCode)}</code></pre>
                 </div>
             `;
-            
             card.appendChild(codeDisplay);
             
-            // Apply syntax highlighting if available
             if (typeof Prism !== 'undefined') {
                 Prism.highlightAllUnder(codeDisplay);
             }
         }
 
         function showWasmFile(proofId) {
-            console.log('showWasmFile called with:', proofId);
-            
-            const card = document.getElementById(`proof-${proofId}`);
+            const card = document.getElementById(`card-${proofId}`);
             if (!card) return;
             
-            // Check if code display already exists
             const existingDisplay = card.querySelector('.inline-code-display');
             if (existingDisplay) {
                 existingDisplay.remove();
                 return;
             }
             
-            // Remove any other code displays
-            card.querySelectorAll('.inline-code-display').forEach(el => el.remove());
-            
-            // Get the state
             const state = proofStates[proofId] || {};
-            
-            // Determine the WAT code based on the function
             let watCode = '';
-            let fileName = state.wasmFile || 'program.wat';
+            let fileName = 'program.wasm';
             
-            if (state.wasmFile === 'prove_kyc.wat') {
-                watCode = getKYCWasm();
-            } else if (state.wasmFile === 'prove_location.wat') {
-                watCode = getLocationWasm();
-            } else if (state.wasmFile === 'prove_ai_content.wat') {
-                watCode = getAIContentWasm();
-            } else if (state.wasmFile && state.wasmFile.includes('pasted_')) {
-                watCode = `(module
-  ;; Generated from pasted C code
-  (func (export "main") (param $dummy i32) (result i32)
-    ;; Implementation based on pasted C code
-    ;; zkEngine v6.0 supports real algorithms with loops
-    (i32.const 1)
-  )
-)`;
+            // Use the stored function name
+            const funcName = state.functionName || state.displayFunction;
+            
+            if (funcName === 'prove_kyc' || funcName === 'kyc_compliance') {
+                watCode = '(module\n' +
+                          '  ;; KYC Compliance Verification WASM\n' +
+                          '  ;; Proves wallet KYC status without revealing identity\n' +
+                          '  \n' +
+                          '  (func $main (export "main") (param $wallet_hash i32) (param $kyc_status i32) (result i32)\n' +
+                          '    ;; Privacy-preserving computation\n' +
+                          '    local.get $wallet_hash\n' +
+                          '    i32.const 31\n' +
+                          '    i32.mul\n' +
+                          '    local.get $kyc_status\n' +
+                          '    i32.const 1000\n' +
+                          '    i32.mul\n' +
+                          '    i32.add\n' +
+                          '    i32.const 999983\n' +
+                          '    i32.rem_s\n' +
+                          '  )\n' +
+                          ')';
+                fileName = 'kyc_compliance.wasm';
+            } else if (funcName === 'prove_location' || funcName === 'depin_location') {
+                watCode = '(module\n' +
+                          '  ;; DePIN Location Proof WASM\n' +
+                          '  ;; Verifies device location without revealing coordinates\n' +
+                          '  \n' +
+                          '  (func $main (export "main") (param $packed_input i32) (result i32)\n' +
+                          '    local $lat i32\n' +
+                          '    local $lon i32\n' +
+                          '    local $device_id i32\n' +
+                          '    \n' +
+                          '    ;; Extract latitude\n' +
+                          '    local.get $packed_input\n' +
+                          '    i32.const 24\n' +
+                          '    i32.shr_u\n' +
+                          '    i32.const 0xFF\n' +
+                          '    i32.and\n' +
+                          '    local.set $lat\n' +
+                          '    \n' +
+                          '    ;; Extract longitude\n' +
+                          '    local.get $packed_input\n' +
+                          '    i32.const 16\n' +
+                          '    i32.shr_u\n' +
+                          '    i32.const 0xFF\n' +
+                          '    i32.and\n' +
+                          '    local.set $lon\n' +
+                          '    \n' +
+                          '    ;; Check San Francisco bounds\n' +
+                          '    local.get $lat\n' +
+                          '    i32.const 95\n' +
+                          '    i32.ge_u\n' +
+                          '    local.get $lat\n' +
+                          '    i32.const 98\n' +
+                          '    i32.le_u\n' +
+                          '    i32.and\n' +
+                          '    local.get $lon\n' +
+                          '    i32.const 120\n' +
+                          '    i32.ge_u\n' +
+                          '    i32.and\n' +
+                          '    local.get $lon\n' +
+                          '    i32.const 125\n' +
+                          '    i32.le_u\n' +
+                          '    i32.and\n' +
+                          '    if (result i32)\n' +
+                          '      i32.const 1  ;; San Francisco\n' +
+                          '    else\n' +
+                          '      i32.const 0  ;; Not in SF\n' +
+                          '    end\n' +
+                          '  )\n' +
+                          ')';
+                fileName = 'depin_location.wasm';
+            } else if (funcName === 'prove_ai_content' || funcName === 'ai_content_verification') {
+                watCode = '(module\n' +
+                          '  ;; AI Content Verification WASM\n' +
+                          '  ;; Verifies content authenticity from authorized AI providers\n' +
+                          '  \n' +
+                          '  (func $main (export "main") (param $content_hash i32) (param $provider i32) (result i32)\n' +
+                          '    ;; Check if provider is OpenAI (1000) or Anthropic (2000)\n' +
+                          '    local.get $provider\n' +
+                          '    i32.const 1000\n' +
+                          '    i32.eq\n' +
+                          '    local.get $provider\n' +
+                          '    i32.const 2000\n' +
+                          '    i32.eq\n' +
+                          '    i32.or\n' +
+                          '    \n' +
+                          '    ;; Check if content hash is valid (> 1000)\n' +
+                          '    local.get $content_hash\n' +
+                          '    i32.const 1000\n' +
+                          '    i32.gt_s\n' +
+                          '    \n' +
+                          '    ;; Both conditions must be true\n' +
+                          '    i32.and\n' +
+                          '  )\n' +
+                          ')';
+                fileName = 'ai_content_verification.wasm';
+            } else if (state.isCustom) {
+                // For custom proofs, show a generic custom WASM
+                watCode = '(module\n' +
+                          '  ;; Custom Proof WASM\n' +
+                          '  ;; This would be your compiled custom proof\n' +
+                          '  (func $main (export "main") (param $input i32) (result i32)\n' +
+                          '    ;; Custom computation\n' +
+                          '    local.get $input\n' +
+                          '  )\n' +
+                          ')';
+                          
+                if (state.displayFunction === 'prime_check') {
+                    fileName = 'prime_checker.wasm';
+                } else if (state.displayFunction === 'collatz_steps') {
+                    fileName = 'collatz.wasm';
+                } else if (state.displayFunction === 'digital_root') {
+                    fileName = 'digital_root.wasm';
+                } else {
+                    fileName = 'custom_proof.wasm';
+                }
             } else {
-                watCode = `(module
-  (func (export "main") (result i32)
-    (i32.const 1)
-  )
-)`;
+                watCode = '(module\n' +
+                          '  ;; Custom Proof WASM\n' +
+                          '  (func $main (export "main") (result i32)\n' +
+                          '    i32.const 1\n' +
+                          '  )\n' +
+                          ')';
+                fileName = 'custom_proof.wasm';
             }
             
-            // Create inline display
             const codeDisplay = document.createElement('div');
             codeDisplay.className = 'inline-code-display';
             codeDisplay.innerHTML = `
-                <div style="margin-top: 20px; padding: 20px; background: rgba(17, 17, 17, 0.8); border: 1px solid rgba(107, 124, 255, 0.2); border-radius: 12px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 20px;">⚙️</span>
-                            <h3 style="margin: 0; color: #6B7CFF; font-size: 16px; font-weight: 600;">WASM Program: ${fileName}</h3>
+                <div style="margin-top:20px;padding:20px;background:rgba(17,17,17,0.8);border:1px solid rgba(107,124,255,0.2);border-radius:12px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:20px;">⚙️</span>
+                            <h3 style="margin:0;color:#6B7CFF;font-size:16px;font-weight:600;">${fileName}</h3>
                         </div>
-                        <button onclick="this.closest('.inline-code-display').remove()" style="background: none; border: none; color: #666666; font-size: 24px; cursor: pointer; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">×</button>
+                        <button onclick="this.closest('.inline-code-display').remove()" style="background:none;border:none;color:#666;font-size:24px;cursor:pointer;">×</button>
                     </div>
-                    <div style="color: #a0a0a0; font-size: 13px; margin-bottom: 15px; line-height: 1.5;">
-                        This is the WebAssembly Text format (WAT) file generated from the C program. zkEngine processes this file to generate zero-knowledge proofs.
-                    </div>
-                    <pre style="background: rgba(0, 0, 0, 0.5); color: #ffffff; padding: 20px; border-radius: 8px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', monospace; font-size: 13px; line-height: 1.6; margin: 0; border: 1px solid rgba(107, 124, 255, 0.1);">${escapeHtml(watCode)}</pre>
+                    <pre style="background:rgba(0,0,0,0.5);color:#fff;padding:20px;border-radius:8px;overflow-x:auto;font-family:monospace;font-size:13px;line-height:1.6;margin:0;"><code class="language-wasm">${escapeHtml(watCode)}</code></pre>
                 </div>
             `;
-            
             card.appendChild(codeDisplay);
             
-            // Apply syntax highlighting if available
             if (typeof Prism !== 'undefined') {
                 Prism.highlightAllUnder(codeDisplay);
             }
@@ -1457,796 +1778,67 @@
             return div.innerHTML;
         }
 
-        // Example content functions
-        function getLocationCProgram() {
-            return `#include <stdint.h>
-
-// DePIN Location Proof for San Francisco
-// Verifies if coordinates are within SF boundaries
-// Returns 1 if within bounds, 0 otherwise
-
-#define SF_LAT 37773972    // 37.773972 * 1000000 (scaled for integer math)
-#define SF_LNG -122431297  // -122.431297 * 1000000 (scaled for integer math)
-#define MAX_DISTANCE 50000 // 50km threshold in scaled units
-
-// Helper function to calculate absolute value
-int32_t abs_diff(int32_t a, int32_t b) {
-    return (a > b) ? (a - b) : (b - a);
-}
-
-// Main location verification function
-int32_t location(int32_t lat, int32_t lng) {
-    // Calculate Manhattan distance (simplified for proof)
-    int32_t lat_diff = abs_diff(lat, SF_LAT);
-    int32_t lng_diff = abs_diff(lng, SF_LNG);
-    
-    // Check if within bounds
-    if (lat_diff < MAX_DISTANCE && lng_diff < MAX_DISTANCE) {
-        return 1; // Within San Francisco area
-    }
-    return 0; // Outside bounds
-}`;
-        }
-
-        function getKYCProgram() {
-            return `#include <stdint.h>
-
-// Circle KYC Compliance Verification
-// Verifies user meets compliance requirements
-// Returns 1 if compliant, 0 otherwise
-
-#define MIN_AGE 18
-#define MAX_RISK_SCORE 75
-
-// Check KYC compliance
-int32_t kyc_check(int32_t age, int32_t risk_score) {
-    // Age verification
-    if (age < MIN_AGE) {
-        return 0; // Too young
-    }
-    
-    // Risk assessment
-    if (risk_score > MAX_RISK_SCORE) {
-        return 0; // Risk too high
-    }
-    
-    // All checks passed
-    return 1;
-}`;
-        }
-
-        function getAIContentProgram() {
-            return `#include <stdint.h>
-
-// AI Content Authenticity Verification
-// Proves content was generated by authorized AI
-// Uses simplified hash verification
-
-#define MAGIC_HASH 0x5A5A5A5A
-
-// Verify AI content authenticity
-int32_t verify_ai_content(int32_t content_hash, int32_t signature) {
-    // Simple verification for demo
-    int32_t expected = content_hash ^ MAGIC_HASH;
-    
-    if (signature == expected) {
-        return 1; // Authentic
-    }
-    return 0; // Not authentic
-}`;
-        }
-
-        function getLocationWasm() {
-            return `(module
-  (func $abs_diff (param $a i32) (param $b i32) (result i32)
-    (if (result i32)
-      (i32.gt_s (local.get $a) (local.get $b))
-      (then (i32.sub (local.get $a) (local.get $b)))
-      (else (i32.sub (local.get $b) (local.get $a)))
-    )
-  )
-  
-  (func (export "location") (param $lat i32) (param $lng i32) (result i32)
-    (local $lat_diff i32)
-    (local $lng_diff i32)
-    
-    ;; SF coordinates: 37.773972, -122.431297 (scaled)
-    (local.set $lat_diff 
-      (call $abs_diff (local.get $lat) (i32.const 37773972))
-    )
-    (local.set $lng_diff
-      (call $abs_diff (local.get $lng) (i32.const -122431297))
-    )
-    
-    ;; Check if within 50km bounds
-    (if (result i32)
-      (i32.and
-        (i32.lt_s (local.get $lat_diff) (i32.const 50000))
-        (i32.lt_s (local.get $lng_diff) (i32.const 50000))
-      )
-      (then (i32.const 1))
-      (else (i32.const 0))
-    )
-  )
-)`;
-        }
-
-        function getKYCWasm() {
-            return `(module
-  (func (export "kyc_check") (param $age i32) (param $risk_score i32) (result i32)
-    ;; Check age >= 18
-    (if (i32.lt_s (local.get $age) (i32.const 18))
-      (then (return (i32.const 0)))
-    )
-    
-    ;; Check risk score <= 75
-    (if (i32.gt_s (local.get $risk_score) (i32.const 75))
-      (then (return (i32.const 0)))
-    )
-    
-    ;; All checks passed
-    (i32.const 1)
-  )
-)`;
-        }
-
-        function getAIContentWasm() {
-            return `(module
-  (func (export "verify_ai_content") (param $content_hash i32) (param $signature i32) (result i32)
-    (local $expected i32)
-    
-    ;; Calculate expected signature using XOR with magic constant
-    (local.set $expected 
-      (i32.xor (local.get $content_hash) (i32.const 0x5A5A5A5A))
-    )
-    
-    ;; Verify signature matches expected value
-    (if (result i32)
-      (i32.eq (local.get $signature) (local.get $expected))
-      (then (i32.const 1))
-      (else (i32.const 0))
-    )
-  )
-)`;
-        }
-        
-        // Proof card functions
-        function createProofCard(proofId, status, content, data = null) {
-            const messagesDiv = document.getElementById('messages');
-            
-            let functionName = 'computation';
-            let args = '';
-            let wasmFile = 'custom.wat';
-            
-            if (data) {
-                functionName = data.function || functionName;
-                args = data.arguments ? data.arguments.join(', ') : args;
-                wasmFile = data.wasm_file || wasmFile;
-            }
-            
-            proofStates[proofId] = { status, functionName, args, wasmFile };
-            
-            const cardDiv = document.createElement('div');
-            cardDiv.className = `proof-card ${status}`;
-            cardDiv.id = `proof-${proofId}`;
-            
-            const proofIdShort = proofId.substring(0, 8);
-            
-            cardDiv.innerHTML = `
-                <div class="card-header">
-                    <div class="card-title">
-                        <div class="card-icon spinning">⚡</div>
-                        <span class="card-title-text">Proof Generation</span>
-                    </div>
-                    <div class="card-badge badge-processing">
-                        GENERATING
-                    </div>
-                </div>
-                
-                <div class="metrics-row">
-                    <div class="metric-item-inline">
-                        <span class="metric-label-inline">Proof ID:</span>
-                        <span class="metric-value-inline">${proofIdShort}</span>
-                    </div>
-                    <div class="metric-item-inline">
-                        <span class="metric-label-inline">Function:</span>
-                        <span class="metric-value-inline">${functionName}(${args})</span>
-                    </div>
-                    <div class="metric-item-inline">
-                        <span class="metric-label-inline">Status:</span>
-                        <span class="metric-value-inline">Generating...</span>
-                    </div>
-                </div>
-            `;
-            
-            messagesDiv.appendChild(cardDiv);
-            messagesDiv.parentElement.scrollTop = messagesDiv.parentElement.scrollHeight;
-        }
-        
-        function updateProofCard(proofId, status, content, data = null) {
-            const card = document.getElementById(`proof-${proofId}`);
-            if (!card) {
-                createProofCard(proofId, status, content, data);
-                return;
-            }
-            
-            const state = proofStates[proofId] || {};
-            card.className = `proof-card ${status}`;
-            
-            const proofIdShort = proofId.substring(0, 8);
-            const functionName = state.functionName || 'computation';
-            const args = state.args || '';
-            
-            let timeDisplay = 'N/A';
-            let sizeDisplay = 'N/A';
-            
-            if (data) {
-                timeDisplay = data.time ? `${data.time.toFixed(1)}s` : timeDisplay;
-                sizeDisplay = data.size ? `${data.size.toFixed(1)}MB` : sizeDisplay;
-            }
-            
-            card.innerHTML = `
-                <div class="card-header">
-                    <div class="card-title">
-                        <div class="card-icon">✅</div>
-                        <span class="card-title-text">Proof Generated</span>
-                    </div>
-                    <div class="card-badge badge-success">
-                        COMPLETE
-                    </div>
-                </div>
-                
-                <div class="metrics-row">
-                    <div class="metric-item-inline">
-                        <span class="metric-label-inline">Proof ID:</span>
-                        <span class="metric-value-inline">${proofIdShort}</span>
-                    </div>
-                    <div class="metric-item-inline">
-                        <span class="metric-label-inline">Function:</span>
-                        <span class="metric-value-inline">${functionName}(${args})</span>
-                    </div>
-                    <div class="metric-item-inline">
-                        <span class="metric-label-inline">Time:</span>
-                        <span class="metric-value-inline">${timeDisplay}</span>
-                    </div>
-                    <div class="metric-item-inline">
-                        <span class="metric-label-inline">Size:</span>
-                        <span class="metric-value-inline">${sizeDisplay}</span>
-                    </div>
-                </div>
-                
-                <div class="card-actions">
-                    <button class="action-btn" onclick="verifyProof('${proofId}')">
-                        🔍 Verify Proof
-                    </button>
-                    <button class="action-btn secondary" onclick="showCProgram('${proofId}')">
-                        📄 C Program
-                    </button>
-                    <button class="action-btn secondary" onclick="showWasmFile('${proofId}')">
-                        ⚙️ WASM Program
-                    </button>
-                    <button class="action-btn secondary" onclick="copyToClipboard('${proofId}')">
-                        📋 Copy ID
-                    </button>
-                </div>
-            `;
-        }
-        
-        function displayProofsList(proofs) {
-            const messagesDiv = document.getElementById('messages');
-            
-            const tableDiv = document.createElement('div');
-            tableDiv.className = 'data-table';
-            
-            const recentProofs = proofs
-                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                .slice(0, 20);
-            
-            let tableHTML = `
-                <div class="table-header">
-                    <div class="table-title">📋 Recent Proof History</div>
-                    <div class="table-count">${recentProofs.length} of ${proofs.length} proofs</div>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Proof ID</th>
-                            <th>Function</th>
-                            <th>Arguments</th>
-                            <th>Status</th>
-                            <th>Time</th>
-                            <th>Created</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            if (recentProofs.length === 0) {
-                tableHTML += `
-                    <tr>
-                        <td colspan="6" style="text-align: center; color: #666666; padding: 40px;">
-                            No proofs generated yet. Try generating a proof!
-                        </td>
-                    </tr>
-                `;
-            } else {
-                recentProofs.forEach(proof => {
-                    const proofIdShort = proof.id.substring(0, 8);
-                    const functionName = proof.metadata.function || 'computation';
-                    const args = proof.metadata.arguments.join(', ') || 'none';
-                    const statusClass = proof.status === 'Complete' ? 'status-success' : 'status-running';
-                    const time = proof.metrics.generation_time_secs ? `${proof.metrics.generation_time_secs.toFixed(1)}s` : 'N/A';
-                    const created = new Date(proof.timestamp).toLocaleString();
-                    
-                    tableHTML += `
-                        <tr>
-                            <td><span class="clickable" onclick="copyToClipboard('${proof.id}')">${proofIdShort}</span></td>
-                            <td>${functionName}</td>
-                            <td>${args}</td>
-                            <td><span class="${statusClass}">${proof.status}</span></td>
-                            <td>${time}</td>
-                            <td>${created}</td>
-                        </tr>
-                    `;
-                });
-            }
-            
-            tableHTML += `
-                    </tbody>
-                </table>
-            `;
-            
-            tableDiv.innerHTML = tableHTML;
-            messagesDiv.appendChild(tableDiv);
-            messagesDiv.parentElement.scrollTop = messagesDiv.parentElement.scrollHeight;
-        }
-        
-        function displayVerificationsList(verifications) {
-            const messagesDiv = document.getElementById('messages');
-            
-            const tableDiv = document.createElement('div');
-            tableDiv.className = 'data-table';
-            
-            const recentVerifications = verifications
-                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                .slice(0, 20);
-            
-            let tableHTML = `
-                <div class="table-header">
-                    <div class="table-title">✅ Recent Verification History</div>
-                    <div class="table-count">${recentVerifications.length} verifications</div>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Verification ID</th>
-                            <th>Proof ID</th>
-                            <th>Result</th>
-                            <th>Time</th>
-                            <th>Verified At</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            recentVerifications.forEach(verification => {
-                const verifyIdShort = verification.id.substring(0, 8);
-                const proofIdShort = verification.proof_id.substring(0, 8);
-                const resultClass = verification.is_valid ? 'status-success' : 'status-failed';
-                const result = verification.is_valid ? 'VALID ✅' : 'INVALID ❌';
-                const time = verification.verification_time_secs ? `${verification.verification_time_secs.toFixed(3)}s` : 'N/A';
-                const verified = new Date(verification.timestamp).toLocaleString();
-                
-                tableHTML += `
-                    <tr>
-                        <td><span class="clickable">${verifyIdShort}</span></td>
-                        <td><span class="clickable">${proofIdShort}</span></td>
-                        <td><span class="${resultClass}">${result}</span></td>
-                        <td>${time}</td>
-                        <td>${verified}</td>
-                    </tr>
-                `;
-            });
-            
-            tableHTML += `
-                    </tbody>
-                </table>
-            `;
-            
-            tableDiv.innerHTML = tableHTML;
-            messagesDiv.appendChild(tableDiv);
-            messagesDiv.parentElement.scrollTop = messagesDiv.parentElement.scrollHeight;
-        }
-        
-        function displayVerificationResult(data) {
-            const messagesDiv = document.getElementById('messages');
-            
-            const cardDiv = document.createElement('div');
-            cardDiv.className = `proof-card ${data.is_valid ? 'success' : 'failed'}`;
-            
-            const proofIdShort = data.proof_id.substring(0, 8);
-            const resultIcon = data.is_valid ? '✅' : '❌';
-            const resultText = data.is_valid ? 'VALID' : 'INVALID';
-            const badgeClass = data.is_valid ? 'badge-success' : 'badge-failed';
-            
-            cardDiv.innerHTML = `
-                <div class="card-header">
-                    <div class="card-title">
-                        <div class="card-icon">${resultIcon}</div>
-                        <span class="card-title-text">Proof Verification</span>
-                    </div>
-                    <div class="card-badge ${badgeClass}">
-                        ${resultText}
-                    </div>
-                </div>
-                
-                <div class="metrics-row">
-                    <div class="metric-item-inline">
-                        <span class="metric-label-inline">Proof ID:</span>
-                        <span class="metric-value-inline">${proofIdShort}</span>
-                    </div>
-                    <div class="metric-item-inline">
-                        <span class="metric-label-inline">Result:</span>
-                        <span class="metric-value-inline">${resultText}</span>
-                    </div>
-                    <div class="metric-item-inline">
-                        <span class="metric-label-inline">Time:</span>
-                        <span class="metric-value-inline">${data.verification_time_secs ? data.verification_time_secs.toFixed(3) + 's' : 'N/A'}</span>
-                    </div>
-                </div>
-            `;
-            
-            messagesDiv.appendChild(cardDiv);
-            messagesDiv.parentElement.scrollTop = messagesDiv.parentElement.scrollHeight;
-        }
-        
-        // Helper functions
-        function verifyProof(proofId) {
-            sendMessage(`verify proof ${proofId}`);
-        }
-        
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
-                console.log('Copied to clipboard:', text);
-            }).catch(err => {
-                console.error('Failed to copy:', err);
+                const toast = document.createElement('div');
+                toast.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    box-shadow: 0 4px 12px rgba(107, 124, 255, 0.4);
+                    z-index: 10000;
+                    animation: slideIn 0.3s ease-out;
+                `;
+                toast.textContent = '✓ Copied to clipboard';
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.style.animation = 'slideOut 0.3s ease-out';
+                    setTimeout(() => toast.remove(), 300);
+                }, 2000);
             });
         }
-        
-        // Paste functionality
-        function togglePasteArea() {
-            const pasteArea = document.getElementById('paste-area');
-            if (!pasteArea) {
-                console.error('Paste area element not found');
-                return;
-            }
-            
-            const isVisible = pasteArea.style.display !== 'none';
-            pasteArea.style.display = isVisible ? 'none' : 'block';
-            
-            if (!isVisible) {
-                const textarea = document.getElementById('code-paste');
-                if (textarea) {
-                    textarea.focus();
-                    textarea.value = '';
-                    updateSyntaxHighlight();
-                }
-            }
-        }
-        
-        function updateSyntaxHighlight() {
-            const textarea = document.getElementById('code-paste');
-            const highlight = document.getElementById('code-highlight');
-            const lineNumbers = document.getElementById('line-numbers');
-            
-            if (!textarea || !highlight || !lineNumbers) return;
-            
-            const code = textarea.value || textarea.placeholder;
-            
-            if (highlight) {
-                highlight.textContent = code;
-                if (typeof Prism !== 'undefined' && Prism.highlightElement) {
-                    Prism.highlightElement(highlight);
-                }
-            }
-            
-            // Update line numbers
-            const lines = code.split('\n');
-            let lineNumbersText = '';
-            for (let i = 1; i <= lines.length; i++) {
-                lineNumbersText += i + '\n';
-            }
-            lineNumbers.textContent = lineNumbersText.trim();
-            
-            // Sync scroll positions
-            textarea.addEventListener('scroll', function() {
-                highlight.scrollTop = textarea.scrollTop;
-                highlight.scrollLeft = textarea.scrollLeft;
-                lineNumbers.scrollTop = textarea.scrollTop;
-            });
-        }
-        
-        function loadPasteExample(type) {
-            const examples = {
-                'simple': `/*
- * Prime Number Checker Example
- * 
- * This function checks if a number is prime.
- * The main function takes ONE argument:
- * - input: the number to check (e.g., 17)
- * 
- * To test with different values, simply change
- * the number in the function call below.
- */
 
-int is_prime(int n) {
-    if (n <= 1) return 0;
-    if (n == 2) return 1;
-    if (n % 2 == 0) return 0;
-    
-    // Check odd divisors up to sqrt(n)
-    for (int i = 3; i * i <= n; i += 2) {
-        if (n % i == 0) return 0;
-    }
-    return 1;
-}
-
-int main() {
-    // Change this value to test different numbers
-    int number_to_check = 17;
-    
-    return is_prime(number_to_check);
-}`,
-                
-                'range': `/*
- * Collatz Conjecture Steps Calculator
- * 
- * This calculates how many steps it takes
- * for a number to reach 1 using the Collatz
- * conjecture rules:
- * - If even: divide by 2
- * - If odd: multiply by 3 and add 1
- * 
- * Change the starting_number value below
- * to test different sequences.
- */
-
-int collatz_steps(int n) {
-    int steps = 0;
-    
-    // Ensure positive number
-    if (n <= 0) n = 1;
-    
-    while (n != 1 && steps < 1000) {
-        if (n % 2 == 0) {
-            n = n / 2;
-        } else {
-            n = 3 * n + 1;
-        }
-        steps++;
-    }
-    
-    return steps;
-}
-
-int main() {
-    // Change this value to test different starting numbers
-    int starting_number = 27;
-    
-    return collatz_steps(starting_number);
-}`,
-                
-                'hash': `/*
- * Digital Root Calculator
- * 
- * The digital root is obtained by repeatedly
- * summing the digits of a number until a
- * single digit remains.
- * 
- * For example: 12345 → 1+2+3+4+5 = 15 → 1+5 = 6
- * 
- * Change the input_number value below to
- * calculate the digital root of different numbers.
- */
-
-int digit_sum(int n) {
-    int sum = 0;
-    
-    // Make positive
-    if (n < 0) n = -n;
-    
-    while (n > 0) {
-        sum += n % 10;
-        n /= 10;
-    }
-    return sum;
-}
-
-int digital_root(int n) {
-    while (n >= 10) {
-        n = digit_sum(n);
-    }
-    return n;
-}
-
-int main() {
-    // Change this value to calculate different digital roots
-    int input_number = 12345;
-    
-    return digital_root(input_number);
-}`
-            };
-            
-            const textarea = document.getElementById('code-paste');
-            if (textarea && examples[type]) {
-                textarea.value = examples[type];
-                lastPastedCode = examples[type];
-                updateSyntaxHighlight();
+        // Add keyboard shortcut to toggle debug console
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+                debugMode = !debugMode;
+                document.getElementById('debug-console').style.display = debugMode ? 'block' : 'none';
+                debug('Debug mode ' + (debugMode ? 'enabled' : 'disabled') + '');
             }
-        }
-        
-        async function processCodePaste() {
-            const textarea = document.getElementById('code-paste');
-            if (!textarea) return;
-            
-            const code = textarea.value;
-            if (!code.trim()) {
-                alert('Please paste some C code first');
-                return;
-            }
-            
-            lastPastedCode = code;
-            
-            try {
-                const transformRes = await fetch('http://localhost:8002/api/transform-code', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({code: code, auto_transform: true})
-                });
-                
-                if (!transformRes.ok) {
-                    throw new Error('Transform failed');
-                }
-                
-                const transformed = await transformRes.json();
-                
-                const compileRes = await fetch('http://localhost:8002/api/compile-transformed', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        code: transformed.transformed_code,
-                        filename: 'pasted_' + Date.now()
-                    })
-                });
-                
-                if (!compileRes.ok) {
-                    throw new Error('Compilation failed');
-                }
-                
-                const compiled = await compileRes.json();
-                
-                if (compiled.success) {
-                    togglePasteArea();
-                    // Since the values are now hardcoded in the C code,
-                    // we just need to run the proof without arguments
-                    const cmd = `prove custom ${compiled.wasm_file}`;
-                    document.getElementById('user-input').value = cmd;
-                    sendMessage(cmd);
-                } else {
-                    alert('Compilation failed: ' + (compiled.error || 'Unknown error'));
-                }
-            } catch (e) {
-                console.error('Error:', e);
-                alert('Please ensure the integrated service is running:\npython langchain_service.py');
-            }
-        }
-        
-        async function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file || !file.name.endsWith('.c')) {
-                alert('Please upload a C file (.c)');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const code = e.target.result;
-                try {
-                    const transformResponse = await fetch('http://localhost:8002/api/transform-code', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({code: code, auto_transform: true})
-                    });
-                    
-                    if (!transformResponse.ok) {
-                        throw new Error('Transform failed');
-                    }
-                    
-                    const transformed = await transformResponse.json();
-                    
-                    const compileResponse = await fetch('http://localhost:8002/api/compile-transformed', {
-                        method: 'POST', 
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            code: transformed.transformed_code, 
-                            filename: file.name.replace('.c', '')
-                        })
-                    });
-                    
-                    if (!compileResponse.ok) {
-                        throw new Error('Compilation failed');
-                    }
-                    
-                    const compiled = await compileResponse.json();
-                    
-                    if (compiled.success) {
-                        const cmd = `prove custom ${compiled.wasm_file}`;
-                        document.getElementById('user-input').value = cmd;
-                        sendMessage(cmd);
-                    } else {
-                        alert('Compilation failed: ' + (compiled.error || 'Unknown error'));
-                    }
-                } catch (e) {
-                    console.error('Error:', e);
-                    alert('Please ensure the integrated service is running: python langchain_service.py');
-                }
-            };
-            reader.readAsText(file);
-            
-            event.target.value = '';
-        }
-        
-        // Event listeners
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
-            // Connect WebSocket
+            debug('DOM loaded, initializing WebSocket connection...');
             connect();
             
-            // Setup input handlers
-            const userInput = document.getElementById('user-input');
-            if (userInput) {
-                userInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        sendMessage();
-                    }
+            document.getElementById('send-button').addEventListener('click', () => sendMessage());
+            document.getElementById('user-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+            
+            document.querySelectorAll('.example-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    // Just populate the input field, don't send
+                    const exampleText = item.getAttribute('data-example');
+                    document.getElementById('user-input').value = exampleText;
+                    document.getElementById('user-input').focus();
                 });
-            }
-            
-            const sendButton = document.getElementById('send-button');
-            if (sendButton) {
-                sendButton.addEventListener('click', () => sendMessage());
-            }
-            
-            // Setup paste functionality
-            const textarea = document.getElementById('code-paste');
-            if (textarea) {
-                textarea.addEventListener('input', updateSyntaxHighlight);
-                // Initial syntax highlight
-                updateSyntaxHighlight();
-            }
-            
-            // Example clicks
-            document.addEventListener('click', function(e) {
-                if (e.target.closest('.example-item')) {
-                    const example = e.target.closest('.example-item').getAttribute('data-example');
-                    if (example) {
-                        document.getElementById('user-input').value = example;
-                        sendMessage(example);
-                    }
-                }
             });
             
-            // Close paste area on outside click
-            document.addEventListener('click', function(event) {
-                const pasteArea = document.getElementById('paste-area');
-                const pasteButton = document.getElementById('paste-button');
-                
-                if (pasteArea && pasteButton && 
-                    pasteArea.style.display !== 'none' && 
-                    !pasteArea.contains(event.target) && 
-                    event.target !== pasteButton) {
-                    togglePasteArea();
-                }
-            });
+            // Show debug hint
+            console.log('💡 Press Ctrl+Shift+D to toggle debug console');
+        });
+
+        // Clean up any active polls when page unloads
+        window.addEventListener('beforeunload', () => {
+            Object.values(activePolls).forEach(interval => clearInterval(interval));
         });
     </script>
 </body>
