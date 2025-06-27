@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@circle-fin/developer-controlled-wallets": "^8.3.0"
+  }
+}

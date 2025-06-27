@@ -2,7 +2,7 @@
 
 <div align="center">
 
- <h1>ZKP Agent Kit</h1>  
+ <h1>Verifiable Agent Kit</h1>  
  <h3>The First Natural Language AI Interface for Zero-Knowledge Proofs</h3>
   
   [![Version](https://img.shields.io/badge/version-1.0.0-purple.svg)](https://github.com/hshadab/ZKP-agentkit)
@@ -30,7 +30,7 @@ This makes advanced cryptography accessible to everyone through the power of nat
 
 ## 🌟 Why This Matters
 
-Zero-knowledge proofs are the future of privacy-preserving verifiable computation, but they've been locked away behind complex mathematics and specialized languages. The Novanet ZKP Agent Kit breaks down these barriers by:
+Zero-knowledge proofs are the future of privacy-preserving verifiable computation, but they've been locked away behind complex mathematics and specialized languages. The Novanet Verifiable Agent Kit breaks down these barriers by:
 
 1. **Speaking Human** - Interact with ZK proofs using plain English
 2. **Thinking Like a Developer** - Understands intent and context

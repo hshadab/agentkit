@@ -1,0 +1,35 @@
+{
+  "name": "zkp-circle-integration",
+  "version": "2.0.0",
+  "description": "ZKP Agent Kit with Circle USDC transfers on Ethereum and Solana",
+  "type": "module",
+  "main": "executeTransfer.js",
+  "scripts": {
+    "test": "node testSolanaTransfers.js",
+    "transfer": "node executeTransfer.js",
+    "dev": "node executeTransfer.js",
+    "setup": "node setupCircleWallets.js"
+  },
+  "dependencies": {
+    "@circle-fin/circle-sdk": "^2.9.0",
+    "dotenv": "^16.5.0",
+    "node-fetch": "^3.3.2",
+    "uuid": "^9.0.1",
+    "ws": "^8.18.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0"
+  },
+  "keywords": [
+    "zkp",
+    "circle",
+    "usdc",
+    "ethereum",
+    "solana",
+    "blockchain",
+    "transfers",
+    "mint"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
