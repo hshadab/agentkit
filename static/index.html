@@ -191,6 +191,23 @@
             cursor: pointer;
             font-weight: 600;
         }
+        
+        /* Explorer link styles */
+        .explorer-link {
+            color: #4a90e2 !important;
+            text-decoration: underline !important;
+            cursor: pointer !important;
+        }
+        
+        .explorer-link:hover {
+            color: #357abd !important;
+            text-decoration: underline !important;
+        }
+        
+        .transfer-status a {
+            color: #4a90e2 !important;
+            text-decoration: underline !important;
+        }
     </style>
 </head>
 <body>
@@ -276,7 +293,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
 
     <script>
-        // --- DEBUGGING ENABLED VERSION ---
+        // --- COMPLETE FRONTEND WITH REAL CIRCLE TRANSFER SUPPORT ---
 
         let ws = null;
         const proofStates = {};
@@ -285,6 +302,7 @@
         let debugMinimized = false;
         const verificationTimes = {}; // Store verification start times
         let waitingMessageId = null; // Track waiting message
+        const activePolls = {}; // Store active polling intervals
         
         // Toggle debug console minimize state
         function toggleDebugMinimize() {
@@ -313,6 +331,31 @@
             }
         }
 
+
+        // Function to show rate limit message
+        function showRateLimitMessage(proofId) {
+            const card = activeCards[proofId];
+            if (!card) return;
+            
+            const content = card.querySelector('.card-content');
+            if (content) {
+                const rateLimitHtml = `
+                    <div style="margin-top: 20px; padding: 16px; background: rgba(251, 191, 36, 0.1); border-radius: 8px;">
+                        <div style="font-weight: 600; color: #fbbf24; margin-bottom: 8px;">⏸️ Rate Limit Reached</div>
+                        <div style="font-size: 13px; color: #a0a0a0;">
+                            <div>Circle API rate limit exceeded. This is normal when checking multiple transfers.</div>
+                            <div style="margin-top: 8px;">The transfer is still processing. Please wait a moment and check back.</div>
+                            <div style="margin-top: 8px; font-size: 12px; color: #666;">
+                                Tip: Circle processes transfers within 1-2 minutes. You can check your transaction history later.
+                            </div>
+                        </div>
+                    </div>
+                `;
+                content.innerHTML += rateLimitHtml;
+            }
+        }
+
+
         function addMessage(html, sender) {
             const messages = document.getElementById('messages');
             const messageEl = document.createElement('div');
@@ -323,6 +366,10 @@
             messageEl.appendChild(contentEl);
             messages.appendChild(messageEl);
             messages.scrollTop = messages.scrollHeight;
+
+            // Store card reference for polling updates
+            // activeCards[transferId] = document.getElementById(`card-${transferId}`);
+            // Removed: transferId not defined in addMessage
             return messageEl;
         }
         
@@ -366,7 +413,7 @@
             addMessage(message, 'user');
             addWaitingMessage(); // Show waiting animation
             
-            debug('Sending message: ' + (message) + '');
+            debug(`Sending message: ${message}`);
             ws.send(JSON.stringify({ message: message }));
             if (!messageText) input.value = '';
         }
@@ -394,18 +441,18 @@
                 };
 
                 ws.onmessage = (event) => {
-                    debug('Received: ' + (event.data.substring(0, 100)) + '...');
+                    debug(`Received: ${event.data.substring(0, 100)}...`);
                     try {
                         const data = JSON.parse(event.data);
                         handleMessage(data);
                     } catch (e) { 
-                        debug('JSON Parse Error: ' + (e.message) + '');
+                        debug(`JSON Parse Error: ${e.message}`);
                         console.error('JSON Parse Error:', event.data, e); 
                     }
                 };
 
                 ws.onclose = (event) => {
-                    debug('WebSocket closed: Code ${event.code}, Reason: ' + (event.reason) + '');
+                    debug(`WebSocket closed: Code ${event.code}, Reason: ${event.reason}`);
                     statusText.textContent = 'Disconnected';
                     statusIndicator.className = 'status disconnected';
                     
@@ -417,14 +464,14 @@
                 };
                 
                 ws.onerror = (error) => {
-                    debug('WebSocket error: ' + (error.message || 'Unknown error') + '');
+                    debug(`WebSocket error: ${error.message || 'Unknown error'}`);
                     console.error('WebSocket Error:', error);
                     statusText.textContent = 'Error';
                     statusIndicator.className = 'status disconnected';
                 };
                 
             } catch (e) {
-                debug('Failed to create WebSocket: ' + (e.message) + '');
+                debug(`Failed to create WebSocket: ${e.message}`);
                 statusText.textContent = 'Connection Failed';
                 statusIndicator.className = 'status disconnected';
             }
@@ -432,7 +479,7 @@
 
         // Enhanced message handler
         function handleMessage(data) {
-            debug('Handling message type: ' + (data.type || 'unknown') + '');
+            debug(`Handling message type: ${data.type || 'unknown'}`);
             
             // Remove waiting message when we get a response
             if (data.type === 'chat_response' || data.type === 'error') {
@@ -502,20 +549,22 @@
             // Handle direct transfers
             if (data.metadata && data.metadata.type === 'direct_transfer') {
                 // For direct transfers, execute immediately without proof
-                const transferDetails = data.metadata.transfer_details || {};
                 handleDirectTransfer(data);
             }
             
             // Handle verification requests
             if (data.metadata && data.metadata.type === 'verification_request') {
                 // The Rust server should handle the actual verification
-                debug('Verification requested for ' + (data.metadata.proof_id) + '');
+                debug(`Verification requested for ${data.metadata.proof_id}`);
             }
         }
         
-        function handleDirectTransfer(data) {
+        async function handleDirectTransfer(data) {
             const transferDetails = data.metadata.transfer_details || {};
             const transferId = `transfer_${Date.now()}`;
+            
+            // Store the card ID for later updates
+            activeCards[transferId] = null; // Will be set after creating the card
             
             const cardHtml = `
                 <div class="transaction-card" id="card-${transferId}">
@@ -530,12 +579,13 @@
                         <div class="status-message">Executing direct USDC transfer...</div>
                         <div style="margin-top: 12px; padding: 12px; background: rgba(107, 124, 255, 0.1); border-radius: 8px; font-size: 13px;">
                             <div style="color: #8B9AFF; margin-bottom: 4px;">Transfer Details:</div>
-                            <div style="color: #a0a0a0;">From: 0x37b6c846...cd131188 (Your Wallet)</div>
+                            <div style="color: #a0a0a0;">From: ${transferDetails.blockchain === "SOL" ? "HsZdbBxZVNzEn4qR9Ebx5XxDSZ136Mu14VlH1nbXGhfG" : "0x82a26a6d847e7e0961ab432b9a5a209e0db41040"} (Circle Wallet)</div>
                             <div style="color: #a0a0a0;">To: ${transferDetails.recipient ? transferDetails.recipient.slice(0,10) + '...' + transferDetails.recipient.slice(-8) : '0x70997970...17dc79C8'}</div>
                             <div style="color: #a0a0a0;">Blockchain: ${transferDetails.blockchain === "SOL" ? "Solana Devnet" : "Ethereum Sepolia"}</div>
                             <div style="color: #a0a0a0;">Amount: ${transferDetails.amount || '0.1'} USDC</div>
                             <div style="color: #a0a0a0; margin-top: 8px; font-style: italic;">No KYC verification required</div>
                         </div>
+                        <div id="transfer-result-${transferId}"></div>
                     </div>
                 </div>
             `;
@@ -547,44 +597,315 @@
             messages.appendChild(messageEl);
             messages.scrollTop = messages.scrollHeight;
             
-            // Simulate successful transfer after a delay
-            setTimeout(() => {
+            // Store reference to the card
+            activeCards[transferId] = document.getElementById(`card-${transferId}`);
+            
+            // Execute the transfer via backend
+            try {
+                const response = await fetch('http://localhost:8002/execute_direct_transfer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ transfer_details: transferDetails })
+                });
+                
+                debug(`Direct transfer response status: ${response.status}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    debug(`Direct transfer error response: ${errorText}`);
+                    
+                    let errorMessage = 'Transfer request failed';
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        errorMessage = errorJson.detail || errorMessage;
+                    } catch (e) {
+                        errorMessage = errorText || errorMessage;
+                    }
+                    
+                    throw new Error(errorMessage);
+                }
+                
+                const result = await response.json();
+                debug(`Direct transfer result: ${JSON.stringify(result)}`);
+                
+                // Update the card with success
                 const card = document.getElementById(`card-${transferId}`);
                 if (card) {
                     const statusDot = card.querySelector('.status-dot');
                     const statusText = card.querySelector('.status-text');
-                    const content = card.querySelector('.card-content');
+                    const statusMessage = card.querySelector('.status-message');
+                    const resultDiv = document.getElementById(`transfer-result-${transferId}`);
                     
                     if (statusDot) statusDot.style.background = '#10b981';
                     if (statusText) {
                         statusText.textContent = 'Complete';
                         statusText.style.color = '#10b981';
                     }
+                    if (statusMessage) {
+                        statusMessage.textContent = 'Transfer initiated successfully!';
+                        statusMessage.style.color = '#10b981';
+                    }
                     
-                    const explorerUrl = transferDetails.blockchain === "SOL" 
-                        ? `https://explorer.solana.com/address/${transferDetails.recipient}?cluster=devnet`
-                        : `https://sepolia.etherscan.io/address/${transferDetails.recipient}`;
+                    // Get the transaction hash
+                    const txHash = result.transactionHash || result.txHash || result.hash || result.transactionId;
+                    const circleTransferId = result.circleTransferId || result.transferId;
+                    
+                    let explorerUrl = '';
+                    let explorerName = '';
+                    
+                    if (txHash && txHash !== 'pending') {
+                        if (transferDetails.blockchain === "SOL") {
+                            explorerUrl = `https://explorer.solana.com/tx/${txHash}?cluster=devnet`;
+                            explorerName = 'Solana Explorer';
+                        } else {
+                            explorerUrl = `https://sepolia.etherscan.io/tx/${txHash}`;
+                            explorerName = 'Sepolia Etherscan';
+                        }
+                    }
                     
                     const detailsHtml = `
                         <div style="margin-top: 20px; padding: 16px; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
-                            <div style="font-weight: 600; color: #10b981; margin-bottom: 8px;">✅ Transfer Successful!</div>
+                            <div style="font-weight: 600; color: #10b981; margin-bottom: 8px;">✅ Transfer Initiated!</div>
                             <div style="font-size: 13px; color: #a0a0a0;">
-                                <div>Amount: ${transferDetails.amount || '0.1'} USDC</div>
-                                <div>From: 0x37b6c846ca0483a0fc6c7702707372ebcd131188</div>
-                                <div>To: ${transferDetails.recipient || 'Unknown'}</div>
+                                <div>Amount: ${result.amount || transferDetails.amount || '0.1'} USDC</div>
+                                <div>From: ${result.from || (transferDetails.blockchain === "SOL" ? "HsZdbBxZVNzEn4qR9Ebx5XxDSZ136Mu14VlH1nbXGhfG" : "0x82a26a6d847e7e0961ab432b9a5a209e0db41040")}</div>
+                                <div>To: ${result.recipient || transferDetails.recipient || 'Unknown'}</div>
                                 <div>Blockchain: ${transferDetails.blockchain === "SOL" ? "Solana Devnet" : "Ethereum Sepolia"}</div>
-                                <div style="margin-top: 8px;">
-                                    <a href="${explorerUrl}" target="_blank" style="color: #8B9AFF; text-decoration: underline; font-weight: 600;">
-                                        View on ${transferDetails.blockchain === "SOL" ? "Solana Explorer" : "Sepolia Etherscan"} →
-                                    </a>
+                                ${circleTransferId ? `<div style="margin-top: 8px;">Circle Transfer ID: ${circleTransferId}</div>` : ''}
+                                <div id="tx-status-${transferId}">
+                                    ${txHash && txHash !== 'pending' ? `
+                                        <div style="margin-top: 8px;">TX: ${txHash.slice(0, 20)}...</div>
+                                        <div style="margin-top: 8px;">
+                                            <a href="${explorerUrl}" 
+                                               target="_blank" 
+                                               class="explorer-link"
+                                               style="color: #8B9AFF; text-decoration: underline; font-weight: 600;">
+                                               View on ${explorerName} →
+                                            </a>
+                                        </div>
+                                    ` : `
+                                        <div style="margin-top: 12px; padding: 10px; background: rgba(251, 191, 36, 0.1); border-radius: 6px;">
+                                            <div style="color: #fbbf24; font-weight: 500;">⏳ Transaction Broadcasting...</div>
+                                            <div style="font-size: 12px; margin-top: 4px;">
+                                                Circle is processing your transfer. The blockchain transaction hash will appear here once the transfer is broadcast to the ${transferDetails.blockchain === 'SOL' ? 'Solana' : 'Ethereum'} network.
+                                            </div>
+                                            ${circleTransferId ? `<div style="font-size: 11px; margin-top: 8px; color: #888;">
+                                                Transfer ID: ${circleTransferId}
+                                            </div>` : ''}
+                                        </div>
+                                    `}
                                 </div>
                             </div>
                         </div>
                     `;
                     
-                    content.innerHTML += detailsHtml;
+                    if (resultDiv) {
+                        resultDiv.innerHTML = detailsHtml;
+                    }
+                    
+                    // Start polling if we don't have a transaction hash yet
+                    if ((!txHash || txHash === 'pending') && circleTransferId && circleTransferId !== 'pending') {
+                        debug(`Starting polling for direct transfer ${transferId}`);
+                        pollDirectTransferStatus(circleTransferId, transferId, transferDetails.blockchain || "ETH");
+                    }
                 }
-            }, 3000);
+            } catch (error) {
+                console.error('Direct transfer error:', error);
+                
+                // Check for rate limit error
+                if (error.message && error.message.includes('rate limit')) {
+                    // Update card with rate limit message
+                    const card = document.getElementById(`card-${transferId}`);
+                    if (card) {
+                        const statusMessage = card.querySelector('.status-message');
+                        if (statusMessage) {
+                            statusMessage.innerHTML = `
+                                <div style="color: #fbbf24;">
+                                    <strong>⏸️ Rate limit reached</strong><br>
+                                    <span style="font-size: 12px;">Circle API is temporarily limiting requests. Your transfer is queued and will process shortly.</span>
+                                </div>
+                            `;
+                        }
+                    }
+                    return;
+                }
+                
+                // Update card with error
+                const card = document.getElementById(`card-${transferId}`);
+                if (card) {
+                    const statusDot = card.querySelector('.status-dot');
+                    const statusText = card.querySelector('.status-text');
+                    const statusMessage = card.querySelector('.status-message');
+                    const resultDiv = document.getElementById(`transfer-result-${transferId}`);
+                    
+                    if (statusDot) {
+                        statusDot.style.background = '#ef4444';
+                        statusDot.style.animation = 'none';
+                    }
+                    if (statusText) {
+                        statusText.textContent = 'Failed';
+                        statusText.style.color = '#ef4444';
+                    }
+                    if (statusMessage) {
+                        statusMessage.textContent = `Transfer failed: ${error.message}`;
+                        statusMessage.style.color = '#ef4444';
+                    }
+                    
+                    // Add more detailed error info
+                    const errorDetailsHtml = `
+                        <div style="margin-top: 20px; padding: 16px; background: rgba(239, 68, 68, 0.1); border-radius: 8px;">
+                            <div style="font-weight: 600; color: #ef4444; margin-bottom: 8px;">❌ Transfer Failed</div>
+                            <div style="font-size: 13px; color: #a0a0a0;">
+                                <div>Error: ${error.message || 'Unknown error'}</div>
+                                <div style="margin-top: 8px; font-size: 12px; color: #666;">
+                                    This could be due to insufficient balance, invalid recipient address, or Circle API configuration.
+                                    Check the console for more details.
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    if (resultDiv) {
+                        resultDiv.innerHTML = errorDetailsHtml;
+                    }
+                }
+            }
+        }
+        
+        // Separate polling function for direct transfers
+        async function pollDirectTransferStatus(transferId, cardId, blockchain) {
+            debug(`Starting to poll for direct transfer ${transferId}`);
+            
+            let pollCount = 0;
+            const maxPolls = 30; // Poll for up to 5 minutes (30 * 10 seconds)
+            
+            const pollInterval = setInterval(async () => {
+                pollCount++;
+                
+                try {
+                    // Call backend to check transfer status
+                    const response = await fetch('http://localhost:8002/check_transfer_status', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ transferId: transferId })
+                    });
+                    
+                    if (response.status === 429) {
+                        debug('Rate limit exceeded (429)');
+                        showRateLimitMessage(cardId);
+                        clearInterval(pollInterval);
+                        delete activePolls[transferId];
+                        return;
+                    }
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        // Handle rate limit status
+                        if (data.status === 'rate_limited') {
+                            debug(`Poll ${pollCount}: Rate limited`);
+                            showRateLimitMessage(cardId);
+                            clearInterval(pollInterval);
+                            delete activePolls[transferId];
+                            return;
+                        }
+                        
+                        debug(`Poll ${pollCount}: Status = ${data.status}, TxHash = ${data.transactionHash}`);
+                        
+                        // Check if we have a real transaction hash
+                        if (data.transactionHash && data.transactionHash !== 'pending' && data.transactionHash !== 'null') {
+                            // Update the UI with the transaction hash
+                            updateDirectTransferWithTxHash(cardId, data.transactionHash, blockchain);
+                            
+                            // Stop polling
+                            clearInterval(pollInterval);
+                            delete activePolls[transferId];
+                            debug(`Got transaction hash for ${transferId}, stopping poll`);
+                        } else if (data.status === 'failed' || data.status === 'returned') {
+                            // Handle failed transfer
+                            updateTransferFailed(cardId, data.errorCode || 'Transfer failed');
+                            clearInterval(pollInterval);
+                            delete activePolls[transferId];
+                        } else if (data.status === 'complete' && !data.transactionHash) {
+                            // Sometimes Circle marks as complete but doesn't provide tx hash
+                            debug('Transfer complete but no tx hash available');
+                            updateTransferCompleteNoHash(cardId, transferId, blockchain);
+                            clearInterval(pollInterval);
+                            delete activePolls[transferId];
+                        }
+                    }
+                } catch (error) {
+                    debug(`Error polling transfer status: ${error.message}`);
+                }
+                
+                // Update the UI with polling status
+                if (pollCount % 3 === 0) { // Update every 30 seconds
+                    updatePollingStatus(cardId, pollCount * 10);
+                }
+                
+                // Stop polling after max attempts
+                if (pollCount >= maxPolls) {
+                    clearInterval(pollInterval);
+                    delete activePolls[transferId];
+                    debug(`Stopped polling for ${transferId} after ${maxPolls} attempts`);
+                    updateTransferTimeout(cardId, transferId, blockchain);
+                }
+            }, 10000); // Poll every 10 seconds
+            
+            // Store the interval so we can cancel it if needed
+            activePolls[transferId] = pollInterval;
+        }
+        
+        // Update function specifically for direct transfers
+        function updateDirectTransferWithTxHash(cardId, txHash, blockchain) {
+            const card = activeCards[cardId] || document.getElementById(`card-${cardId}`);
+            if (!card) {
+                debug(`Could not find card ${cardId} to update with tx hash`);
+                return;
+            }
+            
+            debug(`Updating direct transfer ${cardId} with txHash: ${txHash}`);
+            
+            // Find the tx-status div
+            const txStatusDiv = card.querySelector(`[id^="tx-status-"]`);
+            if (txStatusDiv) {
+                // Determine explorer URL based on blockchain
+                let explorerUrl = '';
+                let explorerName = '';
+                
+                if (blockchain === 'SOL' || blockchain === 'SOLANA') {
+                    explorerUrl = `https://explorer.solana.com/tx/${txHash}?cluster=devnet`;
+                    explorerName = 'Solana Explorer';
+                } else {
+                    explorerUrl = `https://sepolia.etherscan.io/tx/${txHash}`;
+                    explorerName = 'Sepolia Etherscan';
+                }
+                
+                txStatusDiv.innerHTML = `
+                    <div style="margin-top: 8px;">TX: ${txHash.slice(0, 20)}...</div>
+                    <div style="margin-top: 8px;">
+                        <a href="${explorerUrl}" 
+                           target="_blank" 
+                           class="explorer-link"
+                           style="color: #8B9AFF; text-decoration: underline; font-weight: 600;">
+                           View on ${explorerName} →
+                        </a>
+                    </div>
+                `;
+                
+                // Update status to show it's complete
+                const statusText = card.querySelector('.status-text');
+                if (statusText && statusText.textContent !== 'Complete') {
+                    statusText.textContent = 'Confirmed';
+                    statusText.style.color = '#10b981';
+                }
+                
+                // Add a subtle animation to draw attention
+                const detailsDiv = card.querySelector('[style*="rgba(16, 185, 129"]');
+                if (detailsDiv) {
+                    detailsDiv.style.animation = 'pulse 1s ease-in-out 2';
+                }
+            }
         }
 
         function createTransactionCard(proofId, transferDetails = {}) {
@@ -601,7 +922,7 @@
                         <div class="status-message">Starting automated KYC verification and transfer process...</div>
                         <div style="margin-top: 12px; padding: 12px; background: rgba(107, 124, 255, 0.1); border-radius: 8px; font-size: 13px;">
                             <div style="color: #8B9AFF; margin-bottom: 4px;">Transfer Details:</div>
-                            <div style="color: #a0a0a0;">From: 0x37b6c846...cd131188 (Your Wallet)</div>
+                            <div style="color: #a0a0a0;">From: ${transferDetails.blockchain === "SOL" ? "HsZdbBxZVNzEn4qR9Ebx5XxDSZ136Mu14VlH1nbXGhfG" : "0x82a26a6d847e7e0961ab432b9a5a209e0db41040"} (Circle Wallet)</div>
                             <div style="color: #a0a0a0;">To: ${transferDetails.recipient ? transferDetails.recipient.slice(0,10) + '...' + transferDetails.recipient.slice(-8) : '0x70997970...17dc79C8'}</div>
                             <div style="color: #a0a0a0;">Blockchain: ${transferDetails.blockchain === "SOL" ? "Solana Devnet" : "Ethereum Sepolia"}</div>
                             <div style="color: #a0a0a0;">Amount: ${transferDetails.amount || '0.1'} USDC</div>
@@ -626,7 +947,7 @@
         }
 
         function updateProofStatus(data) {
-            debug('Proof status update: ' + (data.proof_id) + '');
+            debug(`Proof status update: ${data.proof_id}`);
             
             if (data.proof_id) {
                 proofStates[data.proof_id] = proofStates[data.proof_id] || {};
@@ -757,7 +1078,7 @@
         }
 
         function handleProofComplete(data) {
-            debug('Proof complete: ' + (data.proof_id) + '');
+            debug(`Proof complete: ${data.proof_id}`);
             
             // Ensure we have the function name stored
             if (data.proof_id) {
@@ -786,7 +1107,7 @@
                 
                 // Also check if function was stored during updateProofStatus
                 proofStates[data.proof_id] = existingState;
-                debug('Stored function for ${data.proof_id}: ' + (existingState.functionName) + '');
+                debug(`Stored function for ${data.proof_id}: ${existingState.functionName}`);
             }
             
             const card = activeCards[data.proof_id];
@@ -850,7 +1171,7 @@
         }
 
         function handleProofError(data) {
-            debug('Proof error: ${data.proof_id} - ' + (data.error) + '');
+            debug(`Proof error: ${data.proof_id} - ${data.error}`);
             const card = activeCards[data.proof_id];
             if (card) {
                 const statusBadge = card.querySelector('.status-badge');
@@ -892,7 +1213,7 @@
         }
 
         function handleVerificationComplete(data) {
-            debug('Verification complete: ${data.proof_id} - ' + (data.result) + '');
+            debug(`Verification complete: ${data.proof_id} - ${data.result}`);
             
             // Calculate verification time
             const verificationTime = verificationTimes[data.proof_id] ? 
@@ -988,7 +1309,7 @@
         }
 
         function handleTransferComplete(data) {
-            debug('Transfer complete: ' + (data.proof_id) + '');
+            debug(`Transfer complete: ${data.proof_id}`);
             const card = activeCards[data.proof_id];
             if (card) {
                 const transferStep = document.getElementById(`step-transfer-${data.proof_id}`);
@@ -1011,8 +1332,9 @@
                 const txDetails = data.result;
                 const blockchain = txDetails.blockchain || 'ETH';
                 
-                // Check if we have a real transaction hash (not "pending")
-                const txHash = txDetails.transactionId || txDetails.txHash || txDetails.hash || txDetails.id;
+                // Get transaction hash - Circle may not have it immediately
+                const txHash = txDetails.transactionHash || txDetails.txHash || txDetails.hash;
+                const transferId = txDetails.transferId || txDetails.circleTransferId || txDetails.id;
                 const hasTxHash = txHash && txHash !== 'pending';
                 
                 // Determine the correct explorer URL based on blockchain
@@ -1031,14 +1353,15 @@
                 
                 const detailsHtml = `
                     <div style="margin-top: 20px; padding: 16px; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
-                        <div style="font-weight: 600; color: #10b981; margin-bottom: 8px;">✅ Transfer Successful!</div>
+                        <div style="font-weight: 600; color: #10b981; margin-bottom: 8px;">✅ Transfer Initiated!</div>
                         <div style="font-size: 13px; color: #a0a0a0;">
                             <div>Amount: ${txDetails.amount || '0.1'} USDC</div>
-                            <div>From: ${txDetails.from || '0x37b6c846ca0483a0fc6c7702707372ebcd131188'}</div>
+                            <div>From: ${txDetails.from || 'Circle Wallet'}</div>
                             <div>To: ${txDetails.recipient || 'Unknown'}</div>
-                            <div>Blockchain: ${blockchain === 'SOL' ? 'Solana' : 'Ethereum'}</div>
+                            <div>Blockchain: ${blockchain === 'SOL' ? 'Solana Devnet' : 'Ethereum Sepolia'}</div>
+                            ${transferId ? `<div style="margin-top: 8px;">Circle Transfer ID: ${transferId}</div>` : ''}
                             ${hasTxHash ? `
-                                <div style="margin-top: 8px;">TX: ${txHash.slice(0, 20)}...</div>
+                                <div style="margin-top: 8px;">TX: ${txHash}</div>
                                 <div style="margin-top: 8px;">
                                     <a href="${explorerUrl}" 
                                        target="_blank" 
@@ -1047,8 +1370,14 @@
                                     </a>
                                 </div>
                             ` : `
-                                <div style="margin-top: 8px; font-style: italic; color: #666;">
-                                    A link will be available when the transaction is completed on chain.
+                                <div style="margin-top: 12px; padding: 10px; background: rgba(251, 191, 36, 0.1); border-radius: 6px;">
+                                    <div style="color: #fbbf24; font-weight: 500;">⏳ Transaction Broadcasting...</div>
+                                    <div style="font-size: 12px; margin-top: 4px;">
+                                        Circle is processing your transfer. The blockchain transaction hash will appear here once the transfer is broadcast to the ${blockchain === 'SOL' ? 'Solana' : 'Ethereum'} network.
+                                    </div>
+                                    ${transferId ? `<div style="font-size: 11px; margin-top: 8px; color: #888;">
+                                        Transfer ID: ${transferId}
+                                    </div>` : ''}
                                 </div>
                             `}
                         </div>
@@ -1058,18 +1387,15 @@
                 content.innerHTML += detailsHtml;
                 
                 // Start polling if we don't have a transaction hash yet
-                if (!hasTxHash && txDetails.transferId) {
-                    pollTransferStatus(txDetails.transferId, data.proof_id, blockchain);
+                if (!hasTxHash && transferId && transferId !== 'pending') {
+                    pollTransferStatus(transferId, data.proof_id, blockchain);
                 }
             }
         }
 
-        // Store active polling intervals
-        const activePolls = {};
-
         // Function to poll for transfer status
         async function pollTransferStatus(transferId, proofId, blockchain) {
-            debug('Starting to poll for transfer ' + (transferId) + '');
+            debug(`Starting to poll for transfer ${transferId}`);
             
             let pollCount = 0;
             const maxPolls = 30; // Poll for up to 5 minutes (30 * 10 seconds)
@@ -1085,9 +1411,27 @@
                         body: JSON.stringify({ transferId: transferId })
                     });
                     
+                    if (response.status === 429) {
+                        debug('Rate limit exceeded (429)');
+                        showRateLimitMessage(proofId);
+                        // Stop polling for this transfer
+                        delete activePolls[transferId];
+                        return;
+                    }
+                    
                     if (response.ok) {
                         const data = await response.json();
-                        debug('Poll ${pollCount}: Status = ${data.status}, TxHash = ' + (data.transactionHash) + '');
+                        
+                        // Handle rate limit status
+                        if (data.status === 'rate_limited') {
+                            debug(`Poll ${pollCount}: Rate limited`);
+                            showRateLimitMessage(proofId);
+                            // Back off more aggressively
+                            pollDelay = 60000; // Wait 60 seconds
+                            setTimeout(doPoll, pollDelay);
+                            return;
+                        }
+                        debug(`Poll ${pollCount}: Status = ${data.status}, TxHash = ${data.transactionHash}`);
                         
                         // Check if we have a real transaction hash
                         if (data.transactionHash && data.transactionHash !== 'pending') {
@@ -1097,23 +1441,35 @@
                             // Stop polling
                             clearInterval(pollInterval);
                             delete activePolls[transferId];
-                            debug('Got transaction hash for ' + (transferId) + ', stopping poll');
-                        } else if (data.status === 'failed') {
+                            debug(`Got transaction hash for ${transferId}, stopping poll`);
+                        } else if (data.status === 'failed' || data.status === 'returned') {
                             // Handle failed transfer
-                            updateTransferFailed(proofId, data.error || 'Transfer failed');
+                            updateTransferFailed(proofId, data.errorCode || 'Transfer failed');
+                            clearInterval(pollInterval);
+                            delete activePolls[transferId];
+                        } else if (data.status === 'complete' && !data.transactionHash) {
+                            // Sometimes Circle marks as complete but doesn't provide tx hash
+                            debug('Transfer complete but no tx hash available');
+                            updateTransferCompleteNoHash(proofId, transferId, blockchain);
                             clearInterval(pollInterval);
                             delete activePolls[transferId];
                         }
                     }
                 } catch (error) {
-                    debug('Error polling transfer status: ' + (error.message) + '');
+                    debug(`Error polling transfer status: ${error.message}`);
+                }
+                
+                // Update the UI with polling status
+                if (pollCount % 3 === 0) { // Update every 30 seconds
+                    updatePollingStatus(proofId, pollCount * 10);
                 }
                 
                 // Stop polling after max attempts
                 if (pollCount >= maxPolls) {
                     clearInterval(pollInterval);
                     delete activePolls[transferId];
-                    debug('Stopped polling for ${transferId} after ' + (maxPolls) + ' attempts');
+                    debug(`Stopped polling for ${transferId} after ${maxPolls} attempts`);
+                    updateTransferTimeout(proofId, transferId, blockchain);
                 }
             }, 10000); // Poll every 10 seconds
             
@@ -1134,7 +1490,7 @@
             
             let existingDetails = null;
             for (let section of detailsSections) {
-                if (section.textContent.includes('Transfer Successful')) {
+                if (section.textContent.includes('Transfer Initiated') || section.textContent.includes('Transfer Successful')) {
                     existingDetails = section;
                     break;
                 }
@@ -1153,60 +1509,88 @@
                     explorerName = 'Sepolia Etherscan';
                 }
                 
-                // Find the details div more reliably
-                const detailsDivs = existingDetails.querySelectorAll('div');
-                let detailsDiv = null;
-                
-                for (let div of detailsDivs) {
-                    if (div.textContent.includes('Amount:') && div.textContent.includes('USDC')) {
-                        detailsDiv = div;
-                        break;
-                    }
-                }
-                
-                if (detailsDiv) {
-                    // Remove any existing "processing" message
-                    const existingMessages = detailsDiv.querySelectorAll('div');
-                    for (let msg of existingMessages) {
-                        if (msg.textContent.includes('A link will be available')) {
-                            msg.remove();
-                        }
-                    }
+                // Find the transaction broadcasting div and replace it
+                const broadcastDiv = existingDetails.querySelector('div[style*="rgba(251, 191, 36, 0.1)"]');
+                if (broadcastDiv) {
+                    broadcastDiv.innerHTML = `
+                        <div style="color: #10b981; font-weight: 500;">✅ Transaction Confirmed!</div>
+                        <div style="font-size: 12px; margin-top: 4px;">
+                            TX: ${txHash}
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <a href="${explorerUrl}" 
+                               target="_blank" 
+                               style="color: #8B9AFF; text-decoration: underline; font-weight: 600;">
+                               View on ${explorerName} →
+                            </a>
+                        </div>
+                    `;
                     
-                    // Check if we already have the tx info
-                    let hasTxInfo = false;
-                    for (let div of existingMessages) {
-                        if (div.textContent.includes('TX:')) {
-                            hasTxInfo = true;
-                            break;
-                        }
-                    }
-                    
-                    if (!hasTxInfo) {
-                        // Add the transaction hash and explorer link
-                        const txInfoHtml = `
-                            <div style="margin-top: 8px;">TX: ${txHash.slice(0, 20)}...</div>
-                            <div style="margin-top: 8px;">
-                                <a href="${explorerUrl}" 
-                                   target="_blank" 
-                                   style="color: #8B9AFF; text-decoration: underline; font-weight: 600;">
-                                   View on ${explorerName} →
-                                </a>
-                            </div>
-                        `;
-                        
-                        detailsDiv.insertAdjacentHTML('beforeend', txInfoHtml);
-                        
-                        // Add a subtle animation to draw attention
-                        existingDetails.style.animation = 'pulse 1s ease-in-out 2';
-                        
-                        debug(`Successfully updated transfer ${proofId} with explorer link`);
-                    }
-                } else {
-                    debug('Could not find details div to update');
+                    // Add a subtle animation to draw attention
+                    existingDetails.style.animation = 'pulse 1s ease-in-out 2';
                 }
-            } else {
-                debug('Could not find existing transfer details section');
+            }
+        }
+
+        // Add function to update polling status in UI
+        function updatePollingStatus(proofId, secondsElapsed) {
+            const card = activeCards[proofId];
+            if (!card) return;
+            
+            const pollingStatus = card.querySelector('div[style*="rgba(251, 191, 36, 0.1)"]');
+            if (pollingStatus) {
+                const timeDiv = pollingStatus.querySelector('div[style*="typically takes"]');
+                if (timeDiv) {
+                    timeDiv.innerHTML = `Checking status... (${secondsElapsed}s elapsed). `;
+                }
+            }
+        }
+
+        // Add function for when transfer completes without tx hash
+        function updateTransferCompleteNoHash(proofId, transferId, blockchain) {
+            const card = activeCards[proofId];
+            if (!card) return;
+            
+            const content = card.querySelector('.card-content');
+            const existingDetails = content.querySelector('div[style*="background: rgba(16, 185, 129"]');
+            
+            if (existingDetails) {
+                const pollingDiv = existingDetails.querySelector('div[style*="rgba(251, 191, 36, 0.1)"]');
+                if (pollingDiv) {
+                    pollingDiv.innerHTML = `
+                        <div style="color: #10b981; font-weight: 500;">✅ Transfer Complete</div>
+                        <div style="font-size: 12px; margin-top: 4px;">
+                            The transfer has been completed by Circle. Transaction details may be available in your Circle dashboard.
+                        </div>
+                        <div style="font-size: 11px; margin-top: 8px; color: #888;">
+                            Circle Transfer ID: ${transferId}
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Add function for timeout scenario
+        function updateTransferTimeout(proofId, transferId, blockchain) {
+            const card = activeCards[proofId];
+            if (!card) return;
+            
+            const content = card.querySelector('.card-content');
+            const existingDetails = content.querySelector('div[style*="background: rgba(16, 185, 129"]');
+            
+            if (existingDetails) {
+                const pollingDiv = existingDetails.querySelector('div[style*="rgba(251, 191, 36, 0.1)"]');
+                if (pollingDiv) {
+                    pollingDiv.innerHTML = `
+                        <div style="color: #fbbf24; font-weight: 500;">⏱️ Status Check Timeout</div>
+                        <div style="font-size: 12px; margin-top: 4px;">
+                            The transaction is still being processed. You can check the status later using the Circle Transfer ID.
+                        </div>
+                        <div style="font-size: 11px; margin-top: 8px; color: #888;">
+                            Circle Transfer ID: ${transferId}
+                        </div>
+                    `;
+                }
             }
         }
 
@@ -1252,7 +1636,7 @@
         }
 
         function handleTransferError(data) {
-            debug('Transfer error: ${data.proof_id} - ' + (data.error) + '');
+            debug(`Transfer error: ${data.proof_id} - ${data.error}`);
             const card = activeCards[data.proof_id];
             if (card) {
                 const statusDot = card.querySelector('.status-dot');
@@ -1275,7 +1659,7 @@
         }
         
         function handleListResponse(data) {
-            debug('List response: ' + (data.list_type) + '');
+            debug(`List response: ${data.list_type}`);
             
             if (data.proofs && data.proofs.length > 0) {
                 // Different columns for Proof History vs Verification History
@@ -1509,7 +1893,7 @@ int main() {
             
             // Use the stored function name
             const funcName = state.functionName || state.displayFunction;
-            debug('Showing C program for ${proofId}, function: ' + (funcName) + '');
+            debug(`Showing C program for ${proofId}, function: ${funcName}`);
             
             if (funcName === 'prove_kyc' || funcName === 'kyc_compliance') {
                 cCode = '// KYC Compliance Verification\n' +
@@ -1810,7 +2194,7 @@ int main() {
             if (e.ctrlKey && e.shiftKey && e.key === 'D') {
                 debugMode = !debugMode;
                 document.getElementById('debug-console').style.display = debugMode ? 'block' : 'none';
-                debug('Debug mode ' + (debugMode ? 'enabled' : 'disabled') + '');
+                debug(`Debug mode ${debugMode ? 'enabled' : 'disabled'}`);
             }
         });
 

@@ -1,52 +1,50 @@
-# Environment variables - NEVER commit these
+# Environment variables
 .env
 .env.local
-.env.*.local
 
 # Python
-__pycache__/
-*.py[cod]
-*.pyc
 langchain_env/
-venv/
-env/
-
-# Node
-node_modules/
-npm-debug.log*
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
 
 # Rust
 target/
 Cargo.lock
 
-# Build/IDE
-.DS_Store
-*.swp
-*~
-.vscode/
-.idea/
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Logs
+# Generated files
+proofs/
+transfer_history.json
 *.log
 
-# Proofs (optional - remove if you want to include example proofs)
-proofs/
+# OS files
+.DS_Store
+Thumbs.db
 
-# Data files (optional)
-*.db
-*.sqlite
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
 
-# Backups and sensitive files
-*.backup*
-*.old
-*_old*
-.old_*
-*.broken
-
-# WASI SDK
-wasi-sdk*/
-*.tar.gz
-
-# Test files
-test.txt
-
+# Temporary files
+*.tmp
+*.temp
+*.bak
+update-frontend.sh
+fix-*.sh
+add-decimal-fix.py
+update_html.py
+check-specific-transfer.js
+check-all-transfers.js
+debug-*.js
+fix_*.py

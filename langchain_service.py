@@ -117,6 +117,12 @@ def extract_transfer_details(message: str) -> Dict[str, str]:
     amount_match = re.search(r"(\d+(?:\.\d+)?)", message)
     amount = amount_match.group(1) if amount_match else "0.1"
     
+    # Round to 2 decimal places for USDC
+    try:
+        amount = str(round(float(amount), 2))
+    except:
+        amount = "0.1"
+    
     # Determine blockchain first
     blockchain = "SOL" if ("solana" in message.lower() or " sol" in message.lower()) else "ETH"
     
@@ -355,21 +361,20 @@ async def chat(request: ChatRequest):
             
             if requires_kyc:
                 return ChatResponse(
-                    response=ai_response,
+                    response=ai_response or f"I'll need to generate a KYC compliance proof before I can send that {transfer_details['amount']} USDC. Let's get that sorted out!",
                     intent=ProofIntent(
                         function="prove_kyc",
                         arguments=["1"],
                         explanation="Automated KYC proof for USDC transfer.",
                         additional_context={
-                        "is_automated_transfer": True,
+                            "is_automated_transfer": True,
                             "transfer_details": transfer_details
                         }
                     ),
                     metadata={
                         "type": "kyc_transfer_automation_start",
-                    "is_automated_transfer": True,
-                        "proof_id": proof_id,
                         "is_automated_transfer": True,
+                        "proof_id": proof_id,
                         "transfer_details": transfer_details
                     }
                 )
@@ -569,6 +574,44 @@ int main() {
             }
         )
 
+    # Check for transfer requests BEFORE individual proof requests
+    is_transfer, requires_kyc = is_transfer_request(user_message)
+    if is_transfer:
+        details = extract_transfer_details(user_message)
+        
+        if requires_kyc:
+            response_text = ai_response or f"I'll need to generate a KYC compliance proof before I can send that {details['amount']} USDC to {details['recipient'][:10]}... Let's get that sorted out!"
+            
+            return ChatResponse(
+                response=response_text,
+                intent=ProofIntent(
+                    function="prove_kyc",
+                    arguments=["1"],
+                    explanation="Automated KYC proof for USDC transfer.",
+                    additional_context={
+                        "is_automated_transfer": True,
+                        "transfer_details": details
+                    }
+                ),
+                metadata={
+                    "type": "kyc_transfer_automation_start",
+                    "is_automated_transfer": True,
+                    "proof_id": proof_id,
+                    "transfer_details": details
+                }
+            )
+        else:
+            # Direct transfer without KYC
+            response_text = ai_response or f"Initiating direct transfer of {details['amount']} USDC to {details['recipient'][:10]}... No KYC verification required."
+            
+            return ChatResponse(
+                response=response_text,
+                metadata={
+                    "type": "direct_transfer",
+                    "transfer_details": details
+                }
+            )
+
     # Check for specific proof types (Collatz, Prime, Digital Root)
     if is_collatz_proof_request(user_message):
         c_code = """// Collatz Conjecture Steps
@@ -676,58 +719,6 @@ int main() {
             }
         )
 
-    # Check for transfer requests
-    is_transfer, requires_kyc = is_transfer_request(user_message)
-    if is_transfer:
-        details = extract_transfer_details(user_message)
-        
-        if requires_kyc:
-            response_text = ai_response or f"Got it. Initiating a {details['amount']} USDC transfer to {details['recipient'][:10]}..., pending KYC verification. This process is fully automated."
-            
-            return ChatResponse(
-                response=response_text,
-                intent=ProofIntent(
-                    function="prove_kyc",
-                    arguments=["1"],
-                    explanation="Automated KYC proof for USDC transfer.",
-                    additional_context={
-                        "is_automated_transfer": True,
-                        "transfer_details": details
-                    }
-                ),
-                metadata={
-                    "type": "kyc_transfer_automation_start",
-                    "is_automated_transfer": True,
-                    "proof_id": proof_id,
-                    "is_automated_transfer": True,
-                    "transfer_details": details
-                }
-            )
-        else:
-            # Direct transfer without KYC - Execute immediately
-            response_text = ai_response or f"Initiating direct transfer of {details['amount']} USDC to {details['recipient'][:10]}... No KYC verification required."
-            
-            try:
-                transfer_result = await execute_direct_transfer_internal(details)
-                
-                return ChatResponse(
-                    response=response_text,
-                    metadata={
-                        "type": "direct_transfer_complete",
-                        "transfer_details": details,
-                        "transaction_result": transfer_result,
-                        "success": True
-                    }
-                )
-            except Exception as e:
-                return ChatResponse(
-                    response=f"Direct transfer initiated but encountered an error: {str(e)}",
-                    metadata={
-                        "type": "direct_transfer_error",
-                        "transfer_details": details,
-                        "error": str(e)
-                    }
-                )
     
     elif is_kyc_proof_request(user_message):
         response_text = ai_response or "I'll generate a KYC compliance proof for you. This will create a zero-knowledge proof of your verification status."
@@ -885,6 +876,7 @@ int main() {
 
 @app.post("/execute_verified_transfer")
 async def execute_verified_transfer(request: Dict[str, Any]):
+    """Execute a USDC transfer after KYC verification"""
     transfer_details = request.get("transfer_details", {})
     amount = transfer_details.get("amount", "0.01")
     recipient = transfer_details.get("recipient")
@@ -920,30 +912,51 @@ async def execute_verified_transfer(request: Dict[str, Any]):
                     continue
         
         if json_output:
+            # Ensure we have a transaction hash
+            tx_hash = (json_output.get('transactionHash') or 
+                      json_output.get('txHash') or 
+                      json_output.get('hash') or 
+                      json_output.get('id') or
+                      'pending')
+            
             response_data = {
                 "success": True,
+                "transactionId": tx_hash,
+                "transactionHash": tx_hash,
+                "txHash": tx_hash,
+                "hash": tx_hash,
+                "transferId": json_output.get('transferId', json_output.get('id')),
                 "blockchain": blockchain,
                 "message": "Transfer successful via Circle SDK.",
-                "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+                "from": json_output.get('from'),
                 "amount": amount,
                 "recipient": recipient
             }
             
-            if json_output:
-                response_data.update(json_output)
+            # Include Circle transfer ID if it's different from tx hash
+            if json_output.get('circleTransferId'):
+                response_data['circleTransferId'] = json_output['circleTransferId']
                 
             print(f"Returning to Rust: {response_data}")
             return response_data
         else:
+            # This shouldn't happen with the updated circleHandler
             return {
                 "success": True,
-                "message": "Transfer completed successfully.",
+                "transactionId": "pending",
+                "transactionHash": "pending",
+                "message": "Transfer initiated. Transaction hash pending.",
                 "amount": amount,
                 "recipient": recipient,
-                "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188"
+                "from": "Circle Wallet",
+                "blockchain": blockchain
             }
             
     except subprocess.CalledProcessError as e:
+        error_message = e.stderr or str(e)
+        # Check for rate limit errors
+        if "rate" in error_message.lower() and "limit" in error_message.lower():
+            raise HTTPException(status_code=429, detail="Circle API rate limit exceeded. Please wait a moment and try again.")
         raise HTTPException(status_code=500, detail=f"Transfer script failed: {e.stderr}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An internal error occurred: {str(e)}")
@@ -956,6 +969,8 @@ async def execute_direct_transfer(request: Dict[str, Any]):
     amount = transfer_details.get("amount", "0.01")
     recipient = transfer_details.get("recipient")
     blockchain = transfer_details.get("blockchain", "ETH")
+
+    print(f"DEBUG execute_direct_transfer: amount={amount}, recipient={recipient}, blockchain={blockchain}")
 
     if not recipient:
         raise HTTPException(status_code=400, detail="Recipient address is missing.")
@@ -979,6 +994,9 @@ async def execute_direct_transfer(request: Dict[str, Any]):
             cwd=str(CIRCLE_DIR)
         )
         
+        print(f"DEBUG: Script stdout: {result.stdout}")
+        print(f"DEBUG: Script stderr: {result.stderr}")
+        
         output_lines = result.stdout.strip().split('\n')
         json_output = None
         
@@ -986,44 +1004,65 @@ async def execute_direct_transfer(request: Dict[str, Any]):
             if line.strip().startswith('{'):
                 try:
                     json_output = json.loads(line)
+                    print(f"DEBUG: Parsed JSON output: {json_output}")
                     break
-                except:
+                except Exception as e:
+                    print(f"DEBUG: Failed to parse JSON line: {line}, error: {e}")
                     continue
         
-        response_data = {
-            "success": True,
-            "blockchain": blockchain,
-            "message": "Direct transfer successful.",
-            "transfer_type": "direct",
-            "from": "0x82a26a6d847e7e0961ab432b9a5a209e0db41040" if blockchain == "ETH" else "HsZdbBxZVNzEn4qR9Ebx5XxDSZ136Mu14VlH1nbXGhfG",
-            "amount": amount,
-            "recipient": recipient
-        }
-        
         if json_output:
-            response_data.update(json_output)
+            # Ensure we have a transaction hash
+            tx_hash = (json_output.get('transactionHash') or 
+                      json_output.get('txHash') or 
+                      json_output.get('hash') or 
+                      json_output.get('id') or
+                      'pending')
             
-        return response_data
+            response_data = {
+                "success": True,
+                "transactionId": tx_hash,
+                "transactionHash": tx_hash,
+                "txHash": tx_hash,
+                "hash": tx_hash,
+                "transferId": json_output.get('transferId', json_output.get('id')),
+                "blockchain": blockchain,
+                "message": "Direct transfer successful.",
+                "transfer_type": "direct",
+                "from": json_output.get('from'),
+                "amount": amount,
+                "recipient": recipient
+            }
+            
+            # Include Circle transfer ID if it's different from tx hash
+            if json_output.get('circleTransferId'):
+                response_data['circleTransferId'] = json_output['circleTransferId']
+                
+            return response_data
+        else:
+            # Fallback response
+            return {
+                "success": True,
+                "transactionId": "pending",
+                "transactionHash": "pending",
+                "message": "Transfer initiated.",
+                "amount": amount,
+                "recipient": recipient,
+                "from": "HsZdbBxZVNzEn4qR9Ebx5XxDSZ136Mu14VlH1nbXGhfG" if blockchain == "SOL" else "0x82a26a6d847e7e0961ab432b9a5a209e0db41040",
+                "blockchain": blockchain,
+                "transfer_type": "direct"
+            }
         
     except subprocess.CalledProcessError as e:
+        print(f"ERROR: Transfer script failed with code {e.returncode}")
+        print(f"ERROR: stderr: {e.stderr}")
+        print(f"ERROR: stdout: {e.stdout}")
         raise HTTPException(status_code=500, detail=f"Transfer failed: {e.stderr}")
     except Exception as e:
+        print(f"ERROR: Unexpected error in execute_direct_transfer: {str(e)}")
+        print(f"ERROR: Type: {type(e)}")
+        import traceback
+        print(f"ERROR: Traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-async def execute_direct_transfer_internal(transfer_details: dict) -> dict:
-    """Internal function to execute direct transfer"""
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            "http://localhost:8002/execute_direct_transfer",
-            json={"transfer_details": transfer_details},
-            timeout=30.0
-        )
-        
-        if response.status_code == 200:
-            return response.json()
-        else:
-            raise Exception(f"Transfer failed: {response.text}")
 
 
 @app.post("/check_transfer_status")
@@ -1034,47 +1073,77 @@ async def check_transfer_status(request: Dict[str, Any]):
         raise HTTPException(status_code=400, detail="Transfer ID is required")
     
     try:
-        # Create a temporary script to check status
-        script_path = CIRCLE_DIR / "check_status_temp.js"
+        # Use the Node.js script to check status
         script_content = f"""
 import CircleUSDCHandler from './circleHandler.js';
 
 const handler = new CircleUSDCHandler();
 await handler.initialize();
 
-const status = await handler.getTransactionStatus('{transfer_id}');
-const txHash = await handler.getTransactionHash('{transfer_id}');
-
-console.log(JSON.stringify({{
-    status: status,
-    transactionHash: txHash
-}}));
+try {{
+    const details = await handler.getTransferDetails('{transfer_id}');
+    console.log(JSON.stringify({{
+        status: details.status || 'unknown',
+        transactionHash: details.transactionHash || null,
+        blockchain: details.destination?.chain || 'ETH',
+        amount: details.amount?.amount || '0',
+        errorCode: details.errorCode || null
+    }}));
+}} catch (error) {{
+    console.log(JSON.stringify({{
+        status: 'error',
+        transactionHash: null,
+        error: error.message
+    }}));
+}}
 """
         
-        with open(script_path, "w") as f:
+        # Write to temp file
+        temp_script = CIRCLE_DIR / "check_status_temp.js"
+        with open(temp_script, "w") as f:
             f.write(script_content)
         
-        # Execute the script
-        cmd = ["node", str(script_path)]
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=10, env=os.environ.copy(), cwd=str(CIRCLE_DIR))
+        # Execute
+        cmd = ["node", str(temp_script)]
+        result = subprocess.run(
+            cmd, 
+            capture_output=True, 
+            text=True, 
+            timeout=15, 
+            env=os.environ.copy(), 
+            cwd=str(CIRCLE_DIR)
+        )
         
         # Clean up
-        script_path.unlink(missing_ok=True)
+        temp_script.unlink(missing_ok=True)
         
         if result.returncode == 0:
             try:
-                # Parse the last line of output (in case there are debug messages)
+                # Parse output, looking for JSON
                 output_lines = result.stdout.strip().split('\n')
-                last_line = output_lines[-1] if output_lines else '{}'
-                data = json.loads(last_line)
-                return data
-            except:
+                for line in reversed(output_lines):
+                    if line.strip().startswith('{'):
+                        data = json.loads(line)
+                        print(f"DEBUG check_transfer_status response: {data}")
+                        return data
+                
+                # If no valid JSON found
+                return {"status": "unknown", "transactionHash": None}
+                
+            except Exception as e:
+                print(f"Error parsing check_transfer_status response: {e}")
                 return {"status": "unknown", "transactionHash": None}
         else:
-            raise HTTPException(status_code=500, detail="Failed to check transfer status")
+            print(f"check_transfer_status script error: {result.stderr}")
+            # Check for rate limit in stderr
+            if result.stderr and "rate" in result.stderr.lower() and "limit" in result.stderr.lower():
+                return {"status": "rate_limited", "transactionHash": None, "error": "Rate limit exceeded"}
+            return {"status": "error", "transactionHash": None, "error": "Failed to check status"}
             
     except Exception as e:
+        print(f"check_transfer_status exception: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     print("✅ Checking main execution block...")
