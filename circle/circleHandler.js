@@ -237,7 +237,10 @@ class CircleUSDCHandler {
                     transfer.transactionHash = this.generateMockTransactionHash(transfer.blockchain);
                     this.saveTransferHistory();
                 }
-                return transfer;
+                return {
+                ...transfer,
+                transactionHash: transfer.transactionHash || transfer.ethereumTransactionInfo?.transactionHash || transfer.solanaTransactionInfo?.signature || 'pending'
+            };
             }
             throw new Error('Transfer not found');
         }
@@ -248,21 +251,25 @@ class CircleUSDCHandler {
             
             console.log(`📋 Transfer ${transferId} status:`, {
                 status: transfer.status,
-                transactionHash: transfer.transactionHash || 'still pending'
+                transactionHash: transfer.transactionHash || transfer.ethereumTransactionInfo?.transactionHash || 'still pending'
             });
             
             // Update local history with latest status
             const localTransfer = this.transferHistory.find(t => t.id === transferId);
             if (localTransfer) {
                 localTransfer.status = transfer.status;
-                if (transfer.transactionHash && transfer.transactionHash !== 'pending') {
-                    localTransfer.transactionHash = transfer.transactionHash;
+                const txHash = transfer.transactionHash || transfer.ethereumTransactionInfo?.transactionHash || transfer.solanaTransactionInfo?.signature;
+            if (txHash && txHash !== 'pending') {
+                    localTransfer.transactionHash = txHash;
                     console.log(`✅ Got transaction hash for ${transferId}: ${transfer.transactionHash}`);
                 }
                 this.saveTransferHistory();
             }
             
-            return transfer;
+            return {
+                ...transfer,
+                transactionHash: transfer.transactionHash || transfer.ethereumTransactionInfo?.transactionHash || transfer.solanaTransactionInfo?.signature || 'pending'
+            };
         } catch (error) {
             console.error(`Error getting transfer details: ${error.message}`);
             
@@ -335,3 +342,75 @@ class CircleUSDCHandler {
 }
 
 export default CircleUSDCHandler;
+
+// CLI interface for checking transfer status
+if (import.meta.url === `file://${process.argv[1]}`) {
+    const transferId = process.argv[2];
+    if (!transferId) {
+        console.log(JSON.stringify({
+            success: false,
+            error: 'No transfer ID provided'
+        }));
+        process.exit(1);
+    }
+    
+    const handler = new CircleUSDCHandler();
+    handler.initialize().then(async () => {
+        try {
+            const transferDetails = await handler.getTransferDetails(transferId);
+            console.log(JSON.stringify({
+                success: true,
+                status: transferDetails.status || 'unknown',
+                transactionHash: transferDetails.transactionHash || 'pending',
+                transferId: transferDetails.id || transferId,
+                blockchain: transferDetails.blockchain || 'ETH',
+                amount: transferDetails.amount,
+                recipient: transferDetails.recipient,
+                from: transferDetails.from
+            }));
+        } catch (error) {
+            console.log(JSON.stringify({
+                success: false,
+                status: error.message.includes('429') ? 'rate_limited' : 'error',
+                error: error.message
+            }));
+        }
+        process.exit(0);
+    });
+}
+
+// CLI interface for checking transfer status
+if (import.meta.url === `file://${process.argv[1]}`) {
+    const transferId = process.argv[2];
+    if (!transferId) {
+        console.log(JSON.stringify({
+            success: false,
+            error: 'No transfer ID provided'
+        }));
+        process.exit(1);
+    }
+    
+    const handler = new CircleUSDCHandler();
+    handler.initialize().then(async () => {
+        try {
+            const transferDetails = await handler.getTransferDetails(transferId);
+            console.log(JSON.stringify({
+                success: true,
+                status: transferDetails.status || 'unknown',
+                transactionHash: transferDetails.transactionHash || 'pending',
+                transferId: transferDetails.id || transferId,
+                blockchain: transferDetails.blockchain || 'ETH',
+                amount: transferDetails.amount,
+                recipient: transferDetails.recipient,
+                from: transferDetails.from
+            }));
+        } catch (error) {
+            console.log(JSON.stringify({
+                success: false,
+                status: error.message.includes('429') ? 'rate_limited' : 'error',
+                error: error.message
+            }));
+        }
+        process.exit(0);
+    });
+}
