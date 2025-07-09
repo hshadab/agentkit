@@ -1,21 +1,23 @@
+#!/usr/bin/env python3
+
+import os
+from dotenv import load_dotenv
+load_dotenv()
+import subprocess
+import json
+import asyncio
+from datetime import datetime
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from openai import OpenAI
-import os
-import subprocess
-import json
-import re
-from typing import Dict, Any, Optional
-from datetime import datetime
-from dotenv import load_dotenv
+import uvicorn
+import re  # Import regex module at the top
+import openai
+from typing import Optional, List, Dict, Any
+from openai import AsyncOpenAI
 
-# Load environment variables from .env file
-load_dotenv()
+app = FastAPI(title="Verifiable Agent Kit v4.1 - Real zkEngine Only")
 
-app = FastAPI()
-
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,494 +26,939 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize OpenAI client with API key
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-# In-memory storage for conversation context
-conversation_context = {
-    "last_transfer": None,
-    "last_proof_type": None,
-    "conversation_history": []
-}
+# Initialize OpenAI
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
 class ChatRequest(BaseModel):
     message: str
 
-class ChatResponse(BaseModel):
-    response: str
-    metadata: dict
+class WorkflowRequest(BaseModel):
+    command: str
 
-def extract_transfer_details(message: str, context: Dict[str, Any]) -> Dict[str, str]:
-    """Extract transfer details from message with context awareness"""
-    
-    # Check for context-aware commands
-    context_patterns = [
-        r"do the same (?:but )?on (\w+)",
-        r"same (?:transfer|thing) (?:but )?on (\w+)",
-        r"now (?:do it )?on (\w+)",
-        r"repeat (?:that )?on (\w+)"
+def is_zkengine_command(message):
+    """Detect if this is any zkEngine-related command"""
+    zkengine_patterns = [
+        # Multi-step workflows
+        r'\s+then\s+',
+        r'\s+if\s+.+verified',
+        r'\s+if\s+.+compliant', 
+        r'\s+after\s+that\s+',
+        r'\s+followed\s+by\s+',
+        r'\s+and\s+then\s+',
+        r';\s*',
+        
+        # Single proof generation
+        r'^(generate|create|prove)\s+(kyc|ai\s+content|location|prime|collatz|digital\s+root)',
+        r'^prove\s+.*authenticity',
+        r'^prove\s+.*location',
+        r'^generate\s+.*proof',
+        r'^create\s+.*proof',
+        
+        # Verification commands  
+        r'^verify\s+proof',
+        r'^verify\s+[a-zA-Z0-9_-]+',
+        r'^verification\s+',
+        
+        # List/history commands
+        r'^(list|show)\s+(proofs?|verifications?)',
+        r'^proof\s+history',
+        r'^verification\s+history',
+        r'^workflow\s+history',
+        
+        # Transfer commands
+        r'send\s+.*usdc',
+        r'transfer\s+.*usdc',
     ]
     
-    for pattern in context_patterns:
-        match = re.search(pattern, message.lower())
-        if match and context.get("last_transfer"):
-            blockchain = match.group(1).lower()
-            # Use previous transfer details but update blockchain
-            previous = context["last_transfer"]
-            return {
-                "amount": previous["amount"],
-                "recipient": previous["recipient"],
-                "blockchain": "SOL" if "sol" in blockchain else "ETH"
-            }
-    
-    # Standard extraction for new transfers
-    amount_match = re.search(r"(\d+(?:\.\d+)?)\s*(?:USDC|usdc)", message)
-    amount = amount_match.group(1) if amount_match else "0.1"
-    
-    # Round to 2 decimal places for USDC
+    message_lower = message.lower().strip()
+    return any(re.search(pattern, message_lower) for pattern in zkengine_patterns)
+
+async def get_openai_response(message: str) -> str:
+    """Get pure OpenAI response for natural language queries"""
     try:
-        amount = str(round(float(amount), 2))
-    except:
-        amount = "0.1"
-    
-    # Extract recipient
-    recipient_patterns = [
-        r"to\s+(\w+)",
-        r"send\s+(?:\d+(?:\.\d+)?\s*USDC\s+)?to\s+(\w+)",
-        r"transfer\s+(?:\d+(?:\.\d+)?\s*USDC\s+)?to\s+(\w+)"
-    ]
-    
-    recipient = "alice"  # default
-    for pattern in recipient_patterns:
-        match = re.search(pattern, message, re.IGNORECASE)
-        if match:
-            recipient = match.group(1).lower()
-            break
-    
-    # Determine blockchain
-    blockchain = "SOL" if "solana" in message.lower() or "sol" in message.lower() else "ETH"
-    
-    return {
-        "amount": amount,
-        "recipient": recipient,
-        "blockchain": blockchain
-    }
-
-def update_context(transfer_details: Dict[str, str], proof_type: str = None):
-    """Update conversation context with latest transfer/proof details"""
-    if transfer_details:
-        conversation_context["last_transfer"] = transfer_details
-    if proof_type:
-        conversation_context["last_proof_type"] = proof_type
-
-@app.post("/chat")
-async def chat(request: ChatRequest):
-    try:
-        # Add to conversation history
-        conversation_context["conversation_history"].append({
-            "role": "user",
-            "content": request.message,
-            "timestamp": datetime.now().isoformat()
-        })
+        if not openai.api_key:
+            return "OpenAI API key not configured. Please set OPENAI_API_KEY environment variable."
         
-        # Build context for GPT
-        context_info = ""
-        if conversation_context["last_transfer"]:
-            last = conversation_context["last_transfer"]
-            context_info = f"\nPrevious transfer: {last['amount']} USDC to {last['recipient']} on {last['blockchain']}"
+        # Use the newer OpenAI client syntax
+        from openai import AsyncOpenAI
+        client = AsyncOpenAI(api_key=openai.api_key)
         
-        # Enhanced prompt with context awareness
-        prompt = f"""You are a helpful assistant for a verifiable agent system that can generate zero-knowledge proofs and execute USDC transfers on Ethereum and Solana.
-
-Available actions:
-1. Generate KYC compliance proofs
-2. Generate AI content verification proofs  
-3. Generate location verification proofs
-4. Execute USDC transfers (with or without KYC verification)
-5. Verify existing proofs
-
-Context awareness:
-- When user says "do the same on [blockchain]" or similar, repeat the previous action but on the specified blockchain
-- Remember previous transfer amounts and recipients
-{context_info}
-
-User message: {request.message}
-
-Determine the user's intent and provide a helpful response. If they want to repeat a previous action with modifications, acknowledge this clearly."""
-
-        # Get response from OpenAI using new API
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
+        response = await client.chat.completions.create(
+            model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": prompt},
-                {"role": "user", "content": request.message}
+                {"role": "system", "content": "You are a helpful assistant. Answer questions naturally and conversationally. Keep responses concise but informative."},
+                {"role": "user", "content": message}
             ],
-            temperature=0.7,
-            max_tokens=200
+            max_tokens=150,
+            temperature=0.7
         )
         
-        ai_response = response.choices[0].message.content
-        
-        # Determine intent and metadata
-        message_lower = request.message.lower()
-        metadata = {"action": "none"}
-        
-        # Check for context-aware commands first
-        if any(phrase in message_lower for phrase in ["do the same", "same thing", "now on", "repeat"]):
-            if conversation_context["last_transfer"] and any(blockchain in message_lower for blockchain in ["solana", "sol", "ethereum", "eth"]):
-                if conversation_context["last_proof_type"] == "kyc_transfer":
-                    metadata = {
-                        "action": "kyc_transfer",
-                        "details": extract_transfer_details(request.message, conversation_context)
-                    }
-                    # Update context with new blockchain but same other details
-                    update_context(metadata["details"], "kyc_transfer")
-        
-        # Standard intent detection
-        elif "kyc" in message_lower and ("send" in message_lower or "transfer" in message_lower):
-            transfer_details = extract_transfer_details(request.message, conversation_context)
-            metadata = {
-                "action": "kyc_transfer",
-                "details": transfer_details
-            }
-            update_context(transfer_details, "kyc_transfer")
-            
-        elif "send" in message_lower or "transfer" in message_lower:
-            if "kyc" not in message_lower:
-                transfer_details = extract_transfer_details(request.message, conversation_context)
-                metadata = {
-                    "action": "direct_transfer", 
-                    "details": transfer_details
-                }
-                update_context(transfer_details, "direct_transfer")
-                
-        elif "prove" in message_lower:
-            if "ai" in message_lower or "content" in message_lower:
-                metadata = {"action": "prove_ai_content"}
-                update_context(None, "prove_ai_content")
-            elif "location" in message_lower:
-                metadata = {"action": "prove_location"}
-                update_context(None, "prove_location")
-            elif "kyc" in message_lower:
-                metadata = {"action": "prove_kyc"}
-                update_context(None, "prove_kyc")
-                
-        elif "verify" in message_lower and "proof" in message_lower:
-            metadata = {"action": "verify_proof"}
-        
-        # Add conversation to history
-        conversation_context["conversation_history"].append({
-            "role": "assistant",
-            "content": ai_response,
-            "metadata": metadata,
-            "timestamp": datetime.now().isoformat()
-        })
-        
-        # Format response based on action type
-        if metadata.get("action") == "kyc_transfer":
-            # For KYC transfers, create a proof metadata that triggers the KYC proof flow
-            proof_id = f"proof_kyc_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-            return {
-                "response": ai_response,
-                "intent": {
-                    "function": "prove_kyc",
-                    "arguments": ["1"],  # KYC always uses argument "1"
-                    "step_size": 50,
-                    "explanation": "Generating KYC compliance proof for USDC transfer",
-                    "additional_context": {
-                        "is_automated_transfer": True,
-                        "transfer_details": metadata["details"]
-                    }
-                },
-                "metadata": {
-                    "proof_id": proof_id,
-                    "is_automated_transfer": True,
-                    "transfer_details": metadata["details"]
-                }
-            }
-        elif metadata.get("action") == "prove_kyc":
-            # Standalone KYC proof
-            return {
-                "response": ai_response,
-                "intent": {
-                    "function": "prove_kyc",
-                    "arguments": ["1"],
-                    "step_size": 50,
-                    "explanation": "Generating KYC compliance proof",
-                    "additional_context": None
-                }
-            }
-        elif metadata.get("action") == "prove_ai_content":
-            return {
-                "response": ai_response,
-                "intent": {
-                    "function": "prove_ai_content",
-                    "arguments": ["content_hash", "openai"],  # Example arguments
-                    "step_size": 50,
-                    "explanation": "Generating AI content verification proof",
-                    "additional_context": None
-                }
-            }
-        elif metadata.get("action") == "prove_location":
-            return {
-                "response": ai_response,
-                "intent": {
-                    "function": "prove_location",
-                    "arguments": ["12345"],  # Example packed coordinates
-                    "step_size": 50,
-                    "explanation": "Generating location verification proof",
-                    "additional_context": None
-                }
-            }
-        elif metadata.get("action") == "direct_transfer":
-            # Direct transfer without KYC - this should be handled differently
-            # Return the transfer details in a format the frontend can use
-            return {
-                "response": ai_response,
-                "metadata": metadata,
-                "action": "direct_transfer"
-            }
-        else:
-            return {
-                "response": ai_response,
-                "metadata": metadata
-            }
+        return response.choices[0].message.content.strip()
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"[ERROR] OpenAI API error: {str(e)}")
+        return f"I encountered an error processing your question: {str(e)}. Please check your OpenAI API key and try again."
 
-@app.post("/execute_verified_transfer")
-async def execute_verified_transfer(request: dict):
-    """Execute a transfer that requires KYC verification"""
-    try:
-        # Extract transfer details from the additional_context
-        transfer_details = request.get("transfer_details", {})
-        amount = transfer_details.get("amount", "0.1")
-        recipient = transfer_details.get("recipient", "alice")
-        blockchain = transfer_details.get("blockchain", "ETH")
-        
-        # Round amount to 2 decimal places
-        try:
-            amount = str(round(float(amount), 2))
-        except:
-            amount = "0.1"
-        
-        # Update context
-        update_context({
-            "amount": amount,
-            "recipient": recipient,
-            "blockchain": blockchain
-        }, "kyc_transfer")
-        
-        # Build the command for the Circle transfer
-        # Use absolute path to node and the script
-        node_path = subprocess.run("which node", shell=True, capture_output=True, text=True).stdout.strip()
-        script_path = os.path.expanduser("~/agentkit/circle/executeTransfer.js")
-        
-        if blockchain == "SOL":
-            command = f"{node_path} {script_path} send {amount} USDC to {recipient} on solana"
+def parse_proof_metadata(message):
+    """Parse proof command - send function names that Rust server expects"""
+    message_lower = message.lower()
+    
+    # Default metadata
+    metadata = {
+        "function": "prove_kyc",  # Rust server expects these names
+        "arguments": [],
+        "step_size": 50,
+        "explanation": "Zero-knowledge proof generation",
+        "additional_context": None
+    }
+    
+    # Handle verification commands
+    if 'verify' in message_lower:
+        verify_match = re.search(r'verify\s+(?:proof\s+)?([a-zA-Z0-9_-]+)', message_lower)
+        if verify_match:
+            proof_id = verify_match.group(1)
+            metadata["function"] = "verify_proof"
+            metadata["arguments"] = [proof_id]
+            metadata["explanation"] = "Proof verification"
+            return metadata
+    
+    # Send function names that Rust server expects
+    if 'kyc' in message_lower:
+        metadata["function"] = "prove_kyc"  # Rust server maps this to kyc_compliance.wasm
+        # KYC proof expects wallet_hash and kyc_approved parameters
+        wallet_hash = "12345"  # Hash of wallet address
+        kyc_approved = "1"     # 1 = approved, 0 = rejected
+        metadata["arguments"] = [wallet_hash, kyc_approved]
+        print(f"[DEBUG] KYC proof function: prove_kyc with args: {metadata['arguments']}")
+    elif 'location' in message_lower:
+        metadata["function"] = "prove_location"  # Rust server maps this to depin_location.wasm
+        # Extract coordinates if present
+        coord_match = re.search(r'(\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)', message)
+        if coord_match:
+            lat, lon = float(coord_match.group(1)), float(coord_match.group(2))
+            # Convert to normalized 0-255 scale and pack into 32-bit integer
+            # This matches the WASM expectation: lat(8bits) | lon(8bits) | deviceId(16bits)
+            lat_norm = int((lat + 90) * 255 / 180)  # -90 to 90 -> 0 to 255
+            lon_norm = int((lon + 180) * 255 / 360) # -180 to 180 -> 0 to 255
+            device_id = 5000  # Valid device ID
+            packed_input = ((lat_norm & 0xFF) << 24) | ((lon_norm & 0xFF) << 16) | (device_id & 0xFFFF)
+            metadata["arguments"] = [str(packed_input)]
+            print(f"[DEBUG] Location proof: lat={lat}, lon={lon} -> packed={packed_input}")
         else:
-            command = f"{node_path} {script_path} send {amount} USDC to {recipient}"
+            # NYC default: 40.7128, -74.0060 
+            lat_norm = 103  # ~40.7°N normalized
+            lon_norm = 182  # ~-74.0°W normalized
+            device_id = 5000
+            packed_input = ((lat_norm & 0xFF) << 24) | ((lon_norm & 0xFF) << 16) | (device_id & 0xFFFF)
+            metadata["arguments"] = [str(packed_input)]
+            print(f"[DEBUG] Location proof (NYC default): packed={packed_input}")
+        print(f"[DEBUG] Location proof function: prove_location")
+    elif 'ai content' in message_lower or 'ai' in message_lower:
+        metadata["function"] = "prove_ai_content"  # Rust server maps this to ai_content_verification.wasm
         
-        print(f"Executing transfer command: {command}")
-        print(f"Working directory: {os.path.expanduser('~/agentkit')}")
-        
-        # Set up environment with Circle credentials
-        env = os.environ.copy()
-        
-        # Execute the transfer with environment variables
-        result = subprocess.run(
-            command, 
-            shell=True, 
-            capture_output=True, 
-            text=True, 
-            cwd=os.path.expanduser("~/agentkit"),
-            env=env
-        )
-        
-        print(f"Transfer command exit code: {result.returncode}")
-        print(f"Transfer stdout: {result.stdout}")
-        print(f"Transfer stderr: {result.stderr}")
-        
-        # Extract JSON from stdout
-        output = result.stdout
-        
-        # Try to extract JSON from output even if mixed with other text
-        # Look for JSON at the end of the output
-        output = result.stdout
-        lines = output.strip().split('\n')
-        json_str = None
-        
-        # Try to find the JSON line (usually the last line that starts with {)
-        for line in reversed(lines):
-            line = line.strip()
-            if line.startswith('{') and line.endswith('}'):
-                json_str = line
-                break
-        
-        if json_str:
-            try:
-                transfer_data = json.loads(json_str)
-                print(f"Parsed transfer result: {json.dumps(transfer_data, indent=2)}")
-                
-                # If we got an error in the JSON
-                if transfer_data.get("success") == False:
-                    return {"success": False, "error": transfer_data.get("error", "Transfer failed")}
-                
-                # Ensure we have a success field for the Rust server
-                transfer_data["success"] = True
-                
-                # Add transfer details to the response
-                transfer_data["amount"] = amount
-                transfer_data["recipient"] = transfer_data.get("recipient", recipient)
-                transfer_data["blockchain"] = blockchain
-                transfer_data["from"] = transfer_data.get("from", "0x82a26a6d847e7e0961ab432b9a5a209e0db41040" if blockchain == "ETH" else "HsZdbBxZVNzEn4qR9Ebx5XxDSZ136Mu14VlH1nbXGhfG")
-                
-                # Get the Circle transfer ID
-                if "transferId" in transfer_data:
-                    transfer_data["circleTransferId"] = transfer_data["transferId"]
-                
-                return transfer_data
-            except json.JSONDecodeError as e:
-                print(f"JSON decode error: {str(e)}")
-                print(f"Attempted to parse: {json_str}")
-        
-        # If we couldn't parse JSON, return error
-        error_msg = result.stderr or result.stdout or "Unknown error"
-        print(f"Transfer failed with output: {error_msg}")
-        return {"success": False, "error": "Failed to parse transfer response"}
+        # Extract hash if present - CONVERT TO NUMERIC
+        hash_match = re.search(r'hash\s+(\w+)', message_lower)
+        if hash_match:
+            hash_str = hash_match.group(1)
+            # Convert string hash to numeric value
+            if hash_str.isdigit():
+                hash_val = hash_str
+            else:
+                # Convert string to numeric hash (simple sum of character codes)
+                hash_val = str(sum(ord(c) for c in hash_str) % 1000000)
+        else:
+            hash_val = "12345"  # Default numeric hash
             
+        provider = "1000"  # OpenAI
+        metadata["arguments"] = [hash_val, provider]
+        print(f"[DEBUG] AI content proof function: prove_ai_content with numeric hash: {hash_val}")
+    
+    return metadata
+
+def is_workflow_command(message: str) -> bool:
+    """Detect if a command should be processed as a workflow."""
+    message_lower = message.lower()
+    
+    # Multi-step indicators
+    if ' then ' in message_lower:
+        return True
+    
+    # Conditional transfers
+    if ('send' in message_lower or 'transfer' in message_lower):
+        if any(word in message_lower for word in ['if', 'when', 'after', 'compliant', 'verified']):
+            return True
+    
+    return False
+
+def is_complex_workflow(message: str) -> bool:
+    """Determine if a workflow is complex enough to require OpenAI parsing."""
+    message_lower = message.lower()
+    
+    # Multiple conditional transfers with "and"
+    if " and " in message_lower and message_lower.count("if") > 1:
+        return True
+    
+    # Complex natural language patterns that regex struggles with
+    complex_patterns = [
+        r'if\s+\w+\s+(?:is|has|was)\s+.+\s+(?:then\s+)?(?:also\s+)?send',
+        r'send\s+.+\s+to\s+\w+\s+(?:only\s+)?if',
+        r'transfer\s+.+\s+but\s+only\s+if',
+        r'when\s+\w+\s+(?:is|becomes)\s+.+\s+send',
+    ]
+    
+    for pattern in complex_patterns:
+        if re.search(pattern, message_lower):
+            return True
+    
+    # Multiple recipients with different conditions
+    if message_lower.count("send") > 1 or message_lower.count("transfer") > 1:
+        if "if" in message_lower or "when" in message_lower:
+            return True
+    
+    return False
+
+async def parse_workflow_with_openai(message: str) -> Dict[str, Any]:
+    """Parse complex workflows using OpenAI for better natural language understanding."""
+    print(f"[DEBUG] parse_workflow_with_openai called with: {message}")
+    try:
+        if not openai.api_key:
+            print(f"[ERROR] OpenAI API key not configured")
+            raise ValueError("OpenAI API key not configured")
+        
+        print(f"[DEBUG] Creating OpenAI client...")
+        client = AsyncOpenAI(api_key=openai.api_key)
+        
+        # Create a system prompt that guides OpenAI to parse workflows correctly
+        system_prompt = """You are a workflow parser for a blockchain system that handles conditional transfers and proof generation.
+
+Parse the user's command into a structured workflow with steps. Each step should be one of:
+1. Proof generation (kyc_proof, location_proof, ai_content_proof)
+2. Verification (verify a specific proof)
+3. Transfer (send USDC to someone on ETH or SOL blockchain)
+
+For conditional transfers like "If Alice is KYC verified send her 0.05 USDC on Solana", break it into:
+1. Generate KYC proof for Alice (type: "kyc_proof")
+2. Verify the KYC proof for Alice (type: "verification")
+3. Transfer 0.05 USDC to Alice on SOL (type: "transfer")
+
+Return the result as a JSON object with this structure:
+{
+  "description": "original command",
+  "steps": [
+    {
+      "index": 0,
+      "type": "kyc_proof|location_proof|ai_content_proof|verification|transfer",
+      "proofType": "kyc|location|ai content" (for proof steps),
+      "verificationType": "kyc|location|ai content" (for verification steps),
+      "description": "human readable description",
+      "person": "alice|bob|etc" (if applicable),
+      "amount": "0.05" (for transfers),
+      "recipient": "alice|bob|etc" (for transfers),
+      "blockchain": "ETH|SOL" (for transfers, default ETH),
+      "requiresProof": true (for conditional transfers),
+      "requiredProofTypes": ["kyc"] (for conditional transfers),
+      "conditions": [{"type": "kyc", "description": "KYC verified"}] (for conditional transfers)
+    }
+  ],
+  "requiresProofs": true (if any transfers require proofs)
+}
+
+Important rules:
+- For "and" between multiple conditional transfers, create separate proof/verify/transfer sequences
+- Always include verification steps after proof generation if the transfer is conditional
+- Use exact recipient names from the command
+- Default blockchain is ETH unless specified
+- Parse amounts carefully (e.g., "0.05", "1", "0.5")"""
+
+        # Parse the command
+        print(f"[DEBUG] Calling OpenAI API...")
+        response = await asyncio.wait_for(
+            client.chat.completions.create(
+                model="gpt-3.5-turbo",  # Using GPT-3.5-turbo for compatibility
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": f"Parse this workflow command: {message}"}
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.1,
+                max_tokens=1000
+            ),
+            timeout=30.0  # 30 second timeout
+        )
+        print(f"[DEBUG] OpenAI API response received")
+        
+        result = json.loads(response.choices[0].message.content)
+        print(f"[DEBUG] Parsed result: {json.dumps(result, indent=2)}")
+        
+        # Validate and clean up the result
+        if "steps" not in result:
+            result["steps"] = []
+        
+        # Ensure all steps have required fields and normalize data
+        for i, step in enumerate(result["steps"]):
+            step["index"] = i
+            if "description" not in step:
+                step["description"] = f"{step.get('type', 'unknown')} operation"
+            
+            # Normalize person/recipient names to lowercase
+            if "person" in step:
+                step["person"] = step["person"].lower()
+            if "recipient" in step:
+                step["recipient"] = step["recipient"].lower()
+                
+            # Add required fields for proof steps
+            if step["type"] == "kyc_proof" and "parameters" not in step:
+                step["parameters"] = {}
+            if step["type"] == "verification" and "proofId" not in step:
+                step["proofId"] = None
+        
+        print(f"[DEBUG] Returning parsed workflow with {len(result['steps'])} steps")
+        return result
+        
+    except asyncio.TimeoutError:
+        print(f"[ERROR] OpenAI API timeout")
+        # Fall back to a simple structure
+        return {
+            "description": message,
+            "steps": [],
+            "requiresProofs": False,
+            "error": "OpenAI API timeout"
+        }
     except Exception as e:
-        print(f"Transfer execution error: {str(e)}")
+        print(f"[ERROR] OpenAI workflow parsing error: {str(e)}")
         import traceback
         traceback.print_exc()
-        return {"success": False, "error": str(e)}
+        # Fall back to a simple structure
+        return {
+            "description": message,
+            "steps": [],
+            "requiresProofs": False,
+            "error": str(e)
+        }
 
-@app.post("/execute_direct_transfer")
-async def execute_direct_transfer(request: dict):
-    """Execute a direct transfer without KYC verification"""
+@app.post("/chat")
+async def chat_endpoint(request: ChatRequest):
+    """Smart routing: zkEngine operations vs pure OpenAI responses"""
     try:
-        amount = request.get("amount", "0.1")
-        recipient = request.get("recipient", "alice")
-        blockchain = request.get("blockchain", "ETH")
+        message = request.message.strip()
         
-        # Round amount to 2 decimal places
-        try:
-            amount = str(round(float(amount), 2))
-        except:
-            amount = "0.1"
+        # Log all incoming chat requests for debugging
+        request_time = datetime.now()
+        print(f"[CHAT_REQUEST] Time: {request_time.isoformat()}")
+        print(f"[CHAT_REQUEST] Message: {message}")
         
-        # Update context
-        update_context({
-            "amount": amount,
-            "recipient": recipient,
-            "blockchain": blockchain
-        }, "direct_transfer")
+        # Block empty messages and common greeting loops
+        if not message or message.lower() in ['hello', 'hello!', 'hi', 'hi!', '']:
+            print(f"[DEBUG] Blocking potential loop message: '{message}'")
+            return {
+                "intent": "blocked",
+                "response": "",
+            }
         
-        # Build the command for the Circle transfer
-        if blockchain == "SOL":
-            command = f"node circle/executeTransfer.js send {amount} USDC to {recipient} on solana"
+        print(f"[DEBUG] chat endpoint: {message}")
+        
+        # Add detailed logging for empty or suspicious messages
+        if not message or message.lower() in ['hello', 'hello!', 'hi']:
+            print(f"[WARNING] Received potentially problematic message: '{message}' (empty: {not message})")
+            print(f"[DEBUG] Full request data: {request}")
+            import traceback
+            traceback.print_stack()
+            
+            # Return empty response for empty messages to prevent loops
+            if not message:
+                return {
+                    "intent": "empty",
+                    "response": "",
+                }
+        
+        # Special history commands
+        if message.lower() == 'workflow history':
+            print(f"[DEBUG] Workflow history request")
+            return {
+                "intent": "workflow_history",
+                "response": "Fetching workflow history...",
+            }
+        
+        # Check if this is a workflow FIRST (including conditional transfers)
+        if " if " in message.lower() and ("send" in message.lower() or "transfer" in message.lower()) and "usdc" in message.lower():
+            print(f"[DEBUG] Conditional transfer detected as workflow")
+            # Execute the workflow directly instead of returning workflow intent
+            workflow_request = WorkflowRequest(command=message)
+            workflow_result = await execute_workflow(workflow_request)
+            
+            return {
+                "intent": "workflow_executed",
+                "command": message,
+                "response": "I'll execute this multi-step workflow for you.",
+                "workflow_result": workflow_result
+            }
+
+        # Check if this is any zkEngine-related command
+        if is_zkengine_command(message):
+            # Check for list/history commands FIRST
+            if any(keyword in message.lower() for keyword in ["history", "list proofs", "show proofs", "proof history"]):
+                print(f"[DEBUG] List/History command → Rust server")
+                proof_metadata = {
+                    "function": "list_proofs",
+                    "arguments": ["proofs"] if "verification" not in message.lower() else ["verifications"],
+                    "step_size": 50,
+                    "explanation": "Listing proof history",
+                    "additional_context": None
+                }
+                
+                return {
+                    "intent": proof_metadata,
+                    "command": message,
+                    "response": "Fetching proof history...",
+                    "metadata": {
+                        "proof_id": f"list_{int(datetime.now().timestamp() * 1000)}",
+                        "type": "list_operation"
+                    }
+                }
+            
+            # Check multi-step workflows
+            if any(re.search(pattern, message.lower()) for pattern in [r'\s+then\s+', r'\s+if\s+.+verified']):
+                print(f"[DEBUG] Multi-step workflow → executing directly")
+                # Execute the workflow directly
+                workflow_request = WorkflowRequest(command=message)
+                workflow_result = await execute_workflow(workflow_request)
+                
+                return {
+                    "intent": "workflow_executed",
+                    "command": message,
+                    "response": "I'll execute this multi-step workflow for you.",
+                    "workflow_result": workflow_result
+                }
+            
+            # Single proof generation OR verification → Rust server
+            print(f"[DEBUG] zkEngine command (proof/verification) → Rust server")
+            proof_metadata = parse_proof_metadata(message)
+            
+            # Generate appropriate proof ID
+            function_name = proof_metadata['function']
+            if function_name == 'prove_kyc':
+                proof_type = 'kyc'
+            elif function_name == 'prove_location':
+                proof_type = 'location'
+            elif function_name == 'prove_ai_content':
+                proof_type = 'ai_content'
+            elif function_name == 'verify_proof':
+                proof_type = 'verification'
+            else:
+                proof_type = function_name.replace('prove_', '')
+            
+            proof_id = f"proof_{proof_type}_{int(datetime.now().timestamp() * 1000)}"
+            
+            # Determine response message
+            if 'verify' in message.lower():
+                response = "Verifying proof with zkEngine..."
+            else:
+                response = "Generating zero-knowledge proof with zkEngine..."
+            
+            return {
+                "intent": proof_metadata,
+                "command": message,
+                "response": response,
+                "metadata": {
+                    "proof_id": proof_id,
+                    "type": "proof_generation"
+                }
+            }
+        
+        # Pure natural language → OpenAI
+        print(f"[DEBUG] Natural language query → OpenAI")
+        
+        # Additional check to prevent generating responses for suspicious queries
+        if message.lower() in ['hello', 'hello!', 'hi']:
+            print(f"[WARNING] Blocking potential loop-causing message: {message}")
+            return {
+                "intent": "blocked",
+                "response": "",
+            }
+        
+        openai_response = await get_openai_response(message)
+        
+        return {
+            "intent": "openai_chat",
+            "response": openai_response,
+        }
+        
+    except Exception as e:
+        print(f"[ERROR] Chat endpoint error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+import asyncio
+import aiohttp
+
+async def send_workflow_update(message):
+    """Send workflow update to Rust WebSocket server"""
+    try:
+        async with aiohttp.ClientSession() as session:
+            # Send to a special endpoint on the Rust server
+            async with session.post('http://localhost:8001/workflow_update', 
+                                  json=message,
+                                  headers={'Content-Type': 'application/json'}) as resp:
+                if resp.status != 200:
+                    print(f"[WARNING] Failed to send workflow update: {resp.status}")
+    except Exception as e:
+        print(f"[WARNING] Error sending workflow update: {e}")
+
+@app.post("/execute_workflow") 
+async def execute_workflow(request: WorkflowRequest):
+    """Execute multi-step workflows with REAL zkEngine ONLY - NO SIMULATION"""
+    try:
+        command = request.command.strip()
+        request_time = datetime.now()
+        workflow_id = f"wf_{int(request_time.timestamp())}"
+        
+        # Log request details for debugging duplicate workflows
+        print(f"[WORKFLOW_REQUEST] Time: {request_time.isoformat()}")
+        print(f"[WORKFLOW_REQUEST] Command: {command}")
+        print(f"[WORKFLOW_REQUEST] Workflow ID: {workflow_id}")
+        
+        # Check if this is a complex workflow that needs OpenAI parsing
+        use_openai_parser = is_complex_workflow(command) and openai.api_key is not None
+        print(f"[DEBUG] Command: {command}")
+        print(f"[DEBUG] Is complex workflow: {is_complex_workflow(command)}")
+        print(f"[DEBUG] OpenAI API key available: {openai.api_key is not None}")
+        print(f"[DEBUG] Will use OpenAI parser: {use_openai_parser}")
+        print(f"[DEBUG] Has 'and': {' and ' in command.lower()}")
+        print(f"[DEBUG] Count 'if': {command.lower().count('if')}")
+        
+        workflow_data = None
+        steps = []
+        parsed_workflow_file = None
+        
+        if use_openai_parser:
+            print(f"[DEBUG] Using OpenAI parser for complex workflow")
+            try:
+                workflow_data = await asyncio.wait_for(
+                    parse_workflow_with_openai(command),
+                    timeout=35.0  # Slightly longer than the internal timeout
+                )
+                
+                # Check if OpenAI parsing failed or returned no steps
+                if workflow_data.get('error') or not workflow_data.get('steps'):
+                    print(f"[WARNING] OpenAI parsing failed or returned no steps, falling back to regex parser")
+                    print(f"[WARNING] Error: {workflow_data.get('error', 'No steps returned')}")
+                    use_openai_parser = False  # Fall back to regex parser
+                else:
+                    print(f"[DEBUG] OpenAI parsing successful with {len(workflow_data.get('steps', []))} steps")
+            except Exception as e:
+                print(f"[ERROR] OpenAI parser exception: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                use_openai_parser = False  # Fall back to regex parser
+                workflow_data = None
+        
+        if use_openai_parser and workflow_data and not workflow_data.get('error'):
+            # Save the parsed workflow to a temporary file for the executor
+            parsed_workflow_file = os.path.join(os.path.expanduser("~/agentkit/circle"), f"parsed_workflow_{workflow_id}.json")
+            with open(parsed_workflow_file, 'w') as f:
+                json.dump(workflow_data, f, indent=2)
+            
+            # Create step structure for UI from OpenAI parsed data
+            for i, step in enumerate(workflow_data.get('steps', [])):
+                step_id = f"step_{i+1}"
+                action = step.get('type', '')
+                description = step.get('description', '')
+                
+                ui_step = {
+                    "id": step_id,
+                    "action": action,
+                    "description": description,
+                    "status": "pending"
+                }
+                
+                if 'kyc' in action.lower() or 'kyc' in description.lower():
+                    ui_step["proofType"] = "kyc"
+                elif 'location' in action.lower() or 'location' in description.lower():
+                    ui_step["proofType"] = "location"
+                elif 'ai' in action.lower() or 'ai' in description.lower():
+                    ui_step["proofType"] = "ai_content"
+                
+                steps.append(ui_step)
+        
+        if not use_openai_parser or not parsed_workflow_file:
+            print(f"[DEBUG] Using standard regex parser")
+            # Parse the workflow first to get steps
+            parser_result = subprocess.run(
+                ['node', 'workflowParser_generic_final.js', command],
+                capture_output=True,
+                text=True,
+                cwd=os.path.expanduser("~/agentkit/circle"),
+            )
+            
+            if parser_result.returncode == 0:
+                try:
+                    workflow_data = json.loads(parser_result.stdout)
+                    # Create step structure for UI
+                    for i, step in enumerate(workflow_data.get('steps', [])):
+                        step_id = f"step_{i+1}"
+                        action = step.get('action', '')
+                        description = step.get('description', '')
+                        
+                        ui_step = {
+                            "id": step_id,
+                            "action": action,
+                            "description": description,
+                            "status": "pending"
+                        }
+                        
+                        if 'kyc' in action.lower() or 'kyc' in description.lower():
+                            ui_step["proofType"] = "kyc"
+                        
+                        steps.append(ui_step)
+                except:
+                    pass
+        
+        # Workflow started will be sent by executor when it connects
+        
+        # DISABLED - This preprocessing breaks the parser's ability to handle multi-person conditionals
+        # The parser already handles "and" correctly when it's not preprocessed
+        # # Handle multiple conditional transfers with "and"
+        # if " and " in command and command.count("if") > 1:
+        #     # Use regex module properly
+        #     parts = re.split(r' and ', command, flags=re.IGNORECASE)
+        #     transfer_parts = []
+        #     
+        #     for part in parts:
+        #         part_lower = part.lower()
+        #         if ("send" in part_lower or "transfer" in part_lower) and "if" in part_lower:
+        #             transfer_parts.append(part.strip())
+        #     
+        #     if len(transfer_parts) > 1:
+        #         command = " then ".join(transfer_parts)
+        #         print(f"[DEBUG] Preprocessed multi-condition: {command}")
+
+        print(f"[DEBUG] execute_workflow: {command}")
+        
+        # Configure environment for REAL zkEngine ONLY
+        env = os.environ.copy()
+        env.update({
+            'ZKENGINE_BINARY': os.getenv('ZKENGINE_BINARY', './zkengine_binary/zkEngine'),
+            'WASM_DIR': os.getenv('WASM_DIR', './zkengine_binary'),
+            'PROOFS_DIR': os.getenv('PROOFS_DIR', './proofs')
+        })
+        
+        # Remove ALL simulation-related environment variables
+        simulation_vars = [
+            'USE_REAL_ZKENGINE', 'FALLBACK_MODE', 'TEST_MODE'
+        ]
+        for var in simulation_vars:
+            env.pop(var, None)
+        
+        print(f"[DEBUG] Environment: REAL zkEngine ONLY")
+        print(f"  ZKENGINE_BINARY: {env.get('ZKENGINE_BINARY')}")
+        
+        # Workflow started will be sent by executor when it connects
+        # This prevents duplicate workflow cards in the UI
+        
+        # Use the appropriate workflow executor based on parser type
+        if use_openai_parser and parsed_workflow_file:
+            # For OpenAI-parsed workflows, pass the parsed file to the executor
+            print(f"[DEBUG] Executing with parsed file: {parsed_workflow_file}")
+            result = subprocess.run(
+                ['node', 'workflowCLI_generic.js', '--parsed-file', parsed_workflow_file],
+                capture_output=True,
+                text=True,
+                cwd=os.path.expanduser("~/agentkit/circle"),
+                env=env,
+                timeout=300,
+            )
         else:
-            command = f"node circle/executeTransfer.js send {amount} USDC to {recipient}"
+            # Use the original workflow executor with command
+            print(f"[DEBUG] Executing with direct command: {command}")
+            result = subprocess.run(
+                ['node', 'workflowCLI_generic.js', command],
+                capture_output=True,
+                text=True,
+                cwd=os.path.expanduser("~/agentkit/circle"),
+                env=env,
+                timeout=300,
+            )
         
-        # Execute the transfer
-        result = subprocess.run(command, shell=True, capture_output=True, text=True, cwd=os.path.expanduser("~/agentkit"))
+        print(f"[DEBUG] CLI return code: {result.returncode}")
+        print(f"[DEBUG] CLI stdout: {result.stdout[-500:]}")
+        if result.stderr:
+            print(f"[DEBUG] CLI stderr: {result.stderr}")
         
-        if result.returncode != 0:
-            error_msg = result.stderr or result.stdout
+        if result.returncode == 0:
+            transfer_ids = []
+            transfer_patterns = [
+                r'Transfer ID: ([a-f0-9\-]{36})',
+                r'transferId["\']?: ["\']?([a-f0-9\-]{36})',
+            ]
             
-            # Check for rate limit error
-            if "429" in error_msg or "rate limit" in error_msg.lower():
-                return {
-                    "error": "rate_limit",
-                    "message": "Circle API rate limit reached. The transfer is being processed but may take a moment.",
-                    "details": error_msg
+            for pattern in transfer_patterns:
+                matches = re.findall(pattern, result.stdout, re.IGNORECASE)
+                transfer_ids.extend(matches)
+            
+            # Extract proof information
+            proof_summary = {}
+            proof_pattern = r'(kyc|location|ai_content): ✅ (verified|generated) \(([^)]+)\)'
+            proof_matches = re.findall(proof_pattern, result.stdout, re.IGNORECASE)
+            
+            for proof_type, status, proof_id in proof_matches:
+                proof_summary[proof_type] = {
+                    "status": status,
+                    "proofId": proof_id
                 }
             
-            # Check for validation errors (like decimal precision)
-            if "422" in error_msg:
-                return {
-                    "error": "validation_error",
-                    "message": f"Transfer validation failed. Please ensure the amount ({amount}) is valid with up to 2 decimal places.",
-                    "details": error_msg
-                }
-            
-            print(f"Transfer command failed: {error_msg}")
-            return {"error": error_msg}
+            # Clean up temporary parsed workflow file if it exists
+            if use_openai_parser and parsed_workflow_file:
+                try:
+                    os.remove(parsed_workflow_file)
+                except:
+                    pass
+                    
+            return {
+                "success": True,
+                "workflowId": f"wf_{int(datetime.now().timestamp())}",
+                "transferIds": list(set(transfer_ids)),
+                "proofSummary": proof_summary,
+                "message": "Workflow executed successfully",
+                "executionLog": result.stdout[-1000:]
+            }
+        else:
+            # Clean up temporary parsed workflow file if it exists
+            if use_openai_parser and parsed_workflow_file:
+                try:
+                    os.remove(parsed_workflow_file)
+                except:
+                    pass
+                    
+            return {
+                "success": False,
+                "error": result.stderr or result.stdout or "Workflow execution failed",
+                "stderr": result.stderr,
+                "stdout": result.stdout
+            }
         
-        try:
-            transfer_data = json.loads(result.stdout)
-            return transfer_data
-        except json.JSONDecodeError:
-            print(f"Failed to parse transfer result: {result.stdout}")
-            return {"error": "Failed to parse transfer result", "raw_output": result.stdout}
+    except Exception as e:
+        print(f"[ERROR] Workflow execution error: {str(e)}")
+        
+        # Clean up temporary parsed workflow file if it exists
+        if 'use_openai_parser' in locals() and use_openai_parser and 'parsed_workflow_file' in locals() and parsed_workflow_file:
+            try:
+                os.remove(parsed_workflow_file)
+            except:
+                pass
+                
+        return {
+            "success": False,
+            "error": str(e),
+        }
+
+@app.get("/workflow_history")
+async def workflow_history():
+    """Get workflow execution history"""
+    try:
+        workflow_history_path = os.path.expanduser("~/agentkit/workflow_history.json")
+        if os.path.exists(workflow_history_path):
+            with open(workflow_history_path, 'r') as f:
+                history = json.load(f)
+            
+            workflows = history.get("workflows", [])
+            workflows.sort(key=lambda x: x.get("createdAt", ""), reverse=True)
+            
+            for wf in workflows:
+                wf["stepCount"] = len(wf.get("steps", []))
+            
+            return {
+                "success": True,
+                "workflows": workflows[:20]
+            }
+        else:
+            return {"success": True, "workflows": []}
             
     except Exception as e:
-        print(f"Transfer execution error: {str(e)}")
-        return {"error": str(e)}
+        return {"success": False, "error": str(e)}
 
 @app.post("/check_transfer_status")
 async def check_transfer_status(request: dict):
-    """Check the status of a transfer"""
+    """Check Circle transfer status"""
     try:
-        transfer_id = request.get("transferId") or request.get("transfer_id")
+        transfer_id = request.get("transferId")
         if not transfer_id:
-            return {"error": "No transfer ID provided"}
+            return {"success": False, "error": "Transfer ID required"}
         
-        # Use the circleHandler.js script
-        command = f"node circle/circleHandler.js {transfer_id}"
-        result = subprocess.run(command, shell=True, capture_output=True, text=True, cwd=os.path.expanduser("~/agentkit"))
+        env = os.environ.copy()
+        result = subprocess.run(
+            ['node', 'check-transfer-status.js', transfer_id],
+            capture_output=True,
+            text=True,
+            cwd=os.path.expanduser("~/agentkit/circle"),
+            env=env,
+            timeout=300,
+        )
         
-        if result.returncode != 0:
-            error_msg = result.stderr or result.stdout
-            if "429" in error_msg or "rate limit" in error_msg.lower():
-                return {
-                    "status": "rate_limit",
-                    "message": "Rate limit reached while checking status. Please try again in a moment."
-                }
-            return {"error": error_msg}
-        
-        try:
-            # Extract JSON from output that may have debug lines
-            lines = result.stdout.strip().split('\n')
-            json_str = None
+        if result.returncode == 0:
+            status_match = re.search(r'Status: (\w+)', result.stdout)
+            hash_match = re.search(r'Transaction Hash: ([a-fA-F0-9x]+)', result.stdout)
             
-            # Find the last line that looks like JSON
-            for line in reversed(lines):
-                line = line.strip()
-                if line.startswith('{') and line.endswith('}'):
-                    json_str = line
-                    break
-            
-            if json_str:
-                status_data = json.loads(json_str)
-            else:
-                raise json.JSONDecodeError("No JSON found", result.stdout, 0)
-            
-            return status_data
-        except json.JSONDecodeError:
-            return {"error": "Failed to parse status result", "raw_output": result.stdout}
+            return {
+                "success": True,
+                "status": status_match.group(1) if status_match else "unknown",
+                "transactionHash": hash_match.group(1) if hash_match else "pending",
+                "rawOutput": result.stdout
+            }
+        else:
+            return {
+                "success": False,
+                "error": result.stderr or "Failed to check transfer status"
+            }
             
     except Exception as e:
-        print(f"Status check error: {str(e)}")
-        return {"error": str(e)}
+        return {"success": False, "error": str(e)}
 
-@app.get("/context")
-async def get_context():
-    """Get current conversation context (for debugging)"""
-    return conversation_context
-
-@app.post("/reset_context")
-async def reset_context():
-    """Reset conversation context"""
-    global conversation_context
-    conversation_context = {
-        "last_transfer": None,
-        "last_proof_type": None,
-        "conversation_history": []
-    }
-    return {"message": "Context reset successfully"}
+@app.post("/poll_transfer")
+async def poll_transfer(request: dict):
+    """Poll Circle transfer status"""
+    try:
+        transfer_id = request.get("transferId")
+        blockchain = request.get("blockchain", "ETH")
+        if not transfer_id:
+            return {"success": False, "error": "Transfer ID required"}
+        
+        env = os.environ.copy()
+        
+        # Call the check-transfer-status.js script
+        result = subprocess.run(
+            ['node', 'check-transfer-status.js', transfer_id],
+            capture_output=True,
+            text=True,
+            cwd=os.path.expanduser("~/agentkit/circle"),
+            env=env,
+            timeout=10,
+        )
+        
+        if result.returncode == 0:
+            # Parse the output to extract status
+            output = result.stdout
+            print(f"[DEBUG] Transfer check output for {blockchain}: {output[:500]}")
+            
+            status = "pending"
+            transaction_hash = None
+            explorer_link = None
+            
+            # Try to parse JSON output
+            try:
+                # Find ALL JSON objects in the output (there might be multiple)
+                json_objects = []
+                temp = output
+                while True:
+                    json_start = temp.find('{')
+                    if json_start == -1:
+                        break
+                    json_end = temp.find('\n\n', json_start)
+                    if json_end == -1:
+                        json_end = len(temp)
+                    
+                    # Try to find matching closing brace
+                    brace_count = 0
+                    for i in range(json_start, min(json_end, len(temp))):
+                        if temp[i] == '{':
+                            brace_count += 1
+                        elif temp[i] == '}':
+                            brace_count -= 1
+                            if brace_count == 0:
+                                json_end = i + 1
+                                break
+                    
+                    if brace_count == 0:
+                        try:
+                            json_str = temp[json_start:json_end]
+                            obj = json.loads(json_str)
+                            json_objects.append(obj)
+                        except:
+                            pass
+                    
+                    temp = temp[json_end:]
+                
+                # Look for the most complete JSON object (one with status field)
+                transfer_data = {}
+                for obj in json_objects:
+                    if 'status' in obj:
+                        transfer_data = obj
+                        break
+                
+                if not transfer_data and json_objects:
+                    transfer_data = json_objects[0]
+                
+                # Extract status
+                status = transfer_data.get('status', 'pending')
+                print(f"[DEBUG] Parsed status from Circle API: {status}")
+                
+                # Extract transaction hash - handle different field names and nested structure
+                transaction_hash = transfer_data.get('transactionHash') or transfer_data.get('txHash')
+                
+                # Check nested structure for transaction hash
+                if not transaction_hash and 'blockchainLocation' in transfer_data:
+                    transaction_hash = transfer_data['blockchainLocation'].get('txHash')
+                
+                # For Solana, check if we need to look in a different field
+                if not transaction_hash and blockchain == 'SOL' and 'transactionId' in transfer_data:
+                    transaction_hash = transfer_data.get('transactionId')
+                
+                # Build explorer link if we have hash and chain
+                destination = transfer_data.get('destination', {})
+                if transaction_hash and destination:
+                    chain = destination.get('chain', blockchain)
+                    if chain == 'ETH':
+                        explorer_link = f"https://sepolia.etherscan.io/tx/{transaction_hash}"
+                    elif chain == 'SOL':
+                        explorer_link = f"https://explorer.solana.com/tx/{transaction_hash}?cluster=devnet"
+                        
+                # For completed Solana transfers without hash, provide transfer ID link
+                elif status == 'complete' and blockchain == 'SOL' and not transaction_hash:
+                    print(f"[WARNING] Solana transfer complete but no tx hash. Transfer ID: {transfer_id}")
+                    # Provide a message about Solana finality
+                    explorer_link = f"Transfer ID: {transfer_id} (Solana tx pending finality)"
+                            
+            except json.JSONDecodeError:
+                print(f"[WARNING] Could not parse JSON from transfer status output")
+                # Fallback to regex parsing
+                import re
+                hash_match = re.search(r'"transactionHash":\s*"([^"]+)"', output)
+                if hash_match:
+                    transaction_hash = hash_match.group(1)
+                    
+                # Extract explorer link
+                link_match = re.search(r'View on Explorer:\s*(https://[^\s]+)', output)
+                if link_match:
+                    explorer_link = link_match.group(1)
+            
+            return {
+                "success": True,
+                "status": status,
+                "transactionHash": transaction_hash,
+                "explorerLink": explorer_link,
+                "blockchain": blockchain
+            }
+        else:
+            return {
+                "success": False,
+                "status": "pending",
+                "error": result.stderr
+            }
+            
+    except Exception as e:
+        print(f"[ERROR] poll_transfer error: {str(e)}")
+        return {
+            "success": False,
+            "status": "pending",
+            "error": str(e)
+        }
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8002)
+    print("🚀 Starting Verifiable Agent Kit v4.1 - REAL zkEngine ONLY")
+    print("📋 Configuration:")
+    print("   • NO SIMULATION MODE - Real zkEngine or failure")
+    print("   • Proof Generation → Real zkEngine via Rust WebSocket")
+    print("   • Proof Verification → Real zkEngine via Rust WebSocket")
+    print("   • Multi-step Workflows → Real zkEngine execution") 
+    print("   • Natural Language → OpenAI API")
+    print("🔗 Listening on http://localhost:8002")
+    
+    uvicorn.run(app, host="0.0.0.0", port=8002, log_level="info")
