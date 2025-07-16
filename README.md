@@ -127,7 +127,7 @@ Navigate to `http://localhost:8001`
 
 3. **Connect your wallet**
 - For Ethereum: MetaMask
-- For Solana: Phantom, Solflare, or Backpack
+- For Solana: Solflare (recommended for demo), Phantom, or Backpack
 
 4. **Try a workflow**
 Type a natural language command and watch the real-time execution!
@@ -152,6 +152,89 @@ Type a natural language command and watch the real-time execution!
 - ✅ **Ethereum**: Contract `0x1e8150050a7a4715aad42b905c08df76883f396f` on Sepolia
 - ✅ **Solana**: Program `5VzkNtgVwarEGSLvgvvPvTNqR7qQQai2MZ7BuYNqQPhw` on Devnet
 - ✅ Real transaction hashes viewable on block explorers
+
+#### On-Chain Verification Details
+
+**Ethereum Smart Contract (Sepolia)**
+```solidity
+// Simplified version of deployed contract
+contract ProofVerifier {
+    mapping(bytes32 => bool) public verifiedProofs;
+    
+    event ProofVerified(
+        string indexed proofId,
+        bytes32 indexed commitment,
+        address indexed verifier,
+        uint256 timestamp
+    );
+    
+    function verifyProof(
+        string memory proofId,
+        bytes32 commitment,
+        uint8 proofType
+    ) public {
+        require(!verifiedProofs[commitment], "Already verified");
+        verifiedProofs[commitment] = true;
+        emit ProofVerified(proofId, commitment, msg.sender, block.timestamp);
+    }
+}
+```
+
+**Solana Program (Devnet)**
+```rust
+// Deployed via Solana Playground
+use anchor_lang::prelude::*;
+
+#[program]
+pub mod proof_verifier {
+    use super::*;
+    
+    pub fn verify_proof(
+        ctx: Context<VerifyProof>,
+        proof_id: [u8; 32],
+        commitment: [u8; 32],
+        proof_type: u8,
+        timestamp: i64,
+    ) -> Result<()> {
+        let proof_account = &mut ctx.accounts.proof_account;
+        
+        proof_account.proof_id = proof_id;
+        proof_account.commitment = commitment;
+        proof_account.proof_type = proof_type;
+        proof_account.timestamp = timestamp;
+        proof_account.verifier = ctx.accounts.verifier.key();
+        proof_account.verified_at = Clock::get()?.unix_timestamp;
+        
+        emit!(ProofVerified {
+            proof_id,
+            commitment,
+            verifier: ctx.accounts.verifier.key(),
+            timestamp: proof_account.verified_at,
+        });
+        
+        Ok(())
+    }
+}
+
+#[account]
+pub struct ProofAccount {
+    pub proof_id: [u8; 32],
+    pub commitment: [u8; 32],
+    pub proof_type: u8,
+    pub timestamp: i64,
+    pub verifier: Pubkey,
+    pub verified_at: i64,
+}
+```
+
+Both contracts store proof verification data on-chain with:
+- Unique proof ID
+- Cryptographic commitment (hash of proof data)
+- Proof type (KYC, Location, AI Content)
+- Timestamp
+- Verifier address
+
+The Solana program uses PDAs (Program Derived Addresses) to ensure each proof can only be verified once per commitment.
 
 ### USDC Transfers
 - ✅ Circle API Sandbox (real test network)
@@ -246,7 +329,7 @@ We welcome contributions! Areas of interest:
 ### Common Issues
 
 1. **"Transaction already processed"** - Fixed in v4.2 with unique commitments
-2. **Wallet connection issues** - Ensure you're on the correct network (Sepolia/Devnet)
+2. **Wallet connection issues** - Ensure you're on the correct network (Sepolia/Devnet). For Solana, Solflare wallet is recommended
 3. **Transfer failures** - Check Circle wallet balance and API credentials
 4. **OpenAI errors** - Verify API key and check rate limits
 
