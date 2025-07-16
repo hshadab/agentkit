@@ -37,7 +37,7 @@ A production-ready framework for privacy-preserving AI agents with real zero-kno
 ┌─────────────────────┐     ┌──────────────────────┐     ┌─────────────────────┐
 │ Blockchain Wallets  │     │ Python AI Service    │     │   Circle API        │
 │ • MetaMask (ETH)    │     │ • OpenAI GPT-4o     │     │ • Real USDC         │
-│ • Phantom (SOL)     │     │ • Workflow Parser    │     │ • Sandbox Network   │
+│ • Solflare (SOL)    │     │ • Workflow Parser    │     │ • Sandbox Network   │
 └─────────────────────┘     └──────────────────────┘     └─────────────────────┘
 ```
 
