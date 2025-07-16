@@ -53,9 +53,14 @@ A production-ready framework for privacy-preserving AI agents with real zero-kno
 "Generate KYC proof for Alice, verify on Ethereum, and if verified transfer 0.02 USDC to Bob on Solana"
 ```
 
-### Multi-Person Conditional Workflow
+### Multi-Person Conditional Workflow (On-Chain Verification)
 ```
-"If Alice is KYC verified send her 0.05 USDC on Solana and if Bob is KYC verified send him 0.03 USDC on Ethereum"
+"Generate KYC proof for Bob, verify on Ethereum, if verified send Bob 0.03 USDC on Ethereum. Generate KYC proof for Alice, verify on Solana, if verified send Alice 0.05 USDC on Solana."
+```
+
+### Alternative Clear Syntax
+```
+"Create KYC proof for Alice then verify it on Solana blockchain then transfer 0.05 USDC to Alice on Solana"
 ```
 
 ### Location-Based Transfer
@@ -67,6 +72,11 @@ A production-ready framework for privacy-preserving AI agents with real zero-kno
 ```
 "Create KYC proof, verify on chain, then check AI content proof, and if both valid send 5 USDC"
 ```
+
+### Verification Types
+- **Local verification**: "verify the proof" or "verify locally"
+- **On-chain verification**: "verify on Ethereum", "verify on Solana", or "verify on blockchain"
+- **Conditional transfers**: Always specify blockchain verification for production use
 
 ## 🔧 Installation
 
