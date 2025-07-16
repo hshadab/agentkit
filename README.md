@@ -261,6 +261,10 @@ verifiable-agentkit/
 │   └── solana-verifier.js  # SOL blockchain integration
 ├── circle/
 │   └── circleHandler.js    # USDC transfer logic with Circle API
+├── contracts/
+│   └── ProofVerifier.sol   # Ethereum smart contract
+├── solana-programs/
+│   └── proof_verifier.rs   # Solana program (Anchor)
 └── zkengine_binary/        # zkEngine executable and WASM proofs
     ├── zkEngine
     ├── prove_kyc.wat
