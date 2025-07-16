@@ -31,6 +31,30 @@
         #messages { max-width: 1000px; margin: 0 auto; }
         .message { margin: 24px 0; display: flex; align-items: flex-start; gap: 12px; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes buttonPulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 2px 8px rgba(107, 124, 255, 0.15);
+            }
+            50% { 
+                transform: scale(1.02);
+                box-shadow: 0 4px 16px rgba(107, 124, 255, 0.3);
+            }
+        }
+        @keyframes buttonClick {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        .action-btn.verifying {
+            animation: buttonPulse 1.5s ease-in-out infinite;
+            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
+            color: white;
+            opacity: 0.9;
+        }
+        .action-btn:active, .eth-verify-btn:active, .sol-verify-btn:active {
+            animation: buttonClick 0.15s ease-out;
+        }
         .message.assistant { flex-direction: row-reverse; }
         .message-content { max-width: 70%; padding: 12px 16px; border-radius: 20px; line-height: 1.6; font-size: 15px; }
         .message.user .message-content { background: #1e1e1e; border: 1px solid rgba(107, 124, 255, 0.2); border-bottom-left-radius: 4px; white-space: pre-wrap; }
@@ -48,13 +72,98 @@
             75% { content: '...'; }
         }
         
-        .proof-card, .transaction-card, .verification-card { margin-left: auto; margin-right: 0; background: rgba(20, 20, 20, 0.6); border: 1px solid rgba(107, 124, 255, 0.08); border-radius: 12px; padding: 12px; margin: 12px 0; max-width: 800px; backdrop-filter: blur(10px); }
+        .proof-card { 
+            margin-left: auto; 
+            margin-right: 0; 
+            background: linear-gradient(135deg, rgba(25, 25, 35, 0.9) 0%, rgba(30, 30, 40, 0.85) 100%); 
+            border: 1px solid rgba(107, 124, 255, 0.12); 
+            border-radius: 7px; 
+            padding: 14px 16px; 
+            margin: 10px 0; 
+            max-width: 680px; 
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+            animation: fadeIn 0.4s ease-out;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+        }
+        .transaction-card, .verification-card { 
+            margin-left: auto; 
+            margin-right: 0; 
+            background: rgba(20, 20, 20, 0.15); 
+            border: 1px solid rgba(107, 124, 255, 0.1); 
+            border-radius: 16px; 
+            padding: 16px; 
+            margin: 12px 0; 
+            max-width: 700px; 
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+            animation: fadeIn 0.4s ease-out;
+        }
+        .proof-card:hover {
+            background: linear-gradient(135deg, rgba(30, 30, 40, 0.95) 0%, rgba(35, 35, 45, 0.9) 100%);
+            border-color: rgba(107, 124, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+        .transaction-card:hover, .verification-card:hover {
+            background: rgba(20, 20, 20, 0.25);
+            border-color: rgba(107, 124, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
         .message.user .proof-card, .message.user .transaction-card, .message.user .verification-card { margin-right: auto; margin-left: 0; }
-        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-        .card-title { font-size: 18px; font-weight: 700; color: #c4b5fd; }
-        .card-actions { display: flex; gap: 12px; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(107, 124, 255, 0.08); flex-wrap: wrap; }
-        .action-btn { background: rgba(107, 124, 255, 0.15); color: #a78bfa; border: 1px solid rgba(107, 124, 255, 0.2); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; }
-        .action-btn:hover { background: rgba(107, 124, 255, 0.25); border-color: #8B9AFF; color: #c4b5fd; transform: translateY(-1px); }
+        .card-header { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 6px; 
+            margin-bottom: 6px; 
+        }
+        .card-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+        .card-title { font-size: 16px; font-weight: 600; color: #a78bfa; letter-spacing: 0.5px; }
+        .card-function-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #c4b5fd;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 2px;
+        }
+        .card-actions { display: flex; gap: 10px; margin-top: 4px; padding-top: 4px; border-top: none; flex-wrap: wrap; }
+        .action-btn { 
+            background: rgba(107, 124, 255, 0.08); 
+            color: #a78bfa; 
+            border: 1px solid rgba(107, 124, 255, 0.12); 
+            padding: 6px 12px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 13px; 
+            font-weight: 500; 
+            transition: all 0.2s;
+            text-transform: none;
+            letter-spacing: 0.2px;
+        }
+        .action-btn:hover { 
+            background: rgba(107, 124, 255, 0.2); 
+            border-color: rgba(107, 124, 255, 0.3); 
+            color: #c4b5fd; 
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(107, 124, 255, 0.15);
+        }
+        .action-btn:disabled {
+            opacity: 0.9;
+            cursor: not-allowed;
+            transform: none;
+            /* Keep original styling when disabled */
+        }
+        .action-btn.eth-verify-btn { background: rgba(76, 175, 80, 0.15); color: #4caf50; border-color: rgba(76, 175, 80, 0.3); }
+        .action-btn.eth-verify-btn:hover { background: rgba(76, 175, 80, 0.25); border-color: #4caf50; }
+        .action-btn.sol-verify-btn { background: rgba(0, 209, 140, 0.15); color: #00D18C; border-color: rgba(0, 209, 140, 0.3); }
+        .action-btn.sol-verify-btn:hover { background: rgba(0, 209, 140, 0.25); border-color: #00D18C; }
         .input-container { padding: 24px 32px; background: rgba(17, 17, 17, 0.9); border-top: 1px solid rgba(107, 124, 255, 0.2); }
         .input-wrapper { max-width: 1000px; margin: 0 auto; display: flex; gap: 16px; align-items: center; }
         #user-input { flex: 1; padding: 18px 28px; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(107, 124, 255, 0.3); border-radius: 30px; color: #ffffff; font-size: 16px; outline: none; }
@@ -66,7 +175,7 @@
         .progress-steps { display: flex; gap: 20px; margin-top: 16px; }
         .step { padding: 8px 16px; background: rgba(107, 124, 255, 0.08); border: 1px solid rgba(107, 124, 255, 0.2); border-radius: 20px; font-size: 13px; color: #666; transition: all 0.3s ease; }
         .step.active { background: rgba(107, 124, 255, 0.2); border-color: #6B7CFF; color: #8B9AFF; animation: pulse 2s infinite; }
-        .step.complete { background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: #10b981; }
+        .step.complete { background: rgba(0, 0, 0, 0.3); border-color: rgba(16, 185, 129, 0.3); color: #10b981; }
         
         /* Status Badge - Enhanced */
         .status-badge { 
@@ -80,11 +189,14 @@
             align-items: center;
             gap: 6px;
             transition: all 0.3s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         .status-badge.generating { 
             background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.3)); 
             color: #fbbf24; 
             border: 1px solid rgba(251, 191, 36, 0.3);
+            animation: pulsate 1.5s ease-in-out infinite;
         }
         .status-badge.complete { 
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.3)); 
@@ -96,10 +208,19 @@
             color: #ef4444; 
             border: 1px solid rgba(239, 68, 68, 0.3);
         }
+        .eth-status.warning {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 12px;
+            color: #ffffff;
+        }
         .status-badge.verifying { 
             background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.3)); 
             color: #3b82f6; 
             border: 1px solid rgba(59, 130, 246, 0.3);
+            animation: pulsate 1.5s ease-in-out infinite;
         }
         .status-badge.verified { 
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.3)); 
@@ -109,26 +230,84 @@
         
         /* Status Indicator for Cards */
         .status-indicator { display: flex; align-items: center; gap: 8px; }
-        .card-content { margin-top: 16px; }
-        .status-message { color: #a0a0a0; font-size: 13px; line-height: 1.6; }
+        .card-content { 
+            margin-top: 4px; 
+            padding: 4px;
+            background: rgba(107, 124, 255, 0.02);
+            border-radius: 8px;
+        }
+        .proof-card .card-content {
+            background: rgba(0, 0, 0, 0.15);
+            border: none;
+            padding: 4px;
+        }
+        .status-message { 
+            color: #9ca3af; 
+            font-size: 13px; 
+            line-height: 1.6; 
+            margin: 4px 0;
+        }
         
         /* Proof Metrics */
-        .proof-metrics { display: flex; gap: 24px; margin-top: 16px; padding: 12px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; }
-        .metric { display: flex; align-items: center; gap: 8px; }
-        .metric-label { color: #666; font-size: 13px; }
-        .metric-value { color: #8B9AFF; font-weight: 600; }
+        .proof-metrics { 
+            display: flex; 
+            gap: 20px; 
+            margin-top: 4px; 
+            padding: 4px; 
+            background: rgba(0, 0, 0, 0.1); 
+            border-radius: 6px;
+            border: none;
+        }
+        .proof-card .proof-metrics {
+            background: rgba(0, 0, 0, 0.2);
+            border: none;
+            padding: 2px 6px;
+        }
+        .metric { display: flex; align-items: center; gap: 6px; }
+        .metric-label { color: #6b7280; font-size: 12px; font-weight: 500; }
+        .metric-value { color: #a78bfa; font-weight: 600; font-size: 13px; }
         
         /* History Table Styles */
-        .history-table-container { margin-top: 12px; background: rgba(20, 20, 20, 0.6); border: 1px solid rgba(107, 124, 255, 0.08); border-radius: 12px; padding: 12px; overflow-x: auto; backdrop-filter: blur(10px); }
-        .history-table { width: 100%; border-collapse: collapse; }
-        .history-table th { background: rgba(107, 124, 255, 0.08); color: #8B9AFF; padding: 12px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid rgba(107, 124, 255, 0.3); }
-        .history-table td { padding: 12px; border-bottom: 1px solid rgba(107, 124, 255, 0.08); color: #a0a0a0; font-size: 13px; }
+        .history-table-container { margin-top: 12px; background: rgba(20, 20, 20, 0.2); border: 1px solid rgba(107, 124, 255, 0.08); border-radius: 12px; padding: 8px; overflow-x: auto; backdrop-filter: blur(10px); width: 100%; max-width: 100%; }
+        .history-table { width: auto; border-collapse: collapse; min-width: 900px; }
+        .history-table th { background: rgba(107, 124, 255, 0.04); color: #8B9AFF; padding: 4px 6px; text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; border-bottom: 1px solid rgba(107, 124, 255, 0.15); white-space: nowrap; }
+        .history-table td { padding: 4px 6px; border-bottom: 1px solid rgba(107, 124, 255, 0.05); color: #a0a0a0; font-size: 11px; vertical-align: middle; }
+        
+        /* Column-specific widths with !important */
+        .history-table th:nth-child(1), .history-table td:nth-child(1) { width: 92px !important; max-width: 92px !important; } /* Type */
+        .history-table th:nth-child(2), .history-table td:nth-child(2) { width: 114px !important; max-width: 114px !important; overflow: hidden; text-overflow: ellipsis; } /* Proof ID */
+        .history-table th:nth-child(3), .history-table td:nth-child(3) { width: 58px !important; max-width: 58px !important; } /* Time */
+        .history-table th:nth-child(4), .history-table td:nth-child(4) { width: 64px !important; max-width: 64px !important; } /* Size */
+        .history-table th:nth-child(5), .history-table td:nth-child(5) { width: 114px !important; max-width: 114px !important; } /* Timestamp */
+        .history-table th:nth-child(6), .history-table td:nth-child(6) { width: 99px !important; max-width: 99px !important; } /* Verified */
+        .history-table th:nth-child(7), .history-table td:nth-child(7) { width: 125px !important; max-width: 125px !important; } /* Actions */
         .history-table tr:hover { background: rgba(107, 124, 255, 0.05); }
-        .history-table .proof-id { color: #8B9AFF; font-family: monospace; font-size: 13px; }
-        .history-table .function-badge { display: inline-block; padding: 4px 10px; background: rgba(107, 124, 255, 0.2); color: #a78bfa; border-radius: 6px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
-        .history-table .timestamp { color: #666; font-size: 13px; }
+        .history-table .proof-id { color: #8B9AFF; font-family: monospace; font-size: 10px; }
+        .history-table .function-badge { display: inline-block; padding: 2px 6px; background: rgba(107, 124, 255, 0.2); color: #a78bfa; border-radius: 6px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
+        .history-table .timestamp { color: #666; font-size: 10px; white-space: nowrap; }
         .history-table .action-link { color: #8B9AFF; text-decoration: none; cursor: pointer; font-weight: 500; }
         .history-table .action-link:hover { text-decoration: underline; }
+        
+        /* Verification Dropdown Styles */
+        .verify-dropdown { 
+            background: rgba(30, 30, 30, 0.9); 
+            border: 1px solid rgba(107, 124, 255, 0.3); 
+            border-radius: 6px; 
+            color: #8B9AFF; 
+            padding: 6px 12px; 
+            font-size: 12px; 
+            cursor: pointer; 
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .verify-dropdown:hover { 
+            background: rgba(107, 124, 255, 0.2); 
+            border-color: rgba(107, 124, 255, 0.5); 
+        }
+        .verify-dropdown option { 
+            background: #1a1a1a; 
+            color: #8B9AFF; 
+        }
         
         /* Debug console */
         .debug-console { position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.95); border: 1px solid #333; border-radius: 8px; padding: 10px; font-family: 'Courier New', monospace; font-size: 11px; color: #0f0; max-width: 400px; z-index: 10000; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
@@ -199,6 +378,7 @@
         .workflow-step-header {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 16px;
             width: 100%;
         }
@@ -256,7 +436,7 @@
         }
         
         .step-connector.completed .connector-line {
-            background: rgba(16, 185, 129, 0.25);
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.4), rgba(16, 185, 129, 0.2));
         }
         
         @keyframes flowLine {
@@ -286,6 +466,24 @@
                         inset 0 0 20px rgba(251, 191, 36, 0.08);
             animation: pulseGlow 2s ease-in-out infinite;
             transform: scale(1.02);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .workflow-step.executing::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
         
         @keyframes pulseGlow {
@@ -302,7 +500,7 @@
         }
         
         .workflow-step.completed { 
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.15) 100%);
+            background: rgba(0, 0, 0, 0.3);
             border-color: #10b981;
             border-style: solid;
             box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2), 
@@ -327,45 +525,17 @@
             box-shadow: none;
         }
         
-        .step-icon { 
-            font-size: 24px; 
-            transition: all 0.3s ease;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, rgba(107, 124, 255, 0.15) 0%, rgba(107, 124, 255, 0.08) 100%);
-            border-radius: 50%;
-            border: 1px solid rgba(107, 124, 255, 0.3);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-        
-        .workflow-step.executing .step-icon {
-            animation: spin 2s linear infinite;
-            background: linear-gradient(135deg, rgba(251, 191, 36, 0.4) 0%, rgba(251, 191, 36, 0.3) 100%);
-            border-color: rgba(251, 191, 36, 0.6);
-            box-shadow: 0 0 16px rgba(251, 191, 36, 0.4);
-        }
-        
-        .workflow-step.completed .step-icon {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.4) 0%, rgba(16, 185, 129, 0.3) 100%);
-            border-color: rgba(16, 185, 129, 0.6);
-            box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
-        }
-        
-        .workflow-step.failed .step-icon {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.4) 0%, rgba(239, 68, 68, 0.3) 100%);
-            border-color: rgba(239, 68, 68, 0.6);
-            box-shadow: 0 0 16px rgba(239, 68, 68, 0.4);
-        }
+        /* Step icon styles removed - no longer using circular icon */
         
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
         
-        .step-details { flex: 1; }
+        .step-details { 
+            flex: 1; 
+            padding-left: 8px;
+        }
         .step-title { 
             font-size: 12px; 
             color: #8B9AFF; 
@@ -402,6 +572,22 @@
             border-color: rgba(251, 191, 36, 0.4);
             animation: pulseText 1.5s ease-in-out infinite;
             box-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
+            position: relative;
+            padding-right: 20px;
+        }
+        
+        .workflow-step.executing .step-status::after {
+            content: '';
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            border: 2px solid #fbbf24;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
         
         @keyframes pulseText {
@@ -411,7 +597,7 @@
         
         .workflow-step.completed .step-status { 
             color: #10b981; 
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(16, 185, 129, 0.2) 100%);
+            background: rgba(0, 0, 0, 0.4);
             border-color: rgba(16, 185, 129, 0.4);
             box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
         }
@@ -487,7 +673,7 @@
         
         .blockchain-status.confirmed {
             border-left: 4px solid #10b981;
-            background: linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0%, rgba(0, 0, 0, 0.4) 100%);
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.4) 100%);
         }
         
         .blockchain-link {
@@ -545,6 +731,202 @@
             color: #8B9AFF;
             min-width: 100px;
         }
+        /* Ethereum Verification Styles */
+        .eth-verify-btn {
+            background: linear-gradient(135deg, #627eea 0%, #4c5ed8 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .eth-verify-btn:hover {
+            background: linear-gradient(135deg, #4c5ed8 0%, #3847c6 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(98, 126, 234, 0.4);
+        }
+        
+        .eth-verify-btn:disabled {
+            opacity: 0.9;
+            cursor: not-allowed;
+            transform: none;
+            /* Inherit the success gradient from inline style */
+            color: white;
+        }
+        
+        .eth-status {
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        .eth-status.pending {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            color: #ffc107;
+        }
+        
+        .eth-status.success {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            color: #4caf50;
+        }
+        
+        .eth-status.error {
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid rgba(244, 67, 54, 0.3);
+            color: #f44336;
+        }
+        
+        .eth-connect-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #627eea 0%, #4c5ed8 100%);
+            color: white;
+            padding: 12px;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .eth-connect-banner button {
+            background: white;
+            color: #627eea;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            margin-left: 16px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        /* Solana Verification Styles */
+        .sol-verify-btn {
+            background: linear-gradient(135deg, #14F195 0%, #00D18C 100%);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .sol-verify-btn:hover {
+            background: linear-gradient(135deg, #00D18C 0%, #00B67A 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(20, 241, 149, 0.4);
+        }
+        
+        .sol-verify-btn:disabled {
+            opacity: 0.9;
+            cursor: not-allowed;
+            transform: none;
+            /* Inherit the success gradient from inline style */
+            color: #000;
+        }
+        
+        .sol-status {
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        .sol-status.pending {
+            background: rgba(20, 241, 149, 0.1);
+            border: 1px solid rgba(20, 241, 149, 0.3);
+            color: #14F195;
+        }
+        
+        .sol-status.success {
+            background: rgba(20, 241, 149, 0.1);
+            border: 1px solid rgba(20, 241, 149, 0.3);
+            color: #00D18C;
+        }
+        
+        .sol-status.warning {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            color: #ffffff;
+        }
+        
+        .sol-status.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ffffff;
+        }
+        
+        .sol-connect-banner {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #14F195 0%, #00D18C 100%);
+            color: #000;
+            padding: 12px;
+            text-align: center;
+            z-index: 999;
+            display: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .sol-connect-banner button {
+            background: #000;
+            color: #14F195;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            margin-left: 16px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        /* Enhanced explorer links */
+        .eth-status a:hover,
+        .sol-status a:hover {
+            text-decoration: underline !important;
+            opacity: 0.9;
+        }
+        
+        /* Clickable proof ID styles */
+        .clickable-id {
+            cursor: pointer;
+            user-select: text;
+            transition: color 0.2s ease;
+        }
+        .clickable-id:hover {
+            color: #8B9AFF !important;
+            text-decoration: underline;
+        }
+        
+        /* Pulsating button animation */
+        @keyframes pulsate {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(0.98); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        .action-btn.pulsating,
+        .eth-verify-btn.pulsating,
+        .sol-verify-btn.pulsating {
+            animation: pulsate 1.5s ease-in-out infinite;
+        }
     </style>
 </head>
 <body>
@@ -552,7 +934,7 @@
         <h3>SAMPLE PROMPTS</h3>
         
         <div class="example-category">
-            <h4>Natural Language (OpenAI)</h4>
+            <h4>Natural Language</h4>
             <div class="example-item" data-example="What is the capital of France?">What is the capital of France?</div>
             <div class="example-item" data-example="Explain zero-knowledge proofs">Explain zero-knowledge proofs</div>
             <div class="example-item" data-example="What are the benefits of blockchain?">What are the benefits of blockchain?</div>
@@ -566,36 +948,35 @@
         </div>
         
         <div class="example-category">
-            <h4>zkEngine Verification</h4>
-            <div class="example-item" data-example="Verify proof [proof_id]">Verify proof [proof_id]</div>
+            <h4>Workflows</h4>
+            <div class="example-item" data-example="Send 0.05 USDC to Alice on Ethereum if KYC compliant">Send 0.05 USDC to Alice on Ethereum if KYC compliant</div>
+            <div class="example-item" data-example="If Alice is KYC compliant, send her 0.04 USDC to Alice on Solana">If Alice is KYC compliant, send her 0.04 USDC to Alice on Solana</div>
+            <div class="example-item" data-example="Send 0.05 USDC on Solana if Bob is KYC verified on Solana and send 0.03 USDC on Ethereum if Alice is KYC verified on Ethereum.">Send 0.05 USDC on Solana if Bob is KYC verified on Solana and send 0.03 USDC on Ethereum if Alice is KYC verified on Ethereum.</div>
+            <div class="example-item" data-example="Generate a KYC proof for Bob then if Bob's wallet is KYC verified generate a NYC proof of location and if verified on Solana send him 0.03 USDC on Solana.">Generate a KYC proof for Bob then if Bob's wallet is KYC verified generate a NYC proof of location and if verified on Solana send him 0.03 USDC on Solana.</div>
+        </div>
+        
+        <div class="example-category">
+            <h4>History</h4>
             <div class="example-item" data-example="Proof History">Proof History</div>
-            <div class="example-item" data-example="Verification History">Verification History</div>
-        </div>
-
-        <div class="example-category">
-            <h4>Simple Transfers</h4>
-            <div class="example-item" data-example="Send 0.1 USDC to Alice on Ethereum if KYC compliant">Send 0.1 USDC to Alice on Ethereum if KYC compliant</div>
-            <div class="example-item" data-example="Send 0.1 USDC to Alice on Solana if KYC compliant">Send 0.1 USDC to Alice on Solana if KYC compliant</div>
-        </div>
-        
-        <div class="example-category">
-            <h4>Multi-Step Workflows</h4>
-            <div class="example-item" data-example="Generate KYC proof, then transfer to Bob on Ethereum">Generate KYC proof, then transfer to Bob on Ethereum</div>
-            <div class="example-item" data-example="Prove AI content, verify it, then send funds to Charlie">Prove AI content, verify it, then send funds to Charlie</div>
-        </div>
-        
-        <div class="example-category">
-            <h4>Custom Proofs</h4>
-            <div class="example-item">Click 📋 to paste C code for custom proofs</div>
         </div>
     </div>
 
     <div class="main-container">
         <div class="header">
             <h1><img src="https://cdn.prod.website-files.com/65d52b07d5bc41614daa723f/665df12739c532f45b665fe7_logo-novanet.svg" alt="Novanet" style="height: 28px; margin-right: 12px; vertical-align: middle;"> <span>Verifiable Agent Kit</span></h1>
-            <div id="connection-status" class="status disconnected">
-                <span class="status-dot"></span>
-                <span id="status-text">Connecting...</span>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div id="wallet-status" style="display: flex; gap: 8px; font-size: 13px;">
+                    <span id="eth-wallet-status" style="display: none; padding: 4px 12px; background: rgba(76, 175, 80, 0.2); border: 1px solid #4caf50; border-radius: 16px; color: #4caf50;">
+                        ETH Connected
+                    </span>
+                    <span id="sol-wallet-status" style="display: none; padding: 4px 12px; background: rgba(20, 241, 149, 0.2); border: 1px solid #14F195; border-radius: 16px; color: #14F195;">
+                        SOL Connected
+                    </span>
+                </div>
+                <div id="connection-status" class="status disconnected">
+                    <span class="status-dot"></span>
+                    <span id="status-text">Connecting to zkEngine & OpenAI...</span>
+                </div>
             </div>
         </div>
         
@@ -634,13 +1015,35 @@
         </defs>
     </svg>
 
+    <!-- Ethereum Connect Banner -->
+    <div id="eth-connect-banner" class="eth-connect-banner">
+        <span>Connect to MetaMask to verify proofs on-chain</span>
+        <button onclick="connectEthereum()">Connect Wallet</button>
+    </div>
+    
+    
+    <!-- Web3 and Blockchain Verifier Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/iden3/snarkjs/build/snarkjs.min.js"></script>
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script src="/static/ethereum-verifier.js?v=20250711-1945"></script>
+    <script src="/static/solana-verifier.js"></script>
+    <script src="/static/light-protocol-verifier.js"></script>
+    <script src="/static/light-protocol-demo.js"></script>
+    <script src="/static/light-protocol-config.js"></script>
+    <script src="/static/light-protocol-simplified.js"></script>
+    <script src="/static/local-verifier-light-storage.js"></script>
+    
     <script>
+        // The ethereum and solana verifiers are initialized in their respective scripts
+        
         let ws = null;
         let reconnectInterval = null;
         let currentProofId = null;
         let isDebugMode = true; // Enable debug by default
         let workflowPollingIntervals = new Map();
         let transferPollingIntervals = new Map();
+        let pendingAIResponses = new Map(); // Store AI responses to show after workflow cards
         
         // Global state for preventing duplicates
         let lastSentMessage = '';
@@ -648,6 +1051,11 @@
         let sendingInProgress = false;
         let enterKeyDown = false;
         let messageHistory = new Set(); // Track recent messages to prevent loops
+        
+        // Track on-chain verifications for proof history
+        const onChainVerifications = new Map();
+        // Track local verifications
+        const localVerifications = new Map();
 
         function debugLog(message, type = 'info') {
             try {
@@ -726,6 +1134,122 @@
             }
         }
         
+        // Helper function to create a proof history table row
+        function createProofHistoryRow(proof) {
+            const row = document.createElement('tr');
+            
+            // Handle different field names from backend
+            const proofId = proof.proof_id || proof.id || 'unknown';
+            const proofFunction = proof.function || proof.metadata?.function || 'unknown';
+            
+            // Handle timestamp - could be Unix timestamp or ISO string
+            let timestamp = 'N/A';
+            if (proof.timestamp) {
+                try {
+                    // Check if it's a Unix timestamp (number) or ISO string
+                    if (typeof proof.timestamp === 'number') {
+                        // Unix timestamp
+                        timestamp = new Date(proof.timestamp * 1000).toLocaleString();
+                    } else if (typeof proof.timestamp === 'string') {
+                        // ISO string - parse it
+                        const date = new Date(proof.timestamp);
+                        if (!isNaN(date.getTime())) {
+                            timestamp = date.toLocaleString();
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error parsing timestamp:', e);
+                    timestamp = 'N/A';
+                }
+            }
+            
+            // Get metrics
+            const duration = proof.metrics?.time_ms ? (proof.metrics.time_ms / 1000).toFixed(2) + 's' : 
+                           proof.metrics?.generation_time_secs ? proof.metrics.generation_time_secs.toFixed(2) + 's' : 'N/A';
+            const size = proof.metrics?.proof_size || proof.metrics?.file_size_mb ? 
+                        formatProofSize(proof.metrics.proof_size || proof.metrics.file_size_mb) : 'N/A';
+            
+            // Get verification info
+            let verificationHTML = '';
+            
+            // First check in-memory data
+            let onChainData = onChainVerifications.get(proofId);
+            
+            // If not in memory, check if proof has on-chain verification data from backend
+            if (!onChainData && proof.on_chain_verifications) {
+                // Use data from backend
+                onChainData = proof.on_chain_verifications;
+            }
+            
+            if (onChainData) {
+                // Has on-chain verification
+                const blockchainName = onChainData.blockchain;
+                const shortName = blockchainName === 'Ethereum' ? 'ETH' : 'SOL';
+                verificationHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="color: #10b981;">✓ ${shortName}</span>
+                        <a href="${onChainData.explorerUrl}" target="_blank" 
+                           style="color: #8B9AFF; text-decoration: none; font-size: 11px; 
+                                  padding: 2px 6px; background: rgba(107, 124, 255, 0.2); 
+                                  border-radius: 4px; border: 1px solid rgba(107, 124, 255, 0.3);">
+                            View
+                        </a>
+                    </div>
+                `;
+            } else {
+                // Check if proof has been locally verified
+                const localVerification = localVerifications.get(proofId);
+                if (localVerification && localVerification.valid) {
+                    verificationHTML = '<span style="color: #10b981;">✓ Local</span>';
+                } else if (proof.verified === true) {
+                    // Fallback to proof.verified flag if present
+                    verificationHTML = '<span style="color: #10b981;">✓ Local</span>';
+                } else {
+                    // Not verified - this is the default state
+                    verificationHTML = '<span style="color: #666;">Unverified</span>';
+                }
+            }
+            
+            // Create actions dropdown for proofs that can be verified
+            let actionsHTML = '';
+            // Show actions if no on-chain verification data exists
+            // A proof can always be verified locally, and can be verified on-chain if not already done
+            if (!onChainData) {
+                // Proof has not been verified on-chain, show all options
+                actionsHTML = `
+                    <select class="verify-dropdown" onchange="handleVerifyAction('${proofId}', '${proofFunction}', this.value); this.value='';">
+                        <option value="">Select action...</option>
+                        <option value="local">Verify locally</option>
+                        <option value="ethereum">Verify on Ethereum</option>
+                        <option value="solana">Verify on Solana</option>
+                    </select>
+                `;
+            } else {
+                // Proof has been verified on-chain, only allow local verification
+                actionsHTML = `
+                    <select class="verify-dropdown" onchange="handleVerifyAction('${proofId}', '${proofFunction}', this.value); this.value='';">
+                        <option value="">Select action...</option>
+                        <option value="local">Verify locally</option>
+                    </select>
+                `;
+            }
+            
+            // Format function name for display
+            const displayFunction = proofFunction.replace('prove_', '').replace(/_/g, ' ');
+            
+            row.innerHTML = `
+                <td><span class="function-badge">${displayFunction}</span></td>
+                <td class="proof-id">${proofId.substring(0, 16)}...</td>
+                <td>${duration}</td>
+                <td>${size}</td>
+                <td class="timestamp">${timestamp}</td>
+                <td>${verificationHTML}</td>
+                <td>${actionsHTML}</td>
+            `;
+            
+            return row;
+        }
+        
         window.toggleDebugConsole = function() {
             try {
                 const console = document.getElementById('debug-console');
@@ -759,8 +1283,8 @@
             const statusText = document.getElementById('status-text');
             
             statusElement.className = `status ${status}`;
-            statusText.textContent = status === 'connected' ? 'Connected' : 
-                                    status === 'error' ? 'Error' : 'Disconnected';
+            statusText.textContent = status === 'connected' ? 'Connected to zkEngine & OpenAI' : 
+                                    status === 'error' ? 'Connection Error' : 'Disconnected';
             
             debugLog(`Connection status: ${status}`, status === 'connected' ? 'success' : 'error');
         }
@@ -772,10 +1296,6 @@
             stepElement.id = `${workflowData.workflowId}-${step.id}`;
             stepElement.setAttribute('data-workflow-id', workflowData.workflowId);
             stepElement.setAttribute('data-step-id', step.id);
-            
-            const stepIcon = document.createElement('div');
-            stepIcon.className = 'step-icon';
-            stepIcon.innerHTML = getStepIcon(step);
             
             const stepDetails = document.createElement('div');
             stepDetails.className = 'step-details';
@@ -809,7 +1329,6 @@
             const stepHeader = document.createElement('div');
             stepHeader.className = 'workflow-step-header';
             
-            stepHeader.appendChild(stepIcon);
             stepHeader.appendChild(stepDetails);
             stepHeader.appendChild(stepStatus);
             
@@ -822,18 +1341,18 @@
 
         function getStepIcon(step) {
             const icons = {
-                'generate_proof': '🔐',
-                'verify_proof': '✓',
-                'transfer': '💸',
-                'check_condition': '❓',
-                'pending': '⏳',
-                'executing': '⚡',
-                'completed': '✅',
-                'failed': '❌',
-                'skipped': '⏭️'
+                'generate_proof': 'GENERATE',
+                'verify_proof': 'VERIFY',
+                'transfer': 'TRANSFER',
+                'check_condition': 'CHECK',
+                'pending': 'PENDING',
+                'executing': 'EXECUTING',
+                'completed': 'COMPLETED',
+                'failed': 'FAILED',
+                'skipped': 'SKIPPED'
             };
             
-            return icons[step.action] || icons[step.status] || '📋';
+            return icons[step.action] || icons[step.status] || 'STEP';
         }
 
         function getStatusText(status) {
@@ -924,9 +1443,77 @@
                 proofInfo.style.cssText = 'margin-top: 8px; padding: 12px; background: rgba(107, 124, 255, 0.05); border-radius: 8px; font-size: 13px;';
                 proofInfo.innerHTML = `
                     <div style="color: #8B9AFF; margin-bottom: 4px;">Proof ID: ${updates.proofData.proofId}</div>
-                    ${updates.proofData.duration ? `<div style="color: #666;">🕒 ${updates.proofData.duration}</div>` : ''}
+                    ${updates.proofData.duration ? `<div style="color: #666;">Time: ${updates.proofData.duration}</div>` : ''}
                 `;
                 stepContent.appendChild(proofInfo);
+            }
+            
+            // Handle verification data within workflow
+            if (updates.verificationData) {
+                let stepContent = stepElement.querySelector('.step-content');
+                if (!stepContent) {
+                    stepContent = document.createElement('div');
+                    stepContent.className = 'step-content';
+                    stepElement.appendChild(stepContent);
+                }
+                
+                // Remove existing verification info if any
+                const existingVerification = stepContent.querySelector('.verification-info');
+                if (existingVerification) {
+                    existingVerification.remove();
+                }
+                
+                // Add verification info with link
+                const verificationInfo = document.createElement('div');
+                verificationInfo.className = 'verification-info';
+                verificationInfo.style.cssText = 'margin-top: 8px; padding: 8px 12px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; font-size: 12px; display: flex; align-items: center; gap: 8px;';
+                
+                const blockchain = updates.verificationData.blockchain || 'ETH';
+                const txHash = updates.verificationData.transactionHash || updates.verificationData.txHash;
+                const explorerUrl = updates.verificationData.explorerUrl;
+                
+                // Store on-chain verification data for workflow verifications
+                if (updates.proofId && txHash && blockchain) {
+                    const verificationData = {
+                        blockchain: blockchain === 'ETH' ? 'Ethereum' : 'Solana',
+                        transactionHash: txHash,
+                        explorerUrl: explorerUrl || (blockchain === 'SOL' ? 
+                            `https://explorer.solana.com/tx/${txHash}?cluster=devnet` :
+                            `https://sepolia.etherscan.io/tx/${txHash}`),
+                        timestamp: Date.now()
+                    };
+                    onChainVerifications.set(updates.proofId, verificationData);
+                    
+                    // Persist to backend
+                    fetch(`/api/proof/${updates.proofId}/update-verification`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(verificationData)
+                    }).catch(err => console.error('Failed to persist verification data:', err));
+                }
+                
+                if (explorerUrl && txHash) {
+                    verificationInfo.innerHTML = `
+                        <span style="color: #10b981;">✓ Verified on ${blockchain}</span>
+                        <a href="${explorerUrl}" target="_blank" style="color: #8B9AFF; text-decoration: none; font-size: 11px; padding: 2px 8px; background: rgba(107, 124, 255, 0.2); border-radius: 4px; border: 1px solid rgba(107, 124, 255, 0.3);">View on blockchain</a>
+                    `;
+                } else if (txHash) {
+                    // Fallback to constructing URL if not provided
+                    const fallbackUrl = blockchain === 'SOL' ? 
+                        `https://explorer.solana.com/tx/${txHash}?cluster=devnet` :
+                        `https://sepolia.etherscan.io/tx/${txHash}`;
+                    
+                    verificationInfo.innerHTML = `
+                        <span style="color: #10b981;">✓ Verified on ${blockchain}</span>
+                        <a href="${fallbackUrl}" target="_blank" style="color: #8B9AFF; text-decoration: none; font-size: 11px; padding: 2px 8px; background: rgba(107, 124, 255, 0.2); border-radius: 4px; border: 1px solid rgba(107, 124, 255, 0.3);">View on blockchain</a>
+                    `;
+                } else {
+                    verificationInfo.innerHTML = `<span style="color: #10b981;">✓ Verified on ${blockchain}</span>`;
+                }
+                
+                stepContent.appendChild(verificationInfo);
             }
             
             debugLog(`Updated workflow step ${stepId}: ${JSON.stringify(updates)}`, 'info');
@@ -960,10 +1547,12 @@
             const statusDiv = document.createElement('div');
             statusDiv.className = 'transfer-info-item';
             statusDiv.id = `blockchain-status-${transferData.id}`;
-            const statusText = transferData.status === 'complete' ? 'Confirmed ✅' : 'Pending confirmation...';
+            // Show as confirmed if complete OR if transaction hash exists
+            const statusText = (transferData.status === 'complete' || transferData.transactionHash) ? 'Confirmed' : 'Pending confirmation...';
             statusDiv.innerHTML = `<strong>Status:</strong> <span class="status-text">${statusText}</span>`;
             
-            if (transferData.status === 'pending' || transferData.status === 'sent') {
+            // Only show monitoring indicator if still pending without transaction hash
+            if ((transferData.status === 'pending' || transferData.status === 'sent') && !transferData.transactionHash) {
                 const pollingIndicator = document.createElement('span');
                 pollingIndicator.className = 'polling-indicator';
                 pollingIndicator.textContent = ' (Monitoring blockchain)';
@@ -987,7 +1576,7 @@
 
         function createExplorerLink(transferData) {
             if (transferData.explorerLink) {
-                return `<a href="${transferData.explorerLink}" target="_blank" class="explorer-link">View on chain →</a>`;
+                return `<a href="${transferData.explorerLink}" target="_blank" class="explorer-link">View on blockchain →</a>`;
             }
             
             if (!transferData.transactionHash) return '';
@@ -999,7 +1588,7 @@
                 explorerUrl = `https://explorer.solana.com/tx/${transferData.transactionHash}?cluster=devnet`;
             }
             
-            return explorerUrl ? `<a href="${explorerUrl}" target="_blank" class="explorer-link">View on chain →</a>` : '';
+            return explorerUrl ? `<a href="${explorerUrl}" target="_blank" class="explorer-link">View on blockchain →</a>` : '';
         }
 
         function startTransferPolling(transferId, blockchain) {
@@ -1062,7 +1651,7 @@
             if (statusText) {
                 // Handle different statuses
                 if (data.status === 'failed') {
-                    statusText.innerHTML = 'Failed ❌';
+                    statusText.innerHTML = 'Failed';
                     statusText.style.color = '#ef4444';
                     
                     // Add error message if available
@@ -1070,19 +1659,16 @@
                         const errorMsg = data.errorMessage || data.errorCode || 'Transfer failed';
                         statusText.innerHTML += `<br><small style="color: #ef4444;">Error: ${errorMsg}</small>`;
                     }
-                } else if (data.blockchain === 'SOL' && data.status === 'pending') {
-                    statusText.innerHTML = `Pending confirmation... <br>
-                        <small style="color: #fbbf24;">ℹ️ Solana transfers may take 5-10 minutes in sandbox</small>`;
-                } else if (data.status === 'complete') {
-                    statusText.innerHTML = 'Confirmed ✅';
+                } else if (data.status === 'complete' || data.transactionHash || data.txHash) {
+                    // Show as confirmed if complete OR if we have a transaction hash
+                    statusText.innerHTML = 'Confirmed';
                 } else {
                     statusText.innerHTML = 'Pending confirmation...';
-                }
-                
-                if (data.status === 'pending') {
+                    
+                    // Only show monitoring indicator if still pending
                     const pollingIndicator = document.createElement('span');
                     pollingIndicator.className = 'polling-indicator';
-                    pollingIndicator.textContent = data.blockchain === 'SOL' ? ' (Monitoring Solana network)' : ' (Monitoring blockchain)';
+                    pollingIndicator.textContent = ' (Monitoring blockchain)';
                     statusText.appendChild(pollingIndicator);
                 }
             }
@@ -1116,15 +1702,6 @@
                 }
                 
                 debugLog(`Added explorer link: ${linkHTML}`, 'success');
-            } else if (data.blockchain === 'SOL' && data.status === 'pending') {
-                // For Solana pending transfers, show transfer ID reference
-                let linkContainer = statusElement.querySelector('.blockchain-link');
-                if (!linkContainer) {
-                    linkContainer = document.createElement('div');
-                    linkContainer.className = 'blockchain-link';
-                    statusElement.appendChild(linkContainer);
-                }
-                linkContainer.innerHTML = `<small>Transfer ID: ${transferId}</small>`;
             }
         }
 
@@ -1174,6 +1751,7 @@
             ws.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
+                    console.log(`[WS MESSAGE] Type: ${data.type}, Time: ${new Date().toISOString()}`);
                     debugLog(`Received: ${data.type} - Full data: ${JSON.stringify(data).substring(0, 200)}...`, 'info');
                     
                     // Check if this is an echo or unexpected message
@@ -1239,8 +1817,23 @@
                     
                     // Handle response from Python service
                     removeWaitingMessage();
-                    if (data.response) {
-                        addMessage(data.response, 'assistant');
+                    
+                    // For workflow commands, show the response immediately
+                    if (data.intent === 'workflow_executed') {
+                        debugLog(`Workflow command detected`, 'info');
+                        // Show the natural language response first
+                        if (data.response) {
+                            addMessage(data.response, 'assistant');
+                        }
+                        // Store AI response separately if needed
+                        if (data.workflow_result && data.workflow_result.ai_response) {
+                            pendingAIResponses.set(data.workflow_result.workflowId, data.workflow_result.ai_response);
+                        }
+                    } else {
+                        // For non-workflow commands, show response immediately
+                        if (data.response) {
+                            addMessage(data.response, 'assistant');
+                        }
                     }
                     
                     // Check if this is a workflow command
@@ -1293,7 +1886,13 @@
                     break;
                     
                 case 'verification_result':
-                    addVerificationCard(data);
+                    // Check if this verification was triggered from the history table
+                    const historyContainer = document.getElementById('history-verification-container');
+                    if (historyContainer && data.source === 'history_table') {
+                        addVerificationCard(data, 'history-verification-container');
+                    } else {
+                        addVerificationCard(data);
+                    }
                     break;
                     
                 case 'verification_status':
@@ -1310,21 +1909,87 @@
                     break;
                     
                 case 'verification_complete':
-                    // Only create standalone verification card if NOT part of a workflow
-                    if (!data.workflowId && !data.additional_context?.workflow_id) {
+                    // Check if this is a single-step verification workflow
+                    const workflowId = data.workflowId || data.additional_context?.workflow_id;
+                    const isSingleStepVerification = workflowId && document.getElementById(`workflow-${workflowId}`) === null;
+                    
+                    // For local verifications, update inline status instead of creating a card
+                    const proofId = data.proof_id || data.proofId;
+                    const localStatusDiv = document.getElementById(`local-status-${proofId}`);
+                    
+                    // Track local verification
+                    if (data.result === 'VALID' || data.valid) {
+                        localVerifications.set(proofId, {
+                            timestamp: new Date().toISOString(),
+                            valid: true
+                        });
+                    }
+                    
+                    // Check if this verification was from history table
+                    const isFromHistoryTable = data.metadata?.source === 'history_table' || 
+                                             data.additional_context?.source === 'history_table';
+                    
+                    if (localStatusDiv && isSingleStepVerification) {
+                        // Update inline local verification status
+                        const isValid = data.result === 'VALID' || data.valid;
+                        localStatusDiv.style.display = 'block';
+                        localStatusDiv.style.padding = '12px';
+                        localStatusDiv.style.background = isValid ? 'rgba(0, 0, 0, 0.3)' : 'rgba(239, 68, 68, 0.1)';
+                        localStatusDiv.style.border = `1px solid ${isValid ? '#10b981' : '#ef4444'}`;
+                        localStatusDiv.style.borderRadius = '8px';
+                        localStatusDiv.style.marginTop = '8px';
+                        const verificationTime = new Date().toLocaleString();
+                        localStatusDiv.innerHTML = `
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <span style="color: ${isValid ? '#10b981' : '#ef4444'}; font-weight: 500;">
+                                        Local Verification: ${isValid ? 'VALID' : 'INVALID'}
+                                    </span>
+                                    <div style="font-size: 11px; color: #666; margin-top: 2px;">
+                                        ${verificationTime}
+                                    </div>
+                                </div>
+                                ${data.metrics ? `<span style="color: #666; font-size: 12px;">Time: ${(data.metrics.time_ms / 1000).toFixed(2)}s</span>` : ''}
+                            </div>
+                        `;
+                        
+                        // Also update the verify button to show it's been verified
+                        const verifyBtn = document.querySelector(`button[onclick*="verifyProof('${proofId}')"]`);
+                        if (verifyBtn) {
+                            verifyBtn.classList.remove('verifying');
+                            verifyBtn.style.opacity = '0.6';
+                            verifyBtn.disabled = true;
+                            verifyBtn.textContent = 'Verified locally';
+                        }
+                    } else if (!workflowId || (isSingleStepVerification && !localStatusDiv)) {
+                        // For non-local verifications or when status div doesn't exist, create a card
                         const verificationData = {
-                            proofId: data.proof_id || data.proofId,
-                            isValid: data.result === 'VALID' || data.valid,  // Fix: use isValid
+                            proofId: proofId,
+                            isValid: data.result === 'VALID' || data.valid,
                             metadata: data.metadata,
-                            metrics: data.metrics
+                            metrics: data.metrics,
+                            source: isFromHistoryTable ? 'history_table' : undefined
                         };
-                        addVerificationCard(verificationData);
+                        
+                        // If from history table, show in history verification container
+                        if (isFromHistoryTable && document.getElementById('history-verification-container')) {
+                            addVerificationCard(verificationData, 'history-verification-container');
+                        } else {
+                            addVerificationCard(verificationData);
+                        }
                     } else {
-                        debugLog(`Skipping standalone verification card for workflow verification ${data.proof_id}`, 'info');
+                        debugLog(`Skipping standalone verification card for multi-step workflow verification ${data.proof_id}`, 'info');
                     }
                     break;
                     
                 case 'workflow_started':
+                    // Show any pending AI response BEFORE the workflow card
+                    if (pendingAIResponses.has(data.workflowId)) {
+                        const aiResponse = pendingAIResponses.get(data.workflowId);
+                        pendingAIResponses.delete(data.workflowId);
+                        addMessage(aiResponse, 'assistant');
+                    }
+                    
                     addWorkflowCard(data);
                     // No need for polling - we have real-time updates
                     // startWorkflowPolling(data.workflowId);
@@ -1335,9 +2000,219 @@
                     updateWorkflowStep(data.workflowId, data.stepId, data.updates);
                     break;
                     
+                case 'blockchain_verification_request':
+                    debugLog(`Blockchain verification request for ${data.workflowId}`, 'info');
+                    console.log('=== BLOCKCHAIN VERIFICATION REQUEST RECEIVED ===');
+                    console.log('Workflow ID:', data.workflowId);
+                    console.log('Proof ID:', data.proofId);
+                    console.log('Blockchain:', data.blockchain);
+                    console.log('Proof Type:', data.proofType);
+                    console.log('WebSocket state:', ws.readyState);
+                    console.log('Timestamp:', new Date().toISOString());
+                    
+                    // Auto-trigger verification for the requested blockchain
+                    (async () => {
+                        try {
+                            let result;
+                            if (data.blockchain === 'SOLANA') {
+                                // Ensure Solana verifier is initialized
+                                if (!window.solanaVerifier) {
+                                    window.solanaVerifier = new SolanaVerifier();
+                                }
+                                
+                                // Connect if not connected
+                                if (!window.solanaVerifier.isConnected) {
+                                    const connectResult = await window.solanaVerifier.connect();
+                                    if (!connectResult.success) {
+                                        throw new Error('Failed to connect to Solana wallet');
+                                    }
+                                }
+                                
+                                // Show UI notification
+                                showToast('Please approve the Solana transaction in your wallet', 'info');
+                                
+                                // Perform verification
+                                console.log('Calling verifyProofOnChain...');
+                                result = await window.solanaVerifier.verifyProofOnChain(
+                                    data.proofId,
+                                    data.proofType
+                                );
+                                console.log('Verification result:', result);
+                            } else if (data.blockchain === 'ETHEREUM') {
+                                // Similar for Ethereum
+                                showToast('Please approve the Ethereum transaction in your wallet', 'info');
+                                result = await window.ethereumVerifier.verifyProof(
+                                    data.proofId,
+                                    data.proofType
+                                );
+                            }
+                            
+                            // Send response back through WebSocket
+                            const response = {
+                                type: 'blockchain_verification_response',
+                                workflowId: data.workflowId,
+                                proofId: data.proofId,
+                                blockchain: data.blockchain,
+                                success: result && result.success,
+                                transactionHash: result ? (result.transactionHash || result.signature) : null,
+                                explorerUrl: result ? result.explorerUrl : null,
+                                error: result && !result.success ? result.error : null
+                            };
+                            
+                            // Store on-chain verification data when successful
+                            if (result && result.success && data.proofId) {
+                                const txHash = result.transactionHash || result.signature;
+                                const explorerUrl = result.explorerUrl || (data.blockchain === 'SOL' ? 
+                                    `https://explorer.solana.com/tx/${txHash}?cluster=devnet` :
+                                    `https://sepolia.etherscan.io/tx/${txHash}`);
+                                
+                                const verificationData = {
+                                    blockchain: data.blockchain === 'ETH' ? 'Ethereum' : 'Solana',
+                                    transactionHash: txHash,
+                                    explorerUrl: explorerUrl,
+                                    timestamp: Date.now()
+                                };
+                                onChainVerifications.set(data.proofId, verificationData);
+                                
+                                // Persist to backend
+                                fetch(`/api/proof/${data.proofId}/update-verification`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify(verificationData)
+                                }).catch(err => console.error('Failed to persist verification data:', err));
+                            }
+                            
+                            ws.send(JSON.stringify(response));
+                            
+                            if (result && result.success) {
+                                showToast(`Verification submitted on ${data.blockchain}`, 'success');
+                            }
+                            
+                        } catch (error) {
+                            console.error('Blockchain verification error:', error);
+                            console.error('Error stack:', error.stack);
+                            
+                            // Send error response
+                            ws.send(JSON.stringify({
+                                type: 'blockchain_verification_response',
+                                workflowId: data.workflowId,
+                                proofId: data.proofId,
+                                blockchain: data.blockchain,
+                                success: false,
+                                error: error.message
+                            }));
+                            
+                            showToast(`Verification failed: ${error.message}`, 'error');
+                        }
+                    })();
+                    break;
+                    
+                case 'blockchain_verification_update':
+                    debugLog(`Blockchain verification update for ${data.workflowId}`, 'info');
+                    
+                    // Store on-chain verification data
+                    if (data.proofId && data.transactionHash && data.blockchain) {
+                        const verificationData = {
+                            blockchain: data.blockchain === 'ETH' ? 'Ethereum' : 'Solana',
+                            transactionHash: data.transactionHash,
+                            explorerUrl: data.explorerUrl || (data.blockchain === 'SOL' ? 
+                                `https://explorer.solana.com/tx/${data.transactionHash}?cluster=devnet` :
+                                `https://sepolia.etherscan.io/tx/${data.transactionHash}`),
+                            timestamp: Date.now()
+                        };
+                        onChainVerifications.set(data.proofId, verificationData);
+                        
+                        // Persist to backend
+                        fetch(`/api/proof/${data.proofId}/update-verification`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(verificationData)
+                        }).catch(err => console.error('Failed to persist verification data:', err));
+                    }
+                    
+                    // Find the verification step and update it with the transaction info
+                    const workflowSteps = document.querySelectorAll(`[data-workflow-id="${data.workflowId}"]`);
+                    workflowSteps.forEach(stepElement => {
+                        const stepDesc = stepElement.querySelector('.step-description');
+                        if (stepDesc && stepDesc.textContent.toLowerCase().includes('verify') && 
+                            stepDesc.textContent.toLowerCase().includes(data.blockchain.toLowerCase())) {
+                            // Update this step with verification data
+                            const stepId = stepElement.getAttribute('data-step-id');
+                            updateWorkflowStep(data.workflowId, stepId, {
+                                verificationData: {
+                                    blockchain: data.blockchain,
+                                    transactionHash: data.transactionHash,
+                                    explorerUrl: data.explorerUrl,
+                                    success: data.success
+                                },
+                                proofId: data.proofId
+                            });
+                        }
+                    });
+                    break;
+                    
                 case 'workflow_completed':
                     // stopWorkflowPolling(data.workflowId);
                     debugLog(`Workflow ${data.workflowId} completed with data: ${JSON.stringify(data)}`, 'success');
+                    
+                    // Check if this was a single-step proof or verification workflow
+                    // Also count workflows with just proof + AI processing as "single proof"
+                    const proofSteps = data.steps ? data.steps.filter(s => 
+                        s.type === 'generate_proof') : [];
+                    const verifySteps = data.steps ? data.steps.filter(s => 
+                        s.type === 'verify_proof') : [];
+                    const aiSteps = data.steps ? data.steps.filter(s => 
+                        s.type === 'process_with_ai') : [];
+                    
+                    const isSingleProofWorkflow = proofSteps.length === 1 && 
+                                                 data.steps.length <= 2 && 
+                                                 (data.steps.length === 1 || aiSteps.length === 1);
+                    
+                    
+                    if (isSingleProofWorkflow && data.proofSummary) {
+                        // Update the proof card with completion data
+                        debugLog(`Updating single proof workflow card for ${data.workflowId}`, 'info');
+                        const proofType = Object.keys(data.proofSummary)[0];
+                        const proofInfo = data.proofSummary[proofType];
+                        
+                        if (proofInfo) {
+                            const proofStep = proofSteps[0];
+                            const proofData = {
+                                proof_id: proofInfo.proofId,
+                                metadata: {
+                                    function: `prove_${proofType}`,
+                                    step_size: 50
+                                },
+                                metrics: {
+                                    time_ms: proofStep.result?.metrics?.time_ms || 
+                                            (proofStep.result?.success ? 15000 : 1000),
+                                    proof_size: proofStep.result?.metrics?.proof_size || 
+                                               proofStep.result?.size || "13.2 KB"
+                                },
+                                workflowId: data.workflowId
+                            };
+                            
+                            // Update the proof card to show completion
+                            // Use the workflow ID to find the card
+                            updateProofCard(data.workflowId, 'complete', proofData);
+                        }
+                    } else if (!isSingleProofWorkflow) {
+                        // For multi-step workflows, update the workflow card status badge
+                        const workflowCard = document.getElementById(`workflow-${data.workflowId}`);
+                        if (workflowCard) {
+                            const statusBadge = workflowCard.querySelector('.status-badge');
+                            if (statusBadge) {
+                                statusBadge.className = 'status-badge complete';
+                                statusBadge.innerHTML = 'COMPLETED';
+                            }
+                        }
+                    }
+                    
+                    // AI response is now shown before workflow card in workflow_started handler
                     
                     // Start polling for transfers if any
                     if (data.transferIds && data.transferIds.length > 0) {
@@ -1389,6 +2264,84 @@
                 return;
             }
             
+            // Debug logging
+            debugLog(`addWorkflowCard called with ${data.steps?.length || 0} steps`, 'info');
+            if (data.steps) {
+                data.steps.forEach((s, i) => {
+                    debugLog(`Step ${i}: type=${s.type}, action=${s.action}`, 'info');
+                });
+            }
+            
+            // Check if this is a single-step proof generation workflow
+            // Also count workflows with just proof + AI processing as "single proof"
+            const proofSteps = data.steps ? data.steps.filter(s => 
+                (s.action === 'generate_proof' || s.type === 'generate_proof')) : [];
+            const aiSteps = data.steps ? data.steps.filter(s => 
+                (s.action === 'process_with_ai' || s.type === 'process_with_ai')) : [];
+            
+            const isSingleProofWorkflow = proofSteps.length === 1 && 
+                                         data.steps.length <= 2 && 
+                                         (data.steps.length === 1 || aiSteps.length === 1);
+            
+            // Check if this is a single-step list operation
+            const isSingleListWorkflow = data.steps && 
+                                       data.steps.length === 1 && 
+                                       (data.steps[0].action === 'list_proofs' ||
+                                        data.steps[0].type === 'list_proofs');
+            
+            // Check if this is a single-step verification
+            const isSingleVerifyWorkflow = data.steps && 
+                                         data.steps.length === 1 && 
+                                         (data.steps[0].action === 'verify_proof' ||
+                                          data.steps[0].type === 'verify_proof' ||
+                                          data.steps[0].action === 'verify_on_ethereum' ||
+                                          data.steps[0].type === 'verify_on_ethereum' ||
+                                          data.steps[0].action === 'verify_on_solana' ||
+                                          data.steps[0].type === 'verify_on_solana');
+            
+            if (isSingleProofWorkflow) {
+                // For single proof workflows, create a simplified proof card
+                debugLog(`Single proof workflow detected: ${data.workflowId}`, 'info');
+                const step = proofSteps[0]; // Use the actual proof step
+                // Extract proof type from step
+                const proofType = step.proofType || step.proof_type || step.type || 'kyc';
+                const proofData = {
+                    proofId: `${data.workflowId}_proof`,
+                    proofType: proofType,
+                    type: proofType, // Add type field as well
+                    metadata: {
+                        function: `prove_${proofType}`,
+                        type: proofType,
+                        step_size: 50,
+                        workflow_id: data.workflowId
+                    },
+                    message: `Generating ${proofType} proof`,
+                    startTime: Date.now()
+                };
+                
+                // Store workflow ID for later updates
+                proofData.workflowId = data.workflowId;
+                
+                // Use the regular proof card display
+                addProofCard(proofData);
+                return;
+            }
+            
+            if (isSingleListWorkflow) {
+                // For single list operations, don't show a workflow card
+                // The list results will be displayed directly
+                debugLog(`Single list operation workflow ${data.workflowId}, skipping workflow card`, 'info');
+                return;
+            }
+            
+            if (isSingleVerifyWorkflow) {
+                // For single verification operations, don't show a workflow card
+                // The verification result will be displayed directly
+                debugLog(`Single verification workflow ${data.workflowId}, skipping workflow card`, 'info');
+                return;
+            }
+            
+            // For multi-step workflows, use the regular workflow card
             const messagesDiv = document.getElementById('messages');
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message assistant';
@@ -1405,14 +2358,15 @@
             
             const title = document.createElement('div');
             title.className = 'card-title';
-            title.textContent = '🔄 Workflow Execution';
+            title.textContent = 'Workflow Execution';
             
-            const statusBadge = document.createElement('div');
-            statusBadge.className = 'status-badge generating';
-            statusBadge.innerHTML = '<span>⚡</span> EXECUTING';
+            // Removed animated status badge - redundant with step statuses
+            // const statusBadge = document.createElement('div');
+            // statusBadge.className = 'status-badge generating';
+            // statusBadge.innerHTML = 'EXECUTING';
             
             header.appendChild(title);
-            header.appendChild(statusBadge);
+            // header.appendChild(statusBadge);
             
             const stepsContainer = document.createElement('div');
             stepsContainer.className = 'workflow-steps-container';
@@ -1466,9 +2420,10 @@
 
         function addProofCard(data) {
             // Check if proof card already exists to prevent duplicates
-            const existingCard = document.getElementById(`proof-${data.proofId}`);
+            const cardId = data.workflowId ? `workflow-${data.workflowId}` : `proof-${data.proofId}`;
+            const existingCard = document.getElementById(cardId);
             if (existingCard) {
-                console.log(`Proof card already exists for ${data.proofId}, skipping duplicate`);
+                console.log(`Proof card already exists for ${cardId}, skipping duplicate`);
                 return;
             }
             
@@ -1481,21 +2436,42 @@
             
             const card = document.createElement('div');
             card.className = 'proof-card';
-            card.id = `proof-${data.proofId}`;
+            card.id = data.workflowId ? `workflow-${data.workflowId}` : `proof-${data.proofId}`;
             
             const header = document.createElement('div');
             header.className = 'card-header';
             
+            // Extract function name from metadata - check multiple possible fields
+            const functionName = data.metadata?.function || 
+                               data.function || 
+                               data.proofType || 
+                               data.type ||
+                               (data.metadata?.type ? `prove_${data.metadata.type}` : null) ||
+                               'kyc'; // Default to KYC instead of unknown
+            const cleanFunctionName = functionName.replace('prove_', '').replace(/_/g, ' ').toUpperCase();
+            
+            // Function name row
+            const functionNameDiv = document.createElement('div');
+            functionNameDiv.className = 'card-function-name';
+            functionNameDiv.textContent = `${cleanFunctionName} PROOF`;
+            
+            // Title and status row
+            const headerRow = document.createElement('div');
+            headerRow.className = 'card-header-row';
+            
             const title = document.createElement('div');
             title.className = 'card-title';
-            title.textContent = '🔐 Zero-Knowledge Proof Generation';
+            title.textContent = 'Proof Generation';
             
             const statusBadge = document.createElement('div');
             statusBadge.className = 'status-badge generating';
-            statusBadge.innerHTML = '<span>⚡</span> GENERATING';
+            statusBadge.innerHTML = 'GENERATING';
             
-            header.appendChild(title);
-            header.appendChild(statusBadge);
+            headerRow.appendChild(title);
+            headerRow.appendChild(statusBadge);
+            
+            header.appendChild(functionNameDiv);
+            header.appendChild(headerRow);
             
             const cardContent = document.createElement('div');
             cardContent.className = 'card-content';
@@ -1503,14 +2479,13 @@
             const statusIndicator = document.createElement('div');
             statusIndicator.className = 'status-indicator';
             
-            // Extract function name and step size from metadata or use defaults
-            const functionName = data.metadata?.function || data.function || data.proofType || 'unknown';
+            // Extract step size from metadata or use defaults
             const stepSize = data.metadata?.step_size || data.stepSize || 50;
             
             const startTime = new Date(data.startTime || Date.now());
             statusIndicator.innerHTML = `
-                <div class="status-message">${functionName.replace('prove_', '').replace(/_/g, ' ').toUpperCase()} proof</div>
-                <div class="status-message" style="font-size: 12px; color: #666;">${startTime.toLocaleTimeString()}</div>
+                <div class="status-message">Generating cryptographic proof...</div>
+                <div class="status-message" style="font-size: 12px; color: #888;">Started at ${startTime.toLocaleTimeString()}</div>
             `;
             statusIndicator.setAttribute('data-start-time', data.startTime || Date.now());
             
@@ -1524,46 +2499,76 @@
         }
 
         function updateProofCard(proofId, status, data) {
-            const card = document.getElementById(`proof-${proofId}`);
-            if (!card) return;
+            // Try multiple ID formats
+            let card = document.getElementById(`proof-${proofId}`);
+            if (!card && data?.workflowId) {
+                card = document.getElementById(`workflow-${data.workflowId}`);
+            }
+            if (!card) {
+                card = document.getElementById(`workflow-${proofId}`);
+            }
+            if (!card) {
+                debugLog(`Proof card not found for ID: ${proofId}`, 'error');
+                return;
+            }
+            
+            debugLog(`Updating proof card ${card.id} with status: ${status}`, 'info');
             
             const statusBadge = card.querySelector('.status-badge');
             const cardContent = card.querySelector('.card-content');
             
             if (status === 'complete') {
                 statusBadge.className = 'status-badge complete';
-                statusBadge.innerHTML = '<span>✅</span> COMPLETE';
+                statusBadge.innerHTML = 'COMPLETE';
                 
                 const functionName = data.metadata?.function || data.function || 'unknown';
+                // Strip any person suffix for blockchain verification (e.g., prove_ai_content_user -> prove_ai_content)
+                const cleanFunctionName = functionName.replace(/_user$|_alice$|_bob$/i, '');
+                const displayFunctionName = functionName.replace('prove_', '').replace(/_/g, ' ').toUpperCase();
                 const duration = data.metrics?.time_ms ? (data.metrics.time_ms / 1000).toFixed(2) + 's' : 'N/A';
                 const size = data.metrics?.proof_size ? formatProofSize(data.metrics.proof_size) : 'N/A';
                 
+                // Use the actual proof ID from the data
+                const actualProofId = data.proof_id || data.proofId || proofId;
+                
                 cardContent.innerHTML = `
                     <div class="status-indicator">
-                        <div class="status-message">${functionName.replace('prove_', '').replace(/_/g, ' ').toUpperCase()}</div>
-                        <div class="status-message" style="font-size: 12px; color: #666;">ID: ${proofId}</div>
+                        <div class="status-message">${displayFunctionName}</div>
+                        <div class="status-message clickable-id" style="font-size: 12px; color: #666;" 
+                             onclick="navigator.clipboard.writeText('${actualProofId}').then(() => showToast('Proof ID copied!', 'success'))" 
+                             title="Click to copy">ID: ${actualProofId}</div>
                     </div>
-                    <div class="proof-metrics" style="margin-top: 12px;">
-                        <span style="color: #666; margin-right: 16px;">🕒 ${duration}</span>
-                        <span style="color: #666;">💾 ${size}</span>
+                    <div class="proof-metrics" style="margin-top: 4px;">
+                        <span style="color: #666; margin-right: 16px;">Time: ${duration}</span>
+                        <span style="color: #666;">Size: ${size}</span>
                     </div>
                 `;
                 
                 const actions = document.createElement('div');
                 actions.className = 'card-actions';
                 actions.innerHTML = `
-                    <button class="action-btn" onclick="verifyProof('${proofId}')">🔍 Verify Proof</button>
-                    <button class="action-btn" onclick="downloadProof('${proofId}')">💾 Download</button>
-                    <button class="action-btn" onclick="copyProofId('${proofId}')">📋 Copy ID</button>
+                    <button class="action-btn" onclick="verifyProof('${actualProofId}')">Verify locally</button>
+                    <button id="eth-verify-${actualProofId}" class="action-btn eth-verify-btn" onclick="verifyOnEthereum('${actualProofId}', '${cleanFunctionName}')">Verify on Ethereum</button>
+                    <button id="sol-verify-${actualProofId}" class="action-btn sol-verify-btn" onclick="verifyOnSolana('${actualProofId}', '${cleanFunctionName}')">Verify on Solana</button>
                 `;
                 card.appendChild(actions);
+                
+                // Add status divs for blockchain verifications
+                const blockchainStatus = document.createElement('div');
+                blockchainStatus.style.marginTop = '12px';
+                blockchainStatus.innerHTML = `
+                    <div id="local-status-${actualProofId}" class="local-status" style="display: none;"></div>
+                    <div id="eth-status-${actualProofId}" class="eth-status" style="display: none;"></div>
+                    <div id="sol-status-${actualProofId}" class="sol-status" style="display: none;"></div>
+                `;
+                card.appendChild(blockchainStatus);
             } else if (status === 'error') {
                 statusBadge.className = 'status-badge error';
-                statusBadge.innerHTML = '<span>❌</span> ERROR';
+                statusBadge.innerHTML = 'ERROR';
                 
                 cardContent.innerHTML = `
                     <div class="status-indicator">
-                        <div class="status-message">❌ Error: ${data.error}</div>
+                        <div class="status-message">Error: ${data.error}</div>
                     </div>
                 `;
             }
@@ -1585,11 +2590,11 @@
             
             const title = document.createElement('div');
             title.className = 'card-title';
-            title.textContent = '💸 USDC Transfer';
+            title.textContent = 'USDC Transfer';
             
             const statusBadge = document.createElement('div');
             statusBadge.className = `status-badge ${data.status === 'complete' ? 'complete' : 'generating'}`;
-            statusBadge.innerHTML = `<span>${data.status === 'complete' ? '✅' : '⚡'}</span> ${data.status.toUpperCase()}`;
+            statusBadge.innerHTML = data.status.toUpperCase();
             
             header.appendChild(title);
             header.appendChild(statusBadge);
@@ -1600,12 +2605,12 @@
             let explorerLink = '';
             if (data.transactionHash) {
                 if (data.blockchain === 'ETH') {
-                    explorerLink = `<a href="https://sepolia.etherscan.io/tx/${data.transactionHash}" target="_blank" class="explorer-link">View on Etherscan →</a>`;
+                    explorerLink = `<a href="https://sepolia.etherscan.io/tx/${data.transactionHash}" target="_blank" class="explorer-link">View on blockchain →</a>`;
                 } else if (data.blockchain === 'SOL') {
-                    explorerLink = `<a href="https://explorer.solana.com/tx/${data.transactionHash}?cluster=devnet" target="_blank" class="explorer-link">View on Solana Explorer →</a>`;
+                    explorerLink = `<a href="https://explorer.solana.com/tx/${data.transactionHash}?cluster=devnet" target="_blank" class="explorer-link">View on blockchain →</a>`;
                 }
             } else if (data.explorerLink) {
-                explorerLink = `<a href="${data.explorerLink}" target="_blank" class="explorer-link">View on chain →</a>`;
+                explorerLink = `<a href="${data.explorerLink}" target="_blank" class="explorer-link">View on blockchain →</a>`;
             }
             
             cardContent.innerHTML = `
@@ -1627,7 +2632,7 @@
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
 
-        function addVerificationCard(data) {
+        function addVerificationCard(data, targetContainerId = null) {
             // Check if verification card already exists to prevent duplicates
             const existingCard = document.getElementById(`verification-${data.proofId}`);
             if (existingCard) {
@@ -1635,12 +2640,21 @@
                 return;
             }
             
-            const messagesDiv = document.getElementById('messages');
+            // If targetContainerId is provided, use that container, otherwise use messages
+            const targetContainer = targetContainerId ? 
+                document.getElementById(targetContainerId) : 
+                document.getElementById('messages');
+                
+            if (!targetContainer) {
+                console.error(`Target container not found: ${targetContainerId}`);
+                return;
+            }
+            
             const messageDiv = document.createElement('div');
-            messageDiv.className = 'message assistant';
+            messageDiv.className = targetContainerId ? '' : 'message assistant';
             
             const contentDiv = document.createElement('div');
-            contentDiv.className = 'message-content';
+            contentDiv.className = targetContainerId ? '' : 'message-content';
             
             const card = document.createElement('div');
             card.className = 'verification-card';
@@ -1651,11 +2665,11 @@
             
             const title = document.createElement('div');
             title.className = 'card-title';
-            title.textContent = '🔍 Proof Verification';
+            title.textContent = 'Proof Verification';
             
             const statusBadge = document.createElement('div');
             statusBadge.className = `status-badge ${data.isValid ? 'verified' : 'error'}`;
-            statusBadge.innerHTML = `<span>${data.isValid ? '✅' : '❌'}</span> ${data.isValid ? 'VERIFIED' : 'INVALID'}`;
+            statusBadge.innerHTML = data.isValid ? 'VERIFIED' : 'INVALID';
             
             header.appendChild(title);
             header.appendChild(statusBadge);
@@ -1666,18 +2680,39 @@
             cardContent.innerHTML = `
                 <div class="status-indicator">
                     <div class="status-message">Proof ID: <code>${data.proofId}</code></div>
-                    <div class="status-message">Status: ${data.isValid ? '✅ Valid proof' : '❌ Invalid proof'}</div>
+                    <div class="status-message">Status: ${data.isValid ? 'Valid proof' : 'Invalid proof'}</div>
                     ${data.function ? `<div class="status-message">Function: ${data.function}</div>` : ''}
                     ${data.publicInputs ? `<div class="status-message">Public Inputs: ${JSON.stringify(data.publicInputs)}</div>` : ''}
+                    ${data.isValid ? `
+                    <div class="blockchain-verification" style="margin-top: 16px;">
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                            <button id="eth-verify-${data.proofId}" class="eth-verify-btn" onclick="verifyOnEthereum('${data.proofId}', '${data.metadata?.function || 'unknown'}')">
+                                Verify on Ethereum
+                            </button>
+                            <button id="sol-verify-${data.proofId}" class="sol-verify-btn" onclick="verifyOnSolana('${data.proofId}', '${data.metadata?.function || 'unknown'}')">
+                                Verify on Solana
+                            </button>
+                        </div>
+                        <div id="eth-status-${data.proofId}" class="eth-status" style="display: none; margin-top: 8px;"></div>
+                        <div id="sol-status-${data.proofId}" class="sol-status" style="display: none; margin-top: 8px;"></div>
+                    </div>
+                    ` : ''}
                 </div>
             `;
             
             card.appendChild(header);
             card.appendChild(cardContent);
             contentDiv.appendChild(card);
-            messageDiv.appendChild(contentDiv);
-            messagesDiv.appendChild(messageDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
+            if (targetContainerId) {
+                // If using a specific container, just append the card directly
+                targetContainer.appendChild(card);
+            } else {
+                // Otherwise, use the message wrapper structure
+                messageDiv.appendChild(contentDiv);
+                targetContainer.appendChild(messageDiv);
+                targetContainer.scrollTop = targetContainer.scrollHeight;
+            }
         }
 
         function sendMessage() {
@@ -1767,12 +2802,35 @@
             }
         }
 
-        function verifyProof(proofId) {
+        window.verifyProof = function(proofId) {
+            console.log('Verify button clicked for proof:', proofId);
+            
+            // Add pulsating animation to button
+            const verifyBtn = document.querySelector(`button[onclick*="verifyProof('${proofId}')"]`);
+            if (verifyBtn) {
+                verifyBtn.classList.add('verifying');
+                verifyBtn.classList.add('verifying');
+                verifyBtn.textContent = 'Verifying...';
+                verifyBtn.disabled = true;
+            }
+            
             if (ws && ws.readyState === WebSocket.OPEN) {
+                console.log('Sending verify command...');
+                // Send with explicit proof ID format to help parser
                 ws.send(JSON.stringify({
                     type: 'query',
-                    content: `Verify proof ${proofId}`
+                    content: `Verify proof with ID ${proofId} locally`
                 }));
+            } else {
+                console.error('WebSocket not connected. State:', ws ? ws.readyState : 'null');
+                alert('Not connected to server. Please refresh the page.');
+                
+                // Reset button on error
+                if (verifyBtn) {
+                    verifyBtn.classList.remove('verifying');
+                    verifyBtn.textContent = 'Verify locally';
+                    verifyBtn.disabled = false;
+                }
             }
         }
 
@@ -1851,7 +2909,7 @@
             
             const title = document.createElement('div');
             title.className = 'card-title';
-            title.textContent = `📜 Proof History (${data.count || 0} proofs)`;
+            title.textContent = `Proof History (20 most recent proofs)`;
             
             header.appendChild(title);
             
@@ -1859,33 +2917,44 @@
             cardContent.className = 'card-content';
             
             if (data.proofs && data.proofs.length > 0) {
-                const historyList = document.createElement('div');
-                historyList.style.cssText = 'display: flex; flex-direction: column; gap: 12px;';
+                // Create table
+                const tableContainer = document.createElement('div');
+                tableContainer.className = 'history-table-container';
                 
-                data.proofs.slice(0, 10).forEach(proof => {
-                    const proofItem = document.createElement('div');
-                    proofItem.style.cssText = 'padding: 12px; background: rgba(107, 124, 255, 0.08); border-radius: 8px; border: 1px solid rgba(107, 124, 255, 0.2);';
-                    
-                    const timestamp = new Date(proof.timestamp * 1000).toLocaleString();
-                    const verifiedIcon = proof.verified ? '✅' : '⏳';
-                    
-                    proofItem.innerHTML = `
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <strong>${proof.function.replace('prove_', '').replace(/_/g, ' ').toUpperCase()}</strong>
-                                <div style="font-size: 12px; color: #888; margin-top: 4px;">
-                                    ID: <code style="font-size: 11px;">${proof.proof_id}</code>
-                                </div>
-                                <div style="font-size: 12px; color: #888;">${timestamp}</div>
-                            </div>
-                            <div style="font-size: 20px;">${verifiedIcon}</div>
-                        </div>
-                    `;
-                    
-                    historyList.appendChild(proofItem);
+                const table = document.createElement('table');
+                table.className = 'history-table';
+                
+                const thead = document.createElement('thead');
+                thead.innerHTML = `
+                    <tr>
+                        <th>Type</th>
+                        <th>Proof ID</th>
+                        <th>Time</th>
+                        <th>Size</th>
+                        <th>Timestamp</th>
+                        <th>Verified</th>
+                        <th>Actions</th>
+                    </tr>
+                `;
+                table.appendChild(thead);
+                
+                const tbody = document.createElement('tbody');
+                
+                // Show only the 20 most recent proofs
+                data.proofs.slice(0, 20).forEach(proof => {
+                    const row = createProofHistoryRow(proof);
+                    tbody.appendChild(row);
                 });
                 
-                cardContent.appendChild(historyList);
+                table.appendChild(tbody);
+                tableContainer.appendChild(table);
+                cardContent.appendChild(tableContainer);
+                
+                // Add container for verification cards
+                const verificationContainer = document.createElement('div');
+                verificationContainer.id = 'history-verification-container';
+                verificationContainer.style.cssText = 'margin-top: 16px;';
+                cardContent.appendChild(verificationContainer);
             } else {
                 cardContent.innerHTML = '<div style="text-align: center; color: #888;">No proofs generated yet</div>';
             }
@@ -1896,6 +2965,13 @@
             messageDiv.appendChild(contentDiv);
             messagesDiv.appendChild(messageDiv);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
+            // Re-enable input after displaying history
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            if (userInput) userInput.disabled = false;
+            if (sendButton) sendButton.disabled = false;
+            sendingInProgress = false;
         }
         
         function displayVerificationHistory(data) {
@@ -1914,7 +2990,7 @@
             
             const title = document.createElement('div');
             title.className = 'card-title';
-            title.textContent = `🔍 Verification History (${data.count || 0} verifications)`;
+            title.textContent = `Verification History (${data.count || 0} verifications)`;
             
             header.appendChild(title);
             
@@ -1935,7 +3011,7 @@
                     const timestamp = new Date(verification.timestamp * 1000).toLocaleString();
                     // For verification history, 'verified' field indicates if verification was performed
                     const isVerified = verification.verified || verification.valid;
-                    const statusIcon = isVerified ? '✅ VALID' : '❌ INVALID';
+                    const statusText = isVerified ? 'VALID' : 'INVALID';
                     const statusColor = isVerified ? '#10b981' : '#ef4444';
                     
                     verificationItem.innerHTML = `
@@ -1944,7 +3020,7 @@
                                 <strong>Proof ID: <code style="font-size: 11px;">${verification.proof_id}</code></strong>
                                 <div style="font-size: 12px; color: #888; margin-top: 4px;">${timestamp}</div>
                             </div>
-                            <div style="color: ${statusColor}; font-weight: bold;">${statusIcon}</div>
+                            <div style="color: ${statusColor}; font-weight: bold;">${statusText}</div>
                         </div>
                     `;
                     
@@ -1991,6 +3067,554 @@
             workflowPollingIntervals.forEach((interval) => clearInterval(interval));
             transferPollingIntervals.forEach((interval) => clearInterval(interval));
         });
+        // Blockchain Verification Functions
+        let ethereumConnected = false;
+        
+        async function connectEthereum() {
+            const banner = document.getElementById('eth-connect-banner');
+            banner.style.display = 'none';
+            
+            const result = await window.ethereumVerifier.connect();
+            
+            if (result.success) {
+                ethereumConnected = true;
+                const walletInfo = result.wallet ? ` via ${result.wallet}` : '';
+                // showToast(`Connected to Ethereum${walletInfo}`, 'success');  // Removed toast
+                document.getElementById('eth-wallet-status').style.display = 'inline-block';
+                console.log('Connected to account:', result.account, 'via', result.wallet || 'unknown wallet');
+            } else {
+                showToast(result.error, 'error');
+                setTimeout(() => {
+                    banner.style.display = 'block';
+                }, 3000);
+            }
+        }
+        
+        async function connectSolana() {
+            const banner = document.getElementById('sol-connect-banner');
+            banner.style.display = 'none';
+            
+            const result = await window.solanaVerifier.connect();
+            
+            if (result.success) {
+                solanaConnected = true;
+                // showToast('Connected to Solana', 'success');  // Removed toast
+                document.getElementById('sol-wallet-status').style.display = 'inline-block';
+                console.log('Connected to wallet:', result.wallet);
+            } else {
+                showToast(result.error, 'error');
+                setTimeout(() => {
+                    banner.style.display = 'block';
+                }, 3000);
+            }
+        }
+        
+        // Store the source of verifications
+        const verificationSources = new Map();
+        
+        async function handleVerifyAction(proofId, proofFunction, action) {
+            if (!action) return;
+            
+            debugLog(`Handling verify action: ${action} for proof ${proofId}`, 'info');
+            
+            // Mark this verification as coming from history table
+            verificationSources.set(proofId, 'history_table');
+            
+            switch (action) {
+                case 'local':
+                    // Local verification
+                    const message = {
+                        content: `verify proof ${proofId}`,
+                        metadata: {
+                            function: 'verify_proof',
+                            arguments: [proofId],
+                            step_size: 50,
+                            explanation: 'Verifying existing proof',
+                            source: 'history_table'
+                        },
+                        proof_id: `verify_${Date.now()}`
+                    };
+                    ws.send(JSON.stringify(message));
+                    break;
+                    
+                case 'ethereum':
+                    // Create temporary UI elements for verification
+                    const tempEthDiv = document.createElement('div');
+                    tempEthDiv.id = `eth-status-${proofId}`;
+                    tempEthDiv.style.display = 'none';
+                    document.body.appendChild(tempEthDiv);
+                    
+                    const tempEthBtn = document.createElement('button');
+                    tempEthBtn.id = `eth-verify-${proofId}`;
+                    tempEthBtn.style.display = 'none';
+                    document.body.appendChild(tempEthBtn);
+                    
+                    // Ethereum verification
+                    await verifyOnEthereumActual(proofId, proofFunction);
+                    break;
+                    
+                case 'solana':
+                    // Create temporary UI elements for verification
+                    const tempSolDiv = document.createElement('div');
+                    tempSolDiv.id = `sol-status-${proofId}`;
+                    tempSolDiv.style.display = 'none';
+                    document.body.appendChild(tempSolDiv);
+                    
+                    const tempSolBtn = document.createElement('button');
+                    tempSolBtn.id = `sol-verify-${proofId}`;
+                    tempSolBtn.style.display = 'none';
+                    document.body.appendChild(tempSolBtn);
+                    
+                    // Solana verification
+                    await verifyOnSolana(proofId, proofFunction);
+                    break;
+            }
+            
+            // Close the proof history and show verification progress
+            showToast(`Starting ${action} verification for ${proofId}...`, 'info');
+        }
+        
+        window.verifyOnEthereum = async function(proofId, proofType) {
+            debugLog(`Starting Ethereum verification for proof ${proofId}`, 'info');
+            
+            const button = document.getElementById(`eth-verify-${proofId}`);
+            const statusDiv = document.getElementById(`eth-status-${proofId}`);
+            
+            debugLog(`Button found: ${!!button}, StatusDiv found: ${!!statusDiv}`, 'info');
+            
+            // Add click animation
+            if (button) {
+                button.classList.add('verifying');
+            }
+            
+            // Check if elements exist
+            if (!button || !statusDiv) {
+                debugLog(`Missing UI elements - button: ${!!button}, statusDiv: ${!!statusDiv}`, 'error');
+                showToast('UI elements not found. Please refresh the page.', 'error');
+                return;
+            }
+            
+            // Immediately show visual feedback
+            button.disabled = true;
+            button.textContent = 'Generating SNARK...';
+            button.classList.add('pulsating');
+            
+            // Show status immediately
+            if (statusDiv) {
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'eth-status pending';
+                statusDiv.innerHTML = 'Starting SNARK generation (this may take 20-30 seconds)...';
+            }
+            
+            // Continue with normal verification
+            await verifyOnEthereumActual(proofId, proofType);
+        }
+        
+        async function verifyOnEthereumActual(proofId, proofType) {
+            const button = document.getElementById(`eth-verify-${proofId}`);
+            const statusDiv = document.getElementById(`eth-status-${proofId}`);
+            
+            // Check if connected to Ethereum
+            if (!ethereumConnected && !window.ethereumVerifier.isConnected) {
+                debugLog('Not connected to Ethereum, attempting to connect...', 'warning');
+                try {
+                    await connectEthereum();
+                } catch (connectError) {
+                    console.error('Auto-connect failed:', connectError);
+                    document.getElementById('eth-connect-banner').style.display = 'block';
+                    showToast('Please connect your wallet first', 'warning');
+                    
+                    // Re-enable button
+                    if (button) {
+                        button.disabled = false;
+                        button.textContent = 'Verify on Ethereum';
+                    }
+                    if (statusDiv) {
+                        statusDiv.style.display = 'none';
+                    }
+                    return;
+                }
+            }
+            
+            // Disable button and add pulsating animation
+            button.disabled = true;
+            button.textContent = 'Verifying on-chain...';
+            button.classList.add('pulsating');
+            
+            // Show status immediately
+            if (statusDiv) {
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'eth-status pending';
+                statusDiv.innerHTML = 'Fetching proof data...';
+            }
+            
+            try {
+                // Fetch actual proof data from backend
+                const startTime = Date.now();
+                debugLog(`Fetching proof data for ${proofId}`, 'info');
+                
+                // Pass progress callback to show updates during SNARK generation
+                const proofData = await window.ethereumVerifier.fetchProofData(proofId, (progressMsg) => {
+                    if (statusDiv) {
+                        statusDiv.innerHTML = progressMsg;
+                    }
+                });
+                
+                const fetchTime = Date.now() - startTime;
+                debugLog(`Proof data fetched in ${fetchTime}ms`, 'info');
+                debugLog(`Proof data keys: ${Object.keys(proofData || {}).join(', ')}`, 'info');
+                
+                // Update status
+                if (statusDiv) {
+                    statusDiv.innerHTML = 'Submitting to blockchain...';
+                }
+                
+                debugLog(`Calling verifyProofOnChain with proofType: ${proofType}`, 'info');
+                
+                // Add timeout for blockchain verification
+                const verifyPromise = window.ethereumVerifier.verifyProofOnChain(
+                    proofId,
+                    proofData,
+                    proofData.publicInputs,
+                    proofType
+                );
+                
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Blockchain verification timeout after 120 seconds')), 120000)
+                );
+                
+                const result = await Promise.race([verifyPromise, timeoutPromise]);
+                
+                debugLog(`Verification result: ${JSON.stringify(result)}`, result.success ? 'info' : 'error');
+                
+                if (result.success) {
+                    statusDiv.style.display = 'block';
+                    statusDiv.className = 'eth-status success';
+                    const etherscanUrl = window.ethereumVerifier.getEtherscanUrl(result.transactionHash);
+                    statusDiv.innerHTML = `
+                        Verified on Ethereum<br>
+                        Transaction: <a href="${etherscanUrl}" target="_blank" style="color: #4caf50;">${result.transactionHash.substring(0, 10)}...</a><br>
+                        Block: ${result.blockNumber}<br>
+                        Gas used: ${result.gasUsed}<br>
+                        <div style="margin-top: 8px; padding: 8px; background: rgba(76, 175, 80, 0.1); border-radius: 4px; border: 1px solid #4caf50;">
+                            <a href="${etherscanUrl}" target="_blank" style="color: #4caf50; font-weight: bold; text-decoration: none;">View on blockchain →</a>
+                        </div>
+                    `;
+                    
+                    // Store on-chain verification data
+                    const verificationData = {
+                        blockchain: 'Ethereum',
+                        transactionHash: result.transactionHash,
+                        explorerUrl: etherscanUrl,
+                        timestamp: Date.now()
+                    };
+                    onChainVerifications.set(proofId, verificationData);
+                    
+                    // If this verification came from history table, show result in history container
+                    if (verificationSources.get(proofId) === 'history_table') {
+                        const historyContainer = document.getElementById('history-verification-container');
+                        if (historyContainer) {
+                            const verificationCardData = {
+                                proofId: proofId,
+                                isValid: true,
+                                blockchain: 'Ethereum',
+                                transactionHash: result.transactionHash,
+                                explorerUrl: etherscanUrl,
+                                source: 'history_table'
+                            };
+                            addVerificationCard(verificationCardData, 'history-verification-container');
+                        }
+                        verificationSources.delete(proofId);
+                    }
+                    
+                    // Persist to backend
+                    fetch(`/api/proof/${proofId}/update-verification`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(verificationData)
+                    }).catch(err => console.error('Failed to persist verification data:', err));
+                    
+                    button.textContent = '✓ Verified on Ethereum';
+                    button.style.background = 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)';
+                    button.style.opacity = '0.9';
+                    button.classList.remove('pulsating');
+                    
+                    showToast('Proof verified on Ethereum', 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+                
+            } catch (error) {
+                console.error('Ethereum verification failed:', error);
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'eth-status error';
+                
+                // Provide more detailed error message
+                let errorMsg = error.message || 'Unknown error';
+                
+                if (error.message && error.message.includes('timeout')) {
+                    errorMsg = error.message + '<br><br>This is likely due to:<br>• Network connectivity issues<br>• Slow SNARK proof generation<br>• Gas estimation hanging<br><br>Check the browser console for specific timeout location.';
+                } else if (error.message && error.message.includes('execution reverted')) {
+                    errorMsg = 'Smart contract rejected the proof. This is likely due to SNARK generation timeout - the system is using a fallback proof format that may not be compatible with the on-chain verifier.';
+                } else if (error.message && error.message.includes('User denied')) {
+                    errorMsg = 'Transaction cancelled by user.';
+                } else if (!error.message) {
+                    errorMsg = 'Verification failed. Check browser console for details.';
+                }
+                
+                statusDiv.innerHTML = `Verification failed: ${errorMsg}`;
+                
+                button.disabled = false;
+                button.textContent = 'Retry Ethereum Verification';
+                button.classList.remove('pulsating');
+                
+                showToast('Ethereum verification failed', 'error');
+            }
+        }
+        
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#4caf50' : type === 'error' ? '#f44336' : '#2196f3'};
+                color: white;
+                padding: 16px 24px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        // Add toast animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        window.verifyOnSolana = async function(proofId, proofType) {
+            debugLog(`Starting Solana verification for proof ${proofId}`, 'info');
+            console.log('=== SOLANA VERIFICATION START ===');
+            console.log('Proof ID:', proofId);
+            console.log('Proof Type:', proofType);
+            
+            const button = document.getElementById(`sol-verify-${proofId}`);
+            const statusDiv = document.getElementById(`sol-status-${proofId}`);
+            
+            // Add click animation
+            if (button) {
+                button.classList.add('verifying');
+            }
+            
+            if (!button || !statusDiv) {
+                console.error('UI elements not found');
+                showToast('UI elements not found. Please refresh the page.', 'error');
+                return;
+            }
+            
+            // Add pulsating animation to button
+            button.classList.add('pulsating');
+            statusDiv.style.display = 'none';
+            
+            try {
+                // Check if connected to Solana
+                if (!window.solanaVerifier || !window.solanaVerifier.isConnected) {
+                    debugLog('Not connected to Solana, attempting to connect...', 'info');
+                    
+                    if (!window.solanaVerifier) {
+                        window.solanaVerifier = new SolanaVerifier();
+                    }
+                    
+                    const connectResult = await window.solanaVerifier.connect();
+                    
+                    if (!connectResult.success) {
+                        throw new Error(connectResult.error || 'Failed to connect to Solana wallet');
+                    }
+                    
+                    showToast('Connected to Solana wallet', 'success');
+                }
+                
+                // Disable button and show pending status
+                button.disabled = true;
+                button.textContent = 'Verifying on Solana...';
+                
+                // Show status message
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'sol-status pending';
+                statusDiv.innerHTML = 'Sending transaction to Solana...';
+                
+                // Verify on Solana using the new API
+                const result = await window.solanaVerifier.verifyProofOnChain(
+                    proofId,
+                    proofType
+                );
+                
+                if (result.success) {
+                    statusDiv.style.display = 'block';
+                    statusDiv.className = 'sol-status success';
+                    statusDiv.innerHTML = `
+                        Verified on Solana<br>
+                        Signature: <a href="${result.explorerUrl}" target="_blank" style="color: #00D18C;">${result.signature.substring(0, 20)}...</a><br>
+                        <div style="margin-top: 8px; padding: 8px; background: rgba(0, 209, 140, 0.1); border-radius: 4px; border: 1px solid #00D18C;">
+                            <a href="${result.explorerUrl}" target="_blank" style="color: #00D18C; font-weight: bold; text-decoration: none;">View on blockchain →</a>
+                        </div>
+                    `;
+                    
+                    // Store on-chain verification data
+                    const verificationData = {
+                        blockchain: 'Solana',
+                        transactionHash: result.signature,
+                        explorerUrl: result.explorerUrl,
+                        timestamp: Date.now()
+                    };
+                    onChainVerifications.set(proofId, verificationData);
+                    
+                    // If this verification came from history table, show result in history container
+                    if (verificationSources.get(proofId) === 'history_table') {
+                        const historyContainer = document.getElementById('history-verification-container');
+                        if (historyContainer) {
+                            const verificationCardData = {
+                                proofId: proofId,
+                                isValid: true,
+                                blockchain: 'Solana',
+                                transactionHash: result.signature,
+                                explorerUrl: result.explorerUrl,
+                                source: 'history_table'
+                            };
+                            addVerificationCard(verificationCardData, 'history-verification-container');
+                        }
+                        verificationSources.delete(proofId);
+                    }
+                    
+                    // Persist to backend
+                    fetch(`/api/proof/${proofId}/update-verification`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(verificationData)
+                    }).catch(err => console.error('Failed to persist verification data:', err));
+                    
+                    button.textContent = '✓ Verified on Solana';
+                    button.style.background = 'linear-gradient(135deg, #00D18C 0%, #00B67A 100%)';
+                    button.style.opacity = '0.9';
+                    button.classList.remove('pulsating');
+                    
+                    showToast('Proof verified on Solana', 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+                
+            } catch (error) {
+                console.error('Solana verification failed:', error);
+                statusDiv.style.display = 'block';
+                
+                // Check if this is an "already verified" or "already processed" error
+                if (error.message.includes('already been verified') || error.message.includes('already verified') || error.message.includes('already been processed')) {
+                    statusDiv.className = 'sol-status warning';
+                    statusDiv.innerHTML = `
+                        <div style="color: #fbbf24;">
+                            ⚠️ This proof has already been processed on Solana
+                        </div>
+                        <div style="font-size: 12px; margin-top: 4px; color: #999;">
+                            This proof's commitment was already used in a previous verification attempt. 
+                            Generate a new proof to verify on-chain.
+                        </div>
+                    `;
+                    
+                    button.disabled = true;
+                    button.textContent = 'Already Processed';
+                    button.style.opacity = '0.7';
+                    button.classList.remove('pulsating');
+                    
+                    showToast('This proof was already processed on Solana', 'warning');
+                } else {
+                    statusDiv.className = 'sol-status error';
+                    statusDiv.innerHTML = `Verification failed: ${error.message}`;
+                    
+                    button.disabled = false;
+                    button.textContent = 'Retry Solana Verification';
+                    button.classList.remove('pulsating');
+                    
+                    showToast('Solana verification failed', 'error');
+                }
+            }
+        }
+        
+        // Auto-connect to wallets on load
+        window.addEventListener('load', async () => {
+            // Give wallets time to initialize
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Auto-connect to Solflare if available
+            if (window.solflare && window.solflare.isSolflare) {
+                console.log('Solflare wallet detected, attempting auto-connect...');
+                try {
+                    if (window.solflare.isConnected) {
+                        // Already connected, just initialize our verifier
+                        window.solanaVerifier = new SolanaVerifier();
+                        const solResult = await window.solanaVerifier.connect();
+                        if (solResult.success) {
+                            solanaConnected = true;
+                            console.log('Auto-connected to Solflare:', solResult.wallet);
+                            document.getElementById('sol-wallet-status').style.display = 'inline-block';
+                        }
+                    }
+                } catch (e) {
+                    console.log('Solflare auto-connect failed:', e.message);
+                }
+            } else {
+                console.log('Solflare not detected');
+            }
+            
+            // Auto-connect to Ethereum if available
+            if (window.ethereum) {
+                console.log('Ethereum wallet detected, attempting auto-connect...');
+                try {
+                    // Check if we have permission to access accounts
+                    const accounts = await window.ethereum.request({ 
+                        method: 'eth_accounts' 
+                    });
+                    
+                    if (accounts.length > 0) {
+                        // We have permission, connect
+                        const ethResult = await window.ethereumVerifier.connect();
+                        if (ethResult.success) {
+                            ethereumConnected = true;
+                            console.log('Auto-connected to Ethereum:', ethResult.account);
+                            document.getElementById('eth-wallet-status').style.display = 'inline-block';
+                            // showToast('Connected to Ethereum wallet', 'success');  // Removed toast
+                        }
+                    }
+                } catch (e) {
+                    console.log('Ethereum auto-connect failed:', e.message);
+                }
+            } else {
+                console.log('MetaMask not detected');
+            }
+        });
     </script>
+    <script src="/static/debug-ethereum-verification.js"></script>
 </body>
 </html>

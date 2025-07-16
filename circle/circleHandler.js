@@ -1,156 +1,68 @@
-// circleHandler.js - Complete Circle API Integration with Transaction Hash Handling
-import { Circle, CircleEnvironments } from '@circle-fin/circle-sdk';
-import { v4 as uuidv4 } from 'uuid';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import axios from 'axios';
 import dotenv from 'dotenv';
+import { v4 as uuidv4 } from 'uuid';
+import { resolveRecipient } from './recipientResolver.js';
 
-// Load environment variables
-dotenv.config({ path: '../.env' });
+dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-class CircleUSDCHandler {
+class CircleHandlerFixed {
     constructor() {
         this.apiKey = process.env.CIRCLE_API_KEY;
-        this.environment = process.env.CIRCLE_ENVIRONMENT || 'sandbox';
-        this.ethWalletId = process.env.CIRCLE_ETH_WALLET_ID;
-        this.solWalletId = process.env.CIRCLE_SOL_WALLET_ID;
-        this.ethWalletAddress = process.env.CIRCLE_ETH_WALLET_ADDRESS;
-        this.solWalletAddress = process.env.CIRCLE_SOL_WALLET_ADDRESS;
+        this.baseURL = 'https://api-sandbox.circle.com';
         this.initialized = false;
-        this.circle = null;
-        this.transferHistory = [];
-        this.loadTransferHistory();
     }
 
     async initialize() {
         if (this.initialized) return;
-        
-        console.log('🚀 Initializing Circle USDC Handler...');
-        
-        if (!this.apiKey) {
-            console.warn('⚠️  CIRCLE_API_KEY not found - running in simulation mode');
-            this.simulationMode = true;
+
+        try {
+            if (!this.apiKey) {
+                throw new Error('CIRCLE_API_KEY not found in environment variables');
+            }
+
+            console.log('✅ Circle Handler initialized');
             this.initialized = true;
-            return;
-        }
-        
-        try {
-            // Initialize Circle SDK
-            this.circle = new Circle(
-                this.apiKey,
-                this.environment === 'production' 
-                    ? CircleEnvironments.production 
-                    : CircleEnvironments.sandbox
-            );
-            
-            // Test the connection with the correct method
-            const testResponse = await this.circle.wallets.listWallets();
-            console.log('✅ Circle SDK initialized and connected');
-            this.simulationMode = false;
-            
+
         } catch (error) {
-            console.error('❌ Circle SDK initialization failed:', error.message);
-            console.warn('⚠️  Falling back to simulation mode');
-            this.simulationMode = true;
+            console.error('❌ Failed to initialize Circle Handler:', error.message);
+            throw error;
         }
-        
-        this.initialized = true;
     }
 
-    loadTransferHistory() {
+    async transfer(amount, recipientAddress, blockchain = 'ETH') {
+        if (!this.initialized) {
+            await this.initialize();
+        }
+
         try {
-            const historyPath = path.join(__dirname, 'transfer_history.json');
-            if (fs.existsSync(historyPath)) {
-                this.transferHistory = JSON.parse(fs.readFileSync(historyPath, 'utf8'));
+            const walletId = blockchain === 'SOL'
+                ? process.env.CIRCLE_SOL_WALLET_ID
+                : process.env.CIRCLE_ETH_WALLET_ID;
+
+            if (!walletId) {
+                throw new Error(`No wallet ID configured for ${blockchain}`);
             }
-        } catch (error) {
-            console.error('Error loading transfer history:', error);
-            this.transferHistory = [];
-        }
-    }
 
-    saveTransferHistory() {
-        try {
-            const historyPath = path.join(__dirname, 'transfer_history.json');
-            fs.writeFileSync(historyPath, JSON.stringify(this.transferHistory, null, 2));
-        } catch (error) {
-            console.error('Error saving transfer history:', error);
-        }
-    }
-
-    generateMockTransactionHash(blockchain) {
-        if (blockchain === 'SOL') {
-            // Solana transaction signatures are base58 encoded and typically 88 characters
-            const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-            let result = '';
-            for (let i = 0; i < 88; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            // Resolve recipient address
+            const resolvedAddress = resolveRecipient(recipientAddress, blockchain);
+            console.log(`💸 Initiating ${amount} USDC transfer to ${resolvedAddress} on ${blockchain}`);
+            
+            if (resolvedAddress !== recipientAddress) {
+                console.log(`   (Resolved "${recipientAddress}" to ${resolvedAddress})`);
             }
-            return result;
-        } else {
-            // Ethereum transaction hashes are 66 characters (0x + 64 hex chars)
-            return '0x' + Array.from({length: 64}, () => 
-                Math.floor(Math.random() * 16).toString(16)
-            ).join('');
-        }
-    }
 
-    async transferUSDC(amount, recipientAddress, isKYCVerified = false, blockchain = 'ETH') {
-        if (!this.initialized) await this.initialize();
-
-        console.log(`💸 Initiating ${amount} USDC transfer to ${recipientAddress} on ${blockchain}`);
-        
-        // Simulation mode for when Circle API is not available
-        if (this.simulationMode) {
-            console.log('📌 Running in simulation mode');
-            const mockTxHash = this.generateMockTransactionHash(blockchain);
-            const transferId = uuidv4();
+            // Create idempotency key
+            const idempotencyKey = uuidv4();
             
-            const transfer = {
-                id: transferId,
-                transferId: transferId,
-                transactionHash: mockTxHash,
-                amount: amount.toString(),
-                recipient: recipientAddress,
-                from: blockchain === 'SOL' ? this.solWalletAddress : this.ethWalletAddress,
-                blockchain: blockchain,
-                status: 'complete',
-                timestamp: new Date().toISOString(),
-                isKYCVerified: isKYCVerified,
-                simulated: true
-            };
-            
-            this.transferHistory.push(transfer);
-            this.saveTransferHistory();
-            
-            return {
-                success: true,
-                ...transfer,
-                hash: mockTxHash,
-                txHash: mockTxHash
-            };
-        }
-        
-        // Real Circle API transfer
-        const sourceWalletId = blockchain === 'SOL' ? this.solWalletId : this.ethWalletId;
-        const idempotencyKey = uuidv4();
-        
-        try {
-            // Create transfer request
             const transferRequest = {
                 idempotencyKey: idempotencyKey,
                 source: {
                     type: 'wallet',
-                    id: sourceWalletId
+                    id: walletId
                 },
                 destination: {
                     type: 'blockchain',
-                    address: recipientAddress,
+                    address: resolvedAddress,
                     chain: blockchain === 'SOL' ? 'SOL' : 'ETH'
                 },
                 amount: {
@@ -158,259 +70,173 @@ class CircleUSDCHandler {
                     currency: 'USD'
                 }
             };
-            
+
             console.log('📤 Sending transfer request to Circle API...');
-            const response = await this.circle.transfers.createTransfer(transferRequest);
-            
-            const transfer = response.data?.data || response.data;
-            console.log('📥 Circle API Response:', {
-                id: transfer.id,
-                status: transfer.status,
-                transactionHash: transfer.transactionHash || 'pending'
+            console.log('Request details:', {
+                walletId: walletId,
+                chain: transferRequest.destination.chain,
+                address: recipientAddress
             });
             
-            // Store transfer record
-            const transferRecord = {
-                id: transfer.id,
-                transferId: transfer.id,
-                amount: amount.toString(),
-                recipient: recipientAddress,
-                from: blockchain === 'SOL' ? this.solWalletAddress : this.ethWalletAddress,
-                blockchain: blockchain,
-                status: transfer.status,
-                timestamp: new Date().toISOString(),
-                isKYCVerified: isKYCVerified,
-                circleTransferId: transfer.id,
-                transactionHash: transfer.transactionHash || null,
-                idempotencyKey: idempotencyKey
-            };
+            const response = await axios.post(
+                `${this.baseURL}/v1/transfers`,
+                transferRequest,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${this.apiKey}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                }
+            );
+
+            const transferData = response.data?.data || response.data;
             
-            this.transferHistory.push(transferRecord);
-            this.saveTransferHistory();
-            
-            console.log(`✅ Transfer initiated with ID: ${transfer.id}`);
-            
-            // IMPORTANT: Don't return transaction hash if we don't have it yet
-            // Return 'pending' to signal that polling is needed
+            console.log('📥 Circle API Response:', {
+                id: transferData.id,
+                status: transferData.status,
+                chain: blockchain
+            });
+
+            // For Solana, implement aggressive polling
+            if (blockchain === 'SOL' && transferData.status === 'pending') {
+                console.log('🔄 Starting aggressive polling for Solana transfer...');
+                this.aggressivelyPollSolanaTransfer(transferData.id);
+            }
+
             return {
                 success: true,
-                id: transfer.id,
-                transferId: transfer.id,
-                circleTransferId: transfer.id,
-                transactionHash: transfer.transactionHash || 'pending',
-                hash: transfer.transactionHash || 'pending',
-                txHash: transfer.transactionHash || 'pending',
-                amount: amount.toString(),
+                transferId: transferData.id,
+                status: transferData.status,
+                amount: amount,
                 recipient: recipientAddress,
-                from: blockchain === 'SOL' ? this.solWalletAddress : this.ethWalletAddress,
-                blockchain: blockchain,
-                status: transfer.status
+                blockchain: blockchain
             };
-            
+
         } catch (error) {
-            console.error('❌ Circle transfer failed:', error);
-            
-            if (error.response && error.response.data) {
-                console.error('Circle API Error Details:', JSON.stringify(error.response.data, null, 2));
-                
-                // Common errors and their meanings
-                if (error.response.data.code === 'insufficient_funds') {
-                    throw new Error('Insufficient USDC balance in wallet');
-                } else if (error.response.data.code === 'invalid_address') {
-                    throw new Error('Invalid recipient address for ' + blockchain);
-                }
+            console.error('❌ Transfer failed:', error.message);
+            if (error.response) {
+                console.error('API Error Details:', JSON.stringify(error.response.data, null, 2));
+                console.error('Status Code:', error.response.status);
             }
-            
-            throw new Error(`Transfer failed: ${error.message}`);
+            return {
+                success: false,
+                error: error.message,
+                details: error.response?.data
+            };
         }
     }
 
-    async getTransferDetails(transferId) {
-        if (!this.initialized) await this.initialize();
-        
-        if (this.simulationMode) {
-            // Return from local history in simulation mode
-            const transfer = this.transferHistory.find(t => t.id === transferId);
-            if (transfer) {
-                // Simulate getting transaction hash after a delay
-                if (!transfer.transactionHash || transfer.transactionHash === 'pending') {
-                    transfer.transactionHash = this.generateMockTransactionHash(transfer.blockchain);
-                    this.saveTransferHistory();
-                }
-                return {
-                ...transfer,
-                transactionHash: transfer.transactionHash || transfer.ethereumTransactionInfo?.transactionHash || transfer.solanaTransactionInfo?.signature || 'pending'
-            };
-            }
-            throw new Error('Transfer not found');
+    async getTransferStatus(transferId) {
+        if (!this.initialized) {
+            await this.initialize();
         }
-        
+
         try {
-            const response = await this.circle.transfers.getTransfer(transferId);
-            const transfer = response.data?.data || response.data;
-            
-            console.log(`📋 Transfer ${transferId} status:`, {
-                status: transfer.status,
-                transactionHash: transfer.transactionHash || transfer.ethereumTransactionInfo?.transactionHash || 'still pending'
-            });
-            
-            // Update local history with latest status
-            const localTransfer = this.transferHistory.find(t => t.id === transferId);
-            if (localTransfer) {
-                localTransfer.status = transfer.status;
-                const txHash = transfer.transactionHash || transfer.ethereumTransactionInfo?.transactionHash || transfer.solanaTransactionInfo?.signature;
-            if (txHash && txHash !== 'pending') {
-                    localTransfer.transactionHash = txHash;
-                    console.log(`✅ Got transaction hash for ${transferId}: ${transfer.transactionHash}`);
+            const response = await axios.get(
+                `${this.baseURL}/v1/transfers/${transferId}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${this.apiKey}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
                 }
-                this.saveTransferHistory();
+            );
+            
+            const data = response.data?.data || response.data;
+            
+            // Log full response for Solana transfers
+            if (data.destination?.chain === 'SOL') {
+                console.log('🔍 Full Solana transfer response:', JSON.stringify(data, null, 2));
             }
             
             return {
-                ...transfer,
-                transactionHash: transfer.transactionHash || transfer.ethereumTransactionInfo?.transactionHash || transfer.solanaTransactionInfo?.signature || 'pending'
+                success: true,
+                data: data
             };
         } catch (error) {
-            console.error(`Error getting transfer details: ${error.message}`);
+            console.error('❌ Failed to get transfer status:', error.message);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    async aggressivelyPollSolanaTransfer(transferId) {
+        console.log(`🚀 Aggressively polling Solana transfer ${transferId}`);
+        
+        let attempts = 0;
+        const maxAttempts = 60; // Poll for up to 10 minutes
+        
+        const pollInterval = setInterval(async () => {
+            attempts++;
             
-            // Fallback to local history
-            const localTransfer = this.transferHistory.find(t => t.id === transferId);
-            if (localTransfer) {
-                return localTransfer;
+            try {
+                const status = await this.getTransferStatus(transferId);
+                
+                if (status.success) {
+                    const transfer = status.data;
+                    
+                    // Check all possible fields for transaction hash
+                    const txHash = transfer.transactionHash || 
+                                  transfer.txHash || 
+                                  transfer.transactionId ||
+                                  transfer.blockchainTxId ||
+                                  transfer.solanaSignature ||
+                                  (transfer.transactionDetails && transfer.transactionDetails.transactionHash);
+                    
+                    if (txHash) {
+                        console.log(`✅ Solana transaction hash obtained after ${attempts} attempts: ${txHash}`);
+                        console.log(`🔗 View on explorer: https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
+                        clearInterval(pollInterval);
+                    } else if (transfer.status === 'complete') {
+                        console.log(`✅ Solana transfer complete but no tx hash available`);
+                        clearInterval(pollInterval);
+                    } else if (transfer.status === 'failed') {
+                        console.log(`❌ Solana transfer failed: ${transfer.errorMessage || 'Unknown error'}`);
+                        clearInterval(pollInterval);
+                    }
+                    
+                    // Log status every 10 attempts
+                    if (attempts % 10 === 0) {
+                        console.log(`📊 Still polling... Attempt ${attempts}/${maxAttempts}, Status: ${transfer.status}`);
+                    }
+                }
+                
+                if (attempts >= maxAttempts) {
+                    console.log(`⏰ Max polling attempts reached for Solana transfer`);
+                    clearInterval(pollInterval);
+                }
+            } catch (error) {
+                console.error(`Error polling transfer ${transferId}:`, error.message);
             }
+        }, 10000); // Poll every 10 seconds
+    }
+
+    async getWallet(walletId) {
+        if (!this.initialized) {
+            await this.initialize();
+        }
+
+        try {
+            const response = await axios.get(
+                `${this.baseURL}/v1/wallets/${walletId}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${this.apiKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
             
+            return response.data.data;
+        } catch (error) {
+            console.error('❌ Failed to get wallet:', error.message);
             throw error;
         }
     }
-
-    async getBalance(blockchain = 'ETH') {
-        if (!this.initialized) await this.initialize();
-        
-        if (this.simulationMode) {
-            return {
-                amount: '1000.00',
-                currency: 'USDC',
-                blockchain: blockchain,
-                walletAddress: blockchain === 'SOL' ? this.solWalletAddress : this.ethWalletAddress
-            };
-        }
-        
-        try {
-            const walletId = blockchain === 'SOL' ? this.solWalletId : this.ethWalletId;
-            const response = await this.circle.wallets.getWallet(walletId);
-            const wallet = response.data?.data || response.data;
-            
-            // Find USDC balance
-            const usdcBalance = wallet.balances?.find(b => b.currency === 'USD') || { amount: '0.00' };
-            
-            return {
-                amount: usdcBalance.amount,
-                currency: 'USDC',
-                blockchain: blockchain,
-                walletAddress: blockchain === 'SOL' ? this.solWalletAddress : this.ethWalletAddress
-            };
-        } catch (error) {
-            console.error('Error getting balance:', error);
-            return {
-                amount: '0.00',
-                currency: 'USDC',
-                blockchain: blockchain,
-                walletAddress: blockchain === 'SOL' ? this.solWalletAddress : this.ethWalletAddress
-            };
-        }
-    }
-
-    async getTransactionStatus(transferId) {
-        try {
-            const transfer = await this.getTransferDetails(transferId);
-            return transfer.status || 'unknown';
-        } catch (error) {
-            return 'unknown';
-        }
-    }
-
-    async getTransactionHash(transferId) {
-        try {
-            const transfer = await this.getTransferDetails(transferId);
-            
-            // Return actual transaction hash or 'pending' if not available yet
-            return transfer.transactionHash || 'pending';
-        } catch (error) {
-            return 'pending';
-        }
-    }
 }
 
-export default CircleUSDCHandler;
-
-// CLI interface for checking transfer status
-if (import.meta.url === `file://${process.argv[1]}`) {
-    const transferId = process.argv[2];
-    if (!transferId) {
-        console.log(JSON.stringify({
-            success: false,
-            error: 'No transfer ID provided'
-        }));
-        process.exit(1);
-    }
-    
-    const handler = new CircleUSDCHandler();
-    handler.initialize().then(async () => {
-        try {
-            const transferDetails = await handler.getTransferDetails(transferId);
-            console.log(JSON.stringify({
-                success: true,
-                status: transferDetails.status || 'unknown',
-                transactionHash: transferDetails.transactionHash || 'pending',
-                transferId: transferDetails.id || transferId,
-                blockchain: transferDetails.blockchain || 'ETH',
-                amount: transferDetails.amount,
-                recipient: transferDetails.recipient,
-                from: transferDetails.from
-            }));
-        } catch (error) {
-            console.log(JSON.stringify({
-                success: false,
-                status: error.message.includes('429') ? 'rate_limited' : 'error',
-                error: error.message
-            }));
-        }
-        process.exit(0);
-    });
-}
-
-// CLI interface for checking transfer status
-if (import.meta.url === `file://${process.argv[1]}`) {
-    const transferId = process.argv[2];
-    if (!transferId) {
-        console.log(JSON.stringify({
-            success: false,
-            error: 'No transfer ID provided'
-        }));
-        process.exit(1);
-    }
-    
-    const handler = new CircleUSDCHandler();
-    handler.initialize().then(async () => {
-        try {
-            const transferDetails = await handler.getTransferDetails(transferId);
-            console.log(JSON.stringify({
-                success: true,
-                status: transferDetails.status || 'unknown',
-                transactionHash: transferDetails.transactionHash || 'pending',
-                transferId: transferDetails.id || transferId,
-                blockchain: transferDetails.blockchain || 'ETH',
-                amount: transferDetails.amount,
-                recipient: transferDetails.recipient,
-                from: transferDetails.from
-            }));
-        } catch (error) {
-            console.log(JSON.stringify({
-                success: false,
-                status: error.message.includes('429') ? 'rate_limited' : 'error',
-                error: error.message
-            }));
-        }
-        process.exit(0);
-    });
-}
+export default CircleHandlerFixed;

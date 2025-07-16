@@ -1,50 +1,109 @@
-# Environment variables
+# Environment files
 .env
-.env.local
+.env.*
+!.env.example
 
-# Python
-langchain_env/
+# Build directories
+target/
+build/
+dist/
+node_modules/
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
-.Python
-*.egg-info/
+.pytest_cache/
 
-# Rust
-target/
-Cargo.lock
-
-# Node
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Generated files
+# Proof files
 proofs/
-transfer_history.json
-*.log
+artifacts/
+cache/
+ceremony/
+
+# Database files
+proofs_db.json
+verifications_db.json
+kyc_transfers.json
+kyc_verifications.json
+workflow_history.json
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
 # OS files
 .DS_Store
 Thumbs.db
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+# Test and debug files
+test_*.py
+test_*.js
+test-*.js
+debug_*.py
+debug_*.js
+*_test.*
+*_debug.*
+*_fix.*
+*_backup.*
+*.backup
+*.old
+*.orig
+*.rej
 
-# Temporary files
+# Documentation and fix files
+SOLANA_*.md
+ETHEREUM_*.md
+FIX_*.md
+TEST_*.md
+DEPLOY_*.md
+CHECK_*.md
+*_FIX.md
+*_TEST.md
+*_STATUS.md
+*_ANALYSIS.md
+
+# Scripts and tools
+check-*.sh
+fix_*.py
+fix_*.js
+add_*.py
+add_*.js
+apply_*.py
+create_*.py
+diagnose_*.py
+diagnose_*.js
+update_*.py
+validate_*.py
+analyze-*.sh
+manual_*.py
+manual_*.js
+simple_*.py
+simple_*.js
+monitor_*.py
+monitor_*.js
+
+# Temporary and build files
+*.log
 *.tmp
 *.temp
-*.bak
-update-frontend.sh
-fix-*.sh
-add-decimal-fix.py
-update_html.py
-check-specific-transfer.js
-check-all-transfers.js
-debug-*.js
-fix_*.py
+*.cache
+.~*
+
+# zkEngine build artifacts
+zkengine/example_wasms/target/
+zkengine/example_wasms/*.d
+
+# Exclude all fix/test/debug markdown files
+*.md
+!README.md
+!LICENSE.md
+
+# Exclude backup and test directories
+backups/
+test*/
+debug*/
+scripts/
+contracts/
+circuits/
+solana/
