@@ -24,6 +24,7 @@ proofs/
 artifacts/
 cache/
 ceremony/
+resources/ptau/pot20_final.ptau
 
 # Database files
 proofs_db.json
