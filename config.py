@@ -3,7 +3,7 @@ Centralized Configuration for Agentkit (Python Services)
 """
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 from dotenv import load_dotenv
 
@@ -97,15 +97,15 @@ class FeatureFlags:
 
 @dataclass
 class Config:
-    server: ServerConfig = ServerConfig()
-    ai: AIConfig = AIConfig()
-    blockchain: BlockchainConfig = BlockchainConfig()
-    circle: CircleConfig = CircleConfig()
-    zkengine: ZKEngineConfig = ZKEngineConfig()
-    database: DatabaseConfig = DatabaseConfig()
-    logging: LoggingConfig = LoggingConfig()
-    security: SecurityConfig = SecurityConfig()
-    features: FeatureFlags = FeatureFlags()
+    server: ServerConfig = field(default_factory=ServerConfig)
+    ai: AIConfig = field(default_factory=AIConfig)
+    blockchain: BlockchainConfig = field(default_factory=BlockchainConfig)
+    circle: CircleConfig = field(default_factory=CircleConfig)
+    zkengine: ZKEngineConfig = field(default_factory=ZKEngineConfig)
+    database: DatabaseConfig = field(default_factory=DatabaseConfig)
+    logging: LoggingConfig = field(default_factory=LoggingConfig)
+    security: SecurityConfig = field(default_factory=SecurityConfig)
+    features: FeatureFlags = field(default_factory=FeatureFlags)
 
 def validate_config(config: Config) -> bool:
     """Validate required configuration values"""
