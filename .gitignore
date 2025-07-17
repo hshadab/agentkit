@@ -169,6 +169,9 @@ zkengine/example_wasms/*.d
 
 # Exclude backup and test directories
 backups/
+backup/
+**/backup/
+old-tests-*/
 debug*/
 scripts/
 circuits/

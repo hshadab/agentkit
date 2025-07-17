@@ -556,6 +556,29 @@ This project extensively leverages Circle's infrastructure to demonstrate real-w
 - Circle API is in sandbox mode but transfers are real on testnets
 - OpenAI API usage may incur costs
 
+## Maintenance
+
+### Proof Cleanup
+
+The system generates proof files that can accumulate over time (approximately 18MB per proof). To manage disk space:
+
+1. **Manual cleanup** (dry run to see what would be deleted):
+   ```bash
+   node scripts/cleanup-proofs.js --dry-run
+   ```
+
+2. **Manual cleanup** (actual deletion):
+   ```bash
+   node scripts/cleanup-proofs.js
+   ```
+
+3. **Automated cleanup** (add to crontab for daily cleanup at 2 AM):
+   ```bash
+   0 2 * * * /path/to/agentkit/scripts/automated-cleanup.sh
+   ```
+
+By default, proofs older than 7 days are deleted. You can modify `MAX_AGE_DAYS` in `scripts/cleanup-proofs.js` to change this.
+
 ---
 
 **Built with ❤️ for the future of verifiable, privacy-preserving compute**
