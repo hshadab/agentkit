@@ -18,13 +18,15 @@
 
 **Ethereum (Sepolia)**
 - **Contract**: `0x1e8150050a7a4715aad42b905c08df76883f396f`
-- **Status**: ⚠️ Could not verify (Infura quota exceeded)
+- **Status**: ✅ Uses MetaMask for web3 interactions (not Infura)
 - **Explorer**: [View on Etherscan](https://sepolia.etherscan.io/address/0x1e8150050a7a4715aad42b905c08df76883f396f)
+- **Method**: Browser-based verification through MetaMask
 
 **Solana (Devnet)**
 - **Program ID**: `5VzkNtgVwarEGSLvgvvPvTNqR7qQQai2MZ7BuYNqQPhw`
 - **Status**: ❌ Program not found at this address
 - **Network**: ✅ Connected successfully to Solana 2.3.4
+- **Method**: Browser-based verification through Solflare wallet
 
 #### 3. USDC Transfers (Circle API)
 - **Configuration**: ✅ API key and wallet IDs set
@@ -49,8 +51,8 @@
 
 1. **Immediate Actions**:
    - Deploy Solana program to the configured address
-   - Update Ethereum RPC endpoint (Infura quota issue)
    - Fix Circle handler exports in `circleHandler.js`
+   - Test with MetaMask on Sepolia and Solflare on Devnet
 
 2. **For Full Testing**:
    ```bash
@@ -74,6 +76,14 @@
 - Configuration centralized successfully
 - Test files organized in `tests/` directory
 - No breaking changes detected
+
+### 🌐 Browser Testing
+A comprehensive browser test suite is available at `test_browser_verification.html` that tests:
+- MetaMask connection and Sepolia network
+- Solflare wallet connection
+- Ethereum contract verification
+- Solana program status
+- System configuration
 
 ### 🚀 System Ready
 The system is ready for operation with minor deployment adjustments needed for full on-chain functionality.
