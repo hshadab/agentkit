@@ -35,9 +35,16 @@ circom circuits/RealProofOfProof.circom \
 echo "Circuit compilation complete!"
 
 # Check if we have a powers of tau file
-if [ ! -f "pot20_final.ptau" ]; then
-    echo "Downloading powers of tau file (this may take a while)..."
-    wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_20.ptau -O pot20_final.ptau
+PTAU_FILE="resources/ptau/pot20_final.ptau"
+if [ ! -f "$PTAU_FILE" ]; then
+    echo "ERROR: Powers of Tau file not found at $PTAU_FILE"
+    echo ""
+    echo "Please download it first:"
+    echo "  cd resources/ptau"
+    echo "  wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_20.ptau -O pot20_final.ptau"
+    echo ""
+    echo "Or see SETUP_PTAU.md for alternative options (like using the smaller pot12 file for testing)"
+    exit 1
 fi
 
 # Generate proving and verification keys
@@ -45,7 +52,7 @@ echo "Generating proving and verification keys..."
 
 # Start ceremony
 echo "Starting key generation ceremony..."
-snarkjs groth16 setup build/RealProofOfProof_js/RealProofOfProof.r1cs pot20_final.ptau build/real_proof_of_proof_0000.zkey
+snarkjs groth16 setup build/RealProofOfProof_js/RealProofOfProof.r1cs "$PTAU_FILE" build/real_proof_of_proof_0000.zkey
 
 # Contribute to the ceremony
 echo "Contributing to the ceremony..."

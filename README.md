@@ -101,7 +101,17 @@ pip install -r requirements.txt
 cargo build --release
 ```
 
-3. **Configure environment**
+3. **Download required Powers of Tau file**
+```bash
+# Download the large ptau file (456MB) - required for proof generation
+cd resources/ptau
+wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_20.ptau -O pot20_final.ptau
+cd ../..
+```
+
+See [SETUP_PTAU.md](SETUP_PTAU.md) for alternative setup options and more details.
+
+4. **Configure environment**
 ```bash
 cp .env.example .env
 ```
