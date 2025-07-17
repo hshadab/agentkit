@@ -34,7 +34,7 @@ const config = {
     solana: {
       network: process.env.SOL_NETWORK || 'devnet',
       rpcUrl: process.env.SOL_RPC_URL || 'https://api.devnet.solana.com',
-      programId: '5VzkNtgVwarEGSLvgvvPvTNqR7qQQai2MZ7BuYNqQPhw',
+      programId: '2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7',
       commitment: 'confirmed',
       explorerUrl: 'https://explorer.solana.com',
     },

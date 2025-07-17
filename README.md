@@ -160,7 +160,7 @@ Type a natural language command and watch the real-time execution!
 
 ### Blockchain Integration
 - ✅ **Ethereum**: Contract `0x1e8150050a7a4715aad42b905c08df76883f396f` on Sepolia
-- ✅ **Solana**: Program `5VzkNtgVwarEGSLvgvvPvTNqR7qQQai2MZ7BuYNqQPhw` on Devnet
+- ✅ **Solana**: Program `2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7` on Devnet ([View on Solana Playground](https://beta.solpg.io/68784af1cffcf4b13384d835))
 - ✅ Real transaction hashes viewable on block explorers
 
 #### On-Chain Verification Details

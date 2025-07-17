@@ -18,7 +18,7 @@
     },
     
     solana: {
-      programId: '5VzkNtgVwarEGSLvgvvPvTNqR7qQQai2MZ7BuYNqQPhw',
+      programId: '2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7',
       rpcUrl: 'https://api.devnet.solana.com',
       explorerUrl: 'https://explorer.solana.com',
       cluster: 'devnet',

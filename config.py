@@ -35,7 +35,7 @@ class BlockchainConfig:
     class Solana:
         network: str = os.getenv('SOL_NETWORK', 'devnet')
         rpc_url: str = os.getenv('SOL_RPC_URL', 'https://api.devnet.solana.com')
-        program_id: str = '5VzkNtgVwarEGSLvgvvPvTNqR7qQQai2MZ7BuYNqQPhw'
+        program_id: str = '2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7'
         commitment: str = 'confirmed'
         explorer_url: str = 'https://explorer.solana.com'
 

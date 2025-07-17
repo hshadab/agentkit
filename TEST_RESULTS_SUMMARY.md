@@ -23,10 +23,11 @@
 - **Method**: Browser-based verification through MetaMask
 
 **Solana (Devnet)**
-- **Program ID**: `5VzkNtgVwarEGSLvgvvPvTNqR7qQQai2MZ7BuYNqQPhw`
-- **Status**: ❌ Program not found at this address
+- **Program ID**: `2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7`
+- **Status**: ✅ Program deployed and working on Solana Playground
 - **Network**: ✅ Connected successfully to Solana 2.3.4
 - **Method**: Browser-based verification through Solflare wallet
+- **Playground**: [View on Solana Playground](https://beta.solpg.io/68784af1cffcf4b13384d835)
 
 #### 3. USDC Transfers (Circle API)
 - **Configuration**: ✅ API key and wallet IDs set
@@ -50,9 +51,9 @@
 ### 🔧 Recommendations
 
 1. **Immediate Actions**:
-   - Deploy Solana program to the configured address
    - Fix Circle handler exports in `circleHandler.js`
    - Test with MetaMask on Sepolia and Solflare on Devnet
+   - ✅ Solana program now deployed and configured
 
 2. **For Full Testing**:
    ```bash
