@@ -10,7 +10,14 @@ dist/
 node_modules/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
 .pytest_cache/
+.coverage
+.tox/
+.mypy_cache/
+.ruff_cache/
 
 # Proof files
 proofs/
@@ -38,6 +45,14 @@ parsed_workflow_*.json
 # OS files
 .DS_Store
 Thumbs.db
+
+# Backup files
+*.backup*
+*.old
+*.orig
+*.rej
+*.broken
+*.bak
 
 # Test and debug files
 test_*.py

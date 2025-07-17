@@ -2,6 +2,7 @@
   "name": "verifiable-agentkit",
   "version": "1.0.0",
   "description": "Zero-knowledge proof system for verifiable agent execution",
+  "type": "module",
   "scripts": {
     "build:circuits": "./scripts/build_real_circuit.sh",
     "test:snark": "node src/test_real_snark.js",

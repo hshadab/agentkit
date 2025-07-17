@@ -1,0 +1,15 @@
+[package]
+name = "zkengine-verifier"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+solana-program = "1.17.0"
+borsh = "0.10.3"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "zkengine_verifier"
+
+[features]
+no-entrypoint = []

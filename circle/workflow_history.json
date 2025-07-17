@@ -1,0 +1,3506 @@
+{
+  "wf_68e28cef-3e81-4b46-886d-c139bc1169c0": {
+    "id": "wf_68e28cef-3e81-4b46-886d-c139bc1169c0",
+    "description": "Test ETH to SOL transfer sequence",
+    "steps": [
+      {
+        "type": "kyc_proof",
+        "description": "Generate KYC proof"
+      },
+      {
+        "type": "transfer",
+        "blockchain": "ETH",
+        "amount": "0.1",
+        "recipient": "alice"
+      },
+      {
+        "type": "wait",
+        "duration": 5000
+      },
+      {
+        "type": "transfer",
+        "blockchain": "SOL",
+        "amount": "0.1",
+        "recipient": "alice"
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-06-30T22:33:33.578Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_90c59a5d-e894-481a-a5d5-a9dca62429ae": {
+    "id": "wf_90c59a5d-e894-481a-a5d5-a9dca62429ae",
+    "description": "Test simple transfer sequence",
+    "steps": [
+      {
+        "type": "transfer",
+        "blockchain": "ETH",
+        "amount": "0.01",
+        "recipient": "alice",
+        "description": "Send 0.01 USDC to alice on ETH"
+      },
+      {
+        "type": "wait",
+        "duration": 3000,
+        "description": "Wait 3 seconds"
+      },
+      {
+        "type": "transfer",
+        "blockchain": "ETH",
+        "amount": "0.01",
+        "recipient": "bob",
+        "description": "Send 0.01 USDC to bob on ETH"
+      }
+    ],
+    "currentStep": 0,
+    "status": "failed",
+    "createdAt": "2025-06-30T22:43:21.926Z",
+    "completedSteps": [],
+    "results": {},
+    "updatedAt": "2025-06-30T22:43:27.437Z",
+    "error": "this.circleHandler.checkTransferStatus is not a function"
+  },
+  "wf_b7fa910b-eaaf-4118-989c-7c081a742ff3": {
+    "id": "wf_b7fa910b-eaaf-4118-989c-7c081a742ff3",
+    "description": "Test simple transfer sequence",
+    "steps": [
+      {
+        "type": "transfer",
+        "blockchain": "ETH",
+        "amount": "0.01",
+        "recipient": "alice",
+        "description": "Send 0.01 USDC to alice on ETH"
+      },
+      {
+        "type": "wait",
+        "duration": 3000,
+        "description": "Wait 3 seconds"
+      },
+      {
+        "type": "transfer",
+        "blockchain": "ETH",
+        "amount": "0.01",
+        "recipient": "bob",
+        "description": "Send 0.01 USDC to bob on ETH"
+      }
+    ],
+    "currentStep": 2,
+    "status": "completed",
+    "createdAt": "2025-06-30T22:45:12.345Z",
+    "completedSteps": [
+      0,
+      1,
+      2
+    ],
+    "results": {
+      "step_0": {
+        "success": true,
+        "id": "4e332969-eb8c-4970-8d16-7a9032da55f9",
+        "transferId": "4e332969-eb8c-4970-8d16-7a9032da55f9",
+        "circleTransferId": "4e332969-eb8c-4970-8d16-7a9032da55f9",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "pending",
+          "transferId": "4e332969-eb8c-4970-8d16-7a9032da55f9",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      },
+      "step_1": {
+        "waited": 3000
+      },
+      "step_2": {
+        "success": true,
+        "id": "53c03ef9-c216-48e9-9415-1ab9c3a7e5ee",
+        "transferId": "53c03ef9-c216-48e9-9415-1ab9c3a7e5ee",
+        "circleTransferId": "53c03ef9-c216-48e9-9415-1ab9c3a7e5ee",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "pending",
+          "transferId": "53c03ef9-c216-48e9-9415-1ab9c3a7e5ee",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      }
+    },
+    "updatedAt": "2025-06-30T22:45:33.576Z"
+  },
+  "wf_17218105-e3a6-4ac4-8288-6db13fe674fb": {
+    "id": "wf_17218105-e3a6-4ac4-8288-6db13fe674fb",
+    "description": "Send 0.01 USDC to alice on ethereum if KYC compliant and then do the same on solana",
+    "steps": [
+      {
+        "index": 0,
+        "type": "kyc_proof",
+        "description": "Generate KYC compliance proof",
+        "raw": "KYC compliance check"
+      },
+      {
+        "index": 1,
+        "raw": "Send 0.01 USDC to alice on ethereum",
+        "conditions": [],
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "description": "Transfer 0.01 USDC to alice on ETH"
+      },
+      {
+        "index": 2,
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "SOL",
+        "description": "Transfer 0.01 USDC to alice on SOL",
+        "raw": "do the same on solana"
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-06-30T22:46:57.588Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_f2de0566-d7f8-4ad7-aba7-ff884cecb312": {
+    "id": "wf_f2de0566-d7f8-4ad7-aba7-ff884cecb312",
+    "description": "Send 0.01 USDC to alice on ethereum if KYC compliant and then do the same on solana",
+    "steps": [
+      {
+        "index": 0,
+        "type": "kyc_proof",
+        "description": "Generate KYC compliance proof",
+        "raw": "KYC compliance check"
+      },
+      {
+        "index": 1,
+        "raw": "Send 0.01 USDC to alice on ethereum",
+        "conditions": [],
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "description": "Transfer 0.01 USDC to alice on ETH"
+      },
+      {
+        "index": 2,
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "SOL",
+        "description": "Transfer 0.01 USDC to alice on SOL",
+        "raw": "do the same on solana"
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-06-30T22:49:19.710Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_c3f6821b-c09b-4a7c-b2e4-ea13a70057e6": {
+    "id": "wf_c3f6821b-c09b-4a7c-b2e4-ea13a70057e6",
+    "description": "Send 0.01 USDC to alice on ethereum if KYC compliant and then do the same on solana",
+    "steps": [
+      {
+        "index": 0,
+        "type": "kyc_proof",
+        "description": "Generate KYC compliance proof",
+        "raw": "KYC compliance check"
+      },
+      {
+        "index": 1,
+        "raw": "Send 0.01 USDC to alice on ethereum",
+        "conditions": [],
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "description": "Transfer 0.01 USDC to alice on ETH"
+      },
+      {
+        "index": 2,
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "SOL",
+        "description": "Transfer 0.01 USDC to alice on SOL",
+        "raw": "do the same on solana"
+      }
+    ],
+    "currentStep": 2,
+    "status": "completed",
+    "createdAt": "2025-06-30T22:51:15.324Z",
+    "completedSteps": [
+      0,
+      1,
+      2
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_1751323880355",
+        "status": "verified",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_kyc_1751323878349"
+      },
+      "step_1": {
+        "success": true,
+        "id": "dffc599d-9e26-4f46-919e-3fe2ca6cdb9f",
+        "transferId": "dffc599d-9e26-4f46-919e-3fe2ca6cdb9f",
+        "circleTransferId": "dffc599d-9e26-4f46-919e-3fe2ca6cdb9f",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "pending",
+          "transferId": "dffc599d-9e26-4f46-919e-3fe2ca6cdb9f",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      },
+      "step_2": {
+        "success": true,
+        "id": "341b381a-d242-4ce1-bd66-72f1a1addf26",
+        "transferId": "341b381a-d242-4ce1-bd66-72f1a1addf26",
+        "circleTransferId": "341b381a-d242-4ce1-bd66-72f1a1addf26",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "DRpbCBMxVnDK7maPM5tGv6MvB3v1sRMC86PZ8okm21KY",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "SOL",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "failed",
+          "transactionHash": "pending",
+          "transferId": "341b381a-d242-4ce1-bd66-72f1a1addf26",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      }
+    },
+    "updatedAt": "2025-06-30T22:51:38.421Z"
+  },
+  "wf_74d56791-0d29-409e-bd91-5c82b0809e2a": {
+    "id": "wf_74d56791-0d29-409e-bd91-5c82b0809e2a",
+    "description": "Send 0.01 to alice then wait then send 0.01 to bob",
+    "steps": [
+      {
+        "index": 0,
+        "raw": "Send 0.01 to alice",
+        "conditions": [],
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "description": "Transfer 0.01 USDC to alice on ETH"
+      },
+      {
+        "index": 1,
+        "raw": "wait",
+        "conditions": [],
+        "type": "wait",
+        "duration": 5000,
+        "description": "Wait for confirmation"
+      },
+      {
+        "index": 2,
+        "raw": "send 0.01 to bob",
+        "conditions": [],
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "bob",
+        "blockchain": "SOL",
+        "description": "Transfer 0.01 USDC to bob on SOL"
+      }
+    ],
+    "currentStep": 2,
+    "status": "completed",
+    "createdAt": "2025-06-30T22:55:53.688Z",
+    "completedSteps": [
+      0,
+      1,
+      2
+    ],
+    "results": {
+      "step_0": {
+        "success": true,
+        "id": "09eaa98f-aeee-4d0d-92e7-f26f867bd6c9",
+        "transferId": "09eaa98f-aeee-4d0d-92e7-f26f867bd6c9",
+        "circleTransferId": "09eaa98f-aeee-4d0d-92e7-f26f867bd6c9",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "pending",
+          "transferId": "09eaa98f-aeee-4d0d-92e7-f26f867bd6c9",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      },
+      "step_1": {
+        "waited": 5000
+      },
+      "step_2": {
+        "success": true,
+        "id": "561ba769-06e4-4ebd-a222-c24e8cf4c795",
+        "transferId": "561ba769-06e4-4ebd-a222-c24e8cf4c795",
+        "circleTransferId": "561ba769-06e4-4ebd-a222-c24e8cf4c795",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "DRpbCBMxVnDK7maPM5tGv6MvB3v1sRMC86PZ8okm21KY",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "SOL",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "failed",
+          "transactionHash": "pending",
+          "transferId": "561ba769-06e4-4ebd-a222-c24e8cf4c795",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      }
+    },
+    "updatedAt": "2025-06-30T22:56:19.730Z"
+  },
+  "wf_a21cc401-c2f1-403f-a791-08b98dd9f637": {
+    "id": "wf_a21cc401-c2f1-403f-a791-08b98dd9f637",
+    "description": "Send 0.01 USDC to alice on ethereum if KYC compliant and then do the same on solana",
+    "steps": [
+      {
+        "index": 0,
+        "type": "kyc_proof",
+        "description": "Generate KYC compliance proof",
+        "raw": "KYC compliance check"
+      },
+      {
+        "index": 1,
+        "raw": "Send 0.01 USDC to alice on ethereum",
+        "conditions": [],
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "description": "Transfer 0.01 USDC to alice on ETH"
+      },
+      {
+        "index": 2,
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "SOL",
+        "description": "Transfer 0.01 USDC to alice on SOL",
+        "raw": "do the same on solana"
+      }
+    ],
+    "currentStep": 2,
+    "status": "completed",
+    "createdAt": "2025-06-30T23:03:12.359Z",
+    "completedSteps": [
+      0,
+      1,
+      2
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_1751324597386",
+        "status": "verified",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_kyc_1751324595380"
+      },
+      "step_1": {
+        "success": true,
+        "id": "5ffe05ac-b683-4898-9502-5d4fa287b94f",
+        "transferId": "5ffe05ac-b683-4898-9502-5d4fa287b94f",
+        "circleTransferId": "5ffe05ac-b683-4898-9502-5d4fa287b94f",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "0x0bf45b70c94181191e05b964f20b79222d38a1d13244954514a5c936ff98f462",
+          "transferId": "5ffe05ac-b683-4898-9502-5d4fa287b94f",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      },
+      "step_2": {
+        "success": true,
+        "id": "4186cf01-816f-4460-9fe0-eadabc67b0a1",
+        "transferId": "4186cf01-816f-4460-9fe0-eadabc67b0a1",
+        "circleTransferId": "4186cf01-816f-4460-9fe0-eadabc67b0a1",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "DRpbCBMxVnDK7maPM5tGv6MvB3v1sRMC86PZ8okm21KY",
+        "from": "HsZdbBxZVNzEn4qR9Ebx5XxDSZ136Mu14VlH1nbXGhfG",
+        "blockchain": "SOL",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "failed",
+          "transactionHash": "pending",
+          "transferId": "4186cf01-816f-4460-9fe0-eadabc67b0a1",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      }
+    },
+    "updatedAt": "2025-06-30T23:03:35.520Z"
+  },
+  "wf_95078fe2-4fd2-48f2-9988-41a3d2f8a6a6": {
+    "id": "wf_95078fe2-4fd2-48f2-9988-41a3d2f8a6a6",
+    "description": "Send 0.01 USDC to alice on ethereum and then do the same on solana",
+    "steps": [
+      {
+        "index": 0,
+        "raw": "Send 0.01 USDC to alice on ethereum",
+        "conditions": [],
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "description": "Transfer 0.01 USDC to alice on ETH"
+      },
+      {
+        "index": 1,
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "SOL",
+        "description": "Transfer 0.01 USDC to alice on SOL",
+        "raw": "do the same on solana"
+      }
+    ],
+    "currentStep": 1,
+    "status": "completed",
+    "createdAt": "2025-06-30T23:06:56.080Z",
+    "completedSteps": [
+      0,
+      1
+    ],
+    "results": {
+      "step_0": {
+        "success": true,
+        "id": "a8cfc38f-91e5-4523-b0a3-3ceea5256335",
+        "transferId": "a8cfc38f-91e5-4523-b0a3-3ceea5256335",
+        "circleTransferId": "a8cfc38f-91e5-4523-b0a3-3ceea5256335",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "pending",
+          "transferId": "a8cfc38f-91e5-4523-b0a3-3ceea5256335",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      },
+      "step_1": {
+        "success": true,
+        "id": "05ceea5e-f1f6-4370-b2b0-045e0f4fbcd8",
+        "transferId": "05ceea5e-f1f6-4370-b2b0-045e0f4fbcd8",
+        "circleTransferId": "05ceea5e-f1f6-4370-b2b0-045e0f4fbcd8",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "DRpbCBMxVnDK7maPM5tGv6MvB3v1sRMC86PZ8okm21KY",
+        "from": "HsZdbBxZVNzEn4qR9Ebx5XxDSZ136Mu14VlH1nbXGhfG",
+        "blockchain": "SOL",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "failed",
+          "transactionHash": "pending",
+          "transferId": "05ceea5e-f1f6-4370-b2b0-045e0f4fbcd8",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      }
+    },
+    "updatedAt": "2025-06-30T23:07:14.342Z"
+  },
+  "wf_7f657955-b8ef-468c-b4be-ce8067a5a348": {
+    "id": "wf_7f657955-b8ef-468c-b4be-ce8067a5a348",
+    "description": "Send 0.01 USDC to alice on ethereum and then do the same on solana",
+    "steps": [
+      {
+        "index": 0,
+        "raw": "Send 0.01 USDC to alice on ethereum",
+        "conditions": [],
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "description": "Transfer 0.01 USDC to alice on ETH"
+      },
+      {
+        "index": 1,
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "SOL",
+        "description": "Transfer 0.01 USDC to alice on SOL",
+        "raw": "do the same on solana"
+      }
+    ],
+    "currentStep": 1,
+    "status": "completed",
+    "createdAt": "2025-06-30T23:08:04.902Z",
+    "completedSteps": [
+      0,
+      1
+    ],
+    "results": {
+      "step_0": {
+        "success": true,
+        "id": "d5dc45b0-22ec-4747-bfe0-44f6349985c9",
+        "transferId": "d5dc45b0-22ec-4747-bfe0-44f6349985c9",
+        "circleTransferId": "d5dc45b0-22ec-4747-bfe0-44f6349985c9",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "pending",
+          "transferId": "d5dc45b0-22ec-4747-bfe0-44f6349985c9",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      },
+      "step_1": {
+        "success": true,
+        "id": "24f942e7-0bf8-4d38-adc9-69ed056acf2e",
+        "transferId": "24f942e7-0bf8-4d38-adc9-69ed056acf2e",
+        "circleTransferId": "24f942e7-0bf8-4d38-adc9-69ed056acf2e",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "DRpbCBMxVnDK7maPM5tGv6MvB3v1sRMC86PZ8okm21KY",
+        "from": "HsZdbBxZVNzEn4qR9Ebx5XxDSZ136Mu14VlH1nbXGhfG",
+        "blockchain": "SOL",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "failed",
+          "transactionHash": "pending",
+          "transferId": "24f942e7-0bf8-4d38-adc9-69ed056acf2e",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      }
+    },
+    "updatedAt": "2025-06-30T23:08:22.834Z"
+  },
+  "wf_e38e9271-f40f-456f-86ad-8433d8d0ee80": {
+    "id": "wf_e38e9271-f40f-456f-86ad-8433d8d0ee80",
+    "description": "Send 0.01 USDC to alice on ethereum and then do the same on solana",
+    "steps": [
+      {
+        "index": 0,
+        "raw": "Send 0.01 USDC to alice on ethereum",
+        "conditions": [],
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "description": "Transfer 0.01 USDC to alice on ETH"
+      },
+      {
+        "index": 1,
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "SOL",
+        "description": "Transfer 0.01 USDC to alice on SOL",
+        "raw": "do the same on solana"
+      }
+    ],
+    "currentStep": 1,
+    "status": "completed",
+    "createdAt": "2025-06-30T23:11:32.417Z",
+    "completedSteps": [
+      0,
+      1
+    ],
+    "results": {
+      "step_0": {
+        "success": true,
+        "id": "b2e6a28f-2a2a-4130-b3c8-e44186491455",
+        "transferId": "b2e6a28f-2a2a-4130-b3c8-e44186491455",
+        "circleTransferId": "b2e6a28f-2a2a-4130-b3c8-e44186491455",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "pending",
+          "transferId": "b2e6a28f-2a2a-4130-b3c8-e44186491455",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      },
+      "step_1": {
+        "success": true,
+        "id": "cfe84160-348f-4141-a637-c97e7c27ea3c",
+        "transferId": "cfe84160-348f-4141-a637-c97e7c27ea3c",
+        "circleTransferId": "cfe84160-348f-4141-a637-c97e7c27ea3c",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "DRpbCBMxVnDK7maPM5tGv6MvB3v1sRMC86PZ8okm21KY",
+        "from": "HsZdbBxZVNzEn4qR9Ebx5XxDSZ136Mu14VlH1nbXGhfG",
+        "blockchain": "SOL",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "failed",
+          "transactionHash": "pending",
+          "transferId": "cfe84160-348f-4141-a637-c97e7c27ea3c",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      }
+    },
+    "updatedAt": "2025-06-30T23:11:50.684Z"
+  },
+  "wf_1eb1f49a-e33e-4819-840e-d120590442e5": {
+    "id": "wf_1eb1f49a-e33e-4819-840e-d120590442e5",
+    "description": "Send 0.01 USDC to alice on ethereum and then do the same on solana",
+    "steps": [
+      {
+        "index": 0,
+        "raw": "Send 0.01 USDC to alice on ethereum",
+        "conditions": [],
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "description": "Transfer 0.01 USDC to alice on ETH"
+      },
+      {
+        "index": 1,
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "SOL",
+        "description": "Transfer 0.01 USDC to alice on SOL",
+        "raw": "do the same on solana"
+      }
+    ],
+    "currentStep": 1,
+    "status": "completed",
+    "createdAt": "2025-06-30T23:14:24.187Z",
+    "completedSteps": [
+      0,
+      1
+    ],
+    "results": {
+      "step_0": {
+        "success": true,
+        "id": "5056f26c-ff90-456c-96cd-eef2229c23a9",
+        "transferId": "5056f26c-ff90-456c-96cd-eef2229c23a9",
+        "circleTransferId": "5056f26c-ff90-456c-96cd-eef2229c23a9",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "pending",
+          "transferId": "5056f26c-ff90-456c-96cd-eef2229c23a9",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      },
+      "step_1": {
+        "success": true,
+        "id": "629ab620-96a9-4d94-901d-87386aa11439",
+        "transferId": "629ab620-96a9-4d94-901d-87386aa11439",
+        "circleTransferId": "629ab620-96a9-4d94-901d-87386aa11439",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "7UX2i7SucgLMQcfZ75s3VXmZZY4YRUyJN9X1RgfMoDUi",
+        "from": "HsZdbBxZVNzEn4qR9Ebx5XxDSZ136Mu14VlH1nbXGhfG",
+        "blockchain": "SOL",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "pending",
+          "transferId": "629ab620-96a9-4d94-901d-87386aa11439",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      }
+    },
+    "updatedAt": "2025-06-30T23:14:42.391Z"
+  },
+  "wf_4d7e7b17-c931-4598-9091-c5e55a11226b": {
+    "id": "wf_4d7e7b17-c931-4598-9091-c5e55a11226b",
+    "description": "Hey! first send .01 usdc to alice on eth if kyc verified then send another .01 to bob on sol if kyc verified",
+    "steps": [
+      {
+        "index": 0,
+        "type": "kyc_proof",
+        "description": "Generate KYC compliance proof",
+        "raw": "KYC compliance check"
+      },
+      {
+        "index": 1,
+        "raw": "Hey! first send .01 usdc to alice on eth if kyc verified",
+        "conditions": [],
+        "type": "transfer",
+        "amount": "01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "description": "Transfer 01 USDC to alice on ETH"
+      },
+      {
+        "index": 2,
+        "raw": "send another .01 to bob on sol if kyc verified",
+        "conditions": [],
+        "type": "transfer",
+        "amount": "01",
+        "recipient": "bob",
+        "blockchain": "SOL",
+        "description": "Transfer 01 USDC to bob on SOL"
+      }
+    ],
+    "currentStep": 2,
+    "status": "completed",
+    "createdAt": "2025-06-30T23:18:02.507Z",
+    "completedSteps": [
+      0,
+      1,
+      2
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_1751325487529",
+        "status": "verified",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_kyc_1751325485527"
+      },
+      "step_1": {
+        "success": true,
+        "id": "29a6ccca-b262-4852-b3ce-2309f397f32c",
+        "transferId": "29a6ccca-b262-4852-b3ce-2309f397f32c",
+        "circleTransferId": "29a6ccca-b262-4852-b3ce-2309f397f32c",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "pending",
+          "transferId": "29a6ccca-b262-4852-b3ce-2309f397f32c",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "1.00",
+            "currency": "USD"
+          }
+        }
+      },
+      "step_2": {
+        "success": true,
+        "id": "ad918068-a5f4-458f-8f0a-86745dd6d202",
+        "transferId": "ad918068-a5f4-458f-8f0a-86745dd6d202",
+        "circleTransferId": "ad918068-a5f4-458f-8f0a-86745dd6d202",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "01",
+        "recipient": "GsbwXfJraMomNxBcjYLcG3mxkBUiyWXAB32fGbSMQRdW",
+        "from": "HsZdbBxZVNzEn4qR9Ebx5XxDSZ136Mu14VlH1nbXGhfG",
+        "blockchain": "SOL",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "pending",
+          "transferId": "ad918068-a5f4-458f-8f0a-86745dd6d202",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "1.00",
+            "currency": "USD"
+          }
+        }
+      }
+    },
+    "updatedAt": "2025-06-30T23:18:25.631Z"
+  },
+  "wf_78674dd9-07f6-4e7e-a01e-5b2bba553b25": {
+    "id": "wf_78674dd9-07f6-4e7e-a01e-5b2bba553b25",
+    "description": "Send 0.01 USDC to alice on ethereum if KYC compliant then send 0.01 to bob on solana if KYC compliant",
+    "steps": [
+      {
+        "index": 0,
+        "type": "kyc_proof",
+        "description": "Generate KYC compliance proof",
+        "raw": "KYC compliance check"
+      },
+      {
+        "index": 1,
+        "raw": "Send 0.01 USDC to alice on ethereum",
+        "conditions": [],
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "description": "Transfer 0.01 USDC to alice on ETH"
+      },
+      {
+        "index": 2,
+        "raw": "send 0.01 to bob on solana",
+        "conditions": [],
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "bob",
+        "blockchain": "SOL",
+        "description": "Transfer 0.01 USDC to bob on SOL"
+      }
+    ],
+    "currentStep": 2,
+    "status": "completed",
+    "createdAt": "2025-06-30T23:18:31.284Z",
+    "completedSteps": [
+      0,
+      1,
+      2
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_1751325516302",
+        "status": "verified",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_kyc_1751325514300"
+      },
+      "step_1": {
+        "success": true,
+        "id": "71d219d8-6309-4c35-84ac-6fda0123298a",
+        "transferId": "71d219d8-6309-4c35-84ac-6fda0123298a",
+        "circleTransferId": "71d219d8-6309-4c35-84ac-6fda0123298a",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "pending",
+          "transferId": "71d219d8-6309-4c35-84ac-6fda0123298a",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      },
+      "step_2": {
+        "success": true,
+        "id": "1dc9da47-c270-440b-b42b-af25f9052de8",
+        "transferId": "1dc9da47-c270-440b-b42b-af25f9052de8",
+        "circleTransferId": "1dc9da47-c270-440b-b42b-af25f9052de8",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "GsbwXfJraMomNxBcjYLcG3mxkBUiyWXAB32fGbSMQRdW",
+        "from": "HsZdbBxZVNzEn4qR9Ebx5XxDSZ136Mu14VlH1nbXGhfG",
+        "blockchain": "SOL",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "pending",
+          "transferId": "1dc9da47-c270-440b-b42b-af25f9052de8",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      }
+    },
+    "updatedAt": "2025-06-30T23:18:54.424Z"
+  },
+  "wf_8154b62a-7838-4f51-b7c3-6ab990568ffe": {
+    "id": "wf_8154b62a-7838-4f51-b7c3-6ab990568ffe",
+    "description": "Test conditional KYC transfers",
+    "steps": [
+      {
+        "type": "kyc_proof",
+        "description": "Generate KYC compliance proof for alice",
+        "recipient": "alice"
+      },
+      {
+        "type": "transfer",
+        "blockchain": "ETH",
+        "amount": "0.01",
+        "recipient": "alice",
+        "description": "Transfer 0.01 USDC to alice on ETH",
+        "requiresKYC": true,
+        "kycRecipient": "alice"
+      },
+      {
+        "type": "kyc_proof",
+        "description": "Generate KYC compliance proof for bob",
+        "recipient": "bob"
+      },
+      {
+        "type": "transfer",
+        "blockchain": "SOL",
+        "amount": "0.01",
+        "recipient": "bob",
+        "description": "Transfer 0.01 USDC to bob on SOL",
+        "requiresKYC": true,
+        "kycRecipient": "bob"
+      }
+    ],
+    "currentStep": 3,
+    "status": "completed",
+    "createdAt": "2025-06-30T23:40:11.814Z",
+    "completedSteps": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_alice_1751326813823",
+        "status": "verified",
+        "recipient": "alice",
+        "reason": null
+      },
+      "step_1": {
+        "success": true,
+        "id": "fe450b95-005d-48fd-965e-d5b008bf9014",
+        "transferId": "fe450b95-005d-48fd-965e-d5b008bf9014",
+        "circleTransferId": "fe450b95-005d-48fd-965e-d5b008bf9014",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "pending",
+          "transferId": "fe450b95-005d-48fd-965e-d5b008bf9014",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      },
+      "step_2": {
+        "proofId": "proof_kyc_bob_1751326828284",
+        "status": "verified",
+        "recipient": "bob",
+        "reason": null
+      },
+      "step_3": {
+        "success": true,
+        "id": "b2c5e4be-915c-45be-81c5-e89a7c54bea3",
+        "transferId": "b2c5e4be-915c-45be-81c5-e89a7c54bea3",
+        "circleTransferId": "b2c5e4be-915c-45be-81c5-e89a7c54bea3",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "GsbwXfJraMomNxBcjYLcG3mxkBUiyWXAB32fGbSMQRdW",
+        "from": "HsZdbBxZVNzEn4qR9Ebx5XxDSZ136Mu14VlH1nbXGhfG",
+        "blockchain": "SOL",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "pending",
+          "transferId": "b2c5e4be-915c-45be-81c5-e89a7c54bea3",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      }
+    },
+    "updatedAt": "2025-06-30T23:40:37.477Z"
+  },
+  "wf_7de4c17a-8b73-4d33-ab36-5f08913dbda4": {
+    "id": "wf_7de4c17a-8b73-4d33-ab36-5f08913dbda4",
+    "description": "Test conditional KYC transfers",
+    "steps": [
+      {
+        "type": "kyc_proof",
+        "description": "Generate KYC compliance proof for alice",
+        "recipient": "alice"
+      },
+      {
+        "type": "transfer",
+        "blockchain": "ETH",
+        "amount": "0.01",
+        "recipient": "alice",
+        "description": "Transfer 0.01 USDC to alice on ETH",
+        "requiresKYC": true,
+        "kycRecipient": "alice"
+      },
+      {
+        "type": "kyc_proof",
+        "description": "Generate KYC compliance proof for bob",
+        "recipient": "bob"
+      },
+      {
+        "type": "transfer",
+        "blockchain": "SOL",
+        "amount": "0.01",
+        "recipient": "bob",
+        "description": "Transfer 0.01 USDC to bob on SOL",
+        "requiresKYC": true,
+        "kycRecipient": "bob"
+      }
+    ],
+    "currentStep": 2,
+    "status": "completed",
+    "createdAt": "2025-06-30T23:40:47.693Z",
+    "completedSteps": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_alice_1751326849711",
+        "status": "verified",
+        "recipient": "alice",
+        "reason": null
+      },
+      "step_1": {
+        "success": true,
+        "id": "a86fb24b-e2ad-4fc5-9e3f-de668b914040",
+        "transferId": "a86fb24b-e2ad-4fc5-9e3f-de668b914040",
+        "circleTransferId": "a86fb24b-e2ad-4fc5-9e3f-de668b914040",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "pending",
+          "transferId": "a86fb24b-e2ad-4fc5-9e3f-de668b914040",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      },
+      "step_2": {
+        "proofId": "proof_kyc_bob_1751326864160",
+        "status": "failed",
+        "recipient": "bob",
+        "reason": "KYC documents not sufficient"
+      },
+      "step_3": {
+        "status": "skipped",
+        "reason": "KYC not verified for bob"
+      }
+    },
+    "updatedAt": "2025-06-30T23:41:07.168Z"
+  },
+  "wf_324130e3-0fec-4fc9-b67d-256d84bf5cf1": {
+    "id": "wf_324130e3-0fec-4fc9-b67d-256d84bf5cf1",
+    "description": "Test conditional KYC transfers",
+    "steps": [
+      {
+        "type": "kyc_proof",
+        "description": "Generate KYC compliance proof for alice",
+        "recipient": "alice"
+      },
+      {
+        "type": "transfer",
+        "blockchain": "ETH",
+        "amount": "0.01",
+        "recipient": "alice",
+        "description": "Transfer 0.01 USDC to alice on ETH",
+        "requiresKYC": true,
+        "kycRecipient": "alice"
+      },
+      {
+        "type": "kyc_proof",
+        "description": "Generate KYC compliance proof for bob",
+        "recipient": "bob"
+      },
+      {
+        "type": "transfer",
+        "blockchain": "SOL",
+        "amount": "0.01",
+        "recipient": "bob",
+        "description": "Transfer 0.01 USDC to bob on SOL",
+        "requiresKYC": true,
+        "kycRecipient": "bob"
+      }
+    ],
+    "currentStep": 3,
+    "status": "completed",
+    "createdAt": "2025-06-30T23:44:38.130Z",
+    "completedSteps": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_alice_1751327080138",
+        "status": "failed",
+        "recipient": "alice",
+        "reason": "KYC documents not sufficient"
+      },
+      "step_1": {
+        "status": "skipped",
+        "reason": "KYC not verified for alice"
+      },
+      "step_2": {
+        "proofId": "proof_kyc_bob_1751327085148",
+        "status": "verified",
+        "recipient": "bob",
+        "reason": null
+      },
+      "step_3": {
+        "success": true,
+        "id": "be7b5f85-ef00-42c7-9707-40089f452fac",
+        "transferId": "be7b5f85-ef00-42c7-9707-40089f452fac",
+        "circleTransferId": "be7b5f85-ef00-42c7-9707-40089f452fac",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "GsbwXfJraMomNxBcjYLcG3mxkBUiyWXAB32fGbSMQRdW",
+        "from": "HsZdbBxZVNzEn4qR9Ebx5XxDSZ136Mu14VlH1nbXGhfG",
+        "blockchain": "SOL",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "pending",
+          "transferId": "be7b5f85-ef00-42c7-9707-40089f452fac",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      }
+    },
+    "updatedAt": "2025-06-30T23:44:54.338Z"
+  },
+  "wf_43acebf7-a402-4ea2-a1a8-b7c49d4ea8e2": {
+    "id": "wf_43acebf7-a402-4ea2-a1a8-b7c49d4ea8e2",
+    "description": "Hey! first send .01 usdc to alice on eth if alice is kyc verified then send another .01 to bob on sol if bob is kyc verified",
+    "steps": [
+      {
+        "index": 0,
+        "type": "kyc_proof",
+        "description": "Generate KYC compliance proof for alice",
+        "raw": "KYC compliance check for alice",
+        "recipient": "alice"
+      },
+      {
+        "index": 1,
+        "raw": "Hey! first send .01 usdc to alice on eth if alice is kyc verified",
+        "conditions": [],
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "description": "Transfer 0.01 USDC to alice on ETH",
+        "requiresKYC": true,
+        "kycRecipient": "alice"
+      },
+      {
+        "index": 2,
+        "type": "kyc_proof",
+        "description": "Generate KYC compliance proof for bob",
+        "raw": "KYC compliance check for bob",
+        "recipient": "bob"
+      },
+      {
+        "index": 3,
+        "raw": "send another .01 to bob on sol if bob is kyc verified",
+        "conditions": [],
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "bob",
+        "blockchain": "SOL",
+        "description": "Transfer 0.01 USDC to bob on SOL",
+        "requiresKYC": true,
+        "kycRecipient": "bob"
+      }
+    ],
+    "currentStep": 3,
+    "status": "completed",
+    "createdAt": "2025-06-30T23:46:58.039Z",
+    "completedSteps": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_alice_1751327223060",
+        "status": "verified",
+        "recipient": "alice",
+        "reason": null
+      },
+      "step_1": {
+        "success": true,
+        "id": "ecafbed2-9bfb-41cc-a7b3-d6c5304131ac",
+        "transferId": "ecafbed2-9bfb-41cc-a7b3-d6c5304131ac",
+        "circleTransferId": "ecafbed2-9bfb-41cc-a7b3-d6c5304131ac",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "pending",
+          "transferId": "ecafbed2-9bfb-41cc-a7b3-d6c5304131ac",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      },
+      "step_2": {
+        "proofId": "proof_kyc_bob_1751327237368",
+        "status": "verified",
+        "recipient": "bob",
+        "reason": null
+      },
+      "step_3": {
+        "success": true,
+        "id": "7d642d13-b3ae-459e-bb1a-5881c6e4f07a",
+        "transferId": "7d642d13-b3ae-459e-bb1a-5881c6e4f07a",
+        "circleTransferId": "7d642d13-b3ae-459e-bb1a-5881c6e4f07a",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "GsbwXfJraMomNxBcjYLcG3mxkBUiyWXAB32fGbSMQRdW",
+        "from": "HsZdbBxZVNzEn4qR9Ebx5XxDSZ136Mu14VlH1nbXGhfG",
+        "blockchain": "SOL",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "pending",
+          "transferId": "7d642d13-b3ae-459e-bb1a-5881c6e4f07a",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      }
+    },
+    "updatedAt": "2025-06-30T23:47:26.400Z"
+  },
+  "wf_d854aa52-d260-4298-be98-4e8678a955d5": {
+    "id": "wf_d854aa52-d260-4298-be98-4e8678a955d5",
+    "description": "Send .01 to alice on eth if alice is kyc verified then send .01 to bob on sol if bob is kyc verified",
+    "steps": [
+      {
+        "index": 0,
+        "type": "kyc_proof",
+        "description": "Generate KYC compliance proof for alice",
+        "raw": "KYC compliance check for alice",
+        "recipient": "alice"
+      },
+      {
+        "index": 1,
+        "raw": "Send .01 to alice on eth if alice is kyc verified",
+        "conditions": [],
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "description": "Transfer 0.01 USDC to alice on ETH",
+        "requiresKYC": true,
+        "kycRecipient": "alice"
+      },
+      {
+        "index": 2,
+        "type": "kyc_proof",
+        "description": "Generate KYC compliance proof for bob",
+        "raw": "KYC compliance check for bob",
+        "recipient": "bob"
+      },
+      {
+        "index": 3,
+        "raw": "send .01 to bob on sol if bob is kyc verified",
+        "conditions": [],
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "bob",
+        "blockchain": "SOL",
+        "description": "Transfer 0.01 USDC to bob on SOL",
+        "requiresKYC": true,
+        "kycRecipient": "bob"
+      }
+    ],
+    "currentStep": 2,
+    "status": "completed",
+    "createdAt": "2025-06-30T23:48:28.184Z",
+    "completedSteps": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_alice_1751327313196",
+        "status": "verified",
+        "recipient": "alice",
+        "reason": null
+      },
+      "step_1": {
+        "success": true,
+        "id": "208402eb-a2f2-4279-9dd5-af6fdd834dc3",
+        "transferId": "208402eb-a2f2-4279-9dd5-af6fdd834dc3",
+        "circleTransferId": "208402eb-a2f2-4279-9dd5-af6fdd834dc3",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending",
+        "finalStatus": {
+          "success": true,
+          "status": "pending",
+          "transactionHash": "pending",
+          "transferId": "208402eb-a2f2-4279-9dd5-af6fdd834dc3",
+          "blockchain": "ETH",
+          "amount": {
+            "amount": "0.01",
+            "currency": "USD"
+          }
+        }
+      },
+      "step_2": {
+        "proofId": "proof_kyc_bob_1751327327517",
+        "status": "failed",
+        "recipient": "bob",
+        "reason": "KYC documents not sufficient"
+      },
+      "step_3": {
+        "status": "skipped",
+        "reason": "KYC not verified for bob"
+      }
+    },
+    "updatedAt": "2025-06-30T23:48:50.539Z"
+  },
+  "wf_63ba1f93-6345-4af1-a5fe-6b10baec307c": {
+    "id": "wf_63ba1f93-6345-4af1-a5fe-6b10baec307c",
+    "description": "Test multiple proof types",
+    "steps": [
+      {
+        "type": "kyc_proof",
+        "proofType": "kyc",
+        "description": "Generate KYC compliance proof",
+        "parameters": {}
+      },
+      {
+        "type": "ai content_proof",
+        "proofType": "ai content",
+        "description": "Generate AI content verification proof",
+        "parameters": {
+          "hash": "abc123",
+          "provider": "gpt4"
+        }
+      },
+      {
+        "type": "verification",
+        "verificationType": "latest",
+        "description": "Verify the latest proof"
+      },
+      {
+        "type": "prime_proof",
+        "proofType": "prime",
+        "description": "Generate Prime number verification proof",
+        "parameters": {
+          "number": 17
+        }
+      }
+    ],
+    "currentStep": 3,
+    "status": "completed",
+    "createdAt": "2025-07-01T03:49:04.591Z",
+    "completedSteps": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_1751341746614",
+        "proofType": "kyc",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_kyc_1751341744611",
+        "parameters": {},
+        "output": {
+          "result": 1
+        }
+      },
+      "step_1": {
+        "proofId": "proof_ai_content_1751341751624",
+        "proofType": "ai content",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_ai_content_1751341749622",
+        "parameters": {
+          "hash": "abc123",
+          "provider": "gpt4"
+        },
+        "output": {
+          "result": 1
+        },
+        "verificationStatus": "verified"
+      },
+      "step_2": {
+        "proofId": "proof_ai_content_1751341751624",
+        "verificationType": "ai content",
+        "status": "verified",
+        "timestamp": "2025-07-01T03:49:15.639Z"
+      },
+      "step_3": {
+        "proofId": "proof_prime_1751341760645",
+        "proofType": "prime",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_prime_1751341758644",
+        "parameters": {
+          "number": 17
+        },
+        "output": {
+          "isPrime": true
+        }
+      }
+    },
+    "updatedAt": "2025-07-01T03:49:20.648Z"
+  },
+  "wf_45b06cfa-f311-4d27-960e-7580e5715fad": {
+    "id": "wf_45b06cfa-f311-4d27-960e-7580e5715fad",
+    "description": "Test conditional transfer with location proof",
+    "steps": [
+      {
+        "type": "location_proof",
+        "proofType": "location",
+        "description": "Generate Location verification proof",
+        "parameters": {
+          "latitude": 40.7128,
+          "longitude": -74.006,
+          "city": "new_york"
+        }
+      },
+      {
+        "type": "verification",
+        "verificationType": "latest",
+        "description": "Verify the latest proof"
+      },
+      {
+        "type": "transfer",
+        "amount": "1",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "requiresProof": true,
+        "requiredProofType": "location",
+        "description": "Transfer 1 USDC to alice on ETH"
+      }
+    ],
+    "currentStep": 2,
+    "status": "completed",
+    "createdAt": "2025-07-01T03:49:26.934Z",
+    "completedSteps": [
+      0,
+      1,
+      2
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_location_1751341768952",
+        "proofType": "location",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_location_1751341766948",
+        "parameters": {
+          "latitude": 40.7128,
+          "longitude": -74.006,
+          "city": "new_york"
+        },
+        "output": {
+          "city": "new_york"
+        },
+        "verificationStatus": "verified"
+      },
+      "step_1": {
+        "proofId": "proof_location_1751341768952",
+        "verificationType": "location",
+        "status": "verified",
+        "timestamp": "2025-07-01T03:49:32.975Z"
+      },
+      "step_2": {
+        "success": true,
+        "id": "a9a8ddd8-08f5-4c17-9e46-ef7e30d8ff4c",
+        "transferId": "a9a8ddd8-08f5-4c17-9e46-ef7e30d8ff4c",
+        "circleTransferId": "a9a8ddd8-08f5-4c17-9e46-ef7e30d8ff4c",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "1",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending"
+      }
+    },
+    "updatedAt": "2025-07-01T03:49:36.474Z"
+  },
+  "wf_3a36411a-a8bc-486f-82ec-5e04f145cd6d": {
+    "id": "wf_3a36411a-a8bc-486f-82ec-5e04f145cd6d",
+    "description": "Test conditional transfer with location proof",
+    "steps": [
+      {
+        "type": "location_proof",
+        "proofType": "location",
+        "description": "Generate Location verification proof",
+        "parameters": {
+          "latitude": 40.7128,
+          "longitude": -74.006,
+          "city": "new_york"
+        }
+      },
+      {
+        "type": "verification",
+        "verificationType": "latest",
+        "description": "Verify the latest proof"
+      },
+      {
+        "type": "transfer",
+        "amount": "1",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "requiresProof": true,
+        "requiredProofType": "location",
+        "description": "Transfer 1 USDC to alice on ETH"
+      }
+    ],
+    "currentStep": 1,
+    "status": "completed",
+    "createdAt": "2025-07-01T03:49:49.212Z",
+    "completedSteps": [
+      0,
+      1,
+      2
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_location_1751341791228",
+        "proofType": "location",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_location_1751341789224",
+        "parameters": {
+          "latitude": 40.7128,
+          "longitude": -74.006,
+          "city": "new_york"
+        },
+        "output": {
+          "city": "new_york"
+        },
+        "verificationStatus": "failed"
+      },
+      "step_1": {
+        "proofId": "proof_location_1751341791228",
+        "verificationType": "location",
+        "status": "failed",
+        "timestamp": "2025-07-01T03:49:55.240Z"
+      },
+      "step_2": {
+        "status": "skipped",
+        "reason": "location proof not verified"
+      }
+    },
+    "updatedAt": "2025-07-01T03:49:58.262Z"
+  },
+  "wf_b4db6188-ae37-459a-a1eb-e0afa5f6b4a2": {
+    "id": "wf_b4db6188-ae37-459a-a1eb-e0afa5f6b4a2",
+    "description": "Create AI content proof from GPT4 with hash abc123 then verify the proof then if verified send 0.5 to content_creator",
+    "steps": [
+      {
+        "index": 0,
+        "raw": "Create AI content proof from GPT4 with hash abc123",
+        "conditions": [],
+        "type": "ai content_proof",
+        "proofType": "ai content",
+        "description": "Generate AI content verification proof",
+        "parameters": {
+          "hash": "abc123",
+          "provider": "GPT4"
+        }
+      },
+      {
+        "index": 1,
+        "raw": "verify the proof",
+        "conditions": [],
+        "type": "verification",
+        "verificationType": "latest",
+        "description": "Verify the latest proof",
+        "proofId": "the"
+      },
+      {
+        "type": "transfer",
+        "raw": "if verified send 0.5 to content_creator",
+        "amount": "0.5",
+        "recipient": "content_creator",
+        "blockchain": "ETH",
+        "description": "Transfer 0.5 USDC to content_creator on ETH"
+      }
+    ],
+    "currentStep": 2,
+    "status": "completed",
+    "createdAt": "2025-07-01T03:58:14.395Z",
+    "completedSteps": [
+      0,
+      1,
+      2
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_ai_content_1751342299412",
+        "proofType": "ai content",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_ai_content_1751342297409",
+        "parameters": {
+          "hash": "abc123",
+          "provider": "GPT4"
+        },
+        "output": {
+          "result": 1
+        },
+        "verificationStatus": "verified"
+      },
+      "step_1": {
+        "proofId": "proof_ai_content_1751342299412",
+        "verificationType": "ai content",
+        "status": "verified",
+        "timestamp": "2025-07-01T03:58:23.423Z"
+      },
+      "step_2": {
+        "success": true,
+        "id": "82c10f15-0719-42e0-9a70-6cae7919113b",
+        "transferId": "82c10f15-0719-42e0-9a70-6cae7919113b",
+        "circleTransferId": "82c10f15-0719-42e0-9a70-6cae7919113b",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.5",
+        "recipient": "content_creator",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending"
+      }
+    },
+    "updatedAt": "2025-07-01T03:58:26.879Z"
+  },
+  "wf_927ddf7b-93eb-499e-b56c-3269a8ba7493": {
+    "id": "wf_927ddf7b-93eb-499e-b56c-3269a8ba7493",
+    "description": "Generate location proof for 40.7128, -74.0060 then if location verified send 1 USDC to alice on ethereum",
+    "steps": [
+      {
+        "index": 0,
+        "raw": "Generate location proof for 40.7128, -74.0060",
+        "conditions": [],
+        "type": "location_proof",
+        "proofType": "location",
+        "description": "Generate Location verification proof",
+        "parameters": {
+          "latitude": 40.7128,
+          "longitude": -74.006
+        }
+      },
+      {
+        "type": "transfer",
+        "raw": "if location verified send 1 USDC to alice on ethereum",
+        "amount": "1",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "requiresProof": true,
+        "requiredProofType": "location",
+        "description": "Transfer 1 USDC to alice on ETH"
+      }
+    ],
+    "currentStep": 0,
+    "status": "completed",
+    "createdAt": "2025-07-01T03:58:35.359Z",
+    "completedSteps": [
+      0,
+      1
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_location_1751342320373",
+        "proofType": "location",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_location_1751342318371",
+        "parameters": {
+          "latitude": 40.7128,
+          "longitude": -74.006
+        },
+        "output": {
+          "city": "unknown"
+        }
+      },
+      "step_1": {
+        "status": "skipped",
+        "reason": "location proof not verified"
+      }
+    },
+    "updatedAt": "2025-07-01T03:58:43.391Z"
+  },
+  "wf_ed6acd23-2b55-44d0-a5f7-47ad08e7a12d": {
+    "id": "wf_ed6acd23-2b55-44d0-a5f7-47ad08e7a12d",
+    "description": "Check if 17 is prime then generate collatz proof starting from 27 then send 0.1 to mathematician on SOL",
+    "steps": [
+      {
+        "index": 0,
+        "raw": "Check if 17 is prime",
+        "conditions": [],
+        "type": "verification",
+        "verificationType": "prime",
+        "description": "Verify prime proof",
+        "proofId": null
+      },
+      {
+        "index": 1,
+        "raw": "generate collatz proof starting from 27",
+        "conditions": [],
+        "type": "collatz_proof",
+        "proofType": "collatz",
+        "description": "Generate Collatz sequence proof",
+        "parameters": {
+          "start": 27
+        }
+      },
+      {
+        "type": "transfer",
+        "raw": "send 0.1 to mathematician on SOL",
+        "amount": "0.1",
+        "recipient": "mathematician",
+        "blockchain": "SOL",
+        "description": "Transfer 0.1 USDC to mathematician on SOL"
+      }
+    ],
+    "currentStep": 0,
+    "status": "failed",
+    "createdAt": "2025-07-01T03:58:48.625Z",
+    "completedSteps": [],
+    "results": {},
+    "updatedAt": "2025-07-01T03:58:51.640Z",
+    "error": "Proof null not found"
+  },
+  "wf_5d1decd5-b614-40b1-88d0-1889bfae2d6f": {
+    "id": "wf_5d1decd5-b614-40b1-88d0-1889bfae2d6f",
+    "description": "Generate KYC proof then create AI content proof from openai with hash xyz789 then location proof for singapore then send 5 to alice if kyc verified",
+    "steps": [
+      {
+        "index": 0,
+        "raw": "Generate KYC proof",
+        "conditions": [],
+        "type": "kyc_proof",
+        "proofType": "kyc",
+        "description": "Generate KYC compliance proof",
+        "parameters": {}
+      },
+      {
+        "index": 1,
+        "raw": "create AI content proof from openai with hash xyz789",
+        "conditions": [],
+        "type": "ai content_proof",
+        "proofType": "ai content",
+        "description": "Generate AI content verification proof",
+        "parameters": {
+          "provider": "openai"
+        }
+      },
+      {
+        "index": 2,
+        "raw": "location proof for singapore",
+        "conditions": [],
+        "type": "location_proof",
+        "proofType": "location",
+        "description": "Generate Location verification proof",
+        "parameters": {
+          "city": "singapore"
+        }
+      },
+      {
+        "type": "transfer",
+        "raw": "send 5 to alice if kyc verified",
+        "amount": "5",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "requiresProof": true,
+        "requiredProofType": "kyc",
+        "description": "Transfer 5 USDC to alice on ETH"
+      }
+    ],
+    "currentStep": 2,
+    "status": "completed",
+    "createdAt": "2025-07-01T03:59:10.380Z",
+    "completedSteps": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_1751342355403",
+        "proofType": "kyc",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_kyc_1751342353399",
+        "parameters": {},
+        "output": {
+          "result": 1
+        }
+      },
+      "step_1": {
+        "proofId": "proof_ai_content_1751342360422",
+        "proofType": "ai content",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_ai_content_1751342358420",
+        "parameters": {
+          "provider": "openai"
+        },
+        "output": {
+          "result": 1
+        }
+      },
+      "step_2": {
+        "proofId": "proof_location_1751342365442",
+        "proofType": "location",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_location_1751342363438",
+        "parameters": {
+          "city": "singapore"
+        },
+        "output": {
+          "city": "singapore"
+        }
+      },
+      "step_3": {
+        "status": "skipped",
+        "reason": "kyc proof not verified"
+      }
+    },
+    "updatedAt": "2025-07-01T03:59:28.447Z"
+  },
+  "wf_95b31a45-7487-496f-9574-8d1f3789265f": {
+    "id": "wf_95b31a45-7487-496f-9574-8d1f3789265f",
+    "description": "Generate KYC proof then create AI content proof from openai with hash xyz789 then location proof for singapore then send 5 to alice if kyc verifiednode workflowCLI_generic.js Generate KYC proof then create AI content proof from openai with hash xyz789 then location proof for singapore then send 5 to alice if kyc verified",
+    "steps": [
+      {
+        "index": 0,
+        "raw": "Generate KYC proof",
+        "conditions": [],
+        "type": "kyc_proof",
+        "proofType": "kyc",
+        "description": "Generate KYC compliance proof",
+        "parameters": {}
+      },
+      {
+        "index": 1,
+        "raw": "create AI content proof from openai with hash xyz789",
+        "conditions": [],
+        "type": "ai content_proof",
+        "proofType": "ai content",
+        "description": "Generate AI content verification proof",
+        "parameters": {
+          "provider": "openai"
+        }
+      },
+      {
+        "index": 2,
+        "raw": "location proof for singapore",
+        "conditions": [],
+        "type": "location_proof",
+        "proofType": "location",
+        "description": "Generate Location verification proof",
+        "parameters": {
+          "city": "singapore"
+        }
+      },
+      {
+        "index": 3,
+        "raw": "send 5 to alice if kyc verifiednode workflowCLI_generic.js Generate KYC proof",
+        "conditions": [],
+        "type": "kyc_proof",
+        "proofType": "kyc",
+        "description": "Generate KYC compliance proof",
+        "parameters": {}
+      },
+      {
+        "index": 4,
+        "raw": "create AI content proof from openai with hash xyz789",
+        "conditions": [],
+        "type": "ai content_proof",
+        "proofType": "ai content",
+        "description": "Generate AI content verification proof",
+        "parameters": {
+          "provider": "openai"
+        }
+      },
+      {
+        "index": 5,
+        "raw": "location proof for singapore",
+        "conditions": [],
+        "type": "location_proof",
+        "proofType": "location",
+        "description": "Generate Location verification proof",
+        "parameters": {
+          "city": "singapore"
+        }
+      },
+      {
+        "type": "transfer",
+        "raw": "send 5 to alice if kyc verified",
+        "amount": "5",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "requiresProof": true,
+        "requiredProofType": "kyc",
+        "description": "Transfer 5 USDC to alice on ETH"
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-01T04:03:50.652Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_4f615aae-ae9f-4667-bcb5-abb7b9850ec1": {
+    "id": "wf_4f615aae-ae9f-4667-bcb5-abb7b9850ec1",
+    "description": "Generate location proof for 40.7128, -74.0060 then if location verified send 1 USDC to alice on ethereum",
+    "steps": [
+      {
+        "index": 0,
+        "raw": "Generate location proof for 40.7128, -74.0060",
+        "conditions": [],
+        "type": "location_proof",
+        "proofType": "location",
+        "description": "Generate Location verification proof",
+        "parameters": {
+          "latitude": 40.7128,
+          "longitude": -74.006
+        }
+      },
+      {
+        "type": "transfer",
+        "raw": "if location verified send 1 USDC to alice on ethereum",
+        "amount": "1",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "requiresProof": true,
+        "requiredProofType": "location",
+        "description": "Transfer 1 USDC to alice on ETH"
+      }
+    ],
+    "currentStep": 0,
+    "status": "completed",
+    "createdAt": "2025-07-01T04:04:07.241Z",
+    "completedSteps": [
+      0,
+      1
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_location_1751342652260",
+        "proofType": "location",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_location_1751342650256",
+        "parameters": {
+          "latitude": 40.7128,
+          "longitude": -74.006
+        },
+        "output": {
+          "city": "unknown"
+        }
+      },
+      "step_1": {
+        "status": "skipped",
+        "reason": "location proof not verified"
+      }
+    },
+    "updatedAt": "2025-07-01T04:04:15.278Z"
+  },
+  "wf_48fc0c84-b981-4d8c-9bba-9023063b984f": {
+    "id": "wf_48fc0c84-b981-4d8c-9bba-9023063b984f",
+    "description": "Create AI content proof from GPT4 with hash abc123 then if ai content verified send 0.5 to content_creator",
+    "steps": [
+      {
+        "index": 0,
+        "raw": "Create AI content proof from GPT4 with hash abc123",
+        "conditions": [],
+        "type": "ai content_proof",
+        "proofType": "ai content",
+        "description": "Generate AI content verification proof",
+        "parameters": {
+          "hash": "abc123",
+          "provider": "GPT4"
+        }
+      },
+      {
+        "type": "transfer",
+        "raw": "if ai content verified send 0.5 to content_creator",
+        "amount": "0.5",
+        "recipient": "content_creator",
+        "blockchain": "ETH",
+        "description": "Transfer 0.5 USDC to content_creator on ETH"
+      }
+    ],
+    "currentStep": 1,
+    "status": "completed",
+    "createdAt": "2025-07-01T04:04:29.291Z",
+    "completedSteps": [
+      0,
+      1
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_ai_content_1751342674310",
+        "proofType": "ai content",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_ai_content_1751342672307",
+        "parameters": {
+          "hash": "abc123",
+          "provider": "GPT4"
+        },
+        "output": {
+          "result": 1
+        }
+      },
+      "step_1": {
+        "success": true,
+        "id": "19f7b9a7-6b51-4854-bf65-990914c0d478",
+        "transferId": "19f7b9a7-6b51-4854-bf65-990914c0d478",
+        "circleTransferId": "19f7b9a7-6b51-4854-bf65-990914c0d478",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.5",
+        "recipient": "content_creator",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending"
+      }
+    },
+    "updatedAt": "2025-07-01T04:04:37.797Z"
+  },
+  "wf_2df545e6-9d2d-4888-90b1-f220a0c836a1": {
+    "id": "wf_2df545e6-9d2d-4888-90b1-f220a0c836a1",
+    "description": "Generate KYC proof then send 5 to alice if kyc verified",
+    "steps": [
+      {
+        "index": 0,
+        "raw": "Generate KYC proof",
+        "conditions": [],
+        "type": "kyc_proof",
+        "proofType": "kyc",
+        "description": "Generate KYC compliance proof",
+        "parameters": {}
+      },
+      {
+        "index": 1,
+        "type": "verification",
+        "verificationType": "kyc",
+        "description": "Verify kyc proof",
+        "proofId": null,
+        "raw": "Auto-verify kyc proof"
+      },
+      {
+        "type": "transfer",
+        "raw": "send 5 to alice if kyc verified",
+        "amount": "5",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "requiresProof": true,
+        "requiredProofType": "kyc",
+        "description": "Transfer 5 USDC to alice on ETH"
+      }
+    ],
+    "currentStep": 2,
+    "status": "completed",
+    "createdAt": "2025-07-01T04:04:45.268Z",
+    "completedSteps": [
+      0,
+      1,
+      2
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_1751342690282",
+        "proofType": "kyc",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_kyc_1751342688282",
+        "parameters": {},
+        "output": {
+          "result": 1
+        },
+        "verificationStatus": "verified"
+      },
+      "step_1": {
+        "proofId": "proof_kyc_1751342690282",
+        "verificationType": "kyc",
+        "status": "verified",
+        "timestamp": "2025-07-01T04:04:54.312Z"
+      },
+      "step_2": {
+        "success": true,
+        "id": "9ce59db8-e82c-44f6-a03a-3797537cd77b",
+        "transferId": "9ce59db8-e82c-44f6-a03a-3797537cd77b",
+        "circleTransferId": "9ce59db8-e82c-44f6-a03a-3797537cd77b",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "5",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending"
+      }
+    },
+    "updatedAt": "2025-07-01T04:04:57.739Z"
+  },
+  "wf_16163447-b520-4071-a8d0-25b1743d125f": {
+    "id": "wf_16163447-b520-4071-a8d0-25b1743d125f",
+    "description": "Generate location proof for 40.7128, -74.0060 then if location verified send 1 USDC to alice",
+    "steps": [
+      {
+        "index": 0,
+        "raw": "Generate location proof for 40.7128, -74.0060",
+        "conditions": [],
+        "type": "location_proof",
+        "proofType": "location",
+        "description": "Generate Location verification proof",
+        "parameters": {
+          "latitude": 40.7128,
+          "longitude": -74.006
+        }
+      },
+      {
+        "index": 1,
+        "type": "verification",
+        "verificationType": "location",
+        "description": "Verify location proof",
+        "proofId": null,
+        "raw": "Auto-verify location proof",
+        "conditions": []
+      },
+      {
+        "type": "transfer",
+        "raw": "if location verified send 1 USDC to alice",
+        "amount": "1",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "requiresProof": true,
+        "requiredProofType": "location",
+        "description": "Transfer 1 USDC to alice on ETH"
+      }
+    ],
+    "currentStep": 2,
+    "status": "completed",
+    "createdAt": "2025-07-01T04:09:20.778Z",
+    "completedSteps": [
+      0,
+      1,
+      2
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_location_1751342965801",
+        "proofType": "location",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_location_1751342963791",
+        "parameters": {
+          "latitude": 40.7128,
+          "longitude": -74.006
+        },
+        "output": {
+          "city": "unknown"
+        },
+        "verificationStatus": "verified"
+      },
+      "step_1": {
+        "proofId": "proof_location_1751342965801",
+        "verificationType": "location",
+        "status": "verified",
+        "timestamp": "2025-07-01T04:09:29.814Z"
+      },
+      "step_2": {
+        "success": true,
+        "id": "7d9aea10-87fb-489c-9e0c-261b57d0aba3",
+        "transferId": "7d9aea10-87fb-489c-9e0c-261b57d0aba3",
+        "circleTransferId": "7d9aea10-87fb-489c-9e0c-261b57d0aba3",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "1",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending"
+      }
+    },
+    "updatedAt": "2025-07-01T04:09:33.400Z"
+  },
+  "wf_1db47fc2-f0d7-4904-8d2e-7dafd7b63a29": {
+    "id": "wf_1db47fc2-f0d7-4904-8d2e-7dafd7b63a29",
+    "description": "Create AI content proof from GPT4 with hash abc123 then if ai content verified send 0.5 to content_creator",
+    "steps": [
+      {
+        "index": 0,
+        "raw": "Create AI content proof from GPT4 with hash abc123",
+        "conditions": [],
+        "type": "ai content_proof",
+        "proofType": "ai content",
+        "description": "Generate AI content verification proof",
+        "parameters": {
+          "hash": "abc123",
+          "provider": "GPT4"
+        }
+      },
+      {
+        "index": 1,
+        "type": "verification",
+        "verificationType": "ai content",
+        "description": "Verify ai content proof",
+        "proofId": null,
+        "raw": "Auto-verify ai content proof",
+        "conditions": []
+      },
+      {
+        "type": "transfer",
+        "raw": "if ai content verified send 0.5 to content_creator",
+        "amount": "0.5",
+        "recipient": "content_creator",
+        "blockchain": "ETH",
+        "requiresProof": true,
+        "requiredProofType": "ai content",
+        "description": "Transfer 0.5 USDC to content_creator on ETH"
+      }
+    ],
+    "currentStep": 2,
+    "status": "completed",
+    "createdAt": "2025-07-01T04:15:28.016Z",
+    "completedSteps": [
+      0,
+      1,
+      2
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_ai_content_1751343333030",
+        "proofType": "ai content",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_ai_content_1751343331027",
+        "parameters": {
+          "hash": "abc123",
+          "provider": "GPT4"
+        },
+        "output": {
+          "result": 1
+        },
+        "verificationStatus": "verified"
+      },
+      "step_1": {
+        "proofId": "proof_ai_content_1751343333030",
+        "verificationType": "ai content",
+        "status": "verified",
+        "timestamp": "2025-07-01T04:15:37.038Z"
+      },
+      "step_2": {
+        "success": true,
+        "id": "43425861-5523-4851-b4b1-3bb5723cffa2",
+        "transferId": "43425861-5523-4851-b4b1-3bb5723cffa2",
+        "circleTransferId": "43425861-5523-4851-b4b1-3bb5723cffa2",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.5",
+        "recipient": "content_creator",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending"
+      }
+    },
+    "updatedAt": "2025-07-01T04:15:40.522Z"
+  },
+  "wf_27f88344-4b58-49b1-b8e9-fd3b3a180b98": {
+    "id": "wf_27f88344-4b58-49b1-b8e9-fd3b3a180b98",
+    "description": "Generate location proof for new york then if verified create AI content proof from claude then if ai content verified send 2 USDC to developer on SOL",
+    "steps": [
+      {
+        "index": 0,
+        "raw": "Generate location proof for new york",
+        "conditions": [],
+        "type": "location_proof",
+        "proofType": "location",
+        "description": "Generate Location verification proof",
+        "parameters": {
+          "city": "new_york"
+        }
+      },
+      {
+        "index": 1,
+        "raw": "if verified create AI content proof from claude",
+        "conditions": [],
+        "type": "ai content_proof",
+        "proofType": "ai content",
+        "description": "Generate AI content verification proof",
+        "parameters": {
+          "provider": "claude"
+        }
+      },
+      {
+        "index": 2,
+        "type": "verification",
+        "verificationType": "ai content",
+        "description": "Verify ai content proof",
+        "proofId": null,
+        "raw": "Auto-verify ai content proof",
+        "conditions": []
+      },
+      {
+        "type": "transfer",
+        "raw": "if ai content verified send 2 USDC to developer on SOL",
+        "amount": "2",
+        "recipient": "developer",
+        "blockchain": "SOL",
+        "requiresProof": true,
+        "requiredProofType": "ai content",
+        "description": "Transfer 2 USDC to developer on SOL"
+      }
+    ],
+    "currentStep": 3,
+    "status": "completed",
+    "createdAt": "2025-07-01T04:15:50.528Z",
+    "completedSteps": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_location_1751343355561",
+        "proofType": "location",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_location_1751343353554",
+        "parameters": {
+          "city": "new_york"
+        },
+        "output": {
+          "city": "new_york"
+        }
+      },
+      "step_1": {
+        "proofId": "proof_ai_content_1751343360569",
+        "proofType": "ai content",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_ai_content_1751343358566",
+        "parameters": {
+          "provider": "claude"
+        },
+        "output": {
+          "result": 1
+        },
+        "verificationStatus": "verified"
+      },
+      "step_2": {
+        "proofId": "proof_ai_content_1751343360569",
+        "verificationType": "ai content",
+        "status": "verified",
+        "timestamp": "2025-07-01T04:16:04.587Z"
+      },
+      "step_3": {
+        "success": true,
+        "id": "9ff42ec6-1768-43c9-bf2e-7f97dfa6003e",
+        "transferId": "9ff42ec6-1768-43c9-bf2e-7f97dfa6003e",
+        "circleTransferId": "9ff42ec6-1768-43c9-bf2e-7f97dfa6003e",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "2",
+        "recipient": "developer",
+        "from": "HsZdbBxZVNzEn4qR9Ebx5XxDSZ136Mu14VlH1nbXGhfG",
+        "blockchain": "SOL",
+        "status": "pending"
+      }
+    },
+    "updatedAt": "2025-07-01T04:16:08.223Z"
+  },
+  "wf_bd3f9ceb-bebf-44ec-a97f-06aa657defba": {
+    "id": "wf_bd3f9ceb-bebf-44ec-a97f-06aa657defba",
+    "description": "Test ETH to SOL transfer sequence",
+    "steps": [
+      {
+        "type": "kyc_proof",
+        "description": "Generate KYC proof"
+      },
+      {
+        "type": "transfer",
+        "blockchain": "ETH",
+        "amount": "0.1",
+        "recipient": "alice"
+      },
+      {
+        "type": "wait",
+        "duration": 5000
+      },
+      {
+        "type": "transfer",
+        "blockchain": "SOL",
+        "amount": "0.1",
+        "recipient": "alice"
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-01T13:51:11.259Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_6aa0bc77-855c-42b9-8f40-689204926636": {
+    "id": "wf_6aa0bc77-855c-42b9-8f40-689204926636",
+    "description": "Test ETH to SOL transfer sequence",
+    "steps": [
+      {
+        "type": "kyc_proof",
+        "description": "Generate KYC proof"
+      },
+      {
+        "type": "transfer",
+        "blockchain": "ETH",
+        "amount": "0.1",
+        "recipient": "alice"
+      },
+      {
+        "type": "wait",
+        "duration": 5000
+      },
+      {
+        "type": "transfer",
+        "blockchain": "SOL",
+        "amount": "0.1",
+        "recipient": "alice"
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-01T13:51:11.478Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_25370dae-c846-4722-b87d-52953527336c": {
+    "id": "wf_25370dae-c846-4722-b87d-52953527336c",
+    "description": "Test ETH to SOL transfer sequence",
+    "steps": [
+      {
+        "type": "kyc_proof",
+        "description": "Generate KYC proof"
+      },
+      {
+        "type": "transfer",
+        "blockchain": "ETH",
+        "amount": "0.1",
+        "recipient": "alice"
+      },
+      {
+        "type": "wait",
+        "duration": 5000
+      },
+      {
+        "type": "transfer",
+        "blockchain": "SOL",
+        "amount": "0.1",
+        "recipient": "alice"
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-01T14:23:24.960Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_5d94c096-8363-423d-a4f4-5754e770e7f5": {
+    "id": "wf_5d94c096-8363-423d-a4f4-5754e770e7f5",
+    "description": "Test ETH to SOL transfer sequence",
+    "steps": [
+      {
+        "type": "kyc_proof",
+        "description": "Generate KYC proof"
+      },
+      {
+        "type": "transfer",
+        "blockchain": "ETH",
+        "amount": "0.1",
+        "recipient": "alice"
+      },
+      {
+        "type": "wait",
+        "duration": 5000
+      },
+      {
+        "type": "transfer",
+        "blockchain": "SOL",
+        "amount": "0.1",
+        "recipient": "alice"
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-01T14:23:25.224Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_b172ae5b-9390-4428-93e6-48be69a3d424": {
+    "id": "wf_b172ae5b-9390-4428-93e6-48be69a3d424",
+    "description": "Test ETH to SOL transfer sequence",
+    "steps": [
+      {
+        "type": "kyc_proof",
+        "description": "Generate KYC proof"
+      },
+      {
+        "type": "transfer",
+        "blockchain": "ETH",
+        "amount": "0.1",
+        "recipient": "alice"
+      },
+      {
+        "type": "wait",
+        "duration": 5000
+      },
+      {
+        "type": "transfer",
+        "blockchain": "SOL",
+        "amount": "0.1",
+        "recipient": "alice"
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-01T15:10:25.648Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_5c8e038d-a11d-422b-9180-8c5c9f03f7b4": {
+    "id": "wf_5c8e038d-a11d-422b-9180-8c5c9f03f7b4",
+    "description": "Test ETH to SOL transfer sequence",
+    "steps": [
+      {
+        "type": "kyc_proof",
+        "description": "Generate KYC proof"
+      },
+      {
+        "type": "transfer",
+        "blockchain": "ETH",
+        "amount": "0.1",
+        "recipient": "alice"
+      },
+      {
+        "type": "wait",
+        "duration": 5000
+      },
+      {
+        "type": "transfer",
+        "blockchain": "SOL",
+        "amount": "0.1",
+        "recipient": "alice"
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-01T15:10:36.365Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_821fbd95-ae44-4488-8b21-cf0dab02f148": {
+    "id": "wf_821fbd95-ae44-4488-8b21-cf0dab02f148",
+    "description": "Test ETH to SOL transfer sequence",
+    "steps": [
+      {
+        "type": "kyc_proof",
+        "description": "Generate KYC proof"
+      },
+      {
+        "type": "transfer",
+        "blockchain": "ETH",
+        "amount": "0.1",
+        "recipient": "alice"
+      },
+      {
+        "type": "wait",
+        "duration": 5000
+      },
+      {
+        "type": "transfer",
+        "blockchain": "SOL",
+        "amount": "0.1",
+        "recipient": "alice"
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-01T15:11:51.736Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_60c3f9c6-3dec-476a-89b9-a386758f4c01": {
+    "id": "wf_60c3f9c6-3dec-476a-89b9-a386758f4c01",
+    "description": "Test ETH to SOL transfer sequence",
+    "steps": [
+      {
+        "type": "kyc_proof",
+        "description": "Generate KYC proof"
+      },
+      {
+        "type": "transfer",
+        "blockchain": "ETH",
+        "amount": "0.1",
+        "recipient": "alice"
+      },
+      {
+        "type": "wait",
+        "duration": 5000
+      },
+      {
+        "type": "transfer",
+        "blockchain": "SOL",
+        "amount": "0.1",
+        "recipient": "alice"
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-01T15:12:03.645Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_36817dc6-9ae9-47bf-9cc0-1d573d0bd142": {
+    "id": "wf_36817dc6-9ae9-47bf-9cc0-1d573d0bd142",
+    "description": "Generate KYC proof then send 0.01 to alice",
+    "steps": [
+      {
+        "index": 0,
+        "type": "kyc_proof",
+        "proofType": "kyc",
+        "description": "Generate KYC compliance proof",
+        "parameters": {}
+      },
+      {
+        "index": 1,
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "requiresProof": false,
+        "requiredProofType": null,
+        "description": "Transfer 0.01 USDC to alice on ETH"
+      }
+    ],
+    "currentStep": 1,
+    "status": "completed",
+    "createdAt": "2025-07-01T16:33:42.353Z",
+    "completedSteps": [
+      0,
+      1
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_1751387624374",
+        "proofType": "kyc",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_kyc_1751387622371",
+        "parameters": {},
+        "output": {
+          "result": 1
+        }
+      },
+      "step_1": {
+        "success": true,
+        "id": "5b6f63f3-ce00-4f5f-8d4d-bbca4fe4a183",
+        "transferId": "5b6f63f3-ce00-4f5f-8d4d-bbca4fe4a183",
+        "circleTransferId": "5b6f63f3-ce00-4f5f-8d4d-bbca4fe4a183",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending"
+      }
+    },
+    "updatedAt": "2025-07-01T16:33:47.965Z"
+  },
+  "wf_96b0cf5a-ad49-4356-a22f-b3e3e3807470": {
+    "id": "wf_96b0cf5a-ad49-4356-a22f-b3e3e3807470",
+    "description": "Generate location proof for NYC then if location verified send 1 USDC to alice",
+    "steps": [
+      {
+        "index": 0,
+        "type": "location_proof",
+        "proofType": "location",
+        "description": "Generate Location verification proof",
+        "parameters": {
+          "city": "nyc"
+        }
+      },
+      {
+        "index": 1,
+        "type": "verification",
+        "verificationType": "location",
+        "description": "Verify location proof",
+        "proofId": null
+      },
+      {
+        "index": 2,
+        "type": "transfer",
+        "amount": "1",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "requiresProof": true,
+        "requiredProofType": "location",
+        "description": "Transfer 1 USDC to alice on ETH"
+      }
+    ],
+    "currentStep": 2,
+    "status": "completed",
+    "createdAt": "2025-07-01T16:35:06.609Z",
+    "completedSteps": [
+      0,
+      1,
+      2
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_location_1751387708623",
+        "proofType": "location",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_location_1751387706619",
+        "parameters": {
+          "city": "nyc"
+        },
+        "output": {
+          "city": "nyc"
+        },
+        "verificationStatus": "verified"
+      },
+      "step_1": {
+        "proofId": "proof_location_1751387708623",
+        "verificationType": "location",
+        "status": "verified",
+        "timestamp": "2025-07-01T16:35:12.632Z"
+      },
+      "step_2": {
+        "success": true,
+        "id": "1559ca95-6b6e-4e5e-bb27-36e5674e1f6b",
+        "transferId": "1559ca95-6b6e-4e5e-bb27-36e5674e1f6b",
+        "circleTransferId": "1559ca95-6b6e-4e5e-bb27-36e5674e1f6b",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "1",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending"
+      }
+    },
+    "updatedAt": "2025-07-01T16:35:16.125Z"
+  },
+  "wf_aea255bf-7614-4ad0-adaf-f61307c77b18": {
+    "id": "wf_aea255bf-7614-4ad0-adaf-f61307c77b18",
+    "description": "Generate location proof for NYC then if location verified send 0.5 USDC to bob",
+    "steps": [
+      {
+        "index": 0,
+        "type": "location_proof",
+        "proofType": "location",
+        "description": "Generate Location verification proof",
+        "parameters": {
+          "city": "nyc"
+        }
+      },
+      {
+        "index": 1,
+        "type": "verification",
+        "verificationType": "location",
+        "description": "Verify location proof",
+        "proofId": null
+      },
+      {
+        "index": 2,
+        "type": "transfer",
+        "amount": "0.5",
+        "recipient": "bob",
+        "blockchain": "ETH",
+        "requiresProof": true,
+        "requiredProofType": "location",
+        "description": "Transfer 0.5 USDC to bob on ETH"
+      }
+    ],
+    "currentStep": 1,
+    "status": "completed",
+    "createdAt": "2025-07-01T16:36:15.076Z",
+    "completedSteps": [
+      0,
+      1,
+      2
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_location_1751387777096",
+        "proofType": "location",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_location_1751387775091",
+        "parameters": {
+          "city": "nyc"
+        },
+        "output": {
+          "city": "nyc"
+        },
+        "verificationStatus": "failed"
+      },
+      "step_1": {
+        "proofId": "proof_location_1751387777096",
+        "verificationType": "location",
+        "status": "failed",
+        "timestamp": "2025-07-01T16:36:21.109Z"
+      },
+      "step_2": {
+        "status": "skipped",
+        "reason": "location proof not verified"
+      }
+    },
+    "updatedAt": "2025-07-01T16:36:24.117Z"
+  },
+  "wf_ffb8c7bd-bace-490d-8231-bcbcea9a2254": {
+    "id": "wf_ffb8c7bd-bace-490d-8231-bcbcea9a2254",
+    "description": "Generate KYC proof then send 0.01 to alice",
+    "steps": [
+      {
+        "index": 0,
+        "type": "kyc_proof",
+        "proofType": "kyc",
+        "description": "Generate KYC compliance proof",
+        "parameters": {}
+      },
+      {
+        "index": 1,
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "requiresProof": false,
+        "requiredProofType": null,
+        "description": "Transfer 0.01 USDC to alice on ETH"
+      }
+    ],
+    "currentStep": 1,
+    "status": "completed",
+    "createdAt": "2025-07-01T16:53:56.204Z",
+    "completedSteps": [
+      0,
+      1
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_1751388838217",
+        "proofType": "kyc",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_kyc_1751388836213",
+        "parameters": {},
+        "output": {
+          "result": 1
+        }
+      },
+      "step_1": {
+        "success": true,
+        "id": "65e506ef-10cc-402e-be45-b3a1e2674e5f",
+        "transferId": "65e506ef-10cc-402e-be45-b3a1e2674e5f",
+        "circleTransferId": "65e506ef-10cc-402e-be45-b3a1e2674e5f",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending"
+      }
+    },
+    "updatedAt": "2025-07-01T16:54:01.704Z"
+  },
+  "wf_a534787a-440e-4d12-8051-7b0937b97c76": {
+    "id": "wf_a534787a-440e-4d12-8051-7b0937b97c76",
+    "description": "Generate KYC proof then send 0.01 to alice",
+    "steps": [
+      {
+        "index": 0,
+        "type": "kyc_proof",
+        "proofType": "kyc",
+        "description": "Generate KYC compliance proof",
+        "parameters": {}
+      },
+      {
+        "index": 1,
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "requiresProof": false,
+        "requiredProofType": null,
+        "description": "Transfer 0.01 USDC to alice on ETH"
+      }
+    ],
+    "currentStep": 1,
+    "status": "completed",
+    "createdAt": "2025-07-01T17:14:47.255Z",
+    "completedSteps": [
+      0,
+      1
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_1751390089265",
+        "proofType": "kyc",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_kyc_1751390087261",
+        "parameters": {},
+        "output": {
+          "result": 1
+        }
+      },
+      "step_1": {
+        "success": true,
+        "id": "248fd96d-5873-4e31-96f3-13ab2c778848",
+        "transferId": "248fd96d-5873-4e31-96f3-13ab2c778848",
+        "circleTransferId": "248fd96d-5873-4e31-96f3-13ab2c778848",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending"
+      }
+    },
+    "updatedAt": "2025-07-01T17:14:52.699Z"
+  },
+  "wf_62032adc-a66d-44c3-b39a-ec53684a7067": {
+    "id": "wf_62032adc-a66d-44c3-b39a-ec53684a7067",
+    "description": "Test ETH to SOL transfer sequence",
+    "steps": [
+      {
+        "type": "kyc_proof",
+        "description": "Generate KYC proof"
+      },
+      {
+        "type": "transfer",
+        "blockchain": "ETH",
+        "amount": "0.1",
+        "recipient": "alice"
+      },
+      {
+        "type": "wait",
+        "duration": 5000
+      },
+      {
+        "type": "transfer",
+        "blockchain": "SOL",
+        "amount": "0.1",
+        "recipient": "alice"
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-01T17:16:04.951Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_2f2b3c51-1c20-4ba2-bbbb-fe237837cef1": {
+    "id": "wf_2f2b3c51-1c20-4ba2-bbbb-fe237837cef1",
+    "description": "Generate KYC proof then send 0.01 to alice",
+    "steps": [
+      {
+        "index": 0,
+        "type": "kyc_proof",
+        "proofType": "kyc",
+        "description": "Generate KYC compliance proof",
+        "parameters": {}
+      },
+      {
+        "index": 1,
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "requiresProof": false,
+        "requiredProofType": null,
+        "description": "Transfer 0.01 USDC to alice on ETH"
+      }
+    ],
+    "currentStep": 1,
+    "status": "completed",
+    "createdAt": "2025-07-01T17:16:05.516Z",
+    "completedSteps": [
+      0,
+      1
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_1751390167533",
+        "proofType": "kyc",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_kyc_1751390165530",
+        "parameters": {},
+        "output": {
+          "result": 1
+        }
+      },
+      "step_1": {
+        "success": true,
+        "id": "56cec28a-fc63-40c9-b66d-599d767bb7bf",
+        "transferId": "56cec28a-fc63-40c9-b66d-599d767bb7bf",
+        "circleTransferId": "56cec28a-fc63-40c9-b66d-599d767bb7bf",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending"
+      }
+    },
+    "updatedAt": "2025-07-01T17:16:10.982Z"
+  },
+  "wf_0fe7d838-f585-4907-bd0f-239fba7ee0bd": {
+    "id": "wf_0fe7d838-f585-4907-bd0f-239fba7ee0bd",
+    "description": "Test ETH to SOL transfer sequence",
+    "steps": [
+      {
+        "type": "kyc_proof",
+        "description": "Generate KYC proof"
+      },
+      {
+        "type": "transfer",
+        "blockchain": "ETH",
+        "amount": "0.1",
+        "recipient": "alice"
+      },
+      {
+        "type": "wait",
+        "duration": 5000
+      },
+      {
+        "type": "transfer",
+        "blockchain": "SOL",
+        "amount": "0.1",
+        "recipient": "alice"
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-01T17:43:53.647Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_240348ea-f4fb-4ace-a6e0-0864a570b3ad": {
+    "id": "wf_240348ea-f4fb-4ace-a6e0-0864a570b3ad",
+    "description": "Generate KYC proof then send 0.01 USDC to alice",
+    "steps": [
+      {
+        "index": 0,
+        "type": "kyc_proof",
+        "proofType": "kyc",
+        "description": "Generate KYC compliance proof",
+        "parameters": {}
+      },
+      {
+        "index": 1,
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "requiresProof": false,
+        "requiredProofType": null,
+        "description": "Transfer 0.01 USDC to alice on ETH"
+      }
+    ],
+    "currentStep": 1,
+    "status": "completed",
+    "createdAt": "2025-07-01T17:43:54.212Z",
+    "completedSteps": [
+      0,
+      1
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_1751391836223",
+        "proofType": "kyc",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_kyc_1751391834219",
+        "parameters": {},
+        "output": {
+          "result": 1
+        }
+      },
+      "step_1": {
+        "success": true,
+        "id": "50a64bce-6a7d-42a9-9492-aedf8242880e",
+        "transferId": "50a64bce-6a7d-42a9-9492-aedf8242880e",
+        "circleTransferId": "50a64bce-6a7d-42a9-9492-aedf8242880e",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending"
+      }
+    },
+    "updatedAt": "2025-07-01T17:43:59.727Z"
+  },
+  "wf_35a25538-540d-4598-a566-a71ad96a2e0a": {
+    "id": "wf_35a25538-540d-4598-a566-a71ad96a2e0a",
+    "description": "Generate KYC proof then send 0.01 USDC to alice",
+    "steps": [
+      {
+        "index": 0,
+        "type": "kyc_proof",
+        "proofType": "kyc",
+        "description": "Generate KYC compliance proof",
+        "parameters": {}
+      },
+      {
+        "index": 1,
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "requiresProof": false,
+        "requiredProofType": null,
+        "description": "Transfer 0.01 USDC to alice on ETH"
+      }
+    ],
+    "currentStep": 1,
+    "status": "completed",
+    "createdAt": "2025-07-01T17:48:44.326Z",
+    "completedSteps": [
+      0,
+      1
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_1751392126349",
+        "proofType": "kyc",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_kyc_1751392124346",
+        "parameters": {},
+        "output": {
+          "result": 1
+        }
+      },
+      "step_1": {
+        "success": true,
+        "id": "ef80568e-8962-4bc4-81cf-8306ea78cfaa",
+        "transferId": "ef80568e-8962-4bc4-81cf-8306ea78cfaa",
+        "circleTransferId": "ef80568e-8962-4bc4-81cf-8306ea78cfaa",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending"
+      }
+    },
+    "updatedAt": "2025-07-01T17:48:49.765Z"
+  },
+  "wf_2891f1ce-948c-4a78-8673-ff02f722992c": {
+    "id": "wf_2891f1ce-948c-4a78-8673-ff02f722992c",
+    "description": "Generate KYC proof then send 0.01 USDC to alice",
+    "steps": [
+      {
+        "index": 0,
+        "type": "kyc_proof",
+        "proofType": "kyc",
+        "description": "Generate KYC compliance proof",
+        "parameters": {}
+      },
+      {
+        "index": 1,
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "requiresProof": false,
+        "requiredProofType": null,
+        "description": "Transfer 0.01 USDC to alice on ETH"
+      }
+    ],
+    "currentStep": 1,
+    "status": "completed",
+    "createdAt": "2025-07-01T17:52:09.596Z",
+    "completedSteps": [
+      0,
+      1
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_1751392331606",
+        "proofType": "kyc",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_kyc_1751392329604",
+        "parameters": {},
+        "output": {
+          "result": 1
+        }
+      },
+      "step_1": {
+        "success": true,
+        "id": "6ee21b63-f218-41d4-a8b8-63b588812b70",
+        "transferId": "6ee21b63-f218-41d4-a8b8-63b588812b70",
+        "circleTransferId": "6ee21b63-f218-41d4-a8b8-63b588812b70",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending"
+      }
+    },
+    "updatedAt": "2025-07-01T17:52:15.024Z"
+  },
+  "wf_35dcbe30-90a3-4c54-8474-8e1e07fdf1e2": {
+    "id": "wf_35dcbe30-90a3-4c54-8474-8e1e07fdf1e2",
+    "description": "Generate KYC proof then send 0.01 USDC to alice",
+    "steps": [
+      {
+        "index": 0,
+        "type": "kyc_proof",
+        "proofType": "kyc",
+        "description": "Generate KYC compliance proof",
+        "parameters": {}
+      },
+      {
+        "index": 1,
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "requiresProof": false,
+        "requiredProofType": null,
+        "description": "Transfer 0.01 USDC to alice on ETH"
+      }
+    ],
+    "currentStep": 1,
+    "status": "completed",
+    "createdAt": "2025-07-01T17:57:34.444Z",
+    "completedSteps": [
+      0,
+      1
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_1751392656460",
+        "proofType": "kyc",
+        "status": "generated",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_kyc_1751392654458",
+        "parameters": {},
+        "output": {
+          "result": 1
+        }
+      },
+      "step_1": {
+        "success": true,
+        "id": "dae3c515-3c0f-47d4-9964-3f52fc971a4f",
+        "transferId": "dae3c515-3c0f-47d4-9964-3f52fc971a4f",
+        "circleTransferId": "dae3c515-3c0f-47d4-9964-3f52fc971a4f",
+        "transactionHash": "pending",
+        "hash": "pending",
+        "txHash": "pending",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "from": "0x37b6c846ca0483a0fc6c7702707372ebcd131188",
+        "blockchain": "ETH",
+        "status": "pending"
+      }
+    },
+    "updatedAt": "2025-07-01T17:57:39.916Z"
+  }
+}
