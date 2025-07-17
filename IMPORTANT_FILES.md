@@ -1,5 +1,7 @@
 # Important Files - DO NOT DELETE
 
+> **Note**: Repository has been reorganized. See `/docs/REPOSITORY_ORGANIZATION.md` for full structure.
+
 ## Core Application Files
 - `src/main.rs` - Rust WebSocket server
 - `chat_service.py` - Python AI service with OpenAI
