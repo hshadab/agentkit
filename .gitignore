@@ -24,6 +24,9 @@ verifications_db.json
 kyc_transfers.json
 kyc_verifications.json
 workflow_history.json
+transfer_history.json
+wallet-info.json
+parsed_workflow_*.json
 
 # IDE files
 .vscode/
@@ -62,30 +65,73 @@ CHECK_*.md
 *_TEST.md
 *_STATUS.md
 *_ANALYSIS.md
+*_SUMMARY.md
+*_ISSUE.md
+*_SOLUTION.md
+*_UPDATE.md
+*_OPTIONS.md
+*_SPEC.md
+*_COMPARISON.md
+*_RESULTS.md
+ARCHITECTURAL_*.md
+BLOCKCHAIN_*.md
+CIRCLE_*.md
+DEMO_*.md
+INTEGRATED_*.md
+PHANTOM_*.md
+REAL_*.md
+VERIFICATION_*.md
+WORKFLOW_*.md
+ZKENGINE_*.md
+# But keep important docs
+!README.md
+!LICENSE.md
+!IMPORTANT_FILES.md
+!TEST_RESULTS_SUMMARY.md
 
 # Scripts and tools
 check-*.sh
+check-*.js
 fix_*.py
 fix_*.js
+fix-*.js
 add_*.py
 add_*.js
 apply_*.py
 create_*.py
 diagnose_*.py
 diagnose_*.js
+debug-*.js
 update_*.py
+update-*.js
+update-*.sh
 validate_*.py
+validate-*.js
 analyze-*.sh
 manual_*.py
 manual_*.js
+manual-*.js
 simple_*.py
 simple_*.js
 monitor_*.py
 monitor_*.js
+fund-*.js
+get-*.js
+list-*.js
 
 # Allow specific contract files
 !contracts/ProofVerifier.sol
 !solana-programs/proof_verifier.rs
+
+# Allow important Circle files
+!circle/circleHandler.js
+!circle/workflowExecutor.js
+!circle/workflowManager.js
+!circle/workflowMonitor.js
+!circle/workflowParser.js
+!circle/workflowCLI.js
+!circle/recipientResolver.js
+!circle/zkpCircleIntegration.js
 
 # Temporary and build files
 *.log
@@ -93,6 +139,8 @@ monitor_*.js
 *.temp
 *.cache
 .~*
+.snark_cache/
+=1.0.0
 
 # zkEngine build artifacts
 zkengine/example_wasms/target/
@@ -114,6 +162,83 @@ circuits/
 test*
 !tests/
 !tests/**
+
+# Deployment and setup files
+deploy-*.js
+deploy-*.sh
+setup-*.js
+setup-*.sh
+install-*.sh
+init-*.js
+generate-*.js
+compile-*.sh
+push_*.sh
+copy_*.sh
+secure_*.sh
+prepare_*.sh
+reset_*.sh
+trace_*.sh
+verify-*.js
+verify-*.sh
+submit-*.js
+integrate-*.js
+migrate-*.js
+
+# Python scripts
+async_*.py
+simple_*.py
+robust_*.py
+replace_*.py
+merge_*.py
+workflow_*.py
+manual_*.py
+needs_*.py
+safe_*.py
+
+# Misc files
+*.txt
+!requirements.txt
+*.patch
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!.eslintrc.json
+!performance_config.json
+!circle/package.json
+deployment-*.json
+hardhat.config.js
+*-config.json
+*-devnet.json
+phantom_*.js
+demo_*.js
+demo_*.sh
+demo_*.md
+combined_*.py
+workflow_*.py
+# But allow some workflow files
+!circle/workflow_history.json
+
+# Virtual environment
+venv/
+
+# Solana files
+solana-*.rs
+solana-*.js
+!solana-verifier.js
+
+# Contract build files
+enhanced-*.rs
+simple-*.rs
+verifier-*.rs
+
+# HTML test files
+*.html
+!static/*.html
+!index.html
+
+# Wallet files
+SOLANA_*.txt
 
 # Exclude contract directories but allow specific files
 contracts/*
