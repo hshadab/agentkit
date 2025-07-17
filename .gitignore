@@ -83,6 +83,10 @@ simple_*.js
 monitor_*.py
 monitor_*.js
 
+# Allow specific contract files
+!contracts/ProofVerifier.sol
+!solana-programs/proof_verifier.rs
+
 # Temporary and build files
 *.log
 *.tmp
@@ -98,12 +102,22 @@ zkengine/example_wasms/*.d
 *.md
 !README.md
 !LICENSE.md
+!IMPORTANT_FILES.md
 
 # Exclude backup and test directories
 backups/
-test*/
 debug*/
 scripts/
-contracts/
 circuits/
-solana/
+
+# Allow tests directory but exclude test* pattern files
+test*
+!tests/
+!tests/**
+
+# Exclude contract directories but allow specific files
+contracts/*
+!contracts/ProofVerifier.sol
+solana/*
+solana-programs/*
+!solana-programs/proof_verifier.rs
