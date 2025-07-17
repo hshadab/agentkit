@@ -239,4 +239,25 @@ class CircleHandlerFixed {
     }
 }
 
+// Export the class
 export default CircleHandlerFixed;
+
+// Create a singleton instance for convenience
+const defaultHandler = new CircleHandlerFixed();
+
+// Export convenience functions
+export async function transferUSDC(amount, recipientAddress, blockchain = 'ETH') {
+    return await defaultHandler.transfer(amount, recipientAddress, blockchain);
+}
+
+export async function checkTransferStatus(transferId) {
+    return await defaultHandler.getTransferStatus(transferId);
+}
+
+export async function getWalletInfo(walletId) {
+    return await defaultHandler.getWallet(walletId);
+}
+
+export async function initializeCircle() {
+    return await defaultHandler.initialize();
+}
