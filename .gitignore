@@ -53,6 +53,7 @@ Thumbs.db
 *.rej
 *.broken
 *.bak
+.rotation_backups/
 
 # Test and debug files
 test_*.py
@@ -173,7 +174,11 @@ backup/
 **/backup/
 old-tests-*/
 debug*/
-scripts/
+scripts/*
+!scripts/build_real_circuit.sh
+!scripts/cleanup-proofs.js
+!scripts/log-rotation.js
+!scripts/setup-log-rotation-cron.sh
 circuits/
 
 # Allow tests directory but exclude test* pattern files
