@@ -1,7 +1,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use sha2::{Sha256, Digest};
+use sha2::Digest;
 use std::sync::Mutex;
 use once_cell::sync::Lazy;
 
@@ -36,7 +36,7 @@ pub fn convert_nova_to_groth16(
     proof_id: &str,
 ) -> Result<EthereumProofData, Box<dyn std::error::Error + Send + Sync>> {
     // Read the verification result
-    let nova_result_path = proof_dir.join("nova_proof.json");
+    let _nova_result_path = proof_dir.join("nova_proof.json");
     let public_json_path = proof_dir.join("public.json");
     let metadata_path = proof_dir.join("metadata.json");
     
@@ -86,7 +86,7 @@ pub fn convert_nova_to_groth16(
     // Call the SNARK prover with proper environment
     use std::process::Stdio;
     
-    let mut child = Command::new("node")
+    let child = Command::new("node")
         .arg("src/cached_snark_generator.js")
         .arg(temp_input_path.to_str().unwrap())
         .current_dir("/home/hshadab/agentkit") // Use absolute path
@@ -204,12 +204,13 @@ pub fn convert_nova_to_groth16(
 }
 
 /// Generate a fallback proof when SNARK generation fails
+#[allow(dead_code)]
 fn generate_fallback_proof(
     commitment_hex: String,
     proof_type: u32,
     proof_id: &str,
 ) -> Result<EthereumProofData, Box<dyn std::error::Error + Send + Sync>> {
-    use sha2::{Sha256, Digest};
+    use sha2::Sha256;
     
     // Create deterministic but valid-looking proof components
     let mut hasher = Sha256::new();

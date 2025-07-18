@@ -115,7 +115,7 @@ async fn workflow_update_handler(
 // --- Get Proofs List ---
 
 async fn get_proofs(
-    State(state): State<AppState>,
+    State(_state): State<AppState>,
 ) -> impl IntoResponse {
     let proofs_db_path = PathBuf::from("proofs_db.json");
     
@@ -1005,7 +1005,7 @@ async fn generate_proof(state: AppState, proof_id: String, metadata: ProofMetada
                         
                         // Update metadata with generation time
                         let metadata_path = proof_dir.join("metadata.json");
-                        if let Ok(mut metadata_content) = std::fs::read_to_string(&metadata_path) {
+                        if let Ok(metadata_content) = std::fs::read_to_string(&metadata_path) {
                             if let Ok(mut metadata_json) = serde_json::from_str::<serde_json::Value>(&metadata_content) {
                                 metadata_json["time_ms"] = json!(duration.as_millis());
                                 metadata_json["proof_size"] = json!(proof_size);
@@ -1361,7 +1361,7 @@ async fn list_proofs(state: AppState, metadata: ProofMetadata) {
                         let verified = proof_path.join(".verified").exists();
                         
                         // Try to read metadata file to get function name and verification data
-                        let mut function = "unknown".to_string();
+                        let function;
                         let mut on_chain_verifications = serde_json::Value::Null;
                         let mut time_ms: Option<u64> = None;
                         
