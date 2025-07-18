@@ -160,6 +160,30 @@ class SolanaVerifier {
         }
     }
     
+    // Wrapper method for workflow compatibility
+    async verifyProof(proofId, proofType) {
+        try {
+            console.log('Solana verifyProof called for workflow:', proofId, proofType);
+            
+            // First ensure we're connected
+            if (!this.isConnected) {
+                const connectResult = await this.connect();
+                if (!connectResult.success) {
+                    throw new Error('Failed to connect to Solana wallet');
+                }
+            }
+            
+            // Call the actual on-chain verification
+            return await this.verifyProofOnChain(proofId, proofType);
+        } catch (error) {
+            console.error('Solana verification failed:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+    
     async verifyProofOnChain(proofId, proofType) {
         try {
             if (!this.isConnected) {

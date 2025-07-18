@@ -11,7 +11,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
-import re  # Import regex module at the top
+# Regex removed - all prompts go through OpenAI
 import openai
 from typing import Optional, List, Dict, Any
 from openai import AsyncOpenAI
@@ -41,44 +41,7 @@ class ChatRequest(BaseModel):
 class WorkflowRequest(BaseModel):
     command: str
 
-def is_zkengine_command(message):
-    """Detect if this is any zkEngine-related command"""
-    zkengine_patterns = [
-        # Multi-step workflows
-        r'\s+then\s+',
-        r'\s+if\s+.+verified',
-        r'\s+if\s+.+compliant', 
-        r'\s+after\s+that\s+',
-        r'\s+followed\s+by\s+',
-        r'\s+and\s+then\s+',
-        r';\s*',
-        
-        # Single proof generation
-        r'^(generate|create|prove)\s+(kyc|ai\s+content|location|prime|collatz|digital\s+root)',
-        r'^prove\s+ai\s+content\s+authenticity',
-        r'^prove\s+.*authenticity',
-        r'^prove\s+.*location',
-        r'^generate\s+.*proof',
-        r'^create\s+.*proof',
-        
-        # Verification commands  
-        r'^verify\s+proof',
-        r'^verify\s+[a-zA-Z0-9_-]+',
-        r'^verification\s+',
-        
-        # List/history commands
-        r'^(list|show)\s+(proofs?|verifications?)',
-        r'^proof\s+history',
-        r'^verification\s+history',
-        r'^workflow\s+history',
-        
-        # Transfer commands
-        r'send\s+.*usdc',
-        r'transfer\s+.*usdc',
-    ]
-    
-    message_lower = message.lower().strip()
-    return any(re.search(pattern, message_lower) for pattern in zkengine_patterns)
+# Removed - all commands now go through OpenAI
 
 async def get_openai_response(message: str) -> str:
     """Get pure OpenAI response for natural language queries"""
@@ -158,140 +121,11 @@ async def process_with_ai(request: str, context: str, proof_summary: Dict[str, A
         print(f"[ERROR] OpenAI processing error: {str(e)}")
         return "Unable to process AI request at this time."
 
-def parse_proof_metadata(message):
-    """Parse proof command - send function names that Rust server expects"""
-    message_lower = message.lower()
-    
-    # Default metadata
-    metadata = {
-        "function": "prove_kyc",  # Rust server expects these names
-        "arguments": [],
-        "step_size": 50,
-        "explanation": "Zero-knowledge proof generation",
-        "additional_context": None
-    }
-    
-    # Handle verification commands
-    if 'verify' in message_lower:
-        verify_match = re.search(r'verify\s+(?:proof\s+)?([a-zA-Z0-9_-]+)', message_lower)
-        if verify_match:
-            proof_id = verify_match.group(1)
-            metadata["function"] = "verify_proof"
-            metadata["arguments"] = [proof_id]
-            metadata["explanation"] = "Proof verification"
-            return metadata
-    
-    # Send function names that Rust server expects
-    if 'kyc' in message_lower:
-        metadata["function"] = "prove_kyc"  # Rust server maps this to kyc_compliance_real.wasm
-        # KYC proof expects wallet_hash and kyc_approved parameters
-        wallet_hash = "12345"  # Hash of wallet address - represents a specific wallet
-        kyc_approved = "1"     # 1 = approved, 0 = rejected
-        metadata["arguments"] = [wallet_hash, kyc_approved]
-        print(f"[DEBUG] KYC proof function: prove_kyc with args: {metadata['arguments']}")
-    elif 'location' in message_lower:
-        metadata["function"] = "prove_location"  # Rust server maps this to depin_location_real.wasm
-        # Extract coordinates if present
-        coord_match = re.search(r'(\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)', message)
-        if coord_match:
-            lat, lon = float(coord_match.group(1)), float(coord_match.group(2))
-            # Convert to normalized 0-255 scale and pack into 32-bit integer
-            # This matches the WASM expectation: lat(8bits) | lon(8bits) | deviceId(16bits)
-            lat_norm = int((lat + 90) * 255 / 180)  # -90 to 90 -> 0 to 255
-            lon_norm = int((lon + 180) * 255 / 360) # -180 to 180 -> 0 to 255
-            device_id = 5000  # Valid device ID representing a specific device
-            packed_input = ((lat_norm & 0xFF) << 24) | ((lon_norm & 0xFF) << 16) | (device_id & 0xFFFF)
-            metadata["arguments"] = [str(packed_input)]
-            print(f"[DEBUG] Location proof: lat={lat}, lon={lon} -> packed={packed_input}")
-        else:
-            # NYC default: 40.7128, -74.0060 
-            lat_norm = 103  # ~40.7°N normalized
-            lon_norm = 182  # ~-74.0°W normalized
-            device_id = 5000  # Valid device ID representing a specific device
-            packed_input = ((lat_norm & 0xFF) << 24) | ((lon_norm & 0xFF) << 16) | (device_id & 0xFFFF)
-            metadata["arguments"] = [str(packed_input)]
-            print(f"[DEBUG] Location proof (NYC default): packed={packed_input}")
-        print(f"[DEBUG] Location proof function: prove_location")
-    elif 'ai content' in message_lower or 'ai' in message_lower:
-        metadata["function"] = "prove_ai_content"  # Rust server maps this to ai_content_verification_real.wasm
-        
-        # Extract hash if present - CONVERT TO NUMERIC
-        hash_match = re.search(r'hash\s+(\w+)', message_lower)
-        if hash_match:
-            hash_str = hash_match.group(1)
-            # Convert string hash to numeric value
-            if hash_str.isdigit():
-                hash_val = hash_str
-            else:
-                # Convert string to numeric hash (simple sum of character codes)
-                hash_val = str(sum(ord(c) for c in hash_str) % 1000000)
-        else:
-            hash_val = "12345"  # Default content hash
-            
-        provider = "1000"  # OpenAI
-        metadata["arguments"] = [hash_val, provider]
-        print(f"[DEBUG] AI content proof function: prove_ai_content with numeric hash: {hash_val}")
-    
-    return metadata
+# Removed - all parsing now done by OpenAI
 
-def is_workflow_command(message: str) -> bool:
-    """Detect if a command should be processed as a workflow."""
-    message_lower = message.lower()
-    
-    # Multi-step indicators
-    if ' then ' in message_lower:
-        return True
-    
-    # Conditional transfers
-    if ('send' in message_lower or 'transfer' in message_lower):
-        if any(word in message_lower for word in ['if', 'when', 'after', 'compliant', 'verified']):
-            return True
-    
-    return False
+# Removed - all commands go through OpenAI
 
-def parse_single_proof_command(message: str) -> Dict[str, Any]:
-    """Parse a simple single proof command and return metadata."""
-    message_lower = message.lower()
-    
-    # Determine proof type
-    if 'kyc' in message_lower:
-        return {
-            "function": "prove_kyc",
-            "arguments": ["12345", "1"],  # wallet_hash, kyc_approved
-            "step_size": 50,
-            "explanation": "Zero-knowledge proof generation for KYC compliance",
-            "additional_context": None
-        }
-    elif 'location' in message_lower:
-        # NYC default coordinates
-        lat_norm = 103
-        lon_norm = 182
-        device_id = 5000
-        packed_input = ((lat_norm & 0xFF) << 24) | ((lon_norm & 0xFF) << 16) | (device_id & 0xFFFF)
-        return {
-            "function": "prove_location",
-            "arguments": [str(packed_input)],
-            "step_size": 50,
-            "explanation": "Zero-knowledge proof generation for location verification",
-            "additional_context": None
-        }
-    elif 'ai' in message_lower:
-        return {
-            "function": "prove_ai_content",
-            "arguments": ["12345", "1000"],  # content_hash, provider (OpenAI)
-            "step_size": 50,
-            "explanation": "Zero-knowledge proof generation for AI content authenticity",
-            "additional_context": None
-        }
-    else:
-        # Default to KYC if unclear
-        return {
-            "function": "prove_kyc",
-            "arguments": ["12345", "1"],
-            "step_size": 50,
-            "explanation": "Zero-knowledge proof generation",
-            "additional_context": None
-        }
+# Removed - all parsing now done by OpenAI
 
 # Function removed - we now use OpenAI for all workflow parsing
 
@@ -343,7 +177,7 @@ async def parse_workflow_with_openai(message: str) -> Dict[str, Any]:
 
 @app.post("/chat")
 async def chat_endpoint(request: ChatRequest):
-    """Smart routing: zkEngine operations vs pure OpenAI responses"""
+    """All prompts go through OpenAI - no regex or pattern matching"""
     try:
         message = request.message.strip()
         
@@ -362,127 +196,35 @@ async def chat_endpoint(request: ChatRequest):
         
         print(f"[DEBUG] chat endpoint: {message}")
         
-        # Add detailed logging for empty or suspicious messages
-        if not message or message.lower() in ['hello', 'hello!', 'hi']:
-            print(f"[WARNING] Received potentially problematic message: '{message}' (empty: {not message})")
-            print(f"[DEBUG] Full request data: {request}")
-            import traceback
-            traceback.print_stack()
+        # ALL commands now go through workflow processing with OpenAI
+        print(f"[DEBUG] Processing with OpenAI workflow parser")
+        
+        # Execute as workflow - OpenAI will determine what type of command it is
+        workflow_request = WorkflowRequest(command=message)
+        workflow_result = await execute_workflow(workflow_request)
+        
+        # Build response based on workflow result
+        if workflow_result.get('success'):
+            response = "I'll process that for you."
             
-            # Return empty response for empty messages to prevent loops
-            if not message:
-                return {
-                    "intent": "empty",
-                    "response": "",
-                }
-        
-        # Special history commands - handle these BEFORE zkEngine check
-        if message.lower() in ['workflow history', 'proof history', 'verification history']:
-            print(f"[DEBUG] History request: {message}")
+            # Add AI response if available
+            if workflow_result.get('ai_response'):
+                response = workflow_result['ai_response']
             
-            # For history commands, we need to send them to the Rust server with the right metadata
-            if message.lower() == 'workflow history':
-                return {
-                    "intent": "workflow_history",
-                    "response": "Fetching workflow history...",
-                }
-            else:
-                # Proof History and Verification History should go to Rust with list_proofs metadata
-                proof_metadata = {
-                    "function": "list_proofs",
-                    "arguments": ["proofs"],
-                    "step_size": 50,
-                    "explanation": "Listing proof history",
-                    "additional_context": None
-                }
-                
-                proof_id = f"list_{int(datetime.now().timestamp() * 1000)}"
-                
-                return {
-                    "intent": proof_metadata,
-                    "command": message,
-                    "response": "Fetching proof history...",
-                    "metadata": {
-                        "proof_id": proof_id,
-                        "type": "list_operation"
-                    }
-                }
-        
-        # Check if this is any zkEngine-related command
-        if is_zkengine_command(message):
-            # Check if this is a simple single proof command
-            is_simple_proof = any(re.match(pattern, message, re.IGNORECASE) for pattern in [
-                r'^(generate|create|prove)\s+(kyc|ai\s+content|location)\s*$',
-                r'^prove\s+ai\s+content\s+authenticity\s*$',
-                r'^(generate|create)\s+(kyc|location|ai\s+content)\s+proof\s*$',
-                r'^prove\s+kyc\s+compliance\s*$',
-                r'^create\s+kyc\s+compliance\s+proof\s*$'
-            ])
-            
-            if is_simple_proof and ' then ' not in message.lower() and ' if ' not in message.lower():
-                # Handle as direct proof command
-                print(f"[DEBUG] Simple proof command detected → direct proof generation")
-                
-                # Parse the proof metadata
-                proof_metadata = parse_single_proof_command(message)
-                proof_id = f"{proof_metadata['function']}_{int(datetime.now().timestamp() * 1000)}"
-                
-                return {
-                    "intent": proof_metadata,
-                    "command": message,
-                    "response": "Generating zero-knowledge proof with zkEngine...",
-                    "metadata": {
-                        "proof_id": proof_id,
-                        "type": "proof_generation"
-                    }
-                }
-            else:
-                # Complex command - use workflow system
-                print(f"[DEBUG] Complex zkEngine command → unified workflow processing")
-                
-                # Execute as workflow
-                workflow_request = WorkflowRequest(command=message)
-                workflow_result = await execute_workflow(workflow_request)
-                
-                # Determine appropriate response message
-                if 'verify' in message.lower():
-                    response = "I'll verify that proof for you."
-                elif any(word in message.lower() for word in ['then', 'if', 'after']):
-                    response = "I'll execute this workflow for you."
-                elif 'list' in message.lower() or 'history' in message.lower():
-                    response = "Fetching the requested information..."
-                else:
-                    response = "I'll execute this workflow for you."
-                
-                # Build full response including AI processing if available
-                full_response = response
-                if workflow_result.get('success') and workflow_result.get('ai_response'):
-                    full_response += f"\n\n{workflow_result['ai_response']}"
-                
-                return {
-                    "intent": "workflow_executed", 
-                    "command": message,
-                    "response": full_response,
-                    "workflow_result": workflow_result
-                }
-        
-        # Pure natural language → OpenAI
-        print(f"[DEBUG] Natural language query → OpenAI")
-        
-        # Additional check to prevent generating responses for suspicious queries
-        if message.lower() in ['hello', 'hello!', 'hi']:
-            print(f"[WARNING] Blocking potential loop-causing message: {message}")
             return {
-                "intent": "blocked",
-                "response": "",
+                "intent": "workflow_executed", 
+                "command": message,
+                "response": response,
+                "workflow_result": workflow_result
             }
-        
-        openai_response = await get_openai_response(message)
-        
-        return {
-            "intent": "openai_chat",
-            "response": openai_response,
-        }
+        else:
+            # If workflow parsing fails, use OpenAI for natural language response
+            openai_response = await get_openai_response(message)
+            
+            return {
+                "intent": "openai_chat",
+                "response": openai_response,
+            }
         
     except Exception as e:
         print(f"[ERROR] Chat endpoint error: {str(e)}")
@@ -676,25 +418,50 @@ async def execute_workflow(request: WorkflowRequest):
         
         if result.returncode == 0:
             transfer_ids = []
-            transfer_patterns = [
-                r'Transfer ID: ([a-f0-9\-]{36})',
-                r'transferId["\']?: ["\']?([a-f0-9\-]{36})',
-            ]
+            # Simple string search instead of regex for transfer IDs
+            stdout_lines = result.stdout.split('\n')
+            for line in stdout_lines:
+                if 'Transfer ID:' in line:
+                    parts = line.split('Transfer ID:')
+                    if len(parts) > 1:
+                        tid = parts[1].strip()
+                        if len(tid) == 36 and '-' in tid:  # UUID format
+                            transfer_ids.append(tid)
+                elif 'transferId' in line:
+                    # Try to extract from JSON-like format
+                    if ':' in line:
+                        parts = line.split(':')
+                        if len(parts) > 1:
+                            tid = parts[1].strip().strip('"').strip("'")
+                            if len(tid) == 36 and '-' in tid:
+                                transfer_ids.append(tid)
             
-            for pattern in transfer_patterns:
-                matches = re.findall(pattern, result.stdout, re.IGNORECASE)
-                transfer_ids.extend(matches)
-            
-            # Extract proof information
+            # Extract proof information with simple string parsing
             proof_summary = {}
-            proof_pattern = r'(kyc|location|ai_content): ✅ (verified|generated) \(([^)]+)\)'
-            proof_matches = re.findall(proof_pattern, result.stdout, re.IGNORECASE)
-            
-            for proof_type, status, proof_id in proof_matches:
-                proof_summary[proof_type] = {
-                    "status": status,
-                    "proofId": proof_id
-                }
+            for line in stdout_lines:
+                line_lower = line.lower()
+                if '✅' in line and ('verified' in line_lower or 'generated' in line_lower):
+                    # Parse proof type
+                    if 'kyc:' in line_lower:
+                        proof_type = 'kyc'
+                    elif 'location:' in line_lower:
+                        proof_type = 'location'
+                    elif 'ai_content:' in line_lower:
+                        proof_type = 'ai_content'
+                    else:
+                        continue
+                    
+                    # Extract proof ID from parentheses
+                    if '(' in line and ')' in line:
+                        start = line.find('(')
+                        end = line.find(')')
+                        if start < end:
+                            proof_id = line[start+1:end].strip()
+                            status = 'verified' if 'verified' in line_lower else 'generated'
+                            proof_summary[proof_type] = {
+                                "status": status,
+                                "proofId": proof_id
+                            }
             
             # Clean up temporary parsed workflow file if it exists
             if parsed_workflow_file:
@@ -823,13 +590,25 @@ async def check_transfer_status(request: dict):
         )
         
         if result.returncode == 0:
-            status_match = re.search(r'Status: (\w+)', result.stdout)
-            hash_match = re.search(r'Transaction Hash: ([a-fA-F0-9x]+)', result.stdout)
+            # Simple string parsing instead of regex
+            status = "unknown"
+            transaction_hash = "pending"
+            
+            stdout_lines = result.stdout.split('\n')
+            for line in stdout_lines:
+                if 'Status:' in line:
+                    parts = line.split('Status:')
+                    if len(parts) > 1:
+                        status = parts[1].strip().split()[0]  # Get first word after Status:
+                elif 'Transaction Hash:' in line:
+                    parts = line.split('Transaction Hash:')
+                    if len(parts) > 1:
+                        transaction_hash = parts[1].strip().split()[0]  # Get first word (hash)
             
             return {
                 "success": True,
-                "status": status_match.group(1) if status_match else "unknown",
-                "transactionHash": hash_match.group(1) if hash_match else "pending",
+                "status": status,
+                "transactionHash": transaction_hash,
                 "rawOutput": result.stdout
             }
         else:
@@ -947,16 +726,20 @@ async def poll_transfer(request: dict):
                             
             except json.JSONDecodeError:
                 print(f"[WARNING] Could not parse JSON from transfer status output")
-                # Fallback to regex parsing
-                import re
-                hash_match = re.search(r'"transactionHash":\s*"([^"]+)"', output)
-                if hash_match:
-                    transaction_hash = hash_match.group(1)
-                    
-                # Extract explorer link
-                link_match = re.search(r'View on Explorer:\s*(https://[^\s]+)', output)
-                if link_match:
-                    explorer_link = link_match.group(1)
+                # Fallback to simple string parsing
+                for line in output.split('\n'):
+                    if '"transactionHash"' in line and ':' in line:
+                        parts = line.split(':')
+                        if len(parts) > 1:
+                            hash_part = parts[1].strip().strip('"').strip(',')
+                            if hash_part:
+                                transaction_hash = hash_part
+                    elif 'View on Explorer:' in line:
+                        parts = line.split('View on Explorer:')
+                        if len(parts) > 1:
+                            link = parts[1].strip().split()[0]  # Get first word (URL)
+                            if link.startswith('https://'):
+                                explorer_link = link
             
             return {
                 "success": True,

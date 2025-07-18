@@ -130,9 +130,6 @@ export class ProofManager {
             const actionsDiv = document.createElement('div');
             actionsDiv.className = 'card-actions';
             actionsDiv.innerHTML = `
-                <button class="action-btn" onclick="window.proofManager.downloadProof('${proofId}')">
-                    📥 Download
-                </button>
                 <button class="action-btn" onclick="window.proofManager.verifyProof('${proofId}')">
                     ✓ Verify Locally
                 </button>
