@@ -143,7 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSampleQueries();
     
     // Auto-connect wallets if previously connected
-    autoConnectWallets();
+    // Disabled - BlockchainVerifier handles auto-connect in its constructor
+    // autoConnectWallets();
 });
 
 function setupMessageHandlers() {
@@ -226,7 +227,7 @@ function setupMessageHandlers() {
     wsManager.on('proof_generation_complete', (data) => {
         debugLog('Proof generation complete', 'success');
         proofManager.updateProofCard(data.proofId, 'complete', data);
-        uiManager.showToast('Proof generated successfully!', 'success');
+        // Silent success - proof card shows completion
     });
     
     // Alternative completion message type
@@ -240,7 +241,7 @@ function setupMessageHandlers() {
             metadata: data.metadata,
             proof_function: data.metadata?.function || 'unknown'
         });
-        uiManager.showToast('Proof generated successfully!', 'success');
+        // Silent success - proof card shows completion
     });
     
     wsManager.on('proof_generation_failed', (data) => {
@@ -277,7 +278,7 @@ function setupMessageHandlers() {
     wsManager.on('workflow_completed', (data) => {
         debugLog(`Workflow completed: ${data.workflow_id}`, 'success');
         workflowManager.updateWorkflowStatus(data.workflow_id, 'completed');
-        uiManager.showToast('Workflow completed successfully!', 'success');
+        // Silent success - workflow card shows completion
     });
     
     wsManager.on('workflow_failed', (data) => {

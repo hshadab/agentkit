@@ -57,7 +57,6 @@ export class BlockchainVerifier {
             }
             
             debugLog(`Connected to Ethereum: ${this.ethereumAccount}`, 'success');
-            this.uiManager.showToast('Ethereum wallet connected', 'success');
             
             // Store connection status
             localStorage.setItem('ethereum-connected', 'true');
@@ -149,7 +148,6 @@ export class BlockchainVerifier {
             this.connectedWallet = wallet; // Store the wallet instance
             
             debugLog(`Connected to ${walletName}: ${this.solanaWallet}`, 'success');
-            this.uiManager.showToast(`${walletName} wallet connected`, 'success');
             
             // Store connection status
             localStorage.setItem('solana-connected', 'true');
