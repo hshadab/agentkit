@@ -21,8 +21,12 @@ async function main() {
         const prover = new RealSNARKProver();
         
         // Generate the proof with timeout
+        const TIMEOUT_MS = 60000; // 60 seconds timeout
         const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('SNARK generation timed out after 180 seconds')), 180000)
+            setTimeout(() => {
+                process.stderr.write("SNARK generation timeout reached, exiting...\n");
+                reject(new Error(`SNARK generation timed out after ${TIMEOUT_MS/1000} seconds`));
+            }, TIMEOUT_MS)
         );
         
         const result = await Promise.race([

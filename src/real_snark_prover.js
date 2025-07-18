@@ -116,6 +116,8 @@ class RealSNARKProver {
             
             // Generate the real proof
             console.error('[SNARK] Starting groth16.fullProve...');
+            console.error('[SNARK] Input:', JSON.stringify(input, null, 2));
+            
             const { proof, publicSignals } = await snarkjs.groth16.fullProve(
                 input,
                 this.wasmPath,
