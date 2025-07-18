@@ -264,6 +264,9 @@ export class ProofManager {
         const resultsContainer = document.getElementById(`verification-results-${proofId}`);
         if (!resultsContainer) {
             debugLog(`Verification results container not found for ${proofId}`, 'warning');
+            // Fallback: create a separate verification card
+            const verificationCard = this.createVerificationResultCard(proofId, result);
+            this.uiManager.addMessage(verificationCard, 'assistant');
             return;
         }
 

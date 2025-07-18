@@ -85,8 +85,9 @@ pub fn convert_nova_to_groth16(
     
     // Call the SNARK prover with proper environment
     use std::process::Stdio;
+    use std::time::Duration;
     
-    let child = Command::new("node")
+    let mut child = Command::new("node")
         .arg("src/cached_snark_generator.js")
         .arg(temp_input_path.to_str().unwrap())
         .current_dir("/home/hshadab/agentkit") // Use absolute path
@@ -94,7 +95,7 @@ pub fn convert_nova_to_groth16(
         .stderr(Stdio::piped())
         .spawn()?;
     
-    // Wait for completion
+    // Wait for completion (with built-in timeout handling in the JS script)
     let output = child.wait_with_output();
     
     let output = match output {
