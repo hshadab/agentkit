@@ -63,9 +63,22 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Load sample queries
     loadSampleQueries();
+    
+    // Auto-connect wallets if previously connected
+    autoConnectWallets();
 });
 
 function setupMessageHandlers() {
+    // Debug handler to log all messages
+    wsManager.on('*', (data) => {
+        debugLog(`WebSocket message received: type=${data.type || 'NO_TYPE'}, data=${JSON.stringify(data)}`, 'debug');
+        
+        // Special handling for messages without a type field
+        if (!data.type && data.proof_id) {
+            debugLog('Detected proof message without type field', 'warning');
+        }
+    });
+    
     // Handle general messages
     wsManager.on('message', (data) => {
         debugLog(`Received message: ${data.content}`, 'info');
@@ -91,9 +104,28 @@ function setupMessageHandlers() {
         uiManager.addMessage(proofCard, 'assistant');
     });
     
+    // Also handle alternative message types
+    wsManager.on('proof_started', (data) => {
+        debugLog('Proof started (alternative type)', 'info');
+        const proofCard = proofManager.addProofCard({
+            ...data,
+            proofId: data.proof_id || data.proofId,
+            status: 'generating'
+        });
+        uiManager.addMessage(proofCard, 'assistant');
+    });
+    
     wsManager.on('proof_generation_complete', (data) => {
         debugLog('Proof generation complete', 'success');
         proofManager.updateProofCard(data.proofId, 'complete', data);
+        uiManager.showToast('Proof generated successfully!', 'success');
+    });
+    
+    // Alternative completion message type
+    wsManager.on('proof_complete', (data) => {
+        debugLog('Proof complete (alternative type)', 'success');
+        const proofId = data.proof_id || data.proofId;
+        proofManager.updateProofCard(proofId, 'complete', data);
         uiManager.showToast('Proof generated successfully!', 'success');
     });
     
@@ -278,25 +310,24 @@ function sendMessage() {
 function loadSampleQueries() {
     // Sample queries for different categories
     const sampleQueries = {
-        'Proof Generation': [
-            'Generate a proof that 15 * 7 = 105',
-            'Create a zero-knowledge proof for age > 18',
-            'Generate proof of balance > 1000'
+        'Natural Language Prompts': [
+            'What is the capital of France?',
+            'Explain zero-knowledge proofs',
+            'What are the benefits of blockchain?'
         ],
-        'Verification': [
-            'Show my proof history',
-            'Verify my last proof',
-            'Check proof status'
+        'Single zkEngine Proofs': [
+            'Generate KYC proof',
+            'Prove AI content authenticity',
+            'Prove location: NYC (40.7°, -74.0°)'
         ],
-        'Transfers': [
-            'Send 10 USDC to alice@example.com',
-            'Transfer 5 USDC to bob@example.com if proof is valid',
-            'Send payment after verification'
+        'Workflows': [
+            'Send 0.05 USDC to Alice on Ethereum if KYC compliant',
+            'If Alice is KYC compliant, send her 0.04 USDC to Alice on Solana',
+            'Send 0.05 USDC on Solana if Bob is KYC verified on Solana and send 0.03 USDC on Ethereum if Alice is KYC verified on Ethereum.',
+            'Generate a KYC proof for Bob then if Bob\'s wallet is KYC verified generate a NYC proof of location and if verified on Solana send him 0.03 USDC on Solana.'
         ],
-        'Complex Workflows': [
-            'Generate age proof and send 50 USDC to alice@example.com if valid',
-            'Create KYC proof then transfer 100 USDC to multiple recipients',
-            'Verify identity and process payment'
+        'History': [
+            'Proof History'
         ]
     };
     
@@ -367,6 +398,65 @@ function createVerificationCard(data) {
     `;
     
     return card;
+}
+
+// Auto-connect wallets if previously connected
+async function autoConnectWallets() {
+    // Check if MetaMask was previously connected
+    if (localStorage.getItem('ethereum-connected') === 'true' && typeof window.ethereum !== 'undefined') {
+        try {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts.length > 0) {
+                await blockchainVerifier.connectEthereum();
+                debugLog('Auto-connected to Ethereum wallet', 'success');
+                // Show wallet status indicator
+                const statusIndicator = document.getElementById('eth-wallet-status');
+                if (statusIndicator) statusIndicator.style.display = 'inline-block';
+            } else {
+                // Show connect banner if not connected
+                const banner = document.getElementById('eth-connect-banner');
+                if (banner) banner.style.display = 'flex';
+            }
+        } catch (error) {
+            debugLog('Failed to auto-connect Ethereum wallet', 'error');
+            const banner = document.getElementById('eth-connect-banner');
+            if (banner) banner.style.display = 'flex';
+        }
+    } else {
+        // Show connect banner if never connected
+        const banner = document.getElementById('eth-connect-banner');
+        if (banner) banner.style.display = 'flex';
+    }
+    
+    // Check if Phantom/Solflare was previously connected
+    if (localStorage.getItem('solana-connected') === 'true' && window.solana) {
+        try {
+            // Try to connect silently (Phantom supports this)
+            if (window.solana.connect) {
+                const resp = await window.solana.connect({ onlyIfTrusted: true });
+                if (resp.publicKey) {
+                    blockchainVerifier.solanaWallet = resp.publicKey.toString();
+                    blockchainVerifier.solanaConnected = true;
+                    debugLog('Auto-connected to Solana wallet', 'success');
+                    const banner = document.getElementById('sol-connect-banner');
+                    if (banner) banner.style.display = 'none';
+                    // Show wallet status indicator
+                    const statusIndicator = document.getElementById('sol-wallet-status');
+                    if (statusIndicator) statusIndicator.style.display = 'inline-block';
+                } else {
+                    throw new Error('No public key');
+                }
+            }
+        } catch (error) {
+            debugLog('Failed to auto-connect Solana wallet', 'error');
+            const banner = document.getElementById('sol-connect-banner');
+            if (banner) banner.style.display = 'flex';
+        }
+    } else {
+        // Show connect banner if never connected
+        const banner = document.getElementById('sol-connect-banner');
+        if (banner) banner.style.display = 'flex';
+    }
 }
 
 // Clean up on page unload

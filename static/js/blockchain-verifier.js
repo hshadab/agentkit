@@ -10,6 +10,31 @@ export class BlockchainVerifier {
         this.solanaConnected = false;
         this.ethereumAccount = null;
         this.solanaWallet = null;
+        
+        // Auto-connect to wallets if previously connected
+        this.autoConnect();
+    }
+    
+    async autoConnect() {
+        // Check if previously connected to Ethereum
+        if (localStorage.getItem('ethereum-connected') === 'true') {
+            debugLog('Auto-connecting to Ethereum...', 'info');
+            this.connectEthereum();
+        } else {
+            // Show connect banner if not connected
+            const banner = document.getElementById('eth-connect-banner');
+            if (banner) banner.style.display = 'flex';
+        }
+        
+        // Check if previously connected to Solana
+        if (localStorage.getItem('solana-connected') === 'true') {
+            debugLog('Auto-connecting to Solana...', 'info');
+            this.connectSolana();
+        } else {
+            // Show connect banner if not connected
+            const banner = document.getElementById('sol-connect-banner');
+            if (banner) banner.style.display = 'flex';
+        }
     }
 
     async connectEthereum() {
@@ -34,9 +59,16 @@ export class BlockchainVerifier {
             debugLog(`Connected to Ethereum: ${this.ethereumAccount}`, 'success');
             this.uiManager.showToast('Ethereum wallet connected', 'success');
             
+            // Store connection status
+            localStorage.setItem('ethereum-connected', 'true');
+            
             // Hide connect banner if shown
             const banner = document.getElementById('eth-connect-banner');
             if (banner) banner.style.display = 'none';
+            
+            // Show wallet status indicator
+            const statusIndicator = document.getElementById('eth-wallet-status');
+            if (statusIndicator) statusIndicator.style.display = 'inline-block';
             
             return true;
         } catch (error) {
@@ -93,9 +125,16 @@ export class BlockchainVerifier {
             debugLog(`Connected to Solana: ${this.solanaWallet}`, 'success');
             this.uiManager.showToast('Solana wallet connected', 'success');
             
+            // Store connection status
+            localStorage.setItem('solana-connected', 'true');
+            
             // Hide connect banner if shown
             const banner = document.getElementById('sol-connect-banner');
             if (banner) banner.style.display = 'none';
+            
+            // Show wallet status indicator
+            const statusIndicator = document.getElementById('sol-wallet-status');
+            if (statusIndicator) statusIndicator.style.display = 'inline-block';
             
             return true;
         } catch (error) {

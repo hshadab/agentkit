@@ -781,6 +781,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .eth-connect-banner {
     position: fixed;
     top: 0;
+    display: none;
     left: 0;
     right: 0;
     background: linear-gradient(135deg, #627eea 0%, #4c5ed8 100%);
@@ -867,6 +868,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .sol-connect-banner {
     position: fixed;
     top: 60px;
+    display: none;
     left: 0;
     right: 0;
     background: linear-gradient(135deg, #14F195 0%, #00D18C 100%);

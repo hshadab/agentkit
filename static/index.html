@@ -16,9 +16,15 @@
     <div class="main-container">
         <div class="header">
             <h1>🔬 <span>Verifiable Agent Kit</span></h1>
-            <div id="connection-status" class="status disconnected">
-                <div class="status-dot"></div>
-                <span class="status-text">Disconnected</span>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div id="wallet-status" style="display: flex; gap: 8px; font-size: 13px;">
+                    <span id="eth-wallet-status" style="display: none; padding: 4px 12px; background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-radius: 4px; font-weight: 500;">ETH Connected</span>
+                    <span id="sol-wallet-status" style="display: none; padding: 4px 12px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-radius: 4px; font-weight: 500;">SOL Connected</span>
+                </div>
+                <div id="connection-status" class="status disconnected">
+                    <div class="status-dot"></div>
+                    <span class="status-text">Disconnected</span>
+                </div>
             </div>
         </div>
 
@@ -46,13 +52,13 @@
     </div>
 
     <!-- Ethereum Connect Banner -->
-    <div id="eth-connect-banner" class="eth-connect-banner">
+    <div id="eth-connect-banner" class="eth-connect-banner" style="display: none;">
         Connect your Ethereum wallet to verify proofs on-chain
         <button onclick="window.blockchainVerifier.connectEthereum()">Connect MetaMask</button>
     </div>
 
     <!-- Solana Connect Banner -->
-    <div id="sol-connect-banner" class="sol-connect-banner">
+    <div id="sol-connect-banner" class="sol-connect-banner" style="display: none;">
         Connect your Solana wallet to verify proofs on-chain
         <button onclick="window.blockchainVerifier.connectSolana()">Connect Phantom</button>
     </div>

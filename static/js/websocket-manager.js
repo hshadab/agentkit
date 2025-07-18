@@ -40,14 +40,19 @@ export class WebSocketManager {
                 if (this.connectionHandlers.onConnect) {
                     this.connectionHandlers.onConnect();
                 }
+                
+                // Send initial connection message if needed
+                this.send({ type: 'init', client: 'agentkit-ui' });
             };
 
             this.ws.onmessage = (event) => {
                 try {
+                    debugLog(`Raw WebSocket message: ${event.data}`, 'debug');
                     const data = JSON.parse(event.data);
                     this.handleMessage(data);
                 } catch (error) {
                     debugLog(`Error parsing message: ${error.message}`, 'error');
+                    debugLog(`Raw message was: ${event.data}`, 'error');
                 }
             };
 
