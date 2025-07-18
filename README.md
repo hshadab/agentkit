@@ -112,14 +112,22 @@ cd ../..
 See [SETUP_PTAU.md](SETUP_PTAU.md) for alternative setup options and more details.
 
 4. **Configure environment**
+
+**IMPORTANT**: An OpenAI API key is now REQUIRED. All commands are processed through OpenAI for natural language understanding.
+
 ```bash
 cp .env.example .env
+
+# Option 1: Use the setup script (recommended)
+python setup_openai.py
+
+# Option 2: Manually edit .env
 ```
 
 Edit `.env` with your credentials:
 ```env
-# AI Services
-OPENAI_API_KEY=your_openai_api_key
+# AI Services (REQUIRED - system won't work without this)
+OPENAI_API_KEY=sk-your-actual-api-key-here
 
 # Circle API (for USDC transfers)
 CIRCLE_API_KEY=your_circle_api_key
@@ -133,6 +141,11 @@ ZKENGINE_BINARY=./zkengine_binary/zkEngine
 PORT=8001
 CHAT_SERVICE_PORT=8002
 ```
+
+**Note**: The system will automatically search for `.env` files in:
+- Current directory (`~/agentkit/.env`)
+- Home directory (`~/.env`)
+- Agentic directory (`~/agentic/.env`)
 
 ## 🚀 Quick Start
 

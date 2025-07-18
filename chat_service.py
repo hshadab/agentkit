@@ -1,8 +1,46 @@
 #!/usr/bin/env python3
 
 import os
-from dotenv import load_dotenv
-load_dotenv()
+import sys
+from pathlib import Path
+
+# Try to load .env from multiple locations
+def load_env_from_multiple_locations():
+    """Load .env file from multiple possible locations"""
+    possible_paths = [
+        Path.cwd() / '.env',  # Current directory
+        Path.home() / '.env',  # Home directory
+        Path.home() / 'agentic' / '.env',  # Agentic directory
+        Path.cwd().parent / '.env',  # Parent directory
+    ]
+    
+    env_loaded = False
+    for env_path in possible_paths:
+        if env_path.exists():
+            print(f"[INFO] Loading environment from: {env_path}")
+            from dotenv import load_dotenv
+            load_dotenv(env_path)
+            
+            # Check if OpenAI key was loaded
+            api_key = os.getenv('OPENAI_API_KEY')
+            if api_key and api_key != 'your-openai-api-key-here':
+                print(f"[INFO] OpenAI API key loaded successfully from {env_path}")
+                env_loaded = True
+                break
+            else:
+                print(f"[WARNING] Found .env at {env_path} but no valid OpenAI key")
+    
+    if not env_loaded:
+        print("[WARNING] No valid OpenAI API key found in any .env file")
+        print("[INFO] Checked locations:")
+        for path in possible_paths:
+            print(f"  - {path}")
+    
+    return env_loaded
+
+# Load environment variables
+load_env_from_multiple_locations()
+
 import subprocess
 import json
 import asyncio
@@ -34,6 +72,15 @@ app.add_middleware(
 
 # Initialize OpenAI
 openai.api_key = os.getenv('OPENAI_API_KEY')
+if not openai.api_key or openai.api_key == 'your-openai-api-key-here':
+    print("[ERROR] OpenAI API key not properly configured!")
+    print("[INFO] Please ensure a valid API key is in one of these locations:")
+    print("  - ~/agentkit/.env")
+    print("  - ~/.env") 
+    print("  - ~/agentic/.env")
+    print("[INFO] The key should be in format: OPENAI_API_KEY=sk-...")
+else:
+    print(f"[INFO] OpenAI API key configured (ending in ...{openai.api_key[-4:]})")
 
 class ChatRequest(BaseModel):
     message: str
