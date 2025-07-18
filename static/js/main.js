@@ -252,6 +252,8 @@ function setupMessageHandlers() {
     
     // Handle workflow updates
     wsManager.on('workflow_started', (data) => {
+        // Handle both workflow_id and workflowId formats
+        data.workflow_id = data.workflow_id || data.workflowId;
         debugLog(`Workflow started: ${data.workflow_id}`, 'info');
         
         // Store any pending AI response
@@ -271,11 +273,16 @@ function setupMessageHandlers() {
     });
     
     wsManager.on('workflow_step_update', (data) => {
+        // Handle both workflow_id/workflowId and step_id/stepId formats
+        data.workflow_id = data.workflow_id || data.workflowId;
+        data.step_id = data.step_id || data.stepId;
         debugLog(`Workflow step update: ${data.workflow_id}/${data.step_id}`, 'info');
         workflowManager.updateWorkflowStep(data.workflow_id, data.step_id, data.updates);
     });
     
     wsManager.on('workflow_completed', (data) => {
+        // Handle both workflow_id and workflowId formats
+        data.workflow_id = data.workflow_id || data.workflowId;
         debugLog(`Workflow completed: ${data.workflow_id}`, 'success');
         workflowManager.updateWorkflowStatus(data.workflow_id, 'completed');
         // Silent success - workflow card shows completion
