@@ -261,8 +261,22 @@ function setupMessageHandlers() {
             pendingAIResponses.set(data.workflow_id, data.ai_response);
         }
         
-        const workflowCard = workflowManager.addWorkflowCard(data);
-        uiManager.addMessage(workflowCard, 'assistant');
+        // Only show workflow card if it has multiple steps or involves transfers
+        const steps = data.steps || [];
+        const hasMultipleSteps = steps.length > 1;
+        const hasTransferSteps = steps.some(step => 
+            step.action === 'transfer' || 
+            step.action === 'send_transfer' ||
+            step.description?.toLowerCase().includes('transfer') ||
+            step.description?.toLowerCase().includes('send')
+        );
+        
+        if (hasMultipleSteps || hasTransferSteps) {
+            const workflowCard = workflowManager.addWorkflowCard(data);
+            uiManager.addMessage(workflowCard, 'assistant');
+        } else {
+            debugLog('Skipping workflow card for single proof generation', 'info');
+        }
         
         // Show AI response after workflow card if exists
         const aiResponse = pendingAIResponses.get(data.workflow_id);

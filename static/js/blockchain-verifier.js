@@ -207,8 +207,9 @@ export class BlockchainVerifier {
                     ethButton.disabled = true;
                 }
                 
-                // Add verification result to UI
-                this.addVerificationResultCard(proofId, 'Ethereum', result);
+                // Add verification result to the proof card
+                const explorerUrl = `https://sepolia.etherscan.io/tx/${result.txHash}`;
+                this.proofManager.addVerificationResult(proofId, 'Ethereum', result, explorerUrl);
             } else {
                 throw new Error(result.error || 'Verification failed');
             }
@@ -273,8 +274,9 @@ export class BlockchainVerifier {
                     solButton.disabled = true;
                 }
                 
-                // Add verification result to UI
-                this.addVerificationResultCard(proofId, 'Solana', result);
+                // Add verification result to the proof card
+                const explorerUrl = `https://explorer.solana.com/tx/${result.signature}?cluster=devnet`;
+                this.proofManager.addVerificationResult(proofId, 'Solana', result, explorerUrl);
             } else {
                 throw new Error(result.error || 'Verification failed');
             }

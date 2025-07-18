@@ -87,6 +87,9 @@ export class ProofManager {
                         ◎ Verify on Solana
                     </button>
                 </div>
+                <div class="verification-results" id="verification-results-${data.proofId}">
+                    <!-- Verification results will be added here -->
+                </div>
             ` : ''}
         `;
         
@@ -209,11 +212,8 @@ export class ProofManager {
                 }
             }
             
-            // Add verification result to UI
-            if (result.details) {
-                const verificationCard = this.createVerificationResultCard(proofId, result);
-                this.uiManager.addMessage(verificationCard, 'assistant');
-            }
+            // Add verification result to the proof card
+            this.addVerificationResult(proofId, 'Local', result);
             
         } catch (error) {
             debugLog(`Error verifying proof: ${error.message}`, 'error');
@@ -258,6 +258,40 @@ export class ProofManager {
         `;
         
         return card;
+    }
+
+    addVerificationResult(proofId, type, result, explorerUrl = null) {
+        const resultsContainer = document.getElementById(`verification-results-${proofId}`);
+        if (!resultsContainer) {
+            debugLog(`Verification results container not found for ${proofId}`, 'warning');
+            return;
+        }
+
+        const resultDiv = document.createElement('div');
+        resultDiv.className = 'verification-result-item';
+        resultDiv.innerHTML = `
+            <div class="verification-result-header">
+                <span class="verification-type">${type} Verification</span>
+                <span class="status-badge ${result.valid || result.success ? 'verified' : 'error'}">
+                    ${result.valid || result.success ? 'VALID' : 'INVALID'}
+                </span>
+            </div>
+            <div class="verification-result-content">
+                ${result.details || result.message || 'Verified successfully'}
+                ${explorerUrl ? `
+                    <div style="margin-top: 8px;">
+                        <a href="${explorerUrl}" target="_blank" class="explorer-link">
+                            View on Explorer →
+                        </a>
+                    </div>
+                ` : ''}
+                <div class="verification-time">
+                    Verified at: ${new Date().toLocaleTimeString()}
+                </div>
+            </div>
+        `;
+
+        resultsContainer.appendChild(resultDiv);
     }
 
     copyProofId(proofId) {

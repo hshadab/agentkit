@@ -85,6 +85,7 @@ async fn main() {
         .route("/api/proof/:proof_id/ethereum-integrated", get(export_proof_ethereum_integrated))
         .route("/api/proof/:proof_id/solana", get(export_proof_solana))
         .route("/api/proof/:proof_id/update-verification", post(update_proof_verification))
+        .route("/api/v1/proof/:proof_id/verify", get(verify_proof_endpoint))
         .nest_service("/static", tower_http::services::ServeDir::new("static"))
         .with_state(state);
 
@@ -149,6 +150,135 @@ async fn get_proofs(
     
     // Fallback to empty list
     (StatusCode::OK, Json(json!({ "proofs": [] })))
+}
+
+// --- Local Proof Verification Endpoint ---
+
+async fn verify_proof_endpoint(
+    Path(proof_id): Path<String>,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    info!("Local verification request for proof {}", proof_id);
+    
+    // Load proof metadata from database
+    let proofs_db_path = PathBuf::from("proofs_db.json");
+    
+    let metadata = if let Ok(content) = std::fs::read_to_string(&proofs_db_path) {
+        if let Ok(db) = serde_json::from_str::<serde_json::Value>(&content) {
+            db.get(&proof_id).cloned()
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+    
+    if metadata.is_none() {
+        return (
+            StatusCode::NOT_FOUND,
+            Json(json!({
+                "error": "Proof not found",
+                "proof_id": proof_id
+            }))
+        );
+    }
+    
+    let metadata = metadata.unwrap();
+    
+    // Extract proof metadata
+    let proof_metadata = ProofMetadata {
+        function: metadata.get("metadata")
+            .and_then(|m| m.get("function"))
+            .and_then(|f| f.as_str())
+            .unwrap_or("unknown")
+            .to_string(),
+        arguments: metadata.get("metadata")
+            .and_then(|m| m.get("arguments"))
+            .and_then(|a| a.as_array())
+            .map(|arr| arr.iter()
+                .filter_map(|v| v.as_str().map(String::from))
+                .collect())
+            .unwrap_or_default(),
+        step_size: metadata.get("metadata")
+            .and_then(|m| m.get("step_size"))
+            .and_then(|s| s.as_u64())
+            .unwrap_or(50),
+        explanation: metadata.get("metadata")
+            .and_then(|m| m.get("explanation"))
+            .and_then(|e| e.as_str())
+            .map(String::from)
+            .unwrap_or_else(|| "Proof verification".to_string()),
+        additional_context: metadata.get("metadata")
+            .and_then(|m| m.get("additional_context"))
+            .cloned(),
+    };
+    
+    // Check if proof files exist
+    let proof_dir = PathBuf::from(&state.proofs_dir).join(&proof_id);
+    let proof_path = proof_dir.join("proof.bin");
+    let public_path = proof_dir.join("public.json");
+    
+    // Check for cached verification
+    let verified_marker = proof_dir.join(".verified");
+    if verified_marker.exists() {
+        return (
+            StatusCode::OK,
+            Json(json!({
+                "valid": true,
+                "details": "Proof verified (cached result)",
+                "proof_id": proof_id,
+                "cached": true
+            }))
+        );
+    }
+    
+    if !proof_path.exists() || !public_path.exists() {
+        return (
+            StatusCode::NOT_FOUND,
+            Json(json!({
+                "error": "Proof files not found",
+                "proof_id": proof_id
+            }))
+        );
+    }
+    
+    // Run verification
+    let mut cmd = Command::new(&state.zkengine_binary);
+    cmd.arg("verify")
+        .arg("--step").arg(proof_metadata.step_size.to_string())
+        .arg(&proof_path)
+        .arg(&public_path);
+    
+    match cmd.output().await {
+        Ok(output) => {
+            if output.status.success() {
+                // Create verification marker
+                std::fs::write(verified_marker, "").ok();
+                
+                (StatusCode::OK, Json(json!({
+                    "valid": true,
+                    "details": "Proof verified successfully",
+                    "proof_id": proof_id
+                })))
+            } else {
+                (StatusCode::OK, Json(json!({
+                    "valid": false,
+                    "details": "Proof verification failed",
+                    "proof_id": proof_id
+                })))
+            }
+        }
+        Err(e) => {
+            error!("Verification command failed: {}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({
+                    "error": "Verification failed",
+                    "details": e.to_string()
+                }))
+            )
+        }
+    }
 }
 
 // --- Update Proof Verification Data ---
