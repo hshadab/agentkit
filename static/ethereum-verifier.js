@@ -480,3 +480,8 @@ class EthereumVerifier {
 
 // Initialize global instance
 window.ethereumVerifier = new EthereumVerifier();
+
+// Expose the verification function for the blockchain verifier
+window.verifyOnEthereumActual = async function(proofId, proofType) {
+    return await window.ethereumVerifier.verifyProof(proofId, proofType);
+};

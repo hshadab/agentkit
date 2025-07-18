@@ -75,9 +75,6 @@ export class ProofManager {
             </div>
             ${data.status === 'complete' ? `
                 <div class="card-actions">
-                    <button class="action-btn" onclick="window.proofManager.downloadProof('${data.proofId}')">
-                        📥 Download
-                    </button>
                     <button class="action-btn" onclick="window.proofManager.verifyProof('${data.proofId}')">
                         ✓ Verify Locally
                     </button>
@@ -185,13 +182,18 @@ export class ProofManager {
             
             // Update button state
             const proofCard = document.querySelector(`[data-proof-id="${proofId}"]`);
-            const verifyBtn = proofCard?.querySelector('.action-btn:nth-child(2)');
+            const verifyBtn = proofCard?.querySelector('.action-btn:first-child');
             if (verifyBtn) {
                 verifyBtn.disabled = true;
                 verifyBtn.textContent = '⏳ Verifying...';
             }
             
             const response = await fetch(`/api/v1/proof/${proofId}/verify`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const result = await response.json();
             
             if (result.valid) {

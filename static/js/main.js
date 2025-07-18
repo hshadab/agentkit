@@ -168,7 +168,13 @@ function setupMessageHandlers() {
     wsManager.on('chat_response', (data) => {
         debugLog(`Received chat response: ${data.response}`, 'info');
         uiManager.removeWaitingMessage();
-        if (data.response) {
+        
+        // Check if this is a workflow execution response
+        if (data.intent === 'workflow_executed' && data.response) {
+            // For now, just show the response but don't create a workflow card
+            // The server should send proper proof messages if it's actually a proof
+            uiManager.addMessage(data.response, 'assistant');
+        } else if (data.response) {
             uiManager.addMessage(data.response, 'assistant');
         }
     });

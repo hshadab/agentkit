@@ -425,3 +425,9 @@ function hexToBytes(hex) {
 
 // Initialize global instance
 window.SolanaVerifier = SolanaVerifier;
+window.solanaVerifier = new SolanaVerifier();
+
+// Expose the verification function for the blockchain verifier
+window.verifyOnSolanaActual = async function(proofId, proofType) {
+    return await window.solanaVerifier.verifyProof(proofId, proofType);
+};
