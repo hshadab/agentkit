@@ -87,20 +87,32 @@ pub fn convert_nova_to_groth16(
     use std::process::Stdio;
     use std::time::Duration;
     
+    eprintln!("Spawning SNARK generator process...");
+    eprintln!("Command: node src/cached_snark_generator.js {}", temp_input_path.to_str().unwrap());
+    
     let mut child = Command::new("node")
         .arg("src/cached_snark_generator.js")
         .arg(temp_input_path.to_str().unwrap())
         .current_dir("/home/hshadab/agentkit") // Use absolute path
         .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
+        .stderr(Stdio::null()) // Discard stderr to prevent buffer deadlock
         .spawn()?;
     
+    eprintln!("SNARK generator process spawned with PID: {:?}", child.id());
+    
     // Wait for completion (with built-in timeout handling in the JS script)
+    eprintln!("Waiting for SNARK generator to complete...");
     let output = child.wait_with_output();
     
     let output = match output {
         Ok(output) => {
             eprintln!("SNARK generation completed");
+            eprintln!("Exit status: {:?}", output.status);
+            eprintln!("Stdout length: {} bytes", output.stdout.len());
+            eprintln!("Stderr length: {} bytes", output.stderr.len());
+            if !output.stderr.is_empty() {
+                eprintln!("Stderr: {}", String::from_utf8_lossy(&output.stderr));
+            }
             Ok(output)
         },
         Err(e) => {
