@@ -22,20 +22,27 @@ async function main() {
         
         // Generate the proof with timeout
         const TIMEOUT_MS = 60000; // 60 seconds timeout
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => {
+        let timeoutHandle;
+        const timeoutPromise = new Promise((_, reject) => {
+            timeoutHandle = setTimeout(() => {
                 process.stderr.write("SNARK generation timeout reached, exiting...\n");
                 reject(new Error(`SNARK generation timed out after ${TIMEOUT_MS/1000} seconds`));
-            }, TIMEOUT_MS)
-        );
+            }, TIMEOUT_MS);
+        });
         
         const result = await Promise.race([
             prover.generateProof(inputData),
             timeoutPromise
         ]);
         
+        // Clear the timeout since we succeeded
+        clearTimeout(timeoutHandle);
+        
         // Output the result as JSON to stdout (write to stdout, not console.log)
         process.stdout.write(JSON.stringify(result));
+        
+        // Explicitly exit with success
+        process.exit(0);
         
     } catch (error) {
         process.stderr.write(JSON.stringify({
