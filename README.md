@@ -143,9 +143,9 @@ CHAT_SERVICE_PORT=8002
 ```
 
 **Note**: The system will automatically search for `.env` files in:
-- Current directory (`~/agentkit/.env`)
-- Home directory (`~/.env`)
-- Agentic directory (`~/agentic/.env`)
+- Current directory (`~/agentkit/.env`) - recommended
+- Parent directory
+- Home directory (`~/.env`) - fallback
 
 ## 🚀 Quick Start
 

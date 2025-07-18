@@ -8,10 +8,9 @@ from pathlib import Path
 def load_env_from_multiple_locations():
     """Load .env file from multiple possible locations"""
     possible_paths = [
-        Path.cwd() / '.env',  # Current directory
-        Path.home() / '.env',  # Home directory
-        Path.home() / 'agentic' / '.env',  # Agentic directory
+        Path.cwd() / '.env',  # Current directory (should be ~/agentkit)
         Path.cwd().parent / '.env',  # Parent directory
+        Path.home() / '.env',  # Home directory (fallback)
     ]
     
     env_loaded = False
@@ -75,9 +74,8 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 if not openai.api_key or openai.api_key == 'your-openai-api-key-here':
     print("[ERROR] OpenAI API key not properly configured!")
     print("[INFO] Please ensure a valid API key is in one of these locations:")
-    print("  - ~/agentkit/.env")
-    print("  - ~/.env") 
-    print("  - ~/agentic/.env")
+    print("  - ~/agentkit/.env (recommended)")
+    print("  - ~/.env")
     print("[INFO] The key should be in format: OPENAI_API_KEY=sk-...")
 else:
     print(f"[INFO] OpenAI API key configured (ending in ...{openai.api_key[-4:]})")

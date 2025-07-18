@@ -42,8 +42,14 @@ def main():
     print("🔧 Verifiable Agent Kit - OpenAI Setup")
     print("=" * 50)
     
+    # Ensure we're in the agentkit directory
+    if not Path.cwd().name == 'agentkit':
+        print("⚠️  Warning: This script should be run from the agentkit directory")
+        print(f"   Current directory: {Path.cwd()}")
+    
     # Check current .env file
     env_path = Path.cwd() / '.env'
+    print(f"📁 Working with: {env_path}")
     
     # Load existing environment
     if env_path.exists():
