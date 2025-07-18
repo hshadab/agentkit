@@ -20,7 +20,7 @@ import importlib
 import parsers.workflow.openaiWorkflowParserEnhanced as openai_workflow_parser_enhanced
 importlib.reload(openai_workflow_parser_enhanced)
 from parsers.workflow.openaiWorkflowParserEnhanced import EnhancedOpenAIWorkflowParser
-from simple_workflow_parser import SimpleWorkflowParser
+from scripts.utils.simple_workflow_parser import SimpleWorkflowParser
 
 app = FastAPI(title="Verifiable Agent Kit v4.1 - Real zkEngine Only")
 
