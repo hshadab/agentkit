@@ -112,18 +112,34 @@ export class BlockchainVerifier {
     async connectSolana() {
         debugLog('Connecting to Solana wallet...', 'info');
         
-        if (!window.solana || !window.solana.isPhantom) {
-            this.uiManager.showToast('Please install Phantom wallet to verify on Solana', 'error');
+        // Check for Solflare first, then other wallets
+        let wallet = null;
+        let walletName = '';
+        
+        if (window.solflare && window.solflare.isSolflare) {
+            wallet = window.solflare;
+            walletName = 'Solflare';
+        } else if (window.solana && window.solana.isPhantom) {
+            wallet = window.solana;
+            walletName = 'Phantom';
+        } else if (window.solana) {
+            wallet = window.solana;
+            walletName = 'Solana';
+        }
+        
+        if (!wallet) {
+            this.uiManager.showToast('Please install Solflare or another Solana wallet to verify on Solana', 'error');
             return false;
         }
 
         try {
-            const resp = await window.solana.connect();
+            const resp = await wallet.connect();
             this.solanaWallet = resp.publicKey.toString();
             this.solanaConnected = true;
+            this.connectedWallet = wallet; // Store the wallet instance
             
-            debugLog(`Connected to Solana: ${this.solanaWallet}`, 'success');
-            this.uiManager.showToast('Solana wallet connected', 'success');
+            debugLog(`Connected to ${walletName}: ${this.solanaWallet}`, 'success');
+            this.uiManager.showToast(`${walletName} wallet connected`, 'success');
             
             // Store connection status
             localStorage.setItem('solana-connected', 'true');

@@ -52,7 +52,7 @@ class SolanaVerifier {
             const providers = this.getAvailableProviders();
             
             if (providers.length === 0) {
-                throw new Error('No Solana wallet found. Please install a Solana wallet extension (e.g., Phantom, Solflare, Backpack).');
+                throw new Error('No Solana wallet found. Please install a Solana wallet extension (e.g., Solflare, Backpack).');
             }
             
             // Try to connect to the first available provider

@@ -31,6 +31,50 @@ window.handleVerifyAction = (proofId, proofFunction, action) => {
     blockchainVerifier.handleVerifyAction(proofId, proofFunction, action);
 };
 
+// Debug function to test proof card display
+window.testProofCard = () => {
+    const testData = {
+        proofId: 'test-' + Date.now(),
+        status: 'complete',
+        message: 'Test proof generated successfully',
+        proof_function: 'prove_kyc',
+        metrics: {
+            generation_time_ms: 15234,
+            proof_size: 18874368
+        }
+    };
+    const proofCard = proofManager.addProofCard(testData);
+    uiManager.addMessage(proofCard, 'assistant');
+    debugLog('Test proof card added', 'info');
+};
+
+// Debug function to test workflow card display
+window.testWorkflowCard = () => {
+    const testData = {
+        workflow_id: 'wf-' + Date.now(),
+        steps: [
+            {
+                id: 'step1',
+                name: 'Generate KYC Proof',
+                status: 'completed'
+            },
+            {
+                id: 'step2', 
+                name: 'Verify on Ethereum',
+                status: 'in_progress'
+            },
+            {
+                id: 'step3',
+                name: 'Transfer USDC',
+                status: 'pending'
+            }
+        ]
+    };
+    const workflowCard = workflowManager.addWorkflowCard(testData);
+    uiManager.addMessage(workflowCard, 'assistant');
+    debugLog('Test workflow card added', 'info');
+};
+
 // Initialize UI when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     debugLog('Initializing AgentKit UI...', 'info');
@@ -428,27 +472,49 @@ async function autoConnectWallets() {
         if (banner) banner.style.display = 'flex';
     }
     
-    // Check if Phantom/Solflare was previously connected
-    if (localStorage.getItem('solana-connected') === 'true' && window.solana) {
-        try {
-            // Try to connect silently (Phantom supports this)
-            if (window.solana.connect) {
-                const resp = await window.solana.connect({ onlyIfTrusted: true });
-                if (resp.publicKey) {
-                    blockchainVerifier.solanaWallet = resp.publicKey.toString();
-                    blockchainVerifier.solanaConnected = true;
-                    debugLog('Auto-connected to Solana wallet', 'success');
-                    const banner = document.getElementById('sol-connect-banner');
-                    if (banner) banner.style.display = 'none';
-                    // Show wallet status indicator
-                    const statusIndicator = document.getElementById('sol-wallet-status');
-                    if (statusIndicator) statusIndicator.style.display = 'inline-block';
-                } else {
-                    throw new Error('No public key');
+    // Check if Solflare/Phantom was previously connected
+    if (localStorage.getItem('solana-connected') === 'true') {
+        // Try Solflare first, then other wallets
+        let wallet = null;
+        let walletName = '';
+        
+        if (window.solflare && window.solflare.isSolflare) {
+            wallet = window.solflare;
+            walletName = 'Solflare';
+        } else if (window.solana && window.solana.isPhantom) {
+            wallet = window.solana;
+            walletName = 'Phantom';
+        } else if (window.solana) {
+            wallet = window.solana;
+            walletName = 'Solana';
+        }
+        
+        if (wallet) {
+            try {
+                // Try to connect silently (most wallets support this)
+                if (wallet.connect) {
+                    const resp = await wallet.connect({ onlyIfTrusted: true });
+                    if (resp.publicKey) {
+                        blockchainVerifier.solanaWallet = resp.publicKey.toString();
+                        blockchainVerifier.solanaConnected = true;
+                        blockchainVerifier.connectedWallet = wallet;
+                        debugLog(`Auto-connected to ${walletName} wallet`, 'success');
+                        const banner = document.getElementById('sol-connect-banner');
+                        if (banner) banner.style.display = 'none';
+                        // Show wallet status indicator
+                        const statusIndicator = document.getElementById('sol-wallet-status');
+                        if (statusIndicator) statusIndicator.style.display = 'inline-block';
+                    } else {
+                        throw new Error('No public key');
+                    }
                 }
+            } catch (error) {
+                debugLog(`Failed to auto-connect ${walletName} wallet`, 'error');
+                const banner = document.getElementById('sol-connect-banner');
+                if (banner) banner.style.display = 'flex';
             }
-        } catch (error) {
-            debugLog('Failed to auto-connect Solana wallet', 'error');
+        } else {
+            // Show connect banner if no wallet found
             const banner = document.getElementById('sol-connect-banner');
             if (banner) banner.style.display = 'flex';
         }
