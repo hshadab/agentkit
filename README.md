@@ -259,6 +259,234 @@ Both contracts store proof verification data on-chain with:
 
 The Solana program uses PDAs (Program Derived Addresses) to ensure each proof can only be verified once per commitment.
 
+## 🔗 Deep Dive: On-Chain Verification
+
+### Why On-Chain Verification Matters
+
+Traditional proof systems often rely on centralized servers or trusted parties. Our on-chain verification provides:
+
+1. **Immutability**: Once verified, the proof record cannot be altered or deleted
+2. **Transparency**: Anyone can verify that a proof was validated at a specific time
+3. **Decentralization**: No single point of failure or trust
+4. **Interoperability**: Other smart contracts can check proof status
+5. **Auditability**: Complete verification history available forever
+
+### Verification Flow
+
+```mermaid
+graph LR
+    A[Generate ZK Proof] --> B[Create Commitment Hash]
+    B --> C[Submit to Blockchain]
+    C --> D{Smart Contract Validation}
+    D -->|Valid| E[Store On-Chain]
+    D -->|Invalid| F[Reject Transaction]
+    E --> G[Emit Event]
+    G --> H[Return TX Hash]
+```
+
+### Technical Implementation
+
+#### 1. Proof Commitment Generation
+```javascript
+// How commitments are created (simplified)
+function createCommitment(proofData) {
+    const proofString = JSON.stringify({
+        proof: proofData.proof,
+        publicSignals: proofData.publicSignals,
+        proofType: proofData.proofType,
+        timestamp: Date.now()
+    });
+    return keccak256(proofString);
+}
+```
+
+#### 2. Ethereum Verification Process
+```javascript
+// Frontend code for Ethereum verification
+async function verifyOnEthereum(proofId, commitment, proofType) {
+    // Connect to contract
+    const contract = new ethers.Contract(
+        VERIFIER_ADDRESS,
+        VERIFIER_ABI,
+        signer
+    );
+    
+    // Submit verification transaction
+    const tx = await contract.verifyProof(
+        proofId,
+        commitment,
+        proofType
+    );
+    
+    // Wait for confirmation
+    const receipt = await tx.wait();
+    
+    // Extract event data
+    const event = receipt.events.find(e => e.event === 'ProofVerified');
+    return {
+        txHash: receipt.transactionHash,
+        blockNumber: receipt.blockNumber,
+        timestamp: event.args.timestamp
+    };
+}
+```
+
+#### 3. Solana Verification Process
+```javascript
+// Frontend code for Solana verification
+async function verifyOnSolana(proofId, commitment, proofType) {
+    // Derive PDA for proof account
+    const [proofPDA] = await PublicKey.findProgramAddress(
+        [
+            Buffer.from("proof"),
+            Buffer.from(proofId),
+            Buffer.from(commitment)
+        ],
+        programId
+    );
+    
+    // Create verification instruction
+    const ix = await program.methods
+        .verifyProof(
+            Array.from(Buffer.from(proofId)),
+            Array.from(commitment),
+            proofType,
+            new BN(Date.now())
+        )
+        .accounts({
+            proofAccount: proofPDA,
+            verifier: wallet.publicKey,
+            systemProgram: SystemProgram.programId
+        })
+        .instruction();
+    
+    // Send transaction
+    const tx = new Transaction().add(ix);
+    const signature = await sendTransaction(tx, connection);
+    
+    return {
+        signature,
+        proofAccount: proofPDA.toString(),
+        explorerUrl: `https://explorer.solana.com/tx/${signature}?cluster=devnet`
+    };
+}
+```
+
+### Gas Costs and Performance
+
+| Blockchain | Verification Cost | Confirmation Time | Finality |
+|------------|------------------|-------------------|----------|
+| Ethereum Sepolia | ~50,000 gas (~0.001 ETH) | 12-15 seconds | 2-3 minutes |
+| Solana Devnet | ~5,000 lamports (~0.000005 SOL) | 400-600ms | ~2 seconds |
+
+### Querying Verified Proofs
+
+#### Ethereum - Reading Verification Status
+```javascript
+// Check if a commitment has been verified
+const isVerified = await contract.verifiedProofs(commitmentHash);
+
+// Query events for proof history
+const filter = contract.filters.ProofVerified(proofId);
+const events = await contract.queryFilter(filter);
+```
+
+#### Solana - Reading Proof Accounts
+```javascript
+// Fetch proof account data
+const proofAccount = await program.account.proofAccount.fetch(proofPDA);
+console.log({
+    proofId: Buffer.from(proofAccount.proofId).toString('hex'),
+    verifiedAt: new Date(proofAccount.verifiedAt * 1000),
+    verifier: proofAccount.verifier.toString()
+});
+```
+
+### Security Considerations
+
+1. **Replay Protection**: Each proof includes a unique timestamp in its commitment
+2. **Double-Spend Prevention**: Smart contracts check if commitment already exists
+3. **Proof Validity**: Only cryptographically valid proofs can be verified
+4. **Access Control**: Anyone can verify, but only proof owner can claim associated benefits
+
+### Integration with Other Contracts
+
+Our verification contracts can be called by other smart contracts to check proof status:
+
+```solidity
+// Example: DeFi protocol checking KYC status
+contract DeFiProtocol {
+    IProofVerifier public proofVerifier;
+    
+    function deposit(uint256 amount, bytes32 kycCommitment) external {
+        require(
+            proofVerifier.verifiedProofs(kycCommitment),
+            "KYC verification required"
+        );
+        // Process deposit...
+    }
+}
+```
+
+### Verification Events and Indexing
+
+Both chains emit events that can be indexed by services like The Graph:
+
+```graphql
+# Example GraphQL query for proof history
+query ProofHistory($user: String!) {
+    proofVerifieds(where: { verifier: $user }) {
+        id
+        proofId
+        commitment
+        timestamp
+        transactionHash
+    }
+}
+```
+
+### Future Enhancements
+
+1. **Cross-Chain Bridge**: Verify on one chain, use proof on another
+2. **Batch Verification**: Submit multiple proofs in one transaction
+3. **Proof Expiry**: Time-limited proofs for temporary permissions
+4. **Delegated Verification**: Allow third parties to verify on behalf of users
+5. **Zero-Knowledge Proof Aggregation**: Combine multiple proofs into one
+
+### Real-World Use Cases for On-Chain Verification
+
+#### 1. DeFi KYC Compliance
+Enable compliant DeFi protocols without revealing user identity:
+```javascript
+// User proves KYC once, uses proof across multiple protocols
+"Generate KYC proof and verify on Ethereum"
+// Result: Other DeFi protocols can check KYC status without accessing personal data
+```
+
+#### 2. Geographic Restrictions
+Prove location compliance for regulated services:
+```javascript
+// Prove you're in an allowed jurisdiction
+"Generate location proof for USA and verify on Solana"
+// Result: Access geo-restricted services while maintaining privacy
+```
+
+#### 3. AI Content Verification
+Prove content authenticity in the age of deepfakes:
+```javascript
+// Verify AI-generated content source
+"Generate AI content proof for OpenAI GPT-4 and verify on chain"
+// Result: Immutable record of content provenance
+```
+
+#### 4. Conditional Payments
+Automate payments based on verified conditions:
+```javascript
+// Release funds only after verification
+"Generate age > 21 proof, verify on chain, then transfer 10 USDC"
+// Result: Trustless escrow with privacy-preserving conditions
+```
+
 ### USDC Transfers
 - ✅ Circle API Sandbox (real test network)
 - ✅ Actual wallet addresses and transfer IDs
