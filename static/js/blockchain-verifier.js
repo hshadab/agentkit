@@ -134,7 +134,17 @@ export class BlockchainVerifier {
 
         try {
             const resp = await wallet.connect();
-            this.solanaWallet = resp.publicKey.toString();
+            // Handle different response formats from different wallets
+            let publicKey;
+            if (resp.publicKey) {
+                publicKey = resp.publicKey.toString();
+            } else if (wallet.publicKey) {
+                publicKey = wallet.publicKey.toString();
+            } else {
+                throw new Error('Could not get public key from wallet');
+            }
+            
+            this.solanaWallet = publicKey;
             this.solanaConnected = true;
             this.connectedWallet = wallet; // Store the wallet instance
             

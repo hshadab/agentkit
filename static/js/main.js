@@ -75,6 +75,40 @@ window.testWorkflowCard = () => {
     debugLog('Test workflow card added', 'info');
 };
 
+// Test function to simulate proof generation
+window.testProofGeneration = () => {
+    // Simulate proof_status message
+    const proofId = 'test-proof-' + Date.now();
+    wsManager.handleMessage({
+        type: 'proof_status',
+        status: 'generating',
+        proof_id: proofId,
+        message: 'Generating proof...',
+        metadata: {
+            function: 'prove_kyc',
+            arguments: ['12345', '1']
+        }
+    });
+    
+    // Simulate completion after 2 seconds
+    setTimeout(() => {
+        wsManager.handleMessage({
+            type: 'proof_complete',
+            proof_id: proofId,
+            status: 'complete',
+            metrics: {
+                generation_time_secs: 2.5,
+                proof_size: 19038604,
+                time_ms: 2500
+            },
+            metadata: {
+                function: 'prove_kyc',
+                arguments: ['12345', '1']
+            }
+        });
+    }, 2000);
+};
+
 // Initialize UI when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     debugLog('Initializing AgentKit UI...', 'info');
@@ -130,6 +164,15 @@ function setupMessageHandlers() {
         uiManager.addMessage(data.content, 'assistant');
     });
     
+    // Handle chat_response messages (what the server actually sends)
+    wsManager.on('chat_response', (data) => {
+        debugLog(`Received chat response: ${data.response}`, 'info');
+        uiManager.removeWaitingMessage();
+        if (data.response) {
+            uiManager.addMessage(data.response, 'assistant');
+        }
+    });
+    
     // Handle errors
     wsManager.on('error', (data) => {
         debugLog(`Server error: ${data.message}`, 'error');
@@ -159,6 +202,21 @@ function setupMessageHandlers() {
         uiManager.addMessage(proofCard, 'assistant');
     });
     
+    // Handle proof_status messages (what the server actually sends)
+    wsManager.on('proof_status', (data) => {
+        if (data.status === 'generating') {
+            debugLog('Proof status: generating', 'info');
+            const proofCard = proofManager.addProofCard({
+                proofId: data.proof_id,
+                status: 'generating',
+                message: data.message || 'Generating proof...',
+                proof_function: data.metadata?.function || 'unknown',
+                metadata: data.metadata
+            });
+            uiManager.addMessage(proofCard, 'assistant');
+        }
+    });
+    
     wsManager.on('proof_generation_complete', (data) => {
         debugLog('Proof generation complete', 'success');
         proofManager.updateProofCard(data.proofId, 'complete', data);
@@ -169,7 +227,13 @@ function setupMessageHandlers() {
     wsManager.on('proof_complete', (data) => {
         debugLog('Proof complete (alternative type)', 'success');
         const proofId = data.proof_id || data.proofId;
-        proofManager.updateProofCard(proofId, 'complete', data);
+        proofManager.updateProofCard(proofId, 'complete', {
+            proofId: proofId,
+            status: 'complete',
+            metrics: data.metrics,
+            metadata: data.metadata,
+            proof_function: data.metadata?.function || 'unknown'
+        });
         uiManager.showToast('Proof generated successfully!', 'success');
     });
     
