@@ -58,20 +58,29 @@ export class ProofManager {
                         Arguments: ${args.join(', ')}
                     </div>
                 ` : ''}
-                <div class="proof-metrics">
-                    <div class="metric">
-                        <span class="metric-label">Time:</span>
-                        <span class="metric-value">${generationTime}</span>
+                ${data.status === 'complete' ? `
+                    <div class="proof-metrics">
+                        <div class="metric">
+                            <span class="metric-label">Time:</span>
+                            <span class="metric-value">${generationTime}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Size:</span>
+                            <span class="metric-value">${proofSize}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Timestamp:</span>
+                            <span class="metric-value">${new Date().toLocaleTimeString()}</span>
+                        </div>
                     </div>
-                    <div class="metric">
-                        <span class="metric-label">Size:</span>
-                        <span class="metric-value">${proofSize}</span>
+                ` : `
+                    <div class="proof-metrics">
+                        <div class="metric">
+                            <span class="metric-label">Status:</span>
+                            <span class="metric-value">Generating proof...</span>
+                        </div>
                     </div>
-                    <div class="metric">
-                        <span class="metric-label">Timestamp:</span>
-                        <span class="metric-value">${new Date().toLocaleTimeString()}</span>
-                    </div>
-                </div>
+                `}
             </div>
             ${data.status === 'complete' ? `
                 <div class="card-actions">
