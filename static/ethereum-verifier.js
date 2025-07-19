@@ -162,6 +162,26 @@ class EthereumVerifier {
     async verifyProof(proofId, proofType) {
         try {
             console.log('Ethereum verifyProof called for workflow:', proofId, proofType);
+            console.log('Current connection state:', {
+                isConnected: this.isConnected,
+                account: this.account,
+                hasWeb3: !!this.web3,
+                hasContract: !!this.contract,
+                contractAddress: this.contractAddress,
+                hasContractABI: !!this.contractABI
+            });
+            
+            // If contract is not initialized but we have web3 and address, try to initialize it
+            if (this.isConnected && this.web3 && !this.contract && this.contractAddress) {
+                console.log('Contract not initialized, attempting to create it...');
+                if (!this.contractABI) {
+                    console.log('contractABI is missing, recreating from constructor...');
+                    const tempVerifier = new EthereumVerifier();
+                    this.contractABI = tempVerifier.contractABI;
+                }
+                this.contract = new this.web3.eth.Contract(this.contractABI, this.contractAddress);
+                console.log('Contract recreated:', !!this.contract);
+            }
             
             // Fetch proof data from backend
             const response = await fetch(`/api/proof/${proofId}/ethereum`);
@@ -248,9 +268,24 @@ class EthereumVerifier {
             // Check contract state before gas estimation
             console.log('=== Pre-verification checks ===');
             console.log('Contract exists:', !!this.contract);
-            console.log('Contract address:', this.contract?.options?.address);
+            console.log('Contract address:', this.contract?.options?.address || this.contractAddress);
             console.log('Account:', this.account);
             console.log('Web3 provider:', !!this.web3.currentProvider);
+            
+            // Double-check contract initialization
+            if (!this.contract) {
+                console.error('Contract is null, attempting to reinitialize...');
+                if (this.contractAddress && this.web3) {
+                    if (!this.contractABI) {
+                        const tempVerifier = new EthereumVerifier();
+                        this.contractABI = tempVerifier.contractABI;
+                    }
+                    this.contract = new this.web3.eth.Contract(this.contractABI, this.contractAddress);
+                    console.log('Contract reinitialized:', !!this.contract);
+                } else {
+                    throw new Error('Cannot initialize contract: missing address or web3');
+                }
+            }
             
             
             // Estimate gas for real verification
@@ -483,5 +518,46 @@ window.ethereumVerifier = new EthereumVerifier();
 
 // Expose the verification function for the blockchain verifier
 window.verifyOnEthereumActual = async function(proofId, proofType) {
+    // Check if we need to sync connection state from blockchainVerifier
+    if (window.blockchainVerifier && window.blockchainVerifier.ethereumConnected && !window.ethereumVerifier.isConnected) {
+        console.log('Syncing Ethereum connection state from blockchainVerifier');
+        // Sync the connection state
+        window.ethereumVerifier.isConnected = true;
+        window.ethereumVerifier.account = window.blockchainVerifier.ethereumAccount;
+        
+        // Initialize Web3 with the existing provider
+        if (window.ethereum) {
+            window.ethereumVerifier.web3 = new Web3(window.ethereum);
+            
+            // Get network ID and set contract
+            try {
+                const networkId = await window.ethereumVerifier.web3.eth.net.getId();
+                const contractAddresses = {
+                    11155111: '0x09378444046d1ccb32ca2d5b44fab6634738d067', // Sepolia
+                    31337: '0x5FbDB2315678afecb367f032d93F642f64180aa3' // Local Hardhat
+                };
+                
+                window.ethereumVerifier.contractAddress = contractAddresses[networkId];
+                if (window.ethereumVerifier.contractAddress) {
+                    // Create a new instance of EthereumVerifier to get the contractABI
+                    const tempVerifier = new EthereumVerifier();
+                    window.ethereumVerifier.contractABI = tempVerifier.contractABI;
+                    
+                    window.ethereumVerifier.contract = new window.ethereumVerifier.web3.eth.Contract(
+                        window.ethereumVerifier.contractABI, 
+                        window.ethereumVerifier.contractAddress
+                    );
+                    console.log('Ethereum contract initialized:', window.ethereumVerifier.contractAddress);
+                    console.log('Contract exists after sync:', !!window.ethereumVerifier.contract);
+                } else {
+                    console.error('No Ethereum contract address for network:', networkId);
+                }
+            } catch (error) {
+                console.error('Failed to sync contract setup:', error);
+            }
+        }
+    }
+    
     return await window.ethereumVerifier.verifyProof(proofId, proofType);
 };
+// Cache bust: 1752933400

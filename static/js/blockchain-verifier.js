@@ -8,34 +8,80 @@ export class BlockchainVerifier {
         this.proofManager = proofManager;
         this.ethereumConnected = false;
         this.solanaConnected = false;
+        this.baseConnected = false;
         this.ethereumAccount = null;
         this.solanaWallet = null;
+        this.baseAccount = null;
         
         // Auto-connect to wallets if previously connected
         this.autoConnect();
     }
     
     async autoConnect() {
-        // Check if previously connected to Ethereum
+        debugLog('Starting auto-connect for all chains...', 'info');
+        
+        // Auto-connect all chains that were previously connected
+        const connections = [];
+        let showConnectAll = false;
+        
+        // Check if previously connected to Ethereum (MetaMask)
         if (localStorage.getItem('ethereum-connected') === 'true') {
             debugLog('Auto-connecting to Ethereum...', 'info');
-            this.connectEthereum();
+            connections.push(this.connectEthereum().catch(err => {
+                debugLog(`Ethereum auto-connect failed: ${err.message}`, 'warning');
+                return false;
+            }));
         } else {
             // Show connect banner if not connected
             const banner = document.getElementById('eth-connect-banner');
             if (banner) banner.style.display = 'flex';
+            showConnectAll = true;
         }
         
-        // Check if previously connected to Solana
+        // Check if previously connected to Solana (Solflare/Phantom)
         if (localStorage.getItem('solana-connected') === 'true') {
-            debugLog('Auto-connecting to Solana...', 'info');
-            this.connectSolana();
+            debugLog('Auto-connecting to Solana (with delay)...', 'info');
+            // Add delay for Solflare to avoid connection conflicts
+            const solanaConnectionPromise = new Promise(async (resolve) => {
+                await new Promise(r => setTimeout(r, 1500)); // 1.5 second delay
+                try {
+                    const result = await this.connectSolana();
+                    resolve(result);
+                } catch (err) {
+                    debugLog(`Solana auto-connect failed: ${err.message}`, 'warning');
+                    resolve(false);
+                }
+            });
+            connections.push(solanaConnectionPromise);
         } else {
             // Show connect banner if not connected
             const banner = document.getElementById('sol-connect-banner');
             if (banner) banner.style.display = 'flex';
+            showConnectAll = true;
+        }
+        
+        // Check if previously connected to Base (MetaMask)
+        if (localStorage.getItem('base-connected') === 'true') {
+            debugLog('Auto-connecting to Base...', 'info');
+            connections.push(this.connectBase().catch(err => {
+                debugLog(`Base auto-connect failed: ${err.message}`, 'warning');
+                return false;
+            }));
+        } else {
+            // Show connect banner if not connected
+            const banner = document.getElementById('base-connect-banner');
+            if (banner) banner.style.display = 'flex';
+            showConnectAll = true;
+        }
+        
+        // Wait for all connections to complete
+        if (connections.length > 0) {
+            const results = await Promise.allSettled(connections);
+            const connected = results.filter(r => r.status === 'fulfilled' && r.value).length;
+            debugLog(`Auto-connect complete: ${connected}/${connections.length} chains connected`, 'info');
         }
     }
+    
 
     async connectEthereum() {
         debugLog('Connecting to Ethereum wallet...', 'info');
@@ -111,6 +157,12 @@ export class BlockchainVerifier {
     async connectSolana() {
         debugLog('Connecting to Solana wallet...', 'info');
         
+        // Add small delay to ensure wallet extensions are fully loaded
+        if (!window.solflare && !window.solana && !window.phantom) {
+            debugLog('Waiting for Solana wallet extensions to load...', 'info');
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        
         // Check for Solflare first, then other wallets
         let wallet = null;
         let walletName = '';
@@ -118,15 +170,19 @@ export class BlockchainVerifier {
         if (window.solflare && window.solflare.isSolflare) {
             wallet = window.solflare;
             walletName = 'Solflare';
+            debugLog('Found Solflare wallet', 'info');
         } else if (window.solana && window.solana.isPhantom) {
             wallet = window.solana;
             walletName = 'Phantom';
+            debugLog('Found Phantom wallet', 'info');
         } else if (window.solana) {
             wallet = window.solana;
             walletName = 'Solana';
+            debugLog('Found generic Solana wallet', 'info');
         }
         
         if (!wallet) {
+            debugLog('No Solana wallet found after waiting', 'warning');
             this.uiManager.showToast('Please install Solflare or another Solana wallet to verify on Solana', 'error');
             return false;
         }
@@ -168,6 +224,80 @@ export class BlockchainVerifier {
         }
     }
 
+    async connectBase() {
+        debugLog('Connecting to Base wallet...', 'info');
+        
+        // Check for any Ethereum wallet
+        if (!window.ethereum) {
+            this.uiManager.showToast('Please install MetaMask or another Ethereum wallet to verify on Base', 'error');
+            return false;
+        }
+
+        try {
+            const provider = window.ethereum;
+            const accounts = await provider.request({ method: 'eth_requestAccounts' });
+            this.baseAccount = accounts[0];
+            this.baseConnected = true;
+            
+            // Check if on Base network
+            const chainId = await provider.request({ method: 'eth_chainId' });
+            const baseSepoliaChainId = '0x14a34'; // 84532 in hex
+            
+            if (chainId !== baseSepoliaChainId) {
+                await this.switchToBase();
+            }
+            
+            debugLog(`Connected to Base: ${this.baseAccount}`, 'success');
+            
+            // Store connection status
+            localStorage.setItem('base-connected', 'true');
+            
+            // Hide connect banner if shown
+            const banner = document.getElementById('base-connect-banner');
+            if (banner) banner.style.display = 'none';
+            
+            // Show wallet status indicator
+            const statusIndicator = document.getElementById('base-wallet-status');
+            if (statusIndicator) statusIndicator.style.display = 'inline-block';
+            
+            return true;
+        } catch (error) {
+            debugLog(`Base connection error: ${error.message}`, 'error');
+            this.uiManager.showToast('Failed to connect Base wallet', 'error');
+            return false;
+        }
+    }
+
+    async switchToBase() {
+        try {
+            await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: '0x14a34' }], // Base Sepolia
+            });
+        } catch (switchError) {
+            if (switchError.code === 4902) {
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: '0x14a34',
+                            chainName: 'Base Sepolia',
+                            nativeCurrency: {
+                                name: 'Ethereum',
+                                symbol: 'ETH',
+                                decimals: 18
+                            },
+                            rpcUrls: ['https://sepolia.base.org'],
+                            blockExplorerUrls: ['https://sepolia.basescan.org']
+                        }],
+                    });
+                } catch (addError) {
+                    debugLog('Error adding Base network', 'error');
+                }
+            }
+        }
+    }
+
     async verifyOnEthereum(proofId, proofType) {
         debugLog(`Starting Ethereum verification for proof ${proofId}`, 'info');
         
@@ -191,11 +321,14 @@ export class BlockchainVerifier {
             const result = await this.verifyOnEthereumActual(proofId, proofType);
             
             if (result.success) {
-                // Store verification data
+                // Store verification data (handle both txHash and transactionHash)
+                const txHash = result.txHash || result.transactionHash;
+                const explorerUrl = result.explorerUrl || `https://sepolia.etherscan.io/tx/${txHash}`;
+                
                 this.proofManager.onChainVerifications.set(proofId, {
                     blockchain: 'Ethereum',
-                    txHash: result.txHash,
-                    explorerUrl: `https://sepolia.etherscan.io/tx/${result.txHash}`,
+                    txHash: txHash,
+                    explorerUrl: explorerUrl,
                     timestamp: new Date().toISOString()
                 });
                 
@@ -208,7 +341,6 @@ export class BlockchainVerifier {
                 }
                 
                 // Add verification result to the proof card
-                const explorerUrl = `https://sepolia.etherscan.io/tx/${result.txHash}`;
                 this.proofManager.addVerificationResult(proofId, 'Ethereum', result, explorerUrl);
             } else {
                 throw new Error(result.error || 'Verification failed');
@@ -302,6 +434,75 @@ export class BlockchainVerifier {
         throw new Error('Solana verifier not loaded');
     }
 
+    async verifyOnBase(proofId, proofType) {
+        debugLog(`Starting Base verification for proof ${proofId}`, 'info');
+        
+        // Check connection
+        if (!this.baseConnected) {
+            const connected = await this.connectBase();
+            if (!connected) return;
+        }
+        
+        // Update button state
+        const proofCard = document.querySelector(`[data-proof-id="${proofId}"]`);
+        const baseButton = proofCard?.querySelector('.base-verify-btn');
+        if (baseButton) {
+            baseButton.disabled = true;
+            baseButton.classList.add('verifying');
+            baseButton.textContent = '⏳ Verifying on Base...';
+        }
+        
+        try {
+            // Call the actual verification function
+            const result = await this.verifyOnBaseActual(proofId, proofType);
+            
+            if (result.success) {
+                // Store verification data
+                const txHash = result.txHash || result.transactionHash;
+                const explorerUrl = result.explorerUrl || `https://sepolia.basescan.org/tx/${txHash}`;
+                
+                this.proofManager.onChainVerifications.set(proofId, {
+                    blockchain: 'Base',
+                    txHash: txHash,
+                    explorerUrl: explorerUrl,
+                    timestamp: new Date().toISOString()
+                });
+                
+                this.uiManager.showToast('Proof verified on Base!', 'success');
+                
+                if (baseButton) {
+                    baseButton.textContent = '✅ Verified on Base';
+                    baseButton.style.background = 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)';
+                    baseButton.disabled = true;
+                }
+                
+                // Add verification result to the proof card
+                this.proofManager.addVerificationResult(proofId, 'Base', result, explorerUrl);
+            } else {
+                throw new Error(result.error || 'Verification failed');
+            }
+        } catch (error) {
+            debugLog(`Base verification error: ${error.message}`, 'error');
+            this.uiManager.showToast(`Base verification failed: ${error.message}`, 'error');
+            
+            if (baseButton) {
+                baseButton.textContent = '🔵 Verify on Base';
+                baseButton.disabled = false;
+                baseButton.classList.remove('verifying');
+            }
+        }
+    }
+
+    async verifyOnBaseActual(proofId, proofType) {
+        // This function should be implemented by the base-verifier.js
+        // For now, we'll call the global function if it exists
+        if (typeof window.verifyOnBaseActual === 'function') {
+            return await window.verifyOnBaseActual(proofId, proofType);
+        }
+        
+        throw new Error('Base verifier not loaded');
+    }
+
     addVerificationResultCard(proofId, blockchain, result) {
         const card = document.createElement('div');
         card.className = 'verification-card';
@@ -352,6 +553,10 @@ export class BlockchainVerifier {
             case 'solana':
                 await this.verifyOnSolana(proofId, proofFunction);
                 break;
+            case 'base':
+                await this.verifyOnBase(proofId, proofFunction);
+                break;
         }
     }
+    
 }

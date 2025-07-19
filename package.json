@@ -7,6 +7,7 @@
     "test:snark": "node src/test_real_snark.js",
     "compile": "hardhat compile",
     "deploy": "hardhat run scripts/deploy.js --network sepolia",
+    "deploy:base": "hardhat run scripts/deploy-base.js --network baseSepolia",
     "rotate-logs": "node scripts/log-rotation.js",
     "cleanup-proofs": "node scripts/cleanup-proofs.js"
   },
@@ -24,6 +25,8 @@
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^6.0.0",
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-etherscan": "^3.1.8",
     "dotenv": "^17.2.0",
     "ethers": "^6.15.0",
     "hardhat": "^2.25.0"

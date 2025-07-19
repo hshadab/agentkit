@@ -20,6 +20,7 @@
                 <div id="wallet-status" style="display: flex; gap: 8px; font-size: 13px;">
                     <span id="eth-wallet-status" style="display: none; padding: 4px 12px; background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-radius: 4px; font-weight: 500;">ETH Connected</span>
                     <span id="sol-wallet-status" style="display: none; padding: 4px 12px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-radius: 4px; font-weight: 500;">SOL Connected</span>
+                    <span id="base-wallet-status" style="display: none; padding: 4px 12px; background: rgba(0, 82, 255, 0.1); color: #0052FF; border-radius: 4px; font-weight: 500;">BASE Connected</span>
                 </div>
                 <div id="connection-status" class="status disconnected">
                     <div class="status-dot"></div>
@@ -63,6 +64,12 @@
         <button onclick="window.blockchainVerifier.connectSolana()">Connect Solflare</button>
     </div>
 
+    <!-- Base Connect Banner -->
+    <div id="base-connect-banner" class="base-connect-banner" style="display: none;">
+        Connect your wallet to verify proofs on Base
+        <button onclick="window.blockchainVerifier.connectBase()">Connect Wallet</button>
+    </div>
+
     <!-- External dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/iden3/snarkjs/build/snarkjs.min.js"></script>
@@ -71,6 +78,7 @@
     <!-- Blockchain verifiers (these need to be updated to work with the modular system) -->
     <script src="/static/ethereum-verifier.js?v=20250711-1945"></script>
     <script src="/static/solana-verifier.js"></script>
+    <script src="/static/base-verifier.js"></script>
     
     <!-- Main application module -->
     <script type="module" src="/static/js/main.js"></script>

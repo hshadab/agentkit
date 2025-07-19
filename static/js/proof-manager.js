@@ -95,6 +95,10 @@ export class ProofManager {
                             onclick="window.blockchainVerifier.verifyOnSolana('${data.proofId}', '${functionName}')">
                         ◎ Verify on Solana
                     </button>
+                    <button class="action-btn base-verify-btn" 
+                            onclick="window.blockchainVerifier.verifyOnBase('${data.proofId}', '${functionName}')">
+                        🔵 Verify on Base
+                    </button>
                 </div>
                 <div class="verification-results" id="verification-results-${data.proofId}">
                     <!-- Verification results will be added here -->
@@ -146,15 +150,26 @@ export class ProofManager {
                     ✓ Verify Locally
                 </button>
                 <button class="action-btn eth-verify-btn" 
-                        onclick="window.blockchainVerifier.verifyOnEthereum('${proofId}', 'proof')">
+                        onclick="window.blockchainVerifier.verifyOnEthereum('${proofId}', '${data.metadata?.function || data.proof_function || 'proof'}')">
                     🔷 Verify on Ethereum
                 </button>
                 <button class="action-btn sol-verify-btn" 
-                        onclick="window.blockchainVerifier.verifyOnSolana('${proofId}', 'proof')">
+                        onclick="window.blockchainVerifier.verifyOnSolana('${proofId}', '${data.metadata?.function || data.proof_function || 'proof'}')">
                     ◎ Verify on Solana
+                </button>
+                <button class="action-btn base-verify-btn" 
+                        onclick="window.blockchainVerifier.verifyOnBase('${proofId}', '${data.metadata?.function || data.proof_function || 'proof'}')">
+                    🔵 Verify on Base
                 </button>
             `;
             proofCard.appendChild(actionsDiv);
+            
+            // Also add the verification results container
+            const resultsDiv = document.createElement('div');
+            resultsDiv.className = 'verification-results';
+            resultsDiv.id = `verification-results-${proofId}`;
+            resultsDiv.innerHTML = '<!-- Verification results will be added here -->';
+            proofCard.appendChild(resultsDiv);
         }
     }
 
@@ -422,6 +437,7 @@ export class ProofManager {
                     <option value="local">Verify locally</option>
                     <option value="ethereum">Verify on Ethereum</option>
                     <option value="solana">Verify on Solana</option>
+                    <option value="base">Verify on Base</option>
                 </select>
             `;
         } else {

@@ -453,5 +453,28 @@ window.solanaVerifier = new SolanaVerifier();
 
 // Expose the verification function for the blockchain verifier
 window.verifyOnSolanaActual = async function(proofId, proofType) {
+    // Check if we need to sync connection state from blockchainVerifier
+    if (window.blockchainVerifier && window.blockchainVerifier.solanaConnected && !window.solanaVerifier.isConnected) {
+        console.log('Syncing Solana connection state from blockchainVerifier');
+        // Sync the connection state
+        window.solanaVerifier.isConnected = true;
+        window.solanaVerifier.wallet = new solanaWeb3.PublicKey(window.blockchainVerifier.solanaWallet);
+        
+        // Sync the provider and connection
+        if (window.blockchainVerifier.connectedWallet) {
+            window.solanaVerifier.provider = window.blockchainVerifier.connectedWallet;
+        }
+        
+        // Initialize connection and program ID
+        window.solanaVerifier.connection = new solanaWeb3.Connection(
+            'https://api.devnet.solana.com',
+            {
+                commitment: 'confirmed',
+                confirmTransactionInitialTimeout: 60000
+            }
+        );
+        window.solanaVerifier.programId = new solanaWeb3.PublicKey(window.solanaVerifier.PROGRAM_ID);
+    }
+    
     return await window.solanaVerifier.verifyProof(proofId, proofType);
 };
