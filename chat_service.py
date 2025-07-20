@@ -748,11 +748,19 @@ async def poll_transfer(request: dict):
                 
                 # Check nested structure for transaction hash
                 if not transaction_hash and 'blockchainLocation' in transfer_data:
-                    transaction_hash = transfer_data['blockchainLocation'].get('txHash')
+                    blockchain_location = transfer_data['blockchainLocation']
+                    transaction_hash = blockchain_location.get('txHash') or blockchain_location.get('transactionHash')
                 
-                # For Solana, check if we need to look in a different field
-                if not transaction_hash and blockchain == 'SOL' and 'transactionId' in transfer_data:
-                    transaction_hash = transfer_data.get('transactionId')
+                # For Solana, check additional fields
+                if not transaction_hash and blockchain == 'SOL':
+                    transaction_hash = (transfer_data.get('transactionId') or 
+                                      transfer_data.get('blockchainTxId') or 
+                                      transfer_data.get('solanaSignature'))
+                
+                # Check transactionDetails field (Circle sometimes nests it here)
+                if not transaction_hash and 'transactionDetails' in transfer_data:
+                    tx_details = transfer_data['transactionDetails']
+                    transaction_hash = tx_details.get('transactionHash') or tx_details.get('txHash')
                 
                 # Build explorer link if we have hash and chain
                 destination = transfer_data.get('destination', {})
@@ -763,11 +771,11 @@ async def poll_transfer(request: dict):
                     elif chain == 'SOL':
                         explorer_link = f"https://explorer.solana.com/tx/{transaction_hash}?cluster=devnet"
                         
-                # For completed Solana transfers without hash, provide transfer ID link
-                elif status == 'complete' and blockchain == 'SOL' and not transaction_hash:
-                    print(f"[WARNING] Solana transfer complete but no tx hash. Transfer ID: {transfer_id}")
-                    # Provide a message about Solana finality
-                    explorer_link = f"Transfer ID: {transfer_id} (Solana tx pending finality)"
+                # For completed transfers without hash, check if we missed it in logs
+                elif status == 'complete' and not transaction_hash:
+                    print(f"[WARNING] Transfer complete but no tx hash found. Full data: {json.dumps(transfer_data, indent=2)}")
+                    # Provide transfer ID for reference
+                    explorer_link = f"Transfer ID: {transfer_id} (tx hash not yet available)"
                             
             except json.JSONDecodeError:
                 print(f"[WARNING] Could not parse JSON from transfer status output")

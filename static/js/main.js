@@ -196,8 +196,9 @@ function setupMessageHandlers() {
         debugLog('Proof generation started', 'info');
         
         // Check if this is part of a workflow
-        const isPartOfWorkflow = data.workflowId || data.workflow_id || 
+        const activeWorkflowId = data.workflowId || data.workflow_id || 
                                data.additional_context?.workflow_id;
+        const isPartOfWorkflow = activeWorkflowId && workflowManager.workflowStates.has(activeWorkflowId);
         
         // Only show proof card for standalone proofs
         if (!isPartOfWorkflow) {
@@ -215,8 +216,9 @@ function setupMessageHandlers() {
         debugLog('Proof started (alternative type)', 'info');
         
         // Check if this is part of a workflow
-        const isPartOfWorkflow = data.workflowId || data.workflow_id || 
+        const activeWorkflowId = data.workflowId || data.workflow_id || 
                                data.additional_context?.workflow_id;
+        const isPartOfWorkflow = activeWorkflowId && workflowManager.workflowStates.has(activeWorkflowId);
         
         // Only show proof card for standalone proofs
         if (!isPartOfWorkflow) {
@@ -235,9 +237,10 @@ function setupMessageHandlers() {
         if (data.status === 'generating') {
             debugLog('Proof status: generating', 'info');
             
-            // Check if this is part of a workflow
-            const isPartOfWorkflow = data.workflowId || data.workflow_id || 
+            // Check if this is part of a workflow - only if there's an active workflow
+            const activeWorkflowId = data.workflowId || data.workflow_id || 
                                    data.additional_context?.workflow_id;
+            const isPartOfWorkflow = activeWorkflowId && workflowManager.workflowStates.has(activeWorkflowId);
             
             // Only show proof card for standalone proofs
             if (!isPartOfWorkflow) {
@@ -268,8 +271,9 @@ function setupMessageHandlers() {
         const proofId = data.proof_id || data.proofId;
         
         // Check if this is part of a workflow
-        const isPartOfWorkflow = data.workflowId || data.workflow_id || 
+        const activeWorkflowId = data.workflowId || data.workflow_id || 
                                data.additional_context?.workflow_id;
+        const isPartOfWorkflow = activeWorkflowId && workflowManager.workflowStates.has(activeWorkflowId);
         
         // Only update card for standalone proofs
         if (!isPartOfWorkflow) {
@@ -319,6 +323,8 @@ function setupMessageHandlers() {
             uiManager.addMessage(workflowCard, 'assistant');
         } else {
             debugLog('Skipping workflow card for single proof generation', 'info');
+            // Still need to track the workflow state even if we don't show a card
+            workflowManager.workflowStates.set(data.workflow_id, data);
         }
         
         // Show AI response after workflow card if exists
@@ -343,12 +349,20 @@ function setupMessageHandlers() {
         
         debugLog(`Workflow completed: ${data.workflow_id}`, 'success');
         workflowManager.updateWorkflowStatus(data.workflow_id, 'completed');
+        // Clean up workflow state after completion
+        setTimeout(() => {
+            workflowManager.workflowStates.delete(data.workflow_id);
+        }, 1000);
         // Silent success - workflow card shows completion
     });
     
     wsManager.on('workflow_failed', (data) => {
         debugLog(`Workflow failed: ${data.workflow_id}`, 'error');
         workflowManager.updateWorkflowStatus(data.workflow_id, 'failed');
+        // Clean up workflow state after failure
+        setTimeout(() => {
+            workflowManager.workflowStates.delete(data.workflow_id);
+        }, 1000);
         uiManager.showToast('Workflow failed', 'error');
     });
     
@@ -407,6 +421,17 @@ function setupMessageHandlers() {
             let result;
             const proofId = data.proof_id || data.proofId;
             const proofType = data.proof_type || data.proofType || 'unknown';
+            
+            // Ensure wallet is connected before verification
+            if (data.blockchain?.toUpperCase() === 'SOLANA' && !blockchainVerifier.solanaConnected) {
+                debugLog('Solana wallet not connected, attempting connection...', 'info');
+                const connected = await blockchainVerifier.connectSolana();
+                if (!connected) {
+                    throw new Error('Failed to connect Solana wallet. Please ensure Solflare is installed and unlocked.');
+                }
+                // Add small delay after connection to ensure wallet is ready
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
             
             switch (data.blockchain?.toUpperCase()) {
                 case 'ETHEREUM':

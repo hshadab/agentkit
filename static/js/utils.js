@@ -165,12 +165,19 @@ export function formatTimestamp(timestamp) {
 }
 
 export function createExplorerLink(transferData) {
-    if (!transferData || !transferData.blockchainTxHash) {
+    const txHash = transferData?.blockchainTxHash || transferData?.transactionHash;
+    if (!transferData || !txHash) {
         return '';
     }
 
+    // Use explorerLink if provided
+    if (transferData.explorerLink) {
+        return `<a href="${transferData.explorerLink}" target="_blank" class="explorer-link">
+            View on Explorer →
+        </a>`;
+    }
+
     let explorerUrl = '';
-    const txHash = transferData.blockchainTxHash;
     const blockchain = transferData.blockchain?.toLowerCase() || 'ethereum';
 
     if (blockchain === 'ethereum' || blockchain === 'eth') {

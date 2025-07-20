@@ -740,6 +740,7 @@ async fn process_user_command(state: AppState, message: String) {
                                 "transferId": transfer_id,
                                 "status": transfer_data.get("status").and_then(|s| s.as_str()).unwrap_or("pending"),
                                 "transactionHash": transfer_data.get("transactionHash"),
+                                "blockchainTxHash": transfer_data.get("transactionHash"), // Also send as blockchainTxHash for compatibility
                                 "explorerLink": transfer_data.get("explorerLink"),
                                 "blockchain": blockchain
                             });

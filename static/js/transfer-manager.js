@@ -101,6 +101,19 @@ export class TransferManager {
         if (txHash && !container.querySelector('.blockchain-status.confirmed')) {
             const pendingStatus = container.querySelector('.blockchain-status.pending');
             if (pendingStatus) {
+                // Merge current state with new data for explorer link generation
+                const mergedData = { ...newState, transactionHash: txHash };
+                
+                // If we don't have explorerLink but have the data to construct it
+                if (!mergedData.explorerLink && mergedData.blockchain) {
+                    const blockchain = mergedData.blockchain.toUpperCase();
+                    if (blockchain === 'ETH' || blockchain === 'ETHEREUM') {
+                        mergedData.explorerLink = `https://sepolia.etherscan.io/tx/${txHash}`;
+                    } else if (blockchain === 'SOL' || blockchain === 'SOLANA') {
+                        mergedData.explorerLink = `https://explorer.solana.com/tx/${txHash}?cluster=devnet`;
+                    }
+                }
+                
                 pendingStatus.className = 'blockchain-status confirmed';
                 pendingStatus.innerHTML = `
                     <div style="font-weight: 600; margin-bottom: 8px;">
@@ -112,7 +125,7 @@ export class TransferManager {
                         </span>
                     </div>
                     <div class="blockchain-link">
-                        ${createExplorerLink(data)}
+                        ${createExplorerLink(mergedData)}
                     </div>
                 `;
             }
