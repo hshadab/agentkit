@@ -531,7 +531,26 @@ window.verifyOnEthereumActual = async function(proofId, proofType) {
             
             // Get network ID and set contract
             try {
+                // First ensure we're on Ethereum Sepolia network
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                const sepoliaChainId = '0xaa36a7'; // 11155111 in hex
+                
+                if (chainId !== sepoliaChainId) {
+                    console.log('Not on Ethereum Sepolia network, switching...');
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: sepoliaChainId }],
+                        });
+                    } catch (switchError) {
+                        console.error('Failed to switch to Sepolia:', switchError);
+                    }
+                }
+                
+                // Now get the network ID
                 const networkId = await window.ethereumVerifier.web3.eth.net.getId();
+                console.log('Current network ID after switch:', networkId);
+                
                 const contractAddresses = {
                     11155111: '0x09378444046d1ccb32ca2d5b44fab6634738d067', // Sepolia
                     31337: '0x5FbDB2315678afecb367f032d93F642f64180aa3' // Local Hardhat

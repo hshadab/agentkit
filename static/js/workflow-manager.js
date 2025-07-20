@@ -100,6 +100,16 @@ export class WorkflowManager {
             stepDiv.appendChild(stepContent);
         }
         
+        // Add step content if exists (for verifications)
+        if ((step.type === 'verify_on_blockchain' || step.action === 'verify_on_ethereum' || 
+             step.action === 'verify_on_solana' || step.action === 'verify_on_base') && 
+            step.verificationData) {
+            const stepContent = document.createElement('div');
+            stepContent.className = 'step-content';
+            stepContent.appendChild(this.createVerificationStatusElement(step.verificationData));
+            stepDiv.appendChild(stepContent);
+        }
+        
         return stepDiv;
     }
 
@@ -112,10 +122,16 @@ export class WorkflowManager {
 
     updateWorkflowStep(workflowId, stepId, updates) {
         debugLog(`Updating workflow step: ${workflowId}/${stepId}`, 'info');
+        debugLog(`Updates received: ${JSON.stringify(updates)}`, 'debug');
         
         const stepElement = document.querySelector(`[data-workflow-id="${workflowId}"][data-step-id="${stepId}"]`);
         if (!stepElement) {
             debugLog(`Step element not found: ${stepId}`, 'warning');
+            // Try to find by step ID only
+            const altElement = document.querySelector(`[data-step-id="${stepId}"]`);
+            if (altElement) {
+                debugLog(`Found element with step-id only, workflow-id on element: ${altElement.getAttribute('data-workflow-id')}`, 'warning');
+            }
             return;
         }
         
@@ -159,6 +175,19 @@ export class WorkflowManager {
             if (updates.transferData.id && updates.transferData.blockchain) {
                 this.transferManager.startTransferPolling(updates.transferData.id, updates.transferData.blockchain);
             }
+        }
+        
+        // Update blockchain verification data if this is a verification step
+        if (updates.verificationData) {
+            debugLog(`Adding verification data to step: ${JSON.stringify(updates.verificationData)}`, 'info');
+            let stepContent = stepElement.querySelector('.step-content');
+            if (!stepContent) {
+                stepContent = document.createElement('div');
+                stepContent.className = 'step-content';
+                stepElement.appendChild(stepContent);
+            }
+            stepContent.innerHTML = '';
+            stepContent.appendChild(this.createVerificationStatusElement(updates.verificationData));
         }
         
         // If workflow is complete, update the workflow card status
@@ -206,12 +235,14 @@ export class WorkflowManager {
                 if (data.steps) {
                     data.steps.forEach((step, index) => {
                         const prevStep = previousState?.steps?.[index];
-                        if (!prevStep || prevStep.status !== step.status) {
+                        if (!prevStep || prevStep.status !== step.status || 
+                            JSON.stringify(prevStep.verificationData) !== JSON.stringify(step.verificationData)) {
                             this.updateWorkflowStep(workflowId, step.id, {
                                 status: step.status,
                                 startTime: step.startTime,
                                 endTime: step.endTime,
-                                transferData: step.transferData
+                                transferData: step.transferData,
+                                verificationData: step.verificationData
                             });
                         }
                     });
@@ -259,5 +290,43 @@ export class WorkflowManager {
             clearInterval(intervalId);
         });
         this.workflowPollingIntervals.clear();
+    }
+    
+    createVerificationStatusElement(verificationData) {
+        const statusDiv = document.createElement('div');
+        statusDiv.className = 'verification-status';
+        
+        if (verificationData.success) {
+            statusDiv.innerHTML = `
+                <div class="blockchain-status success">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-weight: 600;">✓ Verified on ${verificationData.blockchain}</span>
+                        ${verificationData.explorer_url ? `
+                            <a href="${verificationData.explorer_url}" target="_blank" class="explorer-link">
+                                View on Blockchain
+                            </a>
+                        ` : ''}
+                    </div>
+                    ${verificationData.transaction_hash ? `
+                        <div style="font-size: 12px; color: rgba(255, 255, 255, 0.7); margin-top: 4px;">
+                            Tx: ${verificationData.transaction_hash.substring(0, 16)}...
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        } else {
+            statusDiv.innerHTML = `
+                <div class="blockchain-status error">
+                    <div style="font-weight: 600;">✗ Verification Failed</div>
+                    ${verificationData.error ? `
+                        <div style="font-size: 12px; margin-top: 4px;">
+                            ${verificationData.error}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+        
+        return statusDiv;
     }
 }

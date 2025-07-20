@@ -99,9 +99,9 @@ class BaseVerifier {
             this.walletType = walletName;
             
             // Get network ID
-            const networkId = await this.web3.eth.net.getId();
-            const chainId = await this.web3.eth.getChainId();
-            console.log('Network ID:', networkId, 'Chain ID:', chainId);
+            let networkId = await this.web3.eth.net.getId();
+            let chainId = await this.web3.eth.getChainId();
+            console.log('Initial Network ID:', networkId, 'Chain ID:', chainId);
             
             // Base network IDs
             // Base Mainnet: 8453
@@ -112,6 +112,10 @@ class BaseVerifier {
             if (chainId !== 84532 && chainId !== 8453) {
                 console.log('Not on Base network, switching...');
                 await this.switchToBase();
+                // Re-fetch network ID after switching
+                networkId = await this.web3.eth.net.getId();
+                chainId = await this.web3.eth.getChainId();
+                console.log('Network ID after switch:', networkId, 'Chain ID:', chainId);
             }
             
             // Contract addresses by network
@@ -212,6 +216,11 @@ class BaseVerifier {
             // If contract is not initialized but we have web3, try to initialize it
             if (this.isConnected && this.web3 && !this.contract && this.contractAddress && this.contractAddress !== '0x0000000000000000000000000000000000000000') {
                 console.log('Reinitializing contract...');
+                if (!this.contractABI) {
+                    console.log('contractABI is missing, recreating from constructor...');
+                    const tempVerifier = new BaseVerifier();
+                    this.contractABI = tempVerifier.contractABI;
+                }
                 this.contract = new this.web3.eth.Contract(this.contractABI, this.contractAddress);
             }
             
@@ -223,6 +232,13 @@ class BaseVerifier {
             
             const proofData = await response.json();
             console.log('Fetched proof data for Base:', proofData);
+            console.log('Proof structure:', {
+                hasProof: !!proofData.proof,
+                hasPublicInputs: !!proofData.publicInputs,
+                hasProofIdBytes32: !!proofData.proofIdBytes32,
+                hasPublicSignals: !!proofData.public_signals,
+                publicSignalsLength: proofData.public_signals?.length
+            });
             
             // Call the actual verification method
             const result = await this.verifyProofOnChain(proofId, proofData, proofData.publicInputs, proofType);
@@ -296,6 +312,8 @@ class BaseVerifier {
             
             console.log('Formatted proof:', formattedProof);
             console.log('Public signals:', pubSignals);
+            console.log('Contract address:', this.contractAddress);
+            console.log('Account:', this.account);
             
             // Estimate gas
             console.log('Starting gas estimation...');
@@ -312,6 +330,15 @@ class BaseVerifier {
                 console.log('Estimated gas:', gasEstimate);
             } catch (gasError) {
                 console.error('Gas estimation failed:', gasError);
+                console.error('Gas error details:', {
+                    message: gasError.message,
+                    code: gasError.code,
+                    data: gasError.data
+                });
+                // Try to decode the revert reason if available
+                if (gasError.message && gasError.message.includes('revert')) {
+                    console.error('Contract reverted during gas estimation - proof verification would fail');
+                }
                 gasEstimate = 300000; // Default gas limit
             }
             
@@ -401,7 +428,19 @@ window.verifyOnBaseActual = async function(proofId, proofType) {
             
             // Get network ID and set contract
             try {
+                // First ensure we're on Base network
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                const baseSepoliaChainId = '0x14a34'; // 84532 in hex
+                
+                if (chainId !== baseSepoliaChainId) {
+                    console.log('Not on Base network, switching...');
+                    await window.baseVerifier.switchToBase();
+                }
+                
+                // Now get the network ID
                 const networkId = await window.baseVerifier.web3.eth.net.getId();
+                console.log('Current network ID after switch:', networkId);
+                
                 const contractAddresses = {
                     8453: '0x...', // Base Mainnet (not deployed)
                     84532: '0x74D68B2481d298F337e62efc50724CbBA68dCF8f', // Base Sepolia
@@ -409,6 +448,10 @@ window.verifyOnBaseActual = async function(proofId, proofType) {
                 
                 window.baseVerifier.contractAddress = contractAddresses[networkId];
                 if (window.baseVerifier.contractAddress && window.baseVerifier.contractAddress !== '0x0000000000000000000000000000000000000000') {
+                    // Create a new instance of BaseVerifier to get the contractABI
+                    const tempVerifier = new BaseVerifier();
+                    window.baseVerifier.contractABI = tempVerifier.contractABI;
+                    
                     window.baseVerifier.contract = new window.baseVerifier.web3.eth.Contract(
                         window.baseVerifier.contractABI, 
                         window.baseVerifier.contractAddress

@@ -17,6 +17,7 @@ class WorkflowExecutor {
         this.verificationResults = {}; // Store verification results
         this.workflowId = null;
         this.stepResults = [];
+        this.isBlockchainVerification = false; // Track if we're doing blockchain verification
     }
 
     async connect() {
@@ -512,6 +513,12 @@ class WorkflowExecutor {
                     
                     if (message.type === 'verification_complete' && 
                         message.proof_id === proofId) {
+                        // Skip if we're doing blockchain verification
+                        if (this.isBlockchainVerification) {
+                            console.log('⏭️ Skipping local verification during blockchain verification');
+                            return;
+                        }
+                        
                         this.wsClient.off('message', messageHandler);
                         
                         const isValid = message.result === 'VALID';
@@ -600,6 +607,12 @@ class WorkflowExecutor {
                 
                 if (message.type === 'verification_complete' && 
                     message.proof_id === proofToVerify.proofId) {
+                    // Skip if we're doing blockchain verification
+                    if (this.isBlockchainVerification) {
+                        console.log('⏭️ Skipping local verification during blockchain verification');
+                        return;
+                    }
+                    
                     this.wsClient.off('message', messageHandler);
                     
                     const isValid = message.result === 'VALID';
@@ -646,6 +659,9 @@ class WorkflowExecutor {
     }
 
     async verifyOnBlockchain(blockchain, proofType, person = null, stepIndex = 0) {
+        // Set flag to indicate blockchain verification is in progress
+        this.isBlockchainVerification = true;
+        
         // Find the proof to verify on blockchain
         let proofToVerify = null;
         let resultKey = null;
@@ -667,6 +683,7 @@ class WorkflowExecutor {
         
         if (!proofToVerify) {
             console.error(`❌ No ${proofType} proof found to verify on ${blockchain}`);
+            this.isBlockchainVerification = false;
             return { success: false, error: `No ${proofType} proof to verify` };
         }
         
@@ -700,12 +717,17 @@ class WorkflowExecutor {
             console.log(`⏳ Waiting for user to verify on ${blockchain}...`);
             
             // Wait for verification response from frontend
-            return new Promise((resolve) => {
+            const verificationPromise = new Promise((resolve) => {
                 const messageHandler = (data) => {
                     const message = JSON.parse(data);
                     
+                    // Debug: log all blockchain verification responses
+                    if (message.type === 'blockchain_verification_response') {
+                        console.log(`📨 Received blockchain verification response:`, JSON.stringify(message));
+                    }
+                    
                     if (message.type === 'blockchain_verification_response' && 
-                        message.proofId === proofToVerify.proofId &&
+                        message.proof_id === proofToVerify.proofId &&
                         message.blockchain === blockchain.toUpperCase()) {
                         
                         this.wsClient.off('message', messageHandler);
@@ -724,21 +746,21 @@ class WorkflowExecutor {
                                 workflowId: this.workflowId,
                                 proofId: proofToVerify.proofId,
                                 blockchain: blockchain.toUpperCase(),
-                                transactionHash: message.transactionHash,
-                                explorerUrl: message.explorerUrl,
+                                transactionHash: message.transaction_hash,
+                                explorerUrl: message.explorer_url,
                                 success: true
                             });
                             
                             console.log(`✅ ${blockchain} verification complete: ${proofToVerify.proofId}`);
-                            console.log(`   Transaction: ${message.transactionHash}`);
+                            console.log(`   Transaction: ${message.transaction_hash}`);
                             
                             resolve({
                                 success: true,
                                 valid: true,
                                 proofId: proofToVerify.proofId,
                                 blockchain: blockchain.toUpperCase(),
-                                transactionHash: message.transactionHash,
-                                explorerUrl: message.explorerUrl
+                                transactionHash: message.transaction_hash,
+                                explorerUrl: message.explorer_url
                             });
                         } else {
                             console.log(`❌ ${blockchain} verification failed: ${message.error}`);
@@ -755,6 +777,7 @@ class WorkflowExecutor {
                 // Add timeout
                 setTimeout(() => {
                     this.wsClient.off('message', messageHandler);
+                    this.isBlockchainVerification = false; // Reset flag on timeout
                     resolve({
                         success: false,
                         error: 'Verification timeout - no response from frontend'
@@ -762,8 +785,14 @@ class WorkflowExecutor {
                 }, 120000); // 2 minute timeout
             });
             
+            // Wait for the promise to resolve and reset the flag
+            const result = await verificationPromise;
+            this.isBlockchainVerification = false; // Reset flag after completion
+            return result;
+            
         } catch (error) {
             console.error(`❌ ${blockchain} verification failed:`, error);
+            this.isBlockchainVerification = false; // Reset flag on error
             return {
                 success: false,
                 error: error.message || `${blockchain} verification failed`,

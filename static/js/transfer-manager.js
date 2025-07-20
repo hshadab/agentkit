@@ -63,7 +63,7 @@ export class TransferManager {
             ` : status === 'pending' ? `
                 <div class="blockchain-status pending">
                     <div style="font-weight: 600;">
-                        ⏳ Awaiting Blockchain Confirmation
+                        Awaiting Blockchain Confirmation
                     </div>
                 </div>
             ` : ''}
@@ -131,33 +131,16 @@ export class TransferManager {
         
         const pollTransfer = async () => {
             try {
-                const response = await fetch(`/api/v1/transfer/${transferId}/status?blockchain=${blockchain}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                // Send poll request via WebSocket
+                if (window.wsManager) {
+                    window.wsManager.send({
+                        type: 'poll_transfer',
+                        transferId: transferId,
+                        blockchain: blockchain
+                    });
                 }
                 
-                const data = await response.json();
-                
-                // Update UI if status changed
-                const currentState = this.transferStates.get(transferId);
-                if (!currentState || 
-                    currentState.status !== data.status || 
-                    (!currentState.blockchainTxHash && data.blockchainTxHash)) {
-                    
-                    this.updateTransferStatus(transferId, data);
-                }
-                
-                // Stop polling if transfer is complete
-                if (data.status === 'complete' || data.status === 'failed') {
-                    this.stopTransferPolling(transferId);
-                    
-                    // Show notification
-                    if (data.status === 'complete') {
-                        this.uiManager.showToast('Transfer completed successfully!', 'success');
-                    } else {
-                        this.uiManager.showToast('Transfer failed', 'error');
-                    }
-                }
+                // The actual update will be handled by the WebSocket message handler
                 
             } catch (error) {
                 debugLog(`Error polling transfer ${transferId}: ${error.message}`, 'error');

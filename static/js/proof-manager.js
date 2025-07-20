@@ -3,21 +3,25 @@ import { debugLog, formatProofSize, formatTimestamp, copyToClipboard } from './u
 
 export class ProofManager {
     constructor(uiManager) {
+        console.log('ProofManager initialized with new design');
         this.uiManager = uiManager;
         this.currentProofId = null;
         this.localVerifications = new Map();
         this.onChainVerifications = new Map();
+        this.proofTimers = new Map();
     }
 
     addProofCard(data) {
         debugLog(`Adding proof card for ${data.proofId}`, 'info');
+        console.log('Proof card data:', data);
         
         const proofCard = document.createElement('div');
         proofCard.className = 'proof-card';
         proofCard.setAttribute('data-proof-id', data.proofId);
+        proofCard.setAttribute('data-start-time', Date.now());
         
-        const functionName = data.metadata?.function || 'Unknown Function';
-        const args = data.metadata?.arguments || [];
+        const functionName = data.metadata?.function || data.proof_function || 'Unknown Function';
+        const plainEnglishName = this.getPlainEnglishName(functionName);
         
         // Format generation time
         let generationTime = 'N/A';
@@ -39,25 +43,17 @@ export class ProofManager {
             <div class="card-header">
                 <div class="card-header-row">
                     <div>
-                        <div class="card-function-name">${functionName}</div>
+                        <div class="card-function-name">Zero Knowledge Proof Execution</div>
                         <div class="card-title clickable-id" 
                              onclick="window.proofManager.copyProofId('${data.proofId}')" 
                              title="Click to copy ID">
                             Proof ID: ${data.proofId}
                         </div>
                     </div>
-                    <span class="status-badge ${data.status}">${data.status.toUpperCase()}</span>
+                    <span class="status-badge ${data.status}">${data.status === 'generating' ? 'GENERATING' : 'COMPLETE'}</span>
                 </div>
             </div>
             <div class="card-content">
-                <div class="status-message">
-                    ${data.message || 'Proof generated successfully'}
-                </div>
-                ${args.length > 0 ? `
-                    <div class="status-message" style="margin-top: 8px;">
-                        Arguments: ${args.join(', ')}
-                    </div>
-                ` : ''}
                 ${data.status === 'complete' ? `
                     <div class="proof-metrics">
                         <div class="metric">
@@ -65,39 +61,33 @@ export class ProofManager {
                             <span class="metric-value">${generationTime}</span>
                         </div>
                         <div class="metric">
-                            <span class="metric-label">Size:</span>
+                            <span class="metric-label">Memory:</span>
                             <span class="metric-value">${proofSize}</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">Timestamp:</span>
-                            <span class="metric-value">${new Date().toLocaleTimeString()}</span>
                         </div>
                     </div>
                 ` : `
-                    <div class="proof-metrics">
-                        <div class="metric">
-                            <span class="metric-label">Status:</span>
-                            <span class="metric-value">Generating proof...</span>
-                        </div>
+                    <div class="proof-generating-box pulsating">
+                        <div class="proof-type-name">${plainEnglishName}</div>
+                        <div class="proof-timer" id="timer-${data.proofId}">0.0s</div>
                     </div>
                 `}
             </div>
             ${data.status === 'complete' ? `
                 <div class="card-actions">
                     <button class="action-btn" onclick="window.proofManager.verifyProof('${data.proofId}')">
-                        ✓ Verify Locally
+                        Verify Locally
                     </button>
                     <button class="action-btn eth-verify-btn" 
                             onclick="window.blockchainVerifier.verifyOnEthereum('${data.proofId}', '${functionName}')">
-                        🔷 Verify on Ethereum
+                        Verify on Ethereum
                     </button>
                     <button class="action-btn sol-verify-btn" 
                             onclick="window.blockchainVerifier.verifyOnSolana('${data.proofId}', '${functionName}')">
-                        ◎ Verify on Solana
+                        Verify on Solana
                     </button>
                     <button class="action-btn base-verify-btn" 
                             onclick="window.blockchainVerifier.verifyOnBase('${data.proofId}', '${functionName}')">
-                        🔵 Verify on Base
+                        Verify on Base
                     </button>
                 </div>
                 <div class="verification-results" id="verification-results-${data.proofId}">
@@ -106,8 +96,47 @@ export class ProofManager {
             ` : ''}
         `;
         
+        // Start timer if generating
+        if (data.status === 'generating') {
+            this.startProofTimer(data.proofId);
+        }
+        
         this.currentProofId = data.proofId;
         return proofCard;
+    }
+
+    getPlainEnglishName(functionName) {
+        const nameMap = {
+            'prove_kyc': 'KYC Compliance Verification',
+            'prove_location': 'Location Verification',
+            'prove_ai_content': 'AI Content Authentication',
+            'prove_age': 'Age Verification',
+            'prove_identity': 'Identity Verification'
+        };
+        return nameMap[functionName] || functionName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    startProofTimer(proofId) {
+        const startTime = Date.now();
+        const timer = setInterval(() => {
+            const elapsed = (Date.now() - startTime) / 1000;
+            const timerElement = document.getElementById(`timer-${proofId}`);
+            if (timerElement) {
+                timerElement.textContent = `${elapsed.toFixed(1)}s`;
+            } else {
+                clearInterval(timer);
+                this.proofTimers.delete(proofId);
+            }
+        }, 100);
+        this.proofTimers.set(proofId, timer);
+    }
+
+    stopProofTimer(proofId) {
+        const timer = this.proofTimers.get(proofId);
+        if (timer) {
+            clearInterval(timer);
+            this.proofTimers.delete(proofId);
+        }
     }
 
     updateProofCard(proofId, status, data = {}) {
@@ -117,59 +146,82 @@ export class ProofManager {
             return;
         }
 
+        // Stop timer if completing
+        if (status === 'complete') {
+            this.stopProofTimer(proofId);
+        }
+
         const statusBadge = proofCard.querySelector('.status-badge');
         if (statusBadge) {
             statusBadge.className = `status-badge ${status}`;
-            statusBadge.textContent = status.toUpperCase();
+            statusBadge.textContent = status === 'complete' ? 'COMPLETE' : status.toUpperCase();
         }
 
-        if (data.message) {
-            const statusMessage = proofCard.querySelector('.status-message');
-            if (statusMessage) {
-                statusMessage.textContent = data.message;
-            }
-        }
-
-        // Update metrics if provided
-        if (data.metrics) {
-            const metricsDiv = proofCard.querySelector('.proof-metrics');
-            if (metricsDiv && data.metrics.generation_time_secs) {
-                const timeValue = metricsDiv.querySelector('.metric-value');
-                if (timeValue) {
-                    timeValue.textContent = `${data.metrics.generation_time_secs.toFixed(2)}s`;
+        // If completing, replace the content with metrics
+        if (status === 'complete') {
+            const contentDiv = proofCard.querySelector('.card-content');
+            if (contentDiv) {
+                const functionName = data.metadata?.function || data.proof_function || 'Unknown';
+                
+                // Format generation time and size
+                let generationTime = 'N/A';
+                if (data.metrics?.generation_time_secs) {
+                    generationTime = `${data.metrics.generation_time_secs.toFixed(2)}s`;
+                } else if (data.metrics?.time_ms) {
+                    generationTime = `${(data.metrics.time_ms / 1000).toFixed(2)}s`;
                 }
+                
+                let proofSize = 'N/A';
+                if (data.metrics?.proof_size) {
+                    proofSize = formatProofSize(data.metrics.proof_size);
+                } else if (data.metrics?.file_size_mb) {
+                    proofSize = formatProofSize(data.metrics.file_size_mb);
+                }
+                
+                contentDiv.innerHTML = `
+                    <div class="proof-metrics">
+                        <div class="metric">
+                            <span class="metric-label">Time:</span>
+                            <span class="metric-value">${generationTime}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Memory:</span>
+                            <span class="metric-value">${proofSize}</span>
+                        </div>
+                    </div>
+                `;
             }
-        }
 
-        // Add actions if status is complete
-        if (status === 'complete' && !proofCard.querySelector('.card-actions')) {
-            const actionsDiv = document.createElement('div');
-            actionsDiv.className = 'card-actions';
-            actionsDiv.innerHTML = `
-                <button class="action-btn" onclick="window.proofManager.verifyProof('${proofId}')">
-                    ✓ Verify Locally
-                </button>
-                <button class="action-btn eth-verify-btn" 
-                        onclick="window.blockchainVerifier.verifyOnEthereum('${proofId}', '${data.metadata?.function || data.proof_function || 'proof'}')">
-                    🔷 Verify on Ethereum
-                </button>
-                <button class="action-btn sol-verify-btn" 
-                        onclick="window.blockchainVerifier.verifyOnSolana('${proofId}', '${data.metadata?.function || data.proof_function || 'proof'}')">
-                    ◎ Verify on Solana
-                </button>
-                <button class="action-btn base-verify-btn" 
-                        onclick="window.blockchainVerifier.verifyOnBase('${proofId}', '${data.metadata?.function || data.proof_function || 'proof'}')">
-                    🔵 Verify on Base
-                </button>
-            `;
-            proofCard.appendChild(actionsDiv);
-            
-            // Also add the verification results container
-            const resultsDiv = document.createElement('div');
-            resultsDiv.className = 'verification-results';
-            resultsDiv.id = `verification-results-${proofId}`;
-            resultsDiv.innerHTML = '<!-- Verification results will be added here -->';
-            proofCard.appendChild(resultsDiv);
+            // Add actions if not already present
+            if (!proofCard.querySelector('.card-actions')) {
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'card-actions';
+                actionsDiv.innerHTML = `
+                    <button class="action-btn" onclick="window.proofManager.verifyProof('${proofId}')">
+                        Verify Locally
+                    </button>
+                    <button class="action-btn eth-verify-btn" 
+                            onclick="window.blockchainVerifier.verifyOnEthereum('${proofId}', '${data.metadata?.function || data.proof_function || 'proof'}')">
+                        Verify on Ethereum
+                    </button>
+                    <button class="action-btn sol-verify-btn" 
+                            onclick="window.blockchainVerifier.verifyOnSolana('${proofId}', '${data.metadata?.function || data.proof_function || 'proof'}')">
+                        Verify on Solana
+                    </button>
+                    <button class="action-btn base-verify-btn" 
+                            onclick="window.blockchainVerifier.verifyOnBase('${proofId}', '${data.metadata?.function || data.proof_function || 'proof'}')">
+                        Verify on Base
+                    </button>
+                `;
+                proofCard.appendChild(actionsDiv);
+                
+                // Also add the verification results container
+                const resultsDiv = document.createElement('div');
+                resultsDiv.className = 'verification-results';
+                resultsDiv.id = `verification-results-${proofId}`;
+                resultsDiv.innerHTML = '<!-- Verification results will be added here -->';
+                proofCard.appendChild(resultsDiv);
+            }
         }
     }
 
@@ -209,7 +261,7 @@ export class ProofManager {
             const verifyBtn = proofCard?.querySelector('.action-btn:first-child');
             if (verifyBtn) {
                 verifyBtn.disabled = true;
-                verifyBtn.textContent = '⏳ Verifying...';
+                verifyBtn.textContent = 'Verifying...';
             }
             
             const response = await fetch(`/api/v1/proof/${proofId}/verify`);
@@ -224,14 +276,14 @@ export class ProofManager {
                 this.localVerifications.set(proofId, result);
                 this.uiManager.showToast('Proof verified successfully!', 'success');
                 if (verifyBtn) {
-                    verifyBtn.textContent = '✅ Verified';
+                    verifyBtn.textContent = 'Verified';
                     verifyBtn.style.background = 'rgba(16, 185, 129, 0.2)';
                     verifyBtn.style.color = '#10b981';
                 }
             } else {
                 this.uiManager.showToast('Proof verification failed', 'error');
                 if (verifyBtn) {
-                    verifyBtn.textContent = '❌ Invalid';
+                    verifyBtn.textContent = 'Invalid';
                     verifyBtn.disabled = false;
                 }
             }
@@ -246,7 +298,7 @@ export class ProofManager {
             const proofCard = document.querySelector(`[data-proof-id="${proofId}"]`);
             const verifyBtn = proofCard?.querySelector('.action-btn:nth-child(2)');
             if (verifyBtn) {
-                verifyBtn.textContent = '✓ Verify Locally';
+                verifyBtn.textContent = 'Verify Locally';
                 verifyBtn.disabled = false;
             }
         }
@@ -288,34 +340,23 @@ export class ProofManager {
         const resultsContainer = document.getElementById(`verification-results-${proofId}`);
         if (!resultsContainer) {
             debugLog(`Verification results container not found for ${proofId}`, 'warning');
-            // Fallback: create a separate verification card
-            const verificationCard = this.createVerificationResultCard(proofId, result);
-            this.uiManager.addMessage(verificationCard, 'assistant');
+            // Don't create fallback cards for workflow proofs
             return;
         }
 
         const resultDiv = document.createElement('div');
         resultDiv.className = 'verification-result-item';
         resultDiv.innerHTML = `
-            <div class="verification-result-header">
-                <span class="verification-type">${type} Verification</span>
-                <span class="status-badge ${result.valid || result.success ? 'verified' : 'error'}">
-                    ${result.valid || result.success ? 'VALID' : 'INVALID'}
-                </span>
-            </div>
-            <div class="verification-result-content">
-                ${result.details || result.message || 'Verified successfully'}
-                ${explorerUrl ? `
-                    <div style="margin-top: 8px;">
-                        <a href="${explorerUrl}" target="_blank" class="explorer-link">
-                            View on Explorer →
-                        </a>
-                    </div>
-                ` : ''}
-                <div class="verification-time">
-                    Verified at: ${new Date().toLocaleTimeString()}
-                </div>
-            </div>
+            <span class="verification-type">${type} Verification</span>
+            <span class="status-badge ${result.valid || result.success ? 'verified' : 'error'}">
+                ${result.valid || result.success ? 'VALID' : 'INVALID'}
+            </span>
+            <span class="verification-time">Verified at: ${new Date().toLocaleTimeString()}</span>
+            ${explorerUrl ? `
+                <a href="${explorerUrl}" target="_blank" class="explorer-link">
+                    View on Blockchain
+                </a>
+            ` : ''}
         `;
 
         resultsContainer.appendChild(resultDiv);
@@ -458,3 +499,4 @@ export class ProofManager {
         this.currentProofId = proofId;
     }
 }
+// Cache bust: 1752971016

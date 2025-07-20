@@ -1,12 +1,13 @@
 // Main application entry point
-import { config } from './config.js';
-import { WebSocketManager } from './websocket-manager.js';
-import { UIManager } from './ui-manager.js';
-import { ProofManager } from './proof-manager.js';
-import { WorkflowManager } from './workflow-manager.js';
-import { TransferManager } from './transfer-manager.js';
-import { BlockchainVerifier } from './blockchain-verifier.js';
-import { debugLog } from './utils.js';
+// Cache bust: 20250120-1
+import { config } from './config.js?v=20250120-1';
+import { WebSocketManager } from './websocket-manager.js?v=20250120-1';
+import { UIManager } from './ui-manager.js?v=20250120-1';
+import { ProofManager } from './proof-manager.js?v=20250120-1';
+import { WorkflowManager } from './workflow-manager.js?v=20250120-1';
+import { TransferManager } from './transfer-manager.js?v=20250120-1';
+import { BlockchainVerifier } from './blockchain-verifier.js?v=20250120-1';
+import { debugLog } from './utils.js?v=20250120-1';
 
 // Global state
 let lastSentMessage = '';
@@ -190,42 +191,72 @@ function setupMessageHandlers() {
     
     // Handle proof generation updates
     wsManager.on('proof_generation_started', (data) => {
+        console.log('Received proof_generation_started:', data);
         debugLog('Proof generation started', 'info');
-        const proofCard = proofManager.addProofCard({
-            ...data,
-            status: 'generating'
-        });
-        uiManager.addMessage(proofCard, 'assistant');
-    });
-    
-    // Also handle alternative message types
-    wsManager.on('proof_started', (data) => {
-        debugLog('Proof started (alternative type)', 'info');
-        const proofCard = proofManager.addProofCard({
-            ...data,
-            proofId: data.proof_id || data.proofId,
-            status: 'generating'
-        });
-        uiManager.addMessage(proofCard, 'assistant');
-    });
-    
-    // Handle proof_status messages (what the server actually sends)
-    wsManager.on('proof_status', (data) => {
-        if (data.status === 'generating') {
-            debugLog('Proof status: generating', 'info');
+        
+        // Check if this is part of a workflow
+        const isPartOfWorkflow = data.workflowId || data.workflow_id || 
+                               data.additional_context?.workflow_id;
+        
+        // Only show proof card for standalone proofs
+        if (!isPartOfWorkflow) {
             const proofCard = proofManager.addProofCard({
-                proofId: data.proof_id,
-                status: 'generating',
-                message: data.message || 'Generating proof...',
-                proof_function: data.metadata?.function || 'unknown',
-                metadata: data.metadata
+                ...data,
+                status: 'generating'
             });
             uiManager.addMessage(proofCard, 'assistant');
         }
     });
     
+    
+    // Also handle alternative message types
+    wsManager.on('proof_started', (data) => {
+        debugLog('Proof started (alternative type)', 'info');
+        
+        // Check if this is part of a workflow
+        const isPartOfWorkflow = data.workflowId || data.workflow_id || 
+                               data.additional_context?.workflow_id;
+        
+        // Only show proof card for standalone proofs
+        if (!isPartOfWorkflow) {
+            const proofCard = proofManager.addProofCard({
+                ...data,
+                proofId: data.proof_id || data.proofId,
+                status: 'generating'
+            });
+            uiManager.addMessage(proofCard, 'assistant');
+        }
+    });
+    
+    // Handle proof_status messages (what the server actually sends)
+    wsManager.on('proof_status', (data) => {
+        console.log('Received proof_status:', data);
+        if (data.status === 'generating') {
+            debugLog('Proof status: generating', 'info');
+            
+            // Check if this is part of a workflow
+            const isPartOfWorkflow = data.workflowId || data.workflow_id || 
+                                   data.additional_context?.workflow_id;
+            
+            // Only show proof card for standalone proofs
+            if (!isPartOfWorkflow) {
+                const proofCard = proofManager.addProofCard({
+                    proofId: data.proof_id,
+                    status: 'generating',
+                    message: data.message || 'Generating proof...',
+                    proof_function: data.metadata?.function || 'unknown',
+                    metadata: data.metadata
+                });
+                uiManager.addMessage(proofCard, 'assistant');
+            } else {
+                debugLog(`Skipping proof card for workflow proof: ${data.proof_id}`, 'info');
+            }
+        }
+    });
+    
     wsManager.on('proof_generation_complete', (data) => {
         debugLog('Proof generation complete', 'success');
+        // Update the existing proof card
         proofManager.updateProofCard(data.proofId, 'complete', data);
         // Silent success - proof card shows completion
     });
@@ -234,18 +265,28 @@ function setupMessageHandlers() {
     wsManager.on('proof_complete', (data) => {
         debugLog('Proof complete (alternative type)', 'success');
         const proofId = data.proof_id || data.proofId;
-        proofManager.updateProofCard(proofId, 'complete', {
-            proofId: proofId,
-            status: 'complete',
-            metrics: data.metrics,
-            metadata: data.metadata,
-            proof_function: data.metadata?.function || 'unknown'
-        });
-        // Silent success - proof card shows completion
+        
+        // Check if this is part of a workflow
+        const isPartOfWorkflow = data.workflowId || data.workflow_id || 
+                               data.additional_context?.workflow_id;
+        
+        // Only update card for standalone proofs
+        if (!isPartOfWorkflow) {
+            // Update the existing proof card
+            proofManager.updateProofCard(proofId, 'complete', {
+                proofId: proofId,
+                status: 'complete',
+                metrics: data.metrics,
+                metadata: data.metadata,
+                proof_function: data.metadata?.function || 'unknown'
+            });
+            // Silent success - proof card shows completion
+        }
     });
     
     wsManager.on('proof_generation_failed', (data) => {
         debugLog('Proof generation failed', 'error');
+        // Update the existing proof card to show error
         proofManager.updateProofCard(data.proofId, 'error', data);
         uiManager.showToast('Proof generation failed', 'error');
     });
@@ -255,6 +296,7 @@ function setupMessageHandlers() {
         // Handle both workflow_id and workflowId formats
         data.workflow_id = data.workflow_id || data.workflowId;
         debugLog(`Workflow started: ${data.workflow_id}`, 'info');
+        
         
         // Store any pending AI response
         if (data.ai_response) {
@@ -297,6 +339,7 @@ function setupMessageHandlers() {
     wsManager.on('workflow_completed', (data) => {
         // Handle both workflow_id and workflowId formats
         data.workflow_id = data.workflow_id || data.workflowId;
+        
         debugLog(`Workflow completed: ${data.workflow_id}`, 'success');
         workflowManager.updateWorkflowStatus(data.workflow_id, 'completed');
         // Silent success - workflow card shows completion
@@ -332,6 +375,81 @@ function setupMessageHandlers() {
         debugLog('Received verification result', 'info');
         const verificationCard = createVerificationCard(data);
         uiManager.addMessage(verificationCard, 'assistant');
+    });
+    
+    // Handle verification_complete messages (suppress for workflows)
+    wsManager.on('verification_complete', (data) => {
+        debugLog(`Received verification_complete: ${data.proof_id}`, 'info');
+        
+        // Skip displaying if this is part of a workflow
+        if (data.workflowId || data.workflow_id || data.additional_context?.workflow_id) {
+            debugLog('Skipping verification_complete display for workflow proof', 'info');
+            return;
+        }
+        
+        // For standalone verifications, show the result
+        const verificationCard = createVerificationCard({
+            proofId: data.proof_id,
+            valid: data.result === 'VALID',
+            message: `Local verification ${data.result}`,
+            blockchain: 'Local'
+        });
+        uiManager.addMessage(verificationCard, 'assistant');
+    });
+    
+    // Handle blockchain verification requests from backend
+    wsManager.on('blockchain_verification_request', async (data) => {
+        debugLog(`Received blockchain verification request: ${data.blockchain} for ${data.proof_id}`, 'info');
+        console.log('[BLOCKCHAIN_VERIFICATION_REQUEST]', data);
+        
+        try {
+            let result;
+            const proofId = data.proof_id || data.proofId;
+            const proofType = data.proof_type || data.proofType || 'unknown';
+            
+            switch (data.blockchain?.toUpperCase()) {
+                case 'ETHEREUM':
+                    result = await blockchainVerifier.verifyOnEthereum(proofId, proofType);
+                    break;
+                case 'SOLANA':
+                    result = await blockchainVerifier.verifyOnSolana(proofId, proofType);
+                    break;
+                case 'BASE':
+                    result = await blockchainVerifier.verifyOnBase(proofId, proofType);
+                    break;
+                default:
+                    throw new Error(`Unknown blockchain: ${data.blockchain}`);
+            }
+            
+            debugLog(`Blockchain verification result: ${JSON.stringify(result)}`, 'info');
+            
+            // Send verification result back to backend
+            wsManager.send({
+                type: 'blockchain_verification_response',
+                proof_id: proofId,
+                blockchain: data.blockchain,
+                success: result?.success || false,
+                transaction_hash: result?.transactionHash || result?.txHash || result?.signature,
+                explorer_url: result?.explorerUrl,
+                error: result?.error,
+                workflow_id: data.workflow_id,
+                step_id: data.step_id
+            });
+            
+        } catch (error) {
+            debugLog(`Blockchain verification error: ${error.message}`, 'error');
+            
+            // Send error response back to backend
+            wsManager.send({
+                type: 'blockchain_verification_response',
+                proof_id: data.proof_id || data.proofId,
+                blockchain: data.blockchain,
+                success: false,
+                error: error.message,
+                workflow_id: data.workflow_id,
+                step_id: data.step_id
+            });
+        }
     });
 }
 
@@ -622,4 +740,4 @@ window.addEventListener('beforeunload', () => {
     workflowManager.stopAllPolling();
     transferManager.stopAllPolling();
     wsManager.disconnect();
-});
+});// Cache bust: 1752966646

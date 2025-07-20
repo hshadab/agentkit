@@ -86,6 +86,7 @@ async fn main() {
         .route("/api/proof/:proof_id/solana", get(export_proof_solana))
         .route("/api/proof/:proof_id/update-verification", post(update_proof_verification))
         .route("/api/v1/proof/:proof_id/verify", get(verify_proof_endpoint))
+        .route("/api/v1/workflow/:workflow_id/status", get(get_workflow_status))
         .nest_service("/static", tower_http::services::ServeDir::new("static"))
         .with_state(state);
 
@@ -776,7 +777,7 @@ async fn process_user_command(state: AppState, message: String) {
         }
         
         // Handle blockchain verification messages
-        if msg_type == "blockchain_verification_request" || msg_type == "blockchain_verification_response" || msg_type == "blockchain_verification_update" {
+        if msg_type == "blockchain_verification_request" || msg_type == "blockchain_verification_update" {
             info!("Broadcasting blockchain verification message: {}", msg_type);
             
             // Log details for debugging
@@ -790,6 +791,61 @@ async fn process_user_command(state: AppState, message: String) {
             // Broadcast to all connected clients
             if state.tx.send(message.clone()).is_err() {
                 error!("Failed to broadcast blockchain verification message");
+            }
+            return;
+        }
+        
+        // Handle blockchain verification response from frontend
+        if msg_type == "blockchain_verification_response" {
+            info!("Received blockchain verification response");
+            
+            // Extract verification data
+            let proof_id = payload.get("proof_id").and_then(|p| p.as_str());
+            let blockchain = payload.get("blockchain").and_then(|b| b.as_str());
+            let success = payload.get("success").and_then(|s| s.as_bool()).unwrap_or(false);
+            let tx_hash = payload.get("transaction_hash").and_then(|t| t.as_str());
+            let explorer_url = payload.get("explorer_url").and_then(|e| e.as_str());
+            let error = payload.get("error").and_then(|e| e.as_str());
+            let workflow_id = payload.get("workflow_id").and_then(|w| w.as_str());
+            let step_id = payload.get("step_id").and_then(|s| s.as_str());
+            
+            info!("Verification response - Proof: {:?}, Blockchain: {:?}, Success: {}", proof_id, blockchain, success);
+            
+            // If this is part of a workflow, send a workflow step update
+            if let (Some(wf_id), Some(s_id)) = (workflow_id, step_id) {
+                let verification_data = json!({
+                    "success": success,
+                    "blockchain": blockchain,
+                    "transaction_hash": tx_hash,
+                    "explorer_url": explorer_url,
+                    "error": error
+                });
+                
+                let update_msg = json!({
+                    "type": "workflow_step_update",
+                    "workflowId": wf_id,
+                    "stepId": s_id,
+                    "updates": {
+                        "status": if success { "completed" } else { "failed" },
+                        "verificationData": verification_data,
+                        "endTime": chrono::Utc::now().timestamp_millis()
+                    }
+                });
+                
+                // Update workflow history file
+                if let Err(e) = update_workflow_file(wf_id, s_id, &verification_data, success) {
+                    error!("Failed to update workflow file: {}", e);
+                }
+                
+                // Broadcast the workflow update
+                if state.tx.send(update_msg.to_string()).is_err() {
+                    error!("Failed to broadcast workflow verification update");
+                }
+            }
+            
+            // Also broadcast the original response
+            if state.tx.send(message.clone()).is_err() {
+                error!("Failed to broadcast blockchain verification response");
             }
             return;
         }
@@ -1586,5 +1642,78 @@ fn infer_function_from_filename(filename: &str) -> String {
         "prove_custom".to_string()
     } else {
         "unknown".to_string()
+    }
+}
+
+// --- Get Workflow Status ---
+async fn get_workflow_status(
+    Path(workflow_id): Path<String>,
+    State(_state): State<AppState>,
+) -> impl IntoResponse {
+    info!("Getting status for workflow {}", workflow_id);
+    
+    let workflow_history_path = PathBuf::from("workflow_history.json");
+    
+    // Read workflow history
+    if let Ok(content) = std::fs::read_to_string(&workflow_history_path) {
+        if let Ok(workflows) = serde_json::from_str::<serde_json::Value>(&content) {
+            // Get the specific workflow
+            if let Some(workflow) = workflows.get(&workflow_id) {
+                return (StatusCode::OK, Json(workflow.clone()));
+            }
+        }
+    }
+    
+    // Workflow not found
+    (
+        StatusCode::NOT_FOUND,
+        Json(json!({
+            "error": "Workflow not found",
+            "workflow_id": workflow_id
+        }))
+    )
+}
+
+// Helper function to update workflow file with verification data
+fn update_workflow_file(workflow_id: &str, step_id: &str, verification_data: &serde_json::Value, success: bool) -> Result<(), String> {
+    let workflow_history_path = PathBuf::from("workflow_history.json");
+    
+    // Read existing workflows
+    let mut workflows = if let Ok(content) = std::fs::read_to_string(&workflow_history_path) {
+        serde_json::from_str::<serde_json::Value>(&content).map_err(|e| e.to_string())?
+    } else {
+        json!({})
+    };
+    
+    // Get the specific workflow
+    if let Some(workflow) = workflows.get_mut(workflow_id) {
+        // Find the step by ID
+        if let Some(steps) = workflow.get_mut("steps").and_then(|s| s.as_array_mut()) {
+            for step in steps.iter_mut() {
+                if step.get("id").and_then(|id| id.as_str()) == Some(step_id) {
+                    // Update step with verification data
+                    if let Some(step_obj) = step.as_object_mut() {
+                        step_obj.insert("verificationData".to_string(), verification_data.clone());
+                        step_obj.insert("status".to_string(), json!(if success { "completed" } else { "failed" }));
+                        step_obj.insert("endTime".to_string(), json!(chrono::Utc::now().to_rfc3339()));
+                    }
+                    break;
+                }
+            }
+        }
+        
+        // Update workflow timestamp
+        if let Some(workflow_obj) = workflow.as_object_mut() {
+            workflow_obj.insert("updatedAt".to_string(), json!(chrono::Utc::now().to_rfc3339()));
+        }
+        
+        // Write back to file
+        std::fs::write(&workflow_history_path, serde_json::to_string_pretty(&workflows).map_err(|e| e.to_string())?)
+            .map_err(|e| e.to_string())?;
+        
+        info!("Updated workflow {} step {} with verification data", workflow_id, step_id);
+        Ok(())
+    } else {
+        Err(format!("Workflow {} not found", workflow_id))
     }
 }

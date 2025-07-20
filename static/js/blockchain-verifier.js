@@ -304,7 +304,7 @@ export class BlockchainVerifier {
         // Check connection
         if (!this.ethereumConnected) {
             const connected = await this.connectEthereum();
-            if (!connected) return;
+            if (!connected) return { success: false, error: 'Failed to connect to Ethereum wallet' };
         }
         
         // Update button state
@@ -313,7 +313,7 @@ export class BlockchainVerifier {
         if (ethButton) {
             ethButton.disabled = true;
             ethButton.classList.add('verifying');
-            ethButton.textContent = '⏳ Verifying on Ethereum...';
+            ethButton.textContent = 'Verifying on Ethereum...';
         }
         
         try {
@@ -342,6 +342,9 @@ export class BlockchainVerifier {
                 
                 // Add verification result to the proof card
                 this.proofManager.addVerificationResult(proofId, 'Ethereum', result, explorerUrl);
+                
+                // Return result for external callers
+                return result;
             } else {
                 throw new Error(result.error || 'Verification failed');
             }
@@ -354,6 +357,9 @@ export class BlockchainVerifier {
                 ethButton.disabled = false;
                 ethButton.classList.remove('verifying');
             }
+            
+            // Return error result
+            return { success: false, error: error.message };
         }
     }
 
@@ -373,7 +379,7 @@ export class BlockchainVerifier {
         // Check connection
         if (!this.solanaConnected) {
             const connected = await this.connectSolana();
-            if (!connected) return;
+            if (!connected) return { success: false, error: 'Failed to connect to Solana wallet' };
         }
         
         // Update button state
@@ -382,7 +388,7 @@ export class BlockchainVerifier {
         if (solButton) {
             solButton.disabled = true;
             solButton.classList.add('verifying');
-            solButton.textContent = '⏳ Verifying on Solana...';
+            solButton.textContent = 'Verifying on Solana...';
         }
         
         try {
@@ -409,6 +415,9 @@ export class BlockchainVerifier {
                 // Add verification result to the proof card
                 const explorerUrl = `https://explorer.solana.com/tx/${result.signature}?cluster=devnet`;
                 this.proofManager.addVerificationResult(proofId, 'Solana', result, explorerUrl);
+                
+                // Return result for external callers
+                return result;
             } else {
                 throw new Error(result.error || 'Verification failed');
             }
@@ -421,6 +430,9 @@ export class BlockchainVerifier {
                 solButton.disabled = false;
                 solButton.classList.remove('verifying');
             }
+            
+            // Return error result
+            return { success: false, error: error.message };
         }
     }
 
@@ -440,7 +452,7 @@ export class BlockchainVerifier {
         // Check connection
         if (!this.baseConnected) {
             const connected = await this.connectBase();
-            if (!connected) return;
+            if (!connected) return { success: false, error: 'Failed to connect to Base wallet' };
         }
         
         // Update button state
@@ -449,7 +461,7 @@ export class BlockchainVerifier {
         if (baseButton) {
             baseButton.disabled = true;
             baseButton.classList.add('verifying');
-            baseButton.textContent = '⏳ Verifying on Base...';
+            baseButton.textContent = 'Verifying on Base...';
         }
         
         try {
@@ -471,13 +483,16 @@ export class BlockchainVerifier {
                 this.uiManager.showToast('Proof verified on Base!', 'success');
                 
                 if (baseButton) {
-                    baseButton.textContent = '✅ Verified on Base';
+                    baseButton.textContent = 'Verified on Base';
                     baseButton.style.background = 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)';
                     baseButton.disabled = true;
                 }
                 
                 // Add verification result to the proof card
                 this.proofManager.addVerificationResult(proofId, 'Base', result, explorerUrl);
+                
+                // Return result for external callers
+                return result;
             } else {
                 throw new Error(result.error || 'Verification failed');
             }
@@ -486,10 +501,13 @@ export class BlockchainVerifier {
             this.uiManager.showToast(`Base verification failed: ${error.message}`, 'error');
             
             if (baseButton) {
-                baseButton.textContent = '🔵 Verify on Base';
+                baseButton.textContent = 'Verify on Base';
                 baseButton.disabled = false;
                 baseButton.classList.remove('verifying');
             }
+            
+            // Return error result
+            return { success: false, error: error.message };
         }
     }
 

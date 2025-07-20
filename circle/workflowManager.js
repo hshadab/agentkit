@@ -48,6 +48,32 @@ class WorkflowManager {
         }
     }
 
+    updateWorkflowStep(workflowId, stepIndex, updates) {
+        const workflow = this.workflows.get(workflowId);
+        if (workflow && workflow.steps[stepIndex]) {
+            // Store verification data in step
+            if (updates.verificationData) {
+                workflow.steps[stepIndex].verificationData = updates.verificationData;
+            }
+            
+            // Store status in step
+            if (updates.status) {
+                workflow.steps[stepIndex].status = updates.status;
+            }
+            
+            // Store end time
+            if (updates.endTime) {
+                workflow.steps[stepIndex].endTime = updates.endTime;
+            }
+            
+            // Update workflow timestamp
+            workflow.updatedAt = new Date().toISOString();
+            this.saveWorkflowHistory();
+            
+            console.log(`✅ Updated workflow ${workflowId} step ${stepIndex} with verification data`);
+        }
+    }
+
     loadWorkflowHistory() {
         try {
             if (fs.existsSync(this.workflowHistoryFile)) {
