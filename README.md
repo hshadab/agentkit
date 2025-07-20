@@ -807,16 +807,23 @@ We welcome contributions! Areas of interest:
 
 ## 🐛 Troubleshooting
 
-### Common Issues
+See [Troubleshooting Guide](docs/TROUBLESHOOTING_COMMON_ISSUES.md) for detailed solutions to common issues.
 
-1. **"Transaction already processed"** - Fixed in v4.2 with unique commitments
-2. **Wallet connection issues** - Ensure you're on the correct network (Sepolia/Devnet/Base Sepolia). For Solana, Solflare wallet is recommended. MetaMask handles both Ethereum and Base networks
-3. **Transfer failures** - Check Circle wallet balance and API credentials
-4. **OpenAI errors** - Verify API key and check rate limits
+### Quick Fixes
+
+1. **Proof cards not showing** - Check if it's a workflow vs standalone proof
+2. **Solana verification failing** - Ensure Solflare is installed and unlocked
+3. **Transfers stuck as "pending"** - Wait 30-60 seconds, check transaction hash fields
+4. **Wallet connection issues** - Ensure correct network (Sepolia/Devnet/Base Sepolia)
 
 ### Debug Mode
 - Click the debug toggle in the UI for detailed logs
 - Set `LOG_LEVEL=debug` in `.env` for backend logging
+
+### Documentation
+- [Circle Integration Guide](docs/CIRCLE_INTEGRATION_GUIDE.md)
+- [Circle Troubleshooting](docs/CIRCLE_TROUBLESHOOTING.md)
+- [Common Issues Guide](docs/TROUBLESHOOTING_COMMON_ISSUES.md)
 
 ## 📄 License
 
