@@ -97,7 +97,8 @@ export class TransferManager {
         }
         
         // Update blockchain status if transaction hash is available
-        if (data.blockchainTxHash && !container.querySelector('.blockchain-status.confirmed')) {
+        const txHash = data.blockchainTxHash || data.transactionHash;
+        if (txHash && !container.querySelector('.blockchain-status.confirmed')) {
             const pendingStatus = container.querySelector('.blockchain-status.pending');
             if (pendingStatus) {
                 pendingStatus.className = 'blockchain-status confirmed';
@@ -107,7 +108,7 @@ export class TransferManager {
                     </div>
                     <div style="font-size: 12px; color: #a0a0a0;">
                         Transaction Hash: <span style="font-family: monospace; color: #8B9AFF;">
-                            ${data.blockchainTxHash.substring(0, 16)}...
+                            ${txHash.substring(0, 16)}...
                         </span>
                     </div>
                     <div class="blockchain-link">
@@ -128,6 +129,15 @@ export class TransferManager {
         
         // Clear any existing polling
         this.stopTransferPolling(transferId);
+        
+        // Add initial status if not exists
+        if (!this.transferStates.has(transferId)) {
+            this.transferStates.set(transferId, {
+                id: transferId,
+                status: 'pending',
+                blockchain: blockchain
+            });
+        }
         
         const pollTransfer = async () => {
             try {
