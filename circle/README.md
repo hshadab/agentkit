@@ -2,6 +2,15 @@
 
 This directory contains scripts for managing Circle wallets and USDC transfers.
 
+## IMPORTANT: How Circle Transfers Work
+
+**You need USD in your wallets, NOT USDC!** Circle automatically converts USD to USDC when transferring to blockchain addresses.
+
+- **Source Currency**: Always USD (in your Circle wallet)
+- **Destination**: USDC on blockchain (Ethereum/Solana)
+- **Conversion**: Automatic 1:1 during transfer
+- **No Manual Steps**: Just maintain USD balance
+
 ## Quick Start
 
 1. **Create Wallets**
