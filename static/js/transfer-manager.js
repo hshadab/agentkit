@@ -133,11 +133,14 @@ export class TransferManager {
             try {
                 // Send poll request via WebSocket
                 if (window.wsManager) {
+                    debugLog(`Sending poll_transfer for ${transferId} on ${blockchain}`, 'info');
                     window.wsManager.send({
                         type: 'poll_transfer',
                         transferId: transferId,
                         blockchain: blockchain
                     });
+                } else {
+                    debugLog('wsManager not available for polling', 'error');
                 }
                 
                 // The actual update will be handled by the WebSocket message handler

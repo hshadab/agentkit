@@ -28,6 +28,7 @@ const blockchainVerifier = new BlockchainVerifier(uiManager, proofManager);
 // Make some functions globally accessible for onclick handlers
 window.proofManager = proofManager;
 window.blockchainVerifier = blockchainVerifier;
+window.wsManager = wsManager;
 window.handleVerifyAction = (proofId, proofFunction, action) => {
     blockchainVerifier.handleVerifyAction(proofId, proofFunction, action);
 };
@@ -432,8 +433,8 @@ function setupMessageHandlers() {
                 transaction_hash: result?.transactionHash || result?.txHash || result?.signature,
                 explorer_url: result?.explorerUrl,
                 error: result?.error,
-                workflow_id: data.workflow_id,
-                step_id: data.step_id
+                workflow_id: data.workflow_id || data.workflowId,
+                step_id: data.step_id || data.stepId
             });
             
         } catch (error) {
@@ -446,8 +447,8 @@ function setupMessageHandlers() {
                 blockchain: data.blockchain,
                 success: false,
                 error: error.message,
-                workflow_id: data.workflow_id,
-                step_id: data.step_id
+                workflow_id: data.workflow_id || data.workflowId,
+                step_id: data.step_id || data.stepId
             });
         }
     });
