@@ -139,12 +139,24 @@ class AIPredictionHandlerReal {
                 
                 console.log('Submitting commitment to Base blockchain...');
                 
-                // Call the contract
+                // Get current gas price
+                let baseGasPrice = await this.web3.eth.getGasPrice();
+                console.log('Network gas price:', baseGasPrice, 'wei');
+                
+                // For Base Sepolia testnet, cap the gas price to ensure it's reasonable
+                const maxTestnetGasPrice = this.web3.utils.toWei('0.1', 'gwei'); // 0.1 gwei max for testnet
+                if (BigInt(baseGasPrice) > BigInt(maxTestnetGasPrice)) {
+                    console.log('Capping gas price for testnet to 0.1 gwei');
+                    baseGasPrice = maxTestnetGasPrice;
+                }
+                
+                // Call the contract with capped gas price
                 const receipt = await this.contract.methods
                     .commitPrediction(promptHash, responseHash)
                     .send({ 
                         from: accounts[0],
-                        gas: 200000 
+                        gas: 200000,
+                        gasPrice: baseGasPrice // Use capped gas price
                     });
                 
                 console.log('Commitment transaction:', receipt.transactionHash);
