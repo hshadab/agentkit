@@ -54,10 +54,14 @@ from typing import Optional, List, Dict, Any
 from openai import AsyncOpenAI
 # Force reload of the module to pick up changes
 import importlib
+import sys
+import os
+# Add parent directory to path to import parsers module
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import parsers.workflow.openaiWorkflowParserEnhanced as openai_workflow_parser_enhanced
 importlib.reload(openai_workflow_parser_enhanced)
 from parsers.workflow.openaiWorkflowParserEnhanced import EnhancedOpenAIWorkflowParser
-from scripts.utils.simple_workflow_parser import SimpleWorkflowParser
+# Note: SimpleWorkflowParser import removed as it's not in the current structure
 
 app = FastAPI(title="Verifiable Agent Kit v4.1 - Real zkEngine Only")
 

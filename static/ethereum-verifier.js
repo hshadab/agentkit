@@ -186,7 +186,15 @@ class EthereumVerifier {
             // Fetch proof data from backend
             const response = await fetch(`/api/proof/${proofId}/ethereum`);
             if (!response.ok) {
-                throw new Error(`Failed to fetch proof data: ${response.statusText}`);
+                console.error(`Failed to fetch proof data: HTTP ${response.status} - ${response.statusText}`);
+                // Try the integrated endpoint if the regular one fails
+                const integratedResponse = await fetch(`/api/proof/${proofId}/ethereum-integrated`);
+                if (!integratedResponse.ok) {
+                    throw new Error(`Failed to fetch proof data: ${response.status} - ${response.statusText}`);
+                }
+                const proofData = await integratedResponse.json();
+                console.log('Using integrated endpoint data:', proofData);
+                return this.verifyProof(proofId, proofType);
             }
             
             const proofData = await response.json();
@@ -217,6 +225,12 @@ class EthereumVerifier {
             console.log('ProofId:', proofId);
             console.log('ProofType:', proofType);
             console.log('IsConnected:', this.isConnected);
+            
+            // Handle AI prediction proofs
+            if (proofType === 'prove_ai_content' || proofId.includes('ai_prediction') || proofId.includes('ai_content')) {
+                console.log('Detected AI prediction proof, using appropriate verification');
+                proofType = 'prove_ai_content';
+            }
             
             if (!this.isConnected) {
                 throw new Error('Not connected to Ethereum. Please connect first.');

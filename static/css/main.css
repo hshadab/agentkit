@@ -270,24 +270,55 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 
 /* History Table Styles */
 .history-table-container { margin-top: 12px; background: #1a1a2a; border: 1px solid #2a2a3a; border-radius: 8px; padding: 12px; overflow-x: auto; width: 100%; max-width: 100%; }
-.history-table { width: auto; border-collapse: collapse; min-width: 900px; }
-.history-table th { background: #2a2a3a; color: #888; padding: 8px 12px; text-align: left; font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; border-bottom: 1px solid #3a3a4a; white-space: nowrap; }
-.history-table td { padding: 8px 12px; border-bottom: 1px solid #2a2a3a; color: #ccc; font-size: 12px; vertical-align: middle; }
+.history-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 850px; }
+.history-table th { background: #2a2a3a; color: #888; padding: 10px 16px; text-align: left; font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; border-bottom: 1px solid #3a3a4a; white-space: nowrap; }
+.history-table td { padding: 10px 16px; border-bottom: 1px solid #2a2a3a; color: #ccc; font-size: 12px; vertical-align: middle; white-space: nowrap; }
 
 /* Column-specific widths with !important */
-.history-table th:nth-child(1), .history-table td:nth-child(1) { width: 92px !important; max-width: 92px !important; } /* Type */
-.history-table th:nth-child(2), .history-table td:nth-child(2) { width: 114px !important; max-width: 114px !important; overflow: hidden; text-overflow: ellipsis; } /* Proof ID */
-.history-table th:nth-child(3), .history-table td:nth-child(3) { width: 58px !important; max-width: 58px !important; } /* Time */
-.history-table th:nth-child(4), .history-table td:nth-child(4) { width: 64px !important; max-width: 64px !important; } /* Size */
-.history-table th:nth-child(5), .history-table td:nth-child(5) { width: 114px !important; max-width: 114px !important; } /* Timestamp */
-.history-table th:nth-child(6), .history-table td:nth-child(6) { width: 99px !important; max-width: 99px !important; } /* Verified */
-.history-table th:nth-child(7), .history-table td:nth-child(7) { width: 125px !important; max-width: 125px !important; } /* Actions */
+.history-table th:nth-child(1), .history-table td:nth-child(1) { width: 120px !important; min-width: 120px !important; padding-right: 20px !important; } /* Type */
+.history-table th:nth-child(2), .history-table td:nth-child(2) { width: 140px !important; min-width: 140px !important; overflow: hidden; text-overflow: ellipsis; } /* Proof ID */
+.history-table th:nth-child(3), .history-table td:nth-child(3) { width: 70px !important; min-width: 70px !important; } /* Time */
+.history-table th:nth-child(4), .history-table td:nth-child(4) { width: 70px !important; min-width: 70px !important; } /* Size */
+.history-table th:nth-child(5), .history-table td:nth-child(5) { width: 130px !important; min-width: 130px !important; } /* Timestamp */
+.history-table th:nth-child(6), .history-table td:nth-child(6) { width: 120px !important; min-width: 120px !important; } /* Verified */
+.history-table th:nth-child(7), .history-table td:nth-child(7) { width: 140px !important; min-width: 140px !important; } /* Actions */
 .history-table tr:hover { background: #2a2a3a; }
 .history-table .proof-id { color: #0052FF; font-family: monospace; font-size: 11px; }
 .history-table .function-badge { display: inline-block; padding: 3px 8px; background: #2a2a3a; color: #888; border-radius: 4px; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.02em; }
 .history-table .timestamp { color: #666; font-size: 11px; white-space: nowrap; }
 .history-table .action-link { color: #0052FF; text-decoration: none; cursor: pointer; font-weight: 500; }
 .history-table .action-link:hover { text-decoration: underline; }
+
+/* Verification status styles */
+.history-table td:nth-child(6) { position: relative; }
+.verification-status { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    white-space: nowrap; 
+    height: 20px; /* Fixed height to prevent layout shifts */
+}
+.verification-status span { 
+    display: inline-block; 
+    font-size: 12px;
+}
+.verification-status .view-link,
+.history-table .view-link { 
+    display: inline-block; 
+    padding: 2px 8px; 
+    font-size: 11px; 
+    color: #0052FF; 
+    text-decoration: none;
+    background: #2a2a3a; 
+    border-radius: 4px; 
+    border: 1px solid #3a3a4a;
+    transition: all 0.2s ease;
+}
+.verification-status .view-link:hover,
+.history-table .view-link:hover {
+    background: rgba(0, 82, 255, 0.1);
+    border-color: rgba(0, 82, 255, 0.3);
+}
 
 /* Verification Dropdown Styles */
 .verify-dropdown { 

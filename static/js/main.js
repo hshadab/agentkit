@@ -512,6 +512,8 @@ function setupMessageHandlers() {
     // Handle list_response (what the backend actually sends)
     wsManager.on('list_response', (data) => {
         debugLog('Received list response', 'info');
+        // Remove the waiting message
+        uiManager.removeWaitingMessage();
         // Transform to match expected format
         proofManager.displayProofHistory({
             proofs: data.proofs || [],

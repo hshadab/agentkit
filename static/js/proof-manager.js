@@ -319,7 +319,7 @@ export class ProofManager {
                 this.updateHistoryTableVerification(proofId, 'failed');
             }
             
-            // Add verification result to the proof card
+            // Add verification result to the proof card (if it exists)
             this.addVerificationResult(proofId, 'Local', result);
             
         } catch (error) {
@@ -371,11 +371,20 @@ export class ProofManager {
     }
 
     addVerificationResult(proofId, type, result, explorerUrl = null) {
+        // Check if this is a proof card or just a table row
+        const proofCard = document.querySelector(`[data-proof-id="${proofId}"].proof-card`);
+        
+        // If there's no proof card (only table row), don't add verification results
+        // The table will be updated via updateHistoryTableVerification
+        if (!proofCard) {
+            debugLog(`No proof card found for ${proofId}, skipping verification result display`, 'info');
+            return;
+        }
+        
         const resultsContainer = document.getElementById(`verification-results-${proofId}`);
         if (!resultsContainer) {
             debugLog(`Verification results container not found for ${proofId}`, 'warning');
             // Try to find the proof card and create the container
-            const proofCard = document.querySelector(`[data-proof-id="${proofId}"]`);
             if (proofCard && !proofCard.querySelector('.verification-results')) {
                 const resultsDiv = document.createElement('div');
                 resultsDiv.className = 'verification-results';
@@ -528,14 +537,13 @@ export class ProofManager {
         
         if (onChainData) {
             const blockchainName = onChainData.blockchain;
-            const shortName = blockchainName === 'Ethereum' ? 'ETH' : 'SOL';
+            const shortName = blockchainName === 'Ethereum' ? 'ETH' : 
+                           blockchainName === 'Solana' ? 'SOL' : 
+                           blockchainName === 'Base' ? 'BASE' : blockchainName;
             return `
-                <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="verification-status">
                     <span style="color: #10b981;">✓ ${shortName}</span>
-                    <a href="${onChainData.explorerUrl}" target="_blank" 
-                       style="color: #8B9AFF; text-decoration: none; font-size: 11px; 
-                              padding: 2px 6px; background: rgba(107, 124, 255, 0.2); 
-                              border-radius: 4px; border: 1px solid rgba(107, 124, 255, 0.3);">
+                    <a href="${onChainData.explorerUrl}" target="_blank" class="view-link">
                         View
                     </a>
                 </div>
@@ -545,12 +553,12 @@ export class ProofManager {
         // Check local verification
         const localVerification = this.localVerifications.get(proofId);
         if (localVerification && localVerification.valid) {
-            return '<span style="color: #10b981;">✓ Local</span>';
+            return '<div class="verification-status"><span style="color: #10b981;">✓ Local</span></div>';
         } else if (proof.verified === true) {
-            return '<span style="color: #10b981;">✓ Local</span>';
+            return '<div class="verification-status"><span style="color: #10b981;">✓ Local</span></div>';
         }
         
-        return '<span style="color: #666;">Unverified</span>';
+        return '<div class="verification-status"><span style="color: #666;">Unverified</span></div>';
     }
 
     getProofActionsHTML(proofId, proofFunction, hasOnChainVerification) {
@@ -593,7 +601,7 @@ export class ProofManager {
         
         // Update verification status based on the status
         if (status === 'verifying') {
-            verificationCell.innerHTML = '<span style="color: #f59e0b;">⏳ Verifying...</span>';
+            verificationCell.innerHTML = '<div class="verification-status"><span style="color: #f59e0b;">⏳ Verifying...</span></div>';
         } else if (status === 'completed' && blockchainData) {
             // Store the verification data
             this.onChainVerifications.set(proofId, blockchainData);
@@ -605,12 +613,9 @@ export class ProofManager {
                            blockchainName === 'Base' ? 'BASE' : blockchainName;
             
             verificationCell.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="verification-status">
                     <span style="color: #10b981;">✓ ${shortName}</span>
-                    <a href="${blockchainData.explorerUrl}" target="_blank" 
-                       style="color: #0052FF; text-decoration: none; font-size: 11px; 
-                              padding: 2px 6px; background: #2a2a3a; 
-                              border-radius: 4px; border: 1px solid #3a3a4a;">
+                    <a href="${blockchainData.explorerUrl}" target="_blank" class="view-link">
                         View
                     </a>
                 </div>
@@ -623,9 +628,9 @@ export class ProofManager {
                 actionsCell.innerHTML = this.getProofActionsHTML(proofId, proofFunction, true);
             }
         } else if (status === 'verified_local') {
-            verificationCell.innerHTML = '<span style="color: #10b981;">✓ Local</span>';
+            verificationCell.innerHTML = '<div class="verification-status"><span style="color: #10b981;">✓ Local</span></div>';
         } else if (status === 'failed') {
-            verificationCell.innerHTML = '<span style="color: #ef4444;">✗ Failed</span>';
+            verificationCell.innerHTML = '<div class="verification-status"><span style="color: #ef4444;">✗ Failed</span></div>';
         }
     }
 }
