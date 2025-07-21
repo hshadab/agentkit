@@ -8,8 +8,8 @@ class WorkflowParser {
                 description: 'KYC compliance proof'
             },
             'ai content': {
-                wasm: 'ai_content_verification_real.wasm',
-                description: 'AI content verification proof'
+                wasm: 'ai_prediction_commitment.wasm',
+                description: 'AI prediction commitment proof'
             },
             'location': {
                 wasm: 'depin_location_real.wasm',

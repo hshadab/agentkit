@@ -20,6 +20,7 @@ const config = {
     chatServicePort: process.env.CHAT_SERVICE_PORT || 8002,
     openaiApiKey: process.env.OPENAI_API_KEY,
     openaiModel: process.env.OPENAI_MODEL || 'gpt-4',
+    coinbaseApiKey: process.env.COINBASE_API_KEY || '30f1d73c-8bb7-42b6-8f5d-bb5b79b1dd4a',
   },
 
   // Blockchain Configuration
@@ -38,6 +39,17 @@ const config = {
       commitment: 'confirmed',
       explorerUrl: 'https://explorer.solana.com',
     },
+    base: {
+      network: process.env.BASE_NETWORK || 'sepolia',
+      rpcUrl: process.env.BASE_RPC_URL || 'https://sepolia.base.org',
+      chainId: 84532,
+      chainIdHex: '0x14a34',
+      contracts: {
+        zkVerifier: '0x74D68B2481d298F337e62efc50724CbBA68dCF8f',
+        aiPredictionCommitment: '0xae7d069d0A45a8Ecd969ABbb2705bA96472D36FC',
+      },
+      explorerUrl: 'https://sepolia.basescan.org',
+    },
   },
 
   // Circle API Configuration
@@ -47,6 +59,14 @@ const config = {
     ethWalletId: process.env.CIRCLE_ETH_WALLET_ID,
     solWalletId: process.env.CIRCLE_SOL_WALLET_ID,
     usdcTokenId: process.env.CIRCLE_USDC_TOKEN_ID || '2552c76e-860a-47c8-a6d1-a20ba3e59334',
+    entitySecret: process.env.CIRCLE_ENTITY_SECRET || 'c5729c5ef63ce6fbf04daa0eb7479403342a7d0ac123abb2fc9ba38969c692ac',
+    // Developer wallet (UUID format)
+    developerWallet: {
+      walletId: 'da83113b-f48f-58a3-9115-31572ebfc127',
+      address: '0x37b6c846ca0483a0fc6c7702707372ebcd131188',
+      blockchain: 'ETH-SEPOLIA',
+      walletSetId: '7d0b7bbd-fac8-5de7-af8a-1f11d92be7f9',
+    },
     pollInterval: 5000, // 5 seconds
     maxRetries: 3,
   },
@@ -58,9 +78,9 @@ const config = {
     proofsDir: process.env.PROOFS_DIR || './proofs',
     defaultStepSize: 50,
     proofTypes: {
-      kyc: 'prove_kyc.wat',
-      location: 'prove_location.wat',
-      ai_content: 'prove_ai_content.wat',
+      kyc: 'kyc_compliance_real.wasm',
+      location: 'depin_location_real.wasm',
+      ai_content: 'ai_prediction_commitment.wasm',
     },
   },
 
@@ -104,6 +124,8 @@ const config = {
     enableCircleTransfers: process.env.ENABLE_CIRCLE !== 'false',
     enableSolana: process.env.ENABLE_SOLANA !== 'false',
     enableEthereum: process.env.ENABLE_ETHEREUM !== 'false',
+    enableBase: process.env.ENABLE_BASE !== 'false',
+    enableRealAICommitments: true, // Now using real Base transactions
     enableDebugPanel: process.env.ENABLE_DEBUG_PANEL === 'true',
   },
 

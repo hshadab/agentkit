@@ -22,11 +22,32 @@ export const config = {
     blockchain: {
         ethereum: {
             chainId: '0xaa36a7', // Sepolia
-            verifierAddress: '0xa14e2C1Aa24CEE480e0DED4c241A5EC15f7a3b09'
+            chainIdDecimal: 11155111,
+            verifierAddress: '0x1e8150050a7a4715aad42b905c08df76883f396f',
+            explorerUrl: 'https://sepolia.etherscan.io'
         },
         solana: {
             network: 'devnet',
-            verifierProgramId: 'CqKFQGg1r5nA3pUetFvvmF5g5cDJNgBBDdhX5qwHkF9d'
+            verifierProgramId: '2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7',
+            explorerUrl: 'https://explorer.solana.com'
+        },
+        base: {
+            chainId: '0x14a34', // Base Sepolia
+            chainIdDecimal: 84532,
+            contracts: {
+                zkVerifier: '0x74D68B2481d298F337e62efc50724CbBA68dCF8f',
+                aiPredictionCommitment: '0xae7d069d0A45a8Ecd969ABbb2705bA96472D36FC'
+            },
+            explorerUrl: 'https://sepolia.basescan.org'
         }
+    },
+    circle: {
+        developerWallet: {
+            walletId: 'da83113b-f48f-58a3-9115-31572ebfc127',
+            address: '0x37b6c846ca0483a0fc6c7702707372ebcd131188'
+        }
+    },
+    coinbase: {
+        apiKey: '30f1d73c-8bb7-42b6-8f5d-bb5b79b1dd4a'
     }
 };

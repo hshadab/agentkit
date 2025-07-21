@@ -234,16 +234,29 @@ function setupMessageHandlers() {
     // Handle proof_status messages (what the server actually sends)
     wsManager.on('proof_status', (data) => {
         console.log('Received proof_status:', data);
+        console.log('[PROOF_STATUS_DEBUG] Status:', data.status);
+        console.log('[PROOF_STATUS_DEBUG] Has workflowId:', !!data.workflowId);
+        console.log('[PROOF_STATUS_DEBUG] Active workflows:', Array.from(workflowManager.workflowStates.keys()));
+        
         if (data.status === 'generating') {
             debugLog('Proof status: generating', 'info');
             
             // Check if this is part of a workflow - only if there's an active workflow
+            // For standalone proofs, even if they have a workflowId, no workflow_started event is sent
             const activeWorkflowId = data.workflowId || data.workflow_id || 
                                    data.additional_context?.workflow_id;
+            
+            // A proof is part of a workflow only if:
+            // 1. It has a workflow ID AND
+            // 2. That workflow has been started (exists in workflowStates)
             const isPartOfWorkflow = activeWorkflowId && workflowManager.workflowStates.has(activeWorkflowId);
             
-            // Only show proof card for standalone proofs
+            console.log('[PROOF_STATUS_DEBUG] activeWorkflowId:', activeWorkflowId);
+            console.log('[PROOF_STATUS_DEBUG] isPartOfWorkflow:', isPartOfWorkflow);
+            
+            // Only show proof card for standalone proofs or workflows that haven't been "started"
             if (!isPartOfWorkflow) {
+                console.log('[PROOF_STATUS_DEBUG] Showing proof card for:', data.proof_id);
                 const proofCard = proofManager.addProofCard({
                     proofId: data.proof_id,
                     status: 'generating',
@@ -253,13 +266,17 @@ function setupMessageHandlers() {
                 });
                 uiManager.addMessage(proofCard, 'assistant');
             } else {
+                console.log('[PROOF_STATUS_DEBUG] Skipping proof card for workflow proof:', data.proof_id);
                 debugLog(`Skipping proof card for workflow proof: ${data.proof_id}`, 'info');
             }
+        } else {
+            console.log('[PROOF_STATUS_DEBUG] Ignoring non-generating status:', data.status);
         }
     });
     
     wsManager.on('proof_generation_complete', (data) => {
         debugLog('Proof generation complete', 'success');
+        console.log('[HANDLER] proof_generation_complete triggered for:', data.proofId);
         // Update the existing proof card
         proofManager.updateProofCard(data.proofId, 'complete', data);
         // Silent success - proof card shows completion
@@ -268,24 +285,44 @@ function setupMessageHandlers() {
     // Alternative completion message type
     wsManager.on('proof_complete', (data) => {
         debugLog('Proof complete (alternative type)', 'success');
+        console.log('[HANDLER] proof_complete triggered for:', data.proof_id || data.proofId);
+        console.log('[HANDLER] proof_complete data:', data);
         const proofId = data.proof_id || data.proofId;
         
-        // Check if this is part of a workflow
+        // Check if this is part of a multi-step workflow
         const activeWorkflowId = data.workflowId || data.workflow_id || 
                                data.additional_context?.workflow_id;
-        const isPartOfWorkflow = activeWorkflowId && workflowManager.workflowStates.has(activeWorkflowId);
+        const isPartOfMultiStepWorkflow = activeWorkflowId && workflowManager.workflowStates.has(activeWorkflowId);
         
-        // Only update card for standalone proofs
-        if (!isPartOfWorkflow) {
-            // Update the existing proof card
-            proofManager.updateProofCard(proofId, 'complete', {
-                proofId: proofId,
-                status: 'complete',
-                metrics: data.metrics,
-                metadata: data.metadata,
-                proof_function: data.metadata?.function || 'unknown'
-            });
+        console.log('[HANDLER] activeWorkflowId:', activeWorkflowId);
+        console.log('[HANDLER] isPartOfMultiStepWorkflow:', isPartOfMultiStepWorkflow);
+        
+        // Update card for standalone proofs AND single-proof workflows
+        // (single-proof workflows don't get added to workflowStates)
+        if (!isPartOfMultiStepWorkflow) {
+            console.log('[HANDLER] Updating proof card for standalone/single-proof workflow');
+            
+            // Add a small delay to ensure the card exists
+            setTimeout(() => {
+                const card = document.querySelector(`[data-proof-id="${proofId}"]`);
+                if (!card) {
+                    console.error('[HANDLER] Card not found after delay, cannot update:', proofId);
+                    return;
+                }
+                
+                // Update the existing proof card
+                proofManager.updateProofCard(proofId, 'complete', {
+                    proofId: proofId,
+                    status: 'complete',
+                    metrics: data.metrics,
+                    metadata: data.metadata,
+                    proof_function: data.metadata?.function || data.proof_function || 'unknown'
+                });
+            }, 100); // Small delay to ensure DOM is ready
+            
             // Silent success - proof card shows completion
+        } else {
+            console.log('[HANDLER] Skipping update - part of multi-step workflow');
         }
     });
     
@@ -301,7 +338,8 @@ function setupMessageHandlers() {
         // Handle both workflow_id and workflowId formats
         data.workflow_id = data.workflow_id || data.workflowId;
         debugLog(`Workflow started: ${data.workflow_id}`, 'info');
-        
+        console.log('[WORKFLOW_DEBUG] Workflow started:', data.workflow_id);
+        console.log('[WORKFLOW_DEBUG] Steps:', data.steps);
         
         // Store any pending AI response
         if (data.ai_response) {
@@ -318,13 +356,27 @@ function setupMessageHandlers() {
             step.description?.toLowerCase().includes('send')
         );
         
+        // Check if this is just a single proof generation
+        const isSingleProofGeneration = steps.length === 1 && 
+            (steps[0].action === 'generate_proof' || 
+             steps[0].action === 'proof_generation' ||
+             steps[0].type === 'proof_generation');
+        
+        console.log('[WORKFLOW_DEBUG] hasMultipleSteps:', hasMultipleSteps);
+        console.log('[WORKFLOW_DEBUG] hasTransferSteps:', hasTransferSteps);
+        console.log('[WORKFLOW_DEBUG] isSingleProofGeneration:', isSingleProofGeneration);
+        
         if (hasMultipleSteps || hasTransferSteps) {
             const workflowCard = workflowManager.addWorkflowCard(data);
             uiManager.addMessage(workflowCard, 'assistant');
-        } else {
-            debugLog('Skipping workflow card for single proof generation', 'info');
-            // Still need to track the workflow state even if we don't show a card
+        } else if (!isSingleProofGeneration) {
+            // Only track non-proof workflows that don't show cards
+            debugLog('Skipping workflow card but tracking state', 'info');
             workflowManager.workflowStates.set(data.workflow_id, data);
+        } else {
+            // For single proof generation, don't track in workflowStates
+            debugLog('Single proof generation - not tracking as workflow', 'info');
+            console.log('[WORKFLOW_DEBUG] NOT adding to workflowStates for single proof');
         }
         
         // Show AI response after workflow card if exists
@@ -385,14 +437,16 @@ function setupMessageHandlers() {
         proofManager.displayProofHistory(data);
     });
     
-    // Handle verification results
+    // Handle verification results (legacy - kept for compatibility)
     wsManager.on('verification_result', (data) => {
         debugLog('Received verification result', 'info');
+        // For now, still create separate card for this message type
+        // as it might be used by other parts of the system
         const verificationCard = createVerificationCard(data);
         uiManager.addMessage(verificationCard, 'assistant');
     });
     
-    // Handle verification_complete messages (suppress for workflows)
+    // Handle verification_complete messages
     wsManager.on('verification_complete', (data) => {
         debugLog(`Received verification_complete: ${data.proof_id}`, 'info');
         
@@ -402,14 +456,22 @@ function setupMessageHandlers() {
             return;
         }
         
-        // For standalone verifications, show the result
-        const verificationCard = createVerificationCard({
-            proofId: data.proof_id,
+        // For standalone verifications, add result to the existing proof card
+        const proofId = data.proof_id;
+        const result = {
             valid: data.result === 'VALID',
-            message: `Local verification ${data.result}`,
-            blockchain: 'Local'
-        });
-        uiManager.addMessage(verificationCard, 'assistant');
+            success: data.result === 'VALID'
+        };
+        
+        // Add verification result to the existing proof card
+        proofManager.addVerificationResult(proofId, 'Local', result);
+        
+        // Show toast notification
+        if (result.valid) {
+            uiManager.showToast('Local verification successful', 'success');
+        } else {
+            uiManager.showToast('Local verification failed', 'error');
+        }
     });
     
     // Handle blockchain verification requests from backend
@@ -597,7 +659,7 @@ function loadSampleQueries() {
         ],
         'Single zkEngine Proofs': [
             'Generate KYC proof',
-            'Prove AI content authenticity',
+            'Prove AI prediction commitment',
             'Prove location: NYC (40.7°, -74.0°)'
         ],
         'Workflows': [

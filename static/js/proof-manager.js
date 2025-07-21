@@ -21,6 +21,8 @@ export class ProofManager {
         proofCard.setAttribute('data-start-time', Date.now());
         
         const functionName = data.metadata?.function || data.proof_function || 'Unknown Function';
+        console.log('[PROOF_CARD_DEBUG] functionName:', functionName);
+        proofCard.setAttribute('data-function-name', functionName);
         const plainEnglishName = this.getPlainEnglishName(functionName);
         
         // Format generation time
@@ -65,6 +67,7 @@ export class ProofManager {
                             <span class="metric-value">${proofSize}</span>
                         </div>
                     </div>
+                    ${functionName === 'prove_ai_content' ? this.getAICommitmentHTML(data) : ''}
                 ` : `
                     <div class="proof-generating-box pulsating">
                         <div class="proof-type-name">${plainEnglishName}</div>
@@ -109,7 +112,7 @@ export class ProofManager {
         const nameMap = {
             'prove_kyc': 'KYC Compliance Verification',
             'prove_location': 'Location Verification',
-            'prove_ai_content': 'AI Content Authentication',
+            'prove_ai_content': 'AI Prediction Commitment',
             'prove_age': 'Age Verification',
             'prove_identity': 'Identity Verification'
         };
@@ -140,28 +143,39 @@ export class ProofManager {
     }
 
     updateProofCard(proofId, status, data = {}) {
-        const proofCard = document.querySelector(`[data-proof-id="${proofId}"]`);
-        if (!proofCard) {
-            debugLog(`Proof card not found for ${proofId}`, 'warning');
-            return;
-        }
+        try {
+            const proofCard = document.querySelector(`[data-proof-id="${proofId}"]`);
+            if (!proofCard) {
+                debugLog(`Proof card not found for ${proofId}`, 'warning');
+                console.error('[UPDATE_PROOF_CARD] Card not found for:', proofId);
+                return;
+            }
+            
+            console.log('[UPDATE_PROOF_CARD] Found card for:', proofId, 'status:', status);
 
-        // Stop timer if completing
-        if (status === 'complete') {
-            this.stopProofTimer(proofId);
-        }
+            // Stop timer if completing
+            if (status === 'complete') {
+                this.stopProofTimer(proofId);
+            }
 
-        const statusBadge = proofCard.querySelector('.status-badge');
-        if (statusBadge) {
-            statusBadge.className = `status-badge ${status}`;
-            statusBadge.textContent = status === 'complete' ? 'COMPLETE' : status.toUpperCase();
-        }
+            const statusBadge = proofCard.querySelector('.status-badge');
+            if (statusBadge) {
+                statusBadge.className = `status-badge ${status}`;
+                statusBadge.textContent = status === 'complete' ? 'COMPLETE' : status.toUpperCase();
+            }
 
-        // If completing, replace the content with metrics
-        if (status === 'complete') {
-            const contentDiv = proofCard.querySelector('.card-content');
-            if (contentDiv) {
-                const functionName = data.metadata?.function || data.proof_function || 'Unknown';
+            // If completing, replace the content with metrics
+            if (status === 'complete') {
+                console.log('[UPDATE_PROOF_CARD] Status is complete, updating content...');
+                const contentDiv = proofCard.querySelector('.card-content');
+                console.log('[UPDATE_PROOF_CARD] Found contentDiv:', !!contentDiv);
+                if (contentDiv) {
+                    // Get the function name from the card's data attribute (preserved from creation)
+                    const functionName = proofCard.getAttribute('data-function-name') || 
+                                       data.metadata?.function || 
+                                       data.proof_function || 
+                                       'Unknown';
+                    console.log('[UPDATE_PROOF_CARD_DEBUG] functionName:', functionName, 'data:', data);
                 
                 // Format generation time and size
                 let generationTime = 'N/A';
@@ -178,7 +192,7 @@ export class ProofManager {
                     proofSize = formatProofSize(data.metrics.file_size_mb);
                 }
                 
-                contentDiv.innerHTML = `
+                const newContent = `
                     <div class="proof-metrics">
                         <div class="metric">
                             <span class="metric-label">Time:</span>
@@ -189,11 +203,15 @@ export class ProofManager {
                             <span class="metric-value">${proofSize}</span>
                         </div>
                     </div>
+                    ${functionName === 'prove_ai_content' ? this.getAICommitmentHTML(data) : ''}
                 `;
+                console.log('[UPDATE_PROOF_CARD] Setting innerHTML, includes Base link:', functionName === 'prove_ai_content');
+                contentDiv.innerHTML = newContent;
             }
 
             // Add actions if not already present
             if (!proofCard.querySelector('.card-actions')) {
+                console.log('[UPDATE_PROOF_CARD] Adding actions section');
                 const actionsDiv = document.createElement('div');
                 actionsDiv.className = 'card-actions';
                 actionsDiv.innerHTML = `
@@ -221,7 +239,13 @@ export class ProofManager {
                 resultsDiv.id = `verification-results-${proofId}`;
                 resultsDiv.innerHTML = '<!-- Verification results will be added here -->';
                 proofCard.appendChild(resultsDiv);
+            } else {
+                console.log('[UPDATE_PROOF_CARD] Actions already present');
             }
+        }
+        } catch (error) {
+            console.error('[UPDATE_PROOF_CARD] Error:', error);
+            console.error('[UPDATE_PROOF_CARD] Stack:', error.stack);
         }
     }
 
@@ -360,6 +384,73 @@ export class ProofManager {
         `;
 
         resultsContainer.appendChild(resultDiv);
+    }
+
+    getAICommitmentHTML(data) {
+        // Check if we have real commitment data
+        const commitmentData = data.commitmentData || data.metadata?.commitmentData;
+        
+        if (commitmentData && commitmentData.isReal && commitmentData.txHash) {
+            // Real blockchain commitment
+            return `
+                <div class="commitment-info" style="margin-top: 12px; padding: 12px; background: #2a2a3a; border-radius: 8px; border: 1px solid #3a3a4a;">
+                    <div style="font-size: 12px; color: #888; margin-bottom: 4px;">Base Commitment:</div>
+                    <a href="${commitmentData.baseExplorerUrl}" 
+                       target="_blank" 
+                       style="color: #0052FF; text-decoration: none; font-family: monospace; font-size: 12px; display: flex; align-items: center; gap: 6px;">
+                        <span>📝 View on Base</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                        </svg>
+                    </a>
+                    <div style="font-size: 11px; color: #666; margin-top: 8px;">
+                        <div style="margin-bottom: 4px;">✅ Real blockchain commitment on Base Sepolia</div>
+                        <div style="margin-bottom: 4px;">Block: ${commitmentData.blockNumber || 'pending'}</div>
+                        <div>Timestamp: ${new Date(commitmentData.commitmentTimestamp * 1000).toLocaleString()}</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Demo mode
+            const demoHash = this.generateCommitmentTxHash(data.proofId);
+            return `
+                <div class="commitment-info" style="margin-top: 12px; padding: 12px; background: #2a2a3a; border-radius: 8px; border: 1px solid #3a3a4a;">
+                    <div style="font-size: 12px; color: #888; margin-bottom: 4px;">Base Commitment (Demo):</div>
+                    <div style="font-family: monospace; font-size: 11px; color: #0052FF; word-break: break-all; margin-bottom: 8px;">
+                        ${demoHash}
+                    </div>
+                    <div style="font-size: 11px; color: #666;">
+                        <div style="margin-bottom: 4px;">🔒 Demo mode - No actual blockchain transaction</div>
+                        <div style="margin-bottom: 4px;">📝 Deploy the contract to enable real commitments</div>
+                        <div>💡 The commit-reveal pattern ensures temporal integrity</div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    generateCommitmentTxHash(proofId) {
+        // Generate a deterministic transaction hash from proof ID
+        // This simulates what would be returned from a real Base transaction
+        try {
+            // Use Web3 which is already loaded
+            if (window.Web3 && window.Web3.utils) {
+                const hash = window.Web3.utils.keccak256(proofId);
+                return hash;
+            } else {
+                // Fallback: create a simple hash-like string
+                const simpleHash = '0x' + proofId.split('').reduce((acc, char) => {
+                    return ((acc << 5) - acc + char.charCodeAt(0)) | 0;
+                }, 0).toString(16).padStart(64, '0');
+                return simpleHash;
+            }
+        } catch (error) {
+            console.error('[generateCommitmentTxHash] Error:', error);
+            // Return a fallback hash
+            return '0x' + proofId.replace(/[^a-f0-9]/gi, '').padStart(64, '0').substring(0, 64);
+        }
     }
 
     copyProofId(proofId) {

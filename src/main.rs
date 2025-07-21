@@ -1114,7 +1114,7 @@ async fn generate_proof(state: AppState, proof_id: String, metadata: ProofMetada
     // FIXED: Use real WASM files with actual implementations
     let wasm_file = match metadata.function.as_str() {
         "prove_kyc" => "kyc_compliance_real.wasm",
-        "prove_ai_content" => "ai_content_verification_real.wasm",
+        "prove_ai_content" => "ai_prediction_commitment.wasm",
         "prove_location" => "depin_location_real.wasm",
         "prove_custom" => {
             // Check additional context for specific custom proof

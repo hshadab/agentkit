@@ -112,9 +112,9 @@ class EthereumVerifier {
             
             // Contract addresses by network
             const contractAddresses = {
-                1: '0x...', // Mainnet (not deployed)
-                11155111: '0x09378444046d1ccb32ca2d5b44fab6634738d067', // Sepolia - UPDATE THIS!
-                5: '0x...', // Goerli (not deployed)
+                // Ethereum Sepolia - Deployed ZK Verifier
+                11155111: '0x1e8150050a7a4715aad42b905c08df76883f396f', // Sepolia - Deployed
+                // Alternative: 0x09378444046d1ccb32ca2d5b44fab6634738d067
                 31337: '0x5FbDB2315678afecb367f032d93F642f64180aa3' // Local Hardhat
             };
             
@@ -552,7 +552,7 @@ window.verifyOnEthereumActual = async function(proofId, proofType) {
                 console.log('Current network ID after switch:', networkId);
                 
                 const contractAddresses = {
-                    11155111: '0x09378444046d1ccb32ca2d5b44fab6634738d067', // Sepolia
+                    11155111: '0x1e8150050a7a4715aad42b905c08df76883f396f', // Sepolia - Deployed
                     31337: '0x5FbDB2315678afecb367f032d93F642f64180aa3' // Local Hardhat
                 };
                 
