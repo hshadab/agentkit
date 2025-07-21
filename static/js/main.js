@@ -267,9 +267,26 @@ function setupMessageHandlers() {
                 window.aiPredictionHandler.createPredictionCommitment(prompt, response)
                     .then(commitmentData => {
                         console.log('[AI_COMMITMENT] Commitment created:', commitmentData);
-                        // Store commitment data for later use
-                        if (!data.metadata) data.metadata = {};
-                        data.metadata.commitmentData = commitmentData;
+                        // Store commitment data globally for later retrieval
+                        if (!window.aiCommitmentStore) {
+                            window.aiCommitmentStore = new Map();
+                        }
+                        window.aiCommitmentStore.set(data.proof_id, commitmentData);
+                        
+                        // Also try to update the card immediately if it exists
+                        setTimeout(() => {
+                            const card = document.querySelector(`[data-proof-id="${data.proof_id}"]`);
+                            if (card && card.querySelector('.card-content')) {
+                                const contentDiv = card.querySelector('.card-content');
+                                const existingCommitment = contentDiv.querySelector('.commitment-info');
+                                if (existingCommitment && commitmentData.isReal) {
+                                    // Update with real commitment data
+                                    existingCommitment.innerHTML = proofManager.getAICommitmentHTML({ 
+                                        metadata: { commitmentData } 
+                                    }).match(/<div class="commitment-info"[^>]*>(.*?)<\/div>/s)[1];
+                                }
+                            }
+                        }, 1000);
                     })
                     .catch(error => {
                         console.error('[AI_COMMITMENT] Failed to create commitment:', error);
@@ -336,15 +353,26 @@ function setupMessageHandlers() {
                 // Update the existing proof card
                 // For AI predictions, check if we have commitment data stored
                 const proofFunction = data.metadata?.function || data.proof_function || 'unknown';
-                if (proofFunction === 'prove_ai_content' && window.aiPredictionHandler) {
-                    // Try to get commitment data from the handler
-                    const commitments = window.aiPredictionHandler.commitments;
-                    if (commitments && commitments.size > 0) {
-                        // Get the most recent commitment
-                        const lastCommitment = Array.from(commitments.values()).pop();
-                        if (lastCommitment && lastCommitment.isReal) {
+                if (proofFunction === 'prove_ai_content') {
+                    // First try to get from global store
+                    if (window.aiCommitmentStore && window.aiCommitmentStore.has(proofId)) {
+                        const commitmentData = window.aiCommitmentStore.get(proofId);
+                        if (commitmentData && commitmentData.isReal) {
                             if (!data.metadata) data.metadata = {};
-                            data.metadata.commitmentData = lastCommitment;
+                            data.metadata.commitmentData = commitmentData;
+                            console.log('[HANDLER] Found commitment data for proof:', proofId, commitmentData);
+                        }
+                    } else if (window.aiPredictionHandler) {
+                        // Fallback: try to get from handler
+                        const commitments = window.aiPredictionHandler.commitments;
+                        if (commitments && commitments.size > 0) {
+                            // Get the most recent commitment
+                            const lastCommitment = Array.from(commitments.values()).pop();
+                            if (lastCommitment && lastCommitment.isReal) {
+                                if (!data.metadata) data.metadata = {};
+                                data.metadata.commitmentData = lastCommitment;
+                                console.log('[HANDLER] Using last commitment data:', lastCommitment);
+                            }
                         }
                     }
                 }
