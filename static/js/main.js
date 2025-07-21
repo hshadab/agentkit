@@ -254,6 +254,29 @@ function setupMessageHandlers() {
             console.log('[PROOF_STATUS_DEBUG] activeWorkflowId:', activeWorkflowId);
             console.log('[PROOF_STATUS_DEBUG] isPartOfWorkflow:', isPartOfWorkflow);
             
+            // Check if this is an AI prediction proof that needs blockchain commitment
+            const proofFunction = data.metadata?.function || 'unknown';
+            if (proofFunction === 'prove_ai_content' && window.aiPredictionHandler) {
+                console.log('[AI_COMMITMENT] Creating blockchain commitment for AI prediction proof');
+                
+                // Create the commitment with sample data (in real use, this would come from actual AI interaction)
+                const prompt = data.metadata?.prompt || "What will be the weather tomorrow?";
+                const response = data.metadata?.response || "Based on current patterns, tomorrow will be partly cloudy with a high of 72°F.";
+                
+                // Create blockchain commitment
+                window.aiPredictionHandler.createPredictionCommitment(prompt, response)
+                    .then(commitmentData => {
+                        console.log('[AI_COMMITMENT] Commitment created:', commitmentData);
+                        // Store commitment data for later use
+                        if (!data.metadata) data.metadata = {};
+                        data.metadata.commitmentData = commitmentData;
+                    })
+                    .catch(error => {
+                        console.error('[AI_COMMITMENT] Failed to create commitment:', error);
+                        // Continue anyway - the proof manager will show error state
+                    });
+            }
+            
             // Only show proof card for standalone proofs or workflows that haven't been "started"
             if (!isPartOfWorkflow) {
                 console.log('[PROOF_STATUS_DEBUG] Showing proof card for:', data.proof_id);
@@ -311,12 +334,27 @@ function setupMessageHandlers() {
                 }
                 
                 // Update the existing proof card
+                // For AI predictions, check if we have commitment data stored
+                const proofFunction = data.metadata?.function || data.proof_function || 'unknown';
+                if (proofFunction === 'prove_ai_content' && window.aiPredictionHandler) {
+                    // Try to get commitment data from the handler
+                    const commitments = window.aiPredictionHandler.commitments;
+                    if (commitments && commitments.size > 0) {
+                        // Get the most recent commitment
+                        const lastCommitment = Array.from(commitments.values()).pop();
+                        if (lastCommitment && lastCommitment.isReal) {
+                            if (!data.metadata) data.metadata = {};
+                            data.metadata.commitmentData = lastCommitment;
+                        }
+                    }
+                }
+                
                 proofManager.updateProofCard(proofId, 'complete', {
                     proofId: proofId,
                     status: 'complete',
                     metrics: data.metrics,
                     metadata: data.metadata,
-                    proof_function: data.metadata?.function || data.proof_function || 'unknown'
+                    proof_function: proofFunction
                 });
             }, 100); // Small delay to ensure DOM is ready
             
