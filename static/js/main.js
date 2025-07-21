@@ -422,27 +422,33 @@ function setupMessageHandlers() {
             step.description?.toLowerCase().includes('send')
         );
         
-        // Check if this is just a single proof generation
+        // Check if this is just a single proof generation or list operation
         const isSingleProofGeneration = steps.length === 1 && 
             (steps[0].action === 'generate_proof' || 
              steps[0].action === 'proof_generation' ||
              steps[0].type === 'proof_generation');
         
+        const isListOperation = steps.length === 1 && 
+            (steps[0].action === 'list_proofs' || 
+             steps[0].type === 'list_proofs' ||
+             steps[0].description?.toLowerCase().includes('list proofs'));
+        
         console.log('[WORKFLOW_DEBUG] hasMultipleSteps:', hasMultipleSteps);
         console.log('[WORKFLOW_DEBUG] hasTransferSteps:', hasTransferSteps);
         console.log('[WORKFLOW_DEBUG] isSingleProofGeneration:', isSingleProofGeneration);
+        console.log('[WORKFLOW_DEBUG] isListOperation:', isListOperation);
         
         if (hasMultipleSteps || hasTransferSteps) {
             const workflowCard = workflowManager.addWorkflowCard(data);
             uiManager.addMessage(workflowCard, 'assistant');
-        } else if (!isSingleProofGeneration) {
-            // Only track non-proof workflows that don't show cards
+        } else if (!isSingleProofGeneration && !isListOperation) {
+            // Only track non-proof, non-list workflows that don't show cards
             debugLog('Skipping workflow card but tracking state', 'info');
             workflowManager.workflowStates.set(data.workflow_id, data);
         } else {
-            // For single proof generation, don't track in workflowStates
-            debugLog('Single proof generation - not tracking as workflow', 'info');
-            console.log('[WORKFLOW_DEBUG] NOT adding to workflowStates for single proof');
+            // For single proof generation or list operations, don't track in workflowStates
+            debugLog('Single operation - not tracking as workflow', 'info');
+            console.log('[WORKFLOW_DEBUG] NOT adding to workflowStates for single operation');
         }
         
         // Show AI response after workflow card if exists
@@ -501,6 +507,16 @@ function setupMessageHandlers() {
     wsManager.on('proof_history', (data) => {
         debugLog('Received proof history', 'info');
         proofManager.displayProofHistory(data);
+    });
+    
+    // Handle list_response (what the backend actually sends)
+    wsManager.on('list_response', (data) => {
+        debugLog('Received list response', 'info');
+        // Transform to match expected format
+        proofManager.displayProofHistory({
+            proofs: data.proofs || [],
+            count: data.count || 0
+        });
     });
     
     // Handle verification results (legacy - kept for compatibility)

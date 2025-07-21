@@ -288,6 +288,9 @@ export class ProofManager {
                 verifyBtn.textContent = 'Verifying...';
             }
             
+            // Update history table to show verification in progress
+            this.updateHistoryTableVerification(proofId, 'verifying');
+            
             const response = await fetch(`/api/v1/proof/${proofId}/verify`);
             
             if (!response.ok) {
@@ -304,12 +307,16 @@ export class ProofManager {
                     verifyBtn.style.background = 'rgba(16, 185, 129, 0.2)';
                     verifyBtn.style.color = '#10b981';
                 }
+                // Update history table to show local verification
+                this.updateHistoryTableVerification(proofId, 'verified_local');
             } else {
                 this.uiManager.showToast('Proof verification failed', 'error');
                 if (verifyBtn) {
                     verifyBtn.textContent = 'Invalid';
                     verifyBtn.disabled = false;
                 }
+                // Update history table to show failure
+                this.updateHistoryTableVerification(proofId, 'failed');
             }
             
             // Add verification result to the proof card
@@ -325,6 +332,9 @@ export class ProofManager {
                 verifyBtn.textContent = 'Verify Locally';
                 verifyBtn.disabled = false;
             }
+            
+            // Update history table to show failure
+            this.updateHistoryTableVerification(proofId, 'failed');
         }
     }
 
@@ -364,6 +374,18 @@ export class ProofManager {
         const resultsContainer = document.getElementById(`verification-results-${proofId}`);
         if (!resultsContainer) {
             debugLog(`Verification results container not found for ${proofId}`, 'warning');
+            // Try to find the proof card and create the container
+            const proofCard = document.querySelector(`[data-proof-id="${proofId}"]`);
+            if (proofCard && !proofCard.querySelector('.verification-results')) {
+                const resultsDiv = document.createElement('div');
+                resultsDiv.className = 'verification-results';
+                resultsDiv.id = `verification-results-${proofId}`;
+                resultsDiv.innerHTML = '<!-- Verification results will be added here -->';
+                proofCard.appendChild(resultsDiv);
+                // Try again
+                this.addVerificationResult(proofId, type, result, explorerUrl);
+                return;
+            }
             // Don't create fallback cards for workflow proofs
             return;
         }
@@ -394,7 +416,7 @@ export class ProofManager {
             // Real blockchain commitment - single line format
             const timestamp = new Date(commitmentData.commitmentTimestamp * 1000).toLocaleString();
             return `
-                <div class="commitment-info" style="margin-top: 12px; padding: 12px; background: #2a2a3a; border-radius: 8px; border: 1px solid #3a3a4a;">
+                <div class="commitment-info" style="margin: 8px -8px -8px -8px; padding: 12px; background: #2a2a3a; border-radius: 0 0 4px 4px; border: 1px solid #3a3a4a; border-top: none;">
                     <div style="font-size: 12px; color: #888;">
                         <a href="${commitmentData.baseExplorerUrl}" 
                            target="_blank" 
@@ -408,7 +430,7 @@ export class ProofManager {
         } else {
             // Waiting for blockchain commitment
             return `
-                <div class="commitment-info" style="margin-top: 12px; padding: 12px; background: #2a2a3a; border-radius: 8px; border: 1px solid #3a3a4a;">
+                <div class="commitment-info" style="margin: 8px -8px -8px -8px; padding: 12px; background: #2a2a3a; border-radius: 0 0 4px 4px; border: 1px solid #3a3a4a; border-top: none;">
                     <div style="font-size: 12px; color: #666;">
                         Creating blockchain commitment...
                         <div style="margin-top: 4px; font-size: 11px;">Please approve the transaction in MetaMask</div>
@@ -432,7 +454,7 @@ export class ProofManager {
 
         const historyContainer = document.createElement('div');
         historyContainer.innerHTML = `
-            <h3 style="color: #8B9AFF; margin-bottom: 16px;">
+            <h3 style="color: #888; margin-bottom: 16px; font-weight: 500;">
                 Proof History (${data.proofs.length} proofs)
             </h3>
             <div class="history-table-container">
@@ -480,6 +502,10 @@ export class ProofManager {
         // Check verification status
         let verificationHTML = this.getVerificationStatusHTML(proofId, proof);
         let actionsHTML = this.getProofActionsHTML(proofId, proofFunction, proof.on_chain_verifications);
+        
+        // Add data attributes for easy updating
+        row.setAttribute('data-proof-id', proofId);
+        row.setAttribute('data-proof-function', proofFunction);
         
         row.innerHTML = `
             <td><span class="function-badge">${proofFunction}</span></td>
@@ -554,6 +580,53 @@ export class ProofManager {
 
     setCurrentProofId(proofId) {
         this.currentProofId = proofId;
+    }
+    
+    updateHistoryTableVerification(proofId, status, blockchainData = null) {
+        // Find the row in the history table
+        const row = document.querySelector(`tr[data-proof-id="${proofId}"]`);
+        if (!row) return;
+        
+        // Get the verification status cell (6th column)
+        const verificationCell = row.cells[5];
+        if (!verificationCell) return;
+        
+        // Update verification status based on the status
+        if (status === 'verifying') {
+            verificationCell.innerHTML = '<span style="color: #f59e0b;">⏳ Verifying...</span>';
+        } else if (status === 'completed' && blockchainData) {
+            // Store the verification data
+            this.onChainVerifications.set(proofId, blockchainData);
+            
+            // Update the cell with blockchain verification info
+            const blockchainName = blockchainData.blockchain;
+            const shortName = blockchainName === 'Ethereum' ? 'ETH' : 
+                           blockchainName === 'Solana' ? 'SOL' : 
+                           blockchainName === 'Base' ? 'BASE' : blockchainName;
+            
+            verificationCell.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="color: #10b981;">✓ ${shortName}</span>
+                    <a href="${blockchainData.explorerUrl}" target="_blank" 
+                       style="color: #0052FF; text-decoration: none; font-size: 11px; 
+                              padding: 2px 6px; background: #2a2a3a; 
+                              border-radius: 4px; border: 1px solid #3a3a4a;">
+                        View
+                    </a>
+                </div>
+            `;
+            
+            // Update actions dropdown to remove blockchain option
+            const actionsCell = row.cells[6];
+            if (actionsCell) {
+                const proofFunction = row.getAttribute('data-proof-function');
+                actionsCell.innerHTML = this.getProofActionsHTML(proofId, proofFunction, true);
+            }
+        } else if (status === 'verified_local') {
+            verificationCell.innerHTML = '<span style="color: #10b981;">✓ Local</span>';
+        } else if (status === 'failed') {
+            verificationCell.innerHTML = '<span style="color: #ef4444;">✗ Failed</span>';
+        }
     }
 }
 // Cache bust: 1752971016

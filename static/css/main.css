@@ -269,10 +269,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .metric-value { color: #a78bfa; font-weight: 600; font-size: 13px; }
 
 /* History Table Styles */
-.history-table-container { margin-top: 12px; background: rgba(20, 20, 20, 0.2); border: 1px solid rgba(107, 124, 255, 0.08); border-radius: 12px; padding: 8px; overflow-x: auto; backdrop-filter: blur(10px); width: 100%; max-width: 100%; }
+.history-table-container { margin-top: 12px; background: #1a1a2a; border: 1px solid #2a2a3a; border-radius: 8px; padding: 12px; overflow-x: auto; width: 100%; max-width: 100%; }
 .history-table { width: auto; border-collapse: collapse; min-width: 900px; }
-.history-table th { background: rgba(107, 124, 255, 0.04); color: #8B9AFF; padding: 4px 6px; text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; border-bottom: 1px solid rgba(107, 124, 255, 0.15); white-space: nowrap; }
-.history-table td { padding: 4px 6px; border-bottom: 1px solid rgba(107, 124, 255, 0.05); color: #a0a0a0; font-size: 11px; vertical-align: middle; }
+.history-table th { background: #2a2a3a; color: #888; padding: 8px 12px; text-align: left; font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; border-bottom: 1px solid #3a3a4a; white-space: nowrap; }
+.history-table td { padding: 8px 12px; border-bottom: 1px solid #2a2a3a; color: #ccc; font-size: 12px; vertical-align: middle; }
 
 /* Column-specific widths with !important */
 .history-table th:nth-child(1), .history-table td:nth-child(1) { width: 92px !important; max-width: 92px !important; } /* Type */
@@ -282,19 +282,19 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .history-table th:nth-child(5), .history-table td:nth-child(5) { width: 114px !important; max-width: 114px !important; } /* Timestamp */
 .history-table th:nth-child(6), .history-table td:nth-child(6) { width: 99px !important; max-width: 99px !important; } /* Verified */
 .history-table th:nth-child(7), .history-table td:nth-child(7) { width: 125px !important; max-width: 125px !important; } /* Actions */
-.history-table tr:hover { background: rgba(107, 124, 255, 0.05); }
-.history-table .proof-id { color: #8B9AFF; font-family: monospace; font-size: 10px; }
-.history-table .function-badge { display: inline-block; padding: 2px 6px; background: rgba(107, 124, 255, 0.2); color: #a78bfa; border-radius: 6px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
-.history-table .timestamp { color: #666; font-size: 10px; white-space: nowrap; }
-.history-table .action-link { color: #8B9AFF; text-decoration: none; cursor: pointer; font-weight: 500; }
+.history-table tr:hover { background: #2a2a3a; }
+.history-table .proof-id { color: #0052FF; font-family: monospace; font-size: 11px; }
+.history-table .function-badge { display: inline-block; padding: 3px 8px; background: #2a2a3a; color: #888; border-radius: 4px; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.02em; }
+.history-table .timestamp { color: #666; font-size: 11px; white-space: nowrap; }
+.history-table .action-link { color: #0052FF; text-decoration: none; cursor: pointer; font-weight: 500; }
 .history-table .action-link:hover { text-decoration: underline; }
 
 /* Verification Dropdown Styles */
 .verify-dropdown { 
-    background: rgba(30, 30, 30, 0.9); 
-    border: 1px solid rgba(107, 124, 255, 0.3); 
-    border-radius: 6px; 
-    color: #8B9AFF; 
+    background: #2a2a3a; 
+    border: 1px solid #3a3a4a; 
+    border-radius: 4px; 
+    color: #888; 
     padding: 6px 12px; 
     font-size: 12px; 
     cursor: pointer; 

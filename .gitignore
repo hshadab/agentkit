@@ -159,6 +159,10 @@ list-*.js
 .snark_cache/
 =1.0.0
 
+# Log files (be explicit)
+chat_service*.log
+rust_server*.log
+
 # zkEngine build artifacts
 zkengine/example_wasms/target/
 zkengine/example_wasms/*.d

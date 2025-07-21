@@ -110,6 +110,9 @@ Output format as JSON:
         - "Generate location proof but make it funny" → two steps: generate_proof, process_with_ai (request: "make it funny")
         - "Create AI proof and tell me a joke about it" → two steps: generate_proof, process_with_ai (request: "tell me a joke about it")
         - "List proofs in Spanish" → two steps: list_proofs, process_with_ai (request: "translate to Spanish")
+        - "Proof history" → one step: list_proofs
+        - "Show proofs" → one step: list_proofs
+        - "List all proofs" → one step: list_proofs
         - "Verify proof proof_kyc_1234567890" → one step: verify_proof with proof_id: "proof_kyc_1234567890"
         
         CRITICAL: Do NOT add process_with_ai for these AI proof commands:

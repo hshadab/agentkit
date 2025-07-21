@@ -316,6 +316,9 @@ export class BlockchainVerifier {
             ethButton.textContent = 'Verifying on Ethereum...';
         }
         
+        // Update history table to show verification in progress
+        this.proofManager.updateHistoryTableVerification(proofId, 'verifying');
+        
         try {
             // Call the actual verification function
             const result = await this.verifyOnEthereumActual(proofId, proofType);
@@ -343,6 +346,13 @@ export class BlockchainVerifier {
                 // Add verification result to the proof card
                 this.proofManager.addVerificationResult(proofId, 'Ethereum', result, explorerUrl);
                 
+                // Update history table with verification result
+                this.proofManager.updateHistoryTableVerification(proofId, 'completed', {
+                    blockchain: 'Ethereum',
+                    txHash: txHash,
+                    explorerUrl: explorerUrl
+                });
+                
                 // Return result for external callers
                 return result;
             } else {
@@ -357,6 +367,9 @@ export class BlockchainVerifier {
                 ethButton.disabled = false;
                 ethButton.classList.remove('verifying');
             }
+            
+            // Update history table to show failure
+            this.proofManager.updateHistoryTableVerification(proofId, 'failed');
             
             // Return error result
             return { success: false, error: error.message };
@@ -391,6 +404,9 @@ export class BlockchainVerifier {
             solButton.textContent = 'Verifying on Solana...';
         }
         
+        // Update history table to show verification in progress
+        this.proofManager.updateHistoryTableVerification(proofId, 'verifying');
+        
         try {
             // Call the actual verification function
             const result = await this.verifyOnSolanaActual(proofId, proofType);
@@ -416,6 +432,13 @@ export class BlockchainVerifier {
                 const explorerUrl = `https://explorer.solana.com/tx/${result.signature}?cluster=devnet`;
                 this.proofManager.addVerificationResult(proofId, 'Solana', result, explorerUrl);
                 
+                // Update history table with verification result
+                this.proofManager.updateHistoryTableVerification(proofId, 'completed', {
+                    blockchain: 'Solana',
+                    txHash: result.signature,
+                    explorerUrl: explorerUrl
+                });
+                
                 // Return result for external callers
                 return result;
             } else {
@@ -430,6 +453,9 @@ export class BlockchainVerifier {
                 solButton.disabled = false;
                 solButton.classList.remove('verifying');
             }
+            
+            // Update history table to show failure
+            this.proofManager.updateHistoryTableVerification(proofId, 'failed');
             
             // Return error result
             return { success: false, error: error.message };
@@ -464,6 +490,9 @@ export class BlockchainVerifier {
             baseButton.textContent = 'Verifying on Base...';
         }
         
+        // Update history table to show verification in progress
+        this.proofManager.updateHistoryTableVerification(proofId, 'verifying');
+        
         try {
             // Call the actual verification function
             const result = await this.verifyOnBaseActual(proofId, proofType);
@@ -491,6 +520,13 @@ export class BlockchainVerifier {
                 // Add verification result to the proof card
                 this.proofManager.addVerificationResult(proofId, 'Base', result, explorerUrl);
                 
+                // Update history table with verification result
+                this.proofManager.updateHistoryTableVerification(proofId, 'completed', {
+                    blockchain: 'Base',
+                    txHash: txHash,
+                    explorerUrl: explorerUrl
+                });
+                
                 // Return result for external callers
                 return result;
             } else {
@@ -505,6 +541,9 @@ export class BlockchainVerifier {
                 baseButton.disabled = false;
                 baseButton.classList.remove('verifying');
             }
+            
+            // Update history table to show failure
+            this.proofManager.updateHistoryTableVerification(proofId, 'failed');
             
             // Return error result
             return { success: false, error: error.message };
