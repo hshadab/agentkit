@@ -6,9 +6,34 @@ class AIPredictionHandlerReal {
         this.baseChainId = '0x14a34'; // Base Sepolia
         this.commitments = new Map(); // Store local commitments
         
-        // Contract will be configured after deployment
-        this.contractAddress = null;
-        this.contractABI = null;
+        // Hardcoded contract address for Base Sepolia
+        this.contractAddress = '0xae7d069d0A45a8Ecd969ABbb2705bA96472D36FC';
+        
+        // Hardcoded ABI (minimal required methods)
+        this.contractABI = [
+            {
+                "inputs": [
+                    {"internalType": "bytes32", "name": "promptHash", "type": "bytes32"},
+                    {"internalType": "bytes32", "name": "responseHash", "type": "bytes32"}
+                ],
+                "name": "commitPrediction",
+                "outputs": [{"internalType": "bytes32", "name": "commitmentId", "type": "bytes32"}],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {"indexed": true, "internalType": "bytes32", "name": "commitmentId", "type": "bytes32"},
+                    {"indexed": true, "internalType": "address", "name": "predictor", "type": "address"},
+                    {"indexed": false, "internalType": "uint256", "name": "blockNumber", "type": "uint256"},
+                    {"indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256"}
+                ],
+                "name": "PredictionCommitted",
+                "type": "event"
+            }
+        ];
+        
         this.contract = null;
         this.web3 = null;
         
@@ -21,20 +46,26 @@ class AIPredictionHandlerReal {
             this.web3 = new Web3(window.ethereum);
             console.log('Web3 initialized for AI predictions');
             
-            // Check if we have deployment info
+            // Try to load deployment info, but use hardcoded values as fallback
             try {
                 const response = await fetch('/deployment-ai-commitment-base.json');
                 if (response.ok) {
                     const deploymentInfo = await response.json();
-                    this.contractAddress = deploymentInfo.contractAddress;
-                    this.contractABI = deploymentInfo.abi;
-                    
-                    // Initialize contract
-                    this.contract = new this.web3.eth.Contract(this.contractABI, this.contractAddress);
-                    console.log('AI Prediction contract loaded:', this.contractAddress);
+                    // Update with deployment info if available
+                    this.contractAddress = deploymentInfo.contractAddress || this.contractAddress;
+                    this.contractABI = deploymentInfo.abi || this.contractABI;
+                    console.log('AI Prediction contract loaded from deployment file:', this.contractAddress);
+                } else {
+                    console.log('Using hardcoded contract address:', this.contractAddress);
                 }
             } catch (error) {
-                console.error('Failed to load AI Prediction contract deployment info:', error);
+                console.log('Using hardcoded contract info (fetch failed):', this.contractAddress);
+            }
+            
+            // Initialize contract with whatever we have
+            if (this.contractAddress && this.contractABI) {
+                this.contract = new this.web3.eth.Contract(this.contractABI, this.contractAddress);
+                console.log('AI Prediction contract initialized:', this.contractAddress);
             }
         }
     }
