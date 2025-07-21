@@ -387,7 +387,7 @@ export class ProofManager {
     }
 
     getAICommitmentHTML(data) {
-        // Check if we have real commitment data
+        // Always use real commitment data
         const commitmentData = data.commitmentData || data.metadata?.commitmentData;
         
         if (commitmentData && commitmentData.isReal && commitmentData.txHash) {
@@ -413,45 +413,20 @@ export class ProofManager {
                 </div>
             `;
         } else {
-            // Demo mode
-            const demoHash = this.generateCommitmentTxHash(data.proofId);
+            // Waiting for blockchain commitment
             return `
                 <div class="commitment-info" style="margin-top: 12px; padding: 12px; background: #2a2a3a; border-radius: 8px; border: 1px solid #3a3a4a;">
-                    <div style="font-size: 12px; color: #888; margin-bottom: 4px;">Base Commitment (Demo):</div>
-                    <div style="font-family: monospace; font-size: 11px; color: #0052FF; word-break: break-all; margin-bottom: 8px;">
-                        ${demoHash}
-                    </div>
+                    <div style="font-size: 12px; color: #888; margin-bottom: 4px;">Base Commitment:</div>
                     <div style="font-size: 11px; color: #666;">
-                        <div style="margin-bottom: 4px;">🔒 Demo mode - No actual blockchain transaction</div>
-                        <div style="margin-bottom: 4px;">📝 Deploy the contract to enable real commitments</div>
-                        <div>💡 The commit-reveal pattern ensures temporal integrity</div>
+                        <div style="margin-bottom: 4px;">⏳ Creating blockchain commitment...</div>
+                        <div style="margin-bottom: 4px;">📝 Please approve the transaction in MetaMask</div>
+                        <div>💡 This ensures temporal integrity of AI predictions</div>
                     </div>
                 </div>
             `;
         }
     }
 
-    generateCommitmentTxHash(proofId) {
-        // Generate a deterministic transaction hash from proof ID
-        // This simulates what would be returned from a real Base transaction
-        try {
-            // Use Web3 which is already loaded
-            if (window.Web3 && window.Web3.utils) {
-                const hash = window.Web3.utils.keccak256(proofId);
-                return hash;
-            } else {
-                // Fallback: create a simple hash-like string
-                const simpleHash = '0x' + proofId.split('').reduce((acc, char) => {
-                    return ((acc << 5) - acc + char.charCodeAt(0)) | 0;
-                }, 0).toString(16).padStart(64, '0');
-                return simpleHash;
-            }
-        } catch (error) {
-            console.error('[generateCommitmentTxHash] Error:', error);
-            // Return a fallback hash
-            return '0x' + proofId.replace(/[^a-f0-9]/gi, '').padStart(64, '0').substring(0, 64);
-        }
-    }
 
     copyProofId(proofId) {
         copyToClipboard(proofId);

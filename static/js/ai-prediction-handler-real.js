@@ -34,7 +34,7 @@ class AIPredictionHandlerReal {
                     console.log('AI Prediction contract loaded:', this.contractAddress);
                 }
             } catch (error) {
-                console.log('No deployment info found, using demo mode');
+                console.error('Failed to load AI Prediction contract deployment info:', error);
             }
         }
     }
@@ -133,23 +133,29 @@ class AIPredictionHandlerReal {
                 
             } catch (error) {
                 console.error('Blockchain commitment failed:', error);
-                // Fall back to demo mode
-                commitmentData.txHash = this.generateDemoTxHash(commitmentData);
-                commitmentData.baseExplorerUrl = `https://sepolia.basescan.org/tx/${commitmentData.txHash}`;
-                commitmentData.status = 'committed_demo';
+                // Throw error - no demo mode fallback
+                commitmentData.status = 'failed';
                 commitmentData.isReal = false;
+                commitmentData.error = error.message;
                 
                 if (window.uiManager) {
-                    window.uiManager.showToast('Using demo mode (blockchain commitment failed)', 'warning');
+                    window.uiManager.showToast(`Blockchain commitment failed: ${error.message}`, 'error');
                 }
+                
+                throw new Error(`Failed to create blockchain commitment: ${error.message}`);
             }
         } else {
-            // Demo mode - no contract deployed
-            console.log('Running in demo mode (no contract)');
-            commitmentData.txHash = this.generateDemoTxHash(commitmentData);
-            commitmentData.baseExplorerUrl = `https://sepolia.basescan.org/tx/${commitmentData.txHash}`;
-            commitmentData.status = 'committed_demo';
+            // Contract not available - require real deployment
+            console.error('AI Prediction contract not deployed');
+            commitmentData.status = 'failed';
             commitmentData.isReal = false;
+            commitmentData.error = 'Contract not deployed';
+            
+            if (window.uiManager) {
+                window.uiManager.showToast('AI Prediction contract not deployed on Base. Please deploy the contract first.', 'error');
+            }
+            
+            throw new Error('AI Prediction contract not deployed on Base. Real blockchain commitment required.');
         }
         
         // Store locally
@@ -169,20 +175,6 @@ class AIPredictionHandlerReal {
         return '0x' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
     }
     
-    generateDemoTxHash(commitmentData) {
-        // Generate a deterministic demo hash
-        const data = JSON.stringify({
-            promptHash: commitmentData.promptHash,
-            responseHash: commitmentData.responseHash,
-            timestamp: commitmentData.commitmentTimestamp
-        });
-        
-        if (this.web3) {
-            return this.web3.utils.keccak256(data);
-        } else {
-            return '0x' + this.simpleHash(data);
-        }
-    }
     
     simpleHash(str) {
         // Simple hash function for when Web3 isn't available
