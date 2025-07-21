@@ -24,7 +24,13 @@ A production-ready framework for privacy-preserving AI agents with real zero-kno
 - **Real Transfers** - Actual USDC sent on-chain with transaction hashes
 - See [Circle Integration Guide](docs/CIRCLE_INTEGRATION_GUIDE.md) for details
 
-### Latest v4.4 Features
+### Latest v4.5 Features
+- **Enhanced AI Prediction Proofs** - Cleaner UI with single-line display and improved proof IDs
+- **UI Improvements** - Removed toast notifications for AI predictions, simplified commitment display
+- **OpenAI Parser Enhancements** - Better recognition of AI proof types vs AI processing requests
+- **Smart Contract Deployment** - AI Prediction Commitment contract live on Base Sepolia
+
+### v4.4 Features
 - **Base Blockchain Support** - Verify proofs on Base (Coinbase Layer 2) using MetaMask
 - **AI Prediction Commitment** - Real blockchain commitments for AI predictions with temporal proofs
 - **Solflare Wallet Support** - Preferred wallet for Solana verification with auto-detection
@@ -92,6 +98,12 @@ A production-ready framework for privacy-preserving AI agents with real zero-kno
 ```
 "Create KYC proof, verify on chain, then check AI content proof, and if both valid send 5 USDC"
 ```
+
+### AI Prediction Commitment
+```
+"Prove AI prediction commitment"
+```
+This creates a blockchain-timestamped commitment of AI-generated content on Base Sepolia.
 
 ### Verification Types
 - **Local verification**: "verify the proof" or "verify locally"

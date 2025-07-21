@@ -432,9 +432,14 @@ class WorkflowExecutor {
 
     async generateProof(functionName, args, stepIndex) {
         return new Promise((resolve) => {
-            const proofId = `proof_${functionName.replace('prove_', '')}_${Date.now()}`;
+            // Generate cleaner proof IDs for AI predictions
+            let proofType = functionName.replace('prove_', '');
+            if (proofType === 'ai_content') {
+                proofType = 'ai_prediction';
+            }
+            const proofId = `proof_${proofType}_${Date.now()}`;
             
-            console.log(`🔐 Generating ${functionName} proof with ID: ${proofId}`);
+            console.log(`Generating ${functionName} proof with ID: ${proofId}`);
             
             const messageHandler = (data) => {
                 const message = JSON.parse(data);

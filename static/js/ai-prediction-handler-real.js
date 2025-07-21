@@ -169,10 +169,7 @@ class AIPredictionHandlerReal {
                 commitmentData.status = 'committed';
                 commitmentData.isReal = true;
                 
-                // Show success message
-                if (window.uiManager) {
-                    window.uiManager.showToast('AI prediction committed on Base blockchain!', 'success');
-                }
+                // Success - no toast notification
                 
             } catch (error) {
                 console.error('Blockchain commitment failed:', error);
@@ -181,9 +178,7 @@ class AIPredictionHandlerReal {
                 commitmentData.isReal = false;
                 commitmentData.error = error.message;
                 
-                if (window.uiManager) {
-                    window.uiManager.showToast(`Blockchain commitment failed: ${error.message}`, 'error');
-                }
+                // Error - no toast notification
                 
                 throw new Error(`Failed to create blockchain commitment: ${error.message}`);
             }
@@ -194,9 +189,7 @@ class AIPredictionHandlerReal {
             commitmentData.isReal = false;
             commitmentData.error = 'Contract not deployed';
             
-            if (window.uiManager) {
-                window.uiManager.showToast('AI Prediction contract not deployed on Base. Please deploy the contract first.', 'error');
-            }
+            // Error - no toast notification
             
             throw new Error('AI Prediction contract not deployed on Base. Real blockchain commitment required.');
         }

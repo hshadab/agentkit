@@ -34,6 +34,8 @@ Rules:
 - For simple proof generation/verification WITHOUT additional requests, just include the action step
 - The process_with_ai step should capture the user's specific request (humor, translation, analysis, etc.)
 - Only add process_with_ai if the user explicitly asks for something beyond the basic action
+- IMPORTANT: "AI prediction proof", "AI content proof", "AI authenticity proof" are PROOF TYPES, NOT requests for AI processing
+- NEVER add process_with_ai step for commands like "Prove AI prediction commitment" or "Generate AI content proof" - these are single-step proof generations
 - If a transfer has a condition (like "if KYC verified"), you must first generate and verify that proof
 - Only add blockchain verification (verify_on_ethereum or verify_on_solana) if explicitly mentioned
 - Each person mentioned needs their own proof generation and verification
@@ -100,12 +102,20 @@ Output format as JSON:
         Examples:
         - "Generate KYC proof" → one step: generate_proof (proof_type: "kyc")
         - "Prove AI content authenticity" → one step: generate_proof (proof_type: "ai_content")
+        - "Prove AI prediction commitment" → one step: generate_proof (proof_type: "ai_content")
+        - "Generate AI content proof" → one step: generate_proof (proof_type: "ai_content")
+        - "Create AI prediction proof" → one step: generate_proof (proof_type: "ai_content")
         - "Generate location proof for NYC" → one step: generate_proof (proof_type: "location", location: "NYC")
         - "Generate KYC proof and explain" → two steps: generate_proof, process_with_ai (request: "explain")
         - "Generate location proof but make it funny" → two steps: generate_proof, process_with_ai (request: "make it funny")
         - "Create AI proof and tell me a joke about it" → two steps: generate_proof, process_with_ai (request: "tell me a joke about it")
         - "List proofs in Spanish" → two steps: list_proofs, process_with_ai (request: "translate to Spanish")
         - "Verify proof proof_kyc_1234567890" → one step: verify_proof with proof_id: "proof_kyc_1234567890"
+        
+        CRITICAL: Do NOT add process_with_ai for these AI proof commands:
+        - "Prove AI prediction commitment" - This is a PROOF TYPE, not a request for AI help
+        - "Generate AI content proof" - This is a PROOF TYPE, not a request for AI help
+        - "Create AI authenticity proof" - This is a PROOF TYPE, not a request for AI help
         
         Special case for verify commands with proof IDs:
         - If the command is "Verify proof [proof_id]" where proof_id starts with "proof_", 

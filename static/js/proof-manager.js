@@ -391,24 +391,17 @@ export class ProofManager {
         const commitmentData = data.commitmentData || data.metadata?.commitmentData;
         
         if (commitmentData && commitmentData.isReal && commitmentData.txHash) {
-            // Real blockchain commitment
+            // Real blockchain commitment - single line format
+            const timestamp = new Date(commitmentData.commitmentTimestamp * 1000).toLocaleString();
             return `
                 <div class="commitment-info" style="margin-top: 12px; padding: 12px; background: #2a2a3a; border-radius: 8px; border: 1px solid #3a3a4a;">
-                    <div style="font-size: 12px; color: #888; margin-bottom: 4px;">Base Commitment:</div>
-                    <a href="${commitmentData.baseExplorerUrl}" 
-                       target="_blank" 
-                       style="color: #0052FF; text-decoration: none; font-family: monospace; font-size: 12px; display: flex; align-items: center; gap: 6px;">
-                        <span>📝 View on Base</span>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                            <polyline points="15 3 21 3 21 9"></polyline>
-                            <line x1="10" y1="14" x2="21" y2="3"></line>
-                        </svg>
-                    </a>
-                    <div style="font-size: 11px; color: #666; margin-top: 8px;">
-                        <div style="margin-bottom: 4px;">✅ Real blockchain commitment on Base Sepolia</div>
-                        <div style="margin-bottom: 4px;">Block: ${commitmentData.blockNumber || 'pending'}</div>
-                        <div>Timestamp: ${new Date(commitmentData.commitmentTimestamp * 1000).toLocaleString()}</div>
+                    <div style="font-size: 12px; color: #888;">
+                        <a href="${commitmentData.baseExplorerUrl}" 
+                           target="_blank" 
+                           style="color: #0052FF; text-decoration: none;">
+                            View AI prediction commitment on Base blockchain
+                        </a>
+                        <span style="color: #666; margin-left: 8px;">| ${timestamp}</span>
                     </div>
                 </div>
             `;
@@ -416,11 +409,9 @@ export class ProofManager {
             // Waiting for blockchain commitment
             return `
                 <div class="commitment-info" style="margin-top: 12px; padding: 12px; background: #2a2a3a; border-radius: 8px; border: 1px solid #3a3a4a;">
-                    <div style="font-size: 12px; color: #888; margin-bottom: 4px;">Base Commitment:</div>
-                    <div style="font-size: 11px; color: #666;">
-                        <div style="margin-bottom: 4px;">⏳ Creating blockchain commitment...</div>
-                        <div style="margin-bottom: 4px;">📝 Please approve the transaction in MetaMask</div>
-                        <div>💡 This ensures temporal integrity of AI predictions</div>
+                    <div style="font-size: 12px; color: #666;">
+                        Creating blockchain commitment...
+                        <div style="margin-top: 4px; font-size: 11px;">Please approve the transaction in MetaMask</div>
                     </div>
                 </div>
             `;
