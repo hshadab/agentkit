@@ -23,7 +23,13 @@ module.exports = {
       rpcUrl: 'https://api.devnet.solana.com',
       programId: '2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7', // Deployed
       commitment: 'confirmed',
-      explorerUrl: 'https://explorer.solana.com'
+      explorerUrl: 'https://explorer.solana.com',
+      // Wallet configuration
+      wallets: {
+        preferred: 'Solflare', // User's preferred wallet
+        supported: ['Solflare', 'Phantom', 'Backpack'],
+        solflareWallet: process.env.SOLFLARE_WALLET_ADDRESS || null // Optional specific address
+      }
     },
     
     // Base Sepolia - Multiple Contracts

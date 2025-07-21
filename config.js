@@ -38,6 +38,12 @@ const config = {
       programId: '2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7',
       commitment: 'confirmed',
       explorerUrl: 'https://explorer.solana.com',
+      // Wallet configuration for Solana
+      wallets: {
+        preferred: 'Solflare', // Preferred wallet for Solana transactions
+        supported: ['Solflare', 'Phantom', 'Backpack'],
+        solflareWallet: process.env.SOLFLARE_WALLET_ADDRESS, // Optional: specific wallet address
+      },
     },
     base: {
       network: process.env.BASE_NETWORK || 'sepolia',

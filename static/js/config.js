@@ -29,7 +29,11 @@ export const config = {
         solana: {
             network: 'devnet',
             verifierProgramId: '2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7',
-            explorerUrl: 'https://explorer.solana.com'
+            explorerUrl: 'https://explorer.solana.com',
+            wallets: {
+                preferred: 'Solflare',
+                supported: ['Solflare', 'Phantom', 'Backpack']
+            }
         },
         base: {
             chainId: '0x14a34', // Base Sepolia
