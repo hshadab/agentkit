@@ -116,7 +116,7 @@ class WorkflowParser {
         const textLower = text.toLowerCase();
         
         // Check for proof generation keywords
-        if (!textLower.match(/proof|generate|create|make/i)) {
+        if (!textLower.match(/proof|prove|generate|create|make/i)) {
             return null;
         }
         
@@ -129,7 +129,7 @@ class WorkflowParser {
         
         // Check alternative keywords
         if (textLower.includes('compliance')) return { type: 'kyc', ...this.proofTypes.kyc };
-        if (textLower.includes('ai') || textLower.includes('artificial')) return { type: 'ai content', ...this.proofTypes['ai content'] };
+        if (textLower.includes('ai') || textLower.includes('artificial') || textLower.includes('prediction')) return { type: 'ai content', ...this.proofTypes['ai content'] };
         if (textLower.includes('gps') || textLower.includes('coordinate')) return { type: 'location', ...this.proofTypes.location };
         
         return null;
@@ -146,7 +146,7 @@ class WorkflowParser {
         
         // Check alternatives
         if (textLower.includes('compliance')) return { type: 'kyc' };
-        if (textLower.includes('ai') || textLower.includes('artificial')) return { type: 'ai content' };
+        if (textLower.includes('ai') || textLower.includes('artificial') || textLower.includes('prediction')) return { type: 'ai content' };
         if (textLower.includes('gps') || textLower.includes('coordinate')) return { type: 'location' };
         
         return null;
