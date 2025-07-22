@@ -69,8 +69,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     margin-right: 0; 
     background: linear-gradient(135deg, rgba(15, 15, 20, 0.95) 0%, rgba(20, 20, 25, 0.9) 100%); 
     border: 1px solid rgba(107, 124, 255, 0.08); 
-    border-radius: 8px; 
-    padding: 14px 16px; 
+    border-radius: 6px; 
+    padding: 8px 10px; 
     margin: 10px 0; 
     max-width: 680px; 
     backdrop-filter: blur(20px);
@@ -83,8 +83,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     margin-right: 0; 
     background: rgba(20, 20, 20, 0.15); 
     border: 1px solid rgba(107, 124, 255, 0.1); 
-    border-radius: 16px; 
-    padding: 16px; 
+    border-radius: 6px; 
+    padding: 8px 10px; 
     margin: 12px 0; 
     max-width: 700px; 
     backdrop-filter: blur(20px);
@@ -131,7 +131,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     color: #a78bfa; 
     border: 1px solid rgba(107, 124, 255, 0.12); 
     padding: 6px 10px; 
-    border-radius: 8px; 
+    border-radius: 6px; 
     cursor: pointer; 
     font-size: 12px; 
     font-weight: 500; 
@@ -209,8 +209,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .eth-status.warning {
     background: rgba(251, 191, 36, 0.1);
     border: 1px solid rgba(251, 191, 36, 0.3);
-    padding: 16px;
-    border-radius: 8px;
+    padding: 8px;
+    border-radius: 6px;
     margin-top: 12px;
     color: #ffffff;
 }
@@ -232,7 +232,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     margin-top: 4px; 
     padding: 4px;
     background: rgba(107, 124, 255, 0.02);
-    border-radius: 8px;
+    border-radius: 6px;
 }
 .proof-card .card-content {
     background: rgba(0, 0, 0, 0.25);
@@ -269,7 +269,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .metric-value { color: #a78bfa; font-weight: 600; font-size: 13px; }
 
 /* History Table Styles */
-.history-table-container { margin-top: 12px; background: #1a1a2a; border: 1px solid #2a2a3a; border-radius: 8px; padding: 12px; overflow-x: auto; width: 100%; max-width: 100%; }
+.history-table-container { margin-top: 12px; background: #1a1a2a; border: 1px solid #2a2a3a; border-radius: 6px; padding: 4px; overflow-x: auto; width: 100%; max-width: 100%; }
 .history-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 850px; }
 .history-table th { background: #2a2a3a; color: #888; padding: 10px 16px; text-align: left; font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; border-bottom: 1px solid #3a3a4a; white-space: nowrap; }
 .history-table td { padding: 10px 16px; border-bottom: 1px solid #2a2a3a; color: #ccc; font-size: 12px; vertical-align: middle; white-space: nowrap; }
@@ -342,7 +342,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 }
 
 /* Debug console */
-.debug-console { position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.95); border: 1px solid #333; border-radius: 8px; padding: 10px; font-family: 'Courier New', monospace; font-size: 11px; color: #0f0; max-width: 400px; z-index: 10000; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+.debug-console { position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.95); border: 1px solid #333; border-radius: 6px; padding: 10px; font-family: 'Courier New', monospace; font-size: 11px; color: #0f0; max-width: 400px; z-index: 10000; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
 .debug-console.minimized { height: 35px; overflow: hidden; }
 .debug-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; color: #0f0; font-weight: bold; }
 .debug-messages { max-height: 250px; overflow-y: auto; margin-top: 8px; line-height: 1.3; }
@@ -382,8 +382,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     margin-right: 0; 
     background: linear-gradient(135deg, rgba(15, 15, 20, 0.95) 0%, rgba(20, 20, 25, 0.9) 100%); 
     border: 1px solid rgba(107, 124, 255, 0.08); 
-    border-radius: 8px; 
-    padding: 14px 16px; 
+    border-radius: 6px; 
+    padding: 8px 10px; 
     margin: 10px 0; 
     max-width: 720px; 
     backdrop-filter: blur(20px);
@@ -406,7 +406,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     flex-direction: column;
     gap: 0;
     background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.25) 100%);
-    border-radius: 8px;
+    border-radius: 6px;
     margin-top: 12px;
     border: 1px solid rgba(107, 124, 255, 0.05);
     box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
@@ -419,7 +419,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     padding: 10px 14px;
     background: linear-gradient(135deg, rgba(12, 12, 16, 0.9) 0%, rgba(16, 16, 20, 0.85) 100%);
     border: 1px solid rgba(107, 124, 255, 0.06);
-    border-radius: 8px;
+    border-radius: 6px;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     margin-bottom: 16px;
     position: relative;
@@ -714,9 +714,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 
 .blockchain-status {
     margin-top: 12px;
-    padding: 12px;
+    padding: 8px;
     background: rgba(0, 0, 0, 0.4);
-    border-radius: 8px;
+    border-radius: 6px;
     transition: all 0.3s ease;
 }
 
@@ -809,8 +809,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 }
 
 .eth-status {
-    padding: 12px;
-    border-radius: 8px;
+    padding: 8px;
+    border-radius: 6px;
     font-size: 13px;
     line-height: 1.4;
 }
@@ -841,7 +841,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     right: 0;
     background: linear-gradient(135deg, #627eea 0%, #4c5ed8 100%);
     color: white;
-    padding: 12px;
+    padding: 8px;
     text-align: center;
     z-index: 1000;
     display: none;
@@ -883,8 +883,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 }
 
 .sol-status {
-    padding: 12px;
-    border-radius: 8px;
+    padding: 8px;
+    border-radius: 6px;
     font-size: 13px;
     line-height: 1.4;
 }
@@ -921,7 +921,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     right: 0;
     background: linear-gradient(135deg, #14F195 0%, #00D18C 100%);
     color: #000;
-    padding: 12px;
+    padding: 8px;
     text-align: center;
     z-index: 999;
     display: none;
@@ -948,7 +948,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     right: 0;
     background: linear-gradient(135deg, #0052FF 0%, #003DD1 100%);
     color: white;
-    padding: 12px;
+    padding: 8px;
     text-align: center;
     z-index: 998;
     display: flex;
@@ -1048,8 +1048,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .proof-generating-box {
     background: linear-gradient(135deg, rgba(107, 124, 255, 0.08) 0%, rgba(107, 124, 255, 0.05) 100%);
     border: 1px solid rgba(107, 124, 255, 0.2);
-    border-radius: 8px;
-    padding: 16px 20px;
+    border-radius: 6px;
+    padding: 10px 12px;
     display: flex;
     align-items: center;
     justify-content: space-between;

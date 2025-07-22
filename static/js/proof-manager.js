@@ -119,6 +119,17 @@ export class ProofManager {
         return nameMap[functionName] || functionName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
 
+    getProofTypeDisplayName(functionName) {
+        const nameMap = {
+            'prove_kyc': 'KYC',
+            'prove_location': 'LOCATION',
+            'prove_ai_content': 'AI PREDICTION',
+            'prove_age': 'AGE',
+            'prove_identity': 'IDENTITY'
+        };
+        return nameMap[functionName] || functionName.toUpperCase().replace(/_/g, ' ');
+    }
+
     startProofTimer(proofId) {
         const startTime = Date.now();
         const timer = setInterval(() => {
@@ -461,9 +472,13 @@ export class ProofManager {
             return;
         }
 
+        // Debug log to see what data we're receiving
+        console.log('[PROOF_HISTORY_DEBUG] Received proof data:', data);
+        console.log('[PROOF_HISTORY_DEBUG] First proof details:', data.proofs[0]);
+
         const historyContainer = document.createElement('div');
         historyContainer.innerHTML = `
-            <h3 style="color: #888; margin-bottom: 16px; font-weight: 500;">
+            <h3 style="color: #d1d5db; margin-bottom: 16px; font-weight: 600; font-size: 18px;">
                 Proof History (${data.proofs.length} proofs)
             </h3>
             <div class="history-table-container">
@@ -516,8 +531,11 @@ export class ProofManager {
         row.setAttribute('data-proof-id', proofId);
         row.setAttribute('data-proof-function', proofFunction);
         
+        // Get display name for the proof type
+        const displayName = this.getProofTypeDisplayName(proofFunction);
+        
         row.innerHTML = `
-            <td><span class="function-badge">${proofFunction}</span></td>
+            <td><span class="function-badge">${displayName}</span></td>
             <td><span class="proof-id clickable-id" 
                       onclick="window.proofManager.copyProofId('${proofId}')"
                       title="Click to copy">${proofId.substring(0, 8)}...</span></td>
@@ -534,6 +552,11 @@ export class ProofManager {
     getVerificationStatusHTML(proofId, proof) {
         // Check on-chain verification
         let onChainData = this.onChainVerifications.get(proofId) || proof.on_chain_verifications;
+        
+        // Debug log
+        if (proof.on_chain_verifications) {
+            console.log('[VERIFICATION_DEBUG] Proof has on_chain_verifications:', proofId, proof.on_chain_verifications);
+        }
         
         if (onChainData) {
             const blockchainName = onChainData.blockchain;

@@ -23,8 +23,8 @@ export class WorkflowManager {
         header.innerHTML = `
             <div class="card-header-row">
                 <div>
-                    <div class="card-title">Workflow Execution</div>
-                    <div class="status-message">ID: ${data.workflow_id}</div>
+                    <div class="card-function-name">Zero Knowledge Proof Workflow</div>
+                    <div class="card-title">ID: ${data.workflow_id}</div>
                 </div>
                 <span class="status-badge executing">EXECUTING</span>
             </div>

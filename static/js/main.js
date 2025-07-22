@@ -172,6 +172,35 @@ function setupMessageHandlers() {
         debugLog(`Received chat response: ${data.response}`, 'info');
         uiManager.removeWaitingMessage();
         
+        // Skip generic proof history explanation that comes with list commands
+        if (data.response && 
+            (data.response.includes('The concept of proof has a long history in mathematics') ||
+             data.response.includes('This table shows') || 
+             data.response.includes('Zero-knowledge proofs are') ||
+             data.response.includes('proof history') ||
+             data.response.includes('recent proofs') ||
+             data.response.includes('Here are your proofs') ||
+             data.response.includes('Here\'s your proof history') ||
+             data.response.includes('shows all your generated proofs') ||
+             data.response.includes('The table displays') ||
+             data.response.includes('verification status'))) {
+            debugLog('Skipping generic proof history explanation', 'info');
+            return;
+        }
+        
+        // Skip AI response if we're showing a list/table
+        if (data.intent === 'workflow_executed' && data.workflow_result) {
+            const workflowData = data.workflow_result.workflow_data;
+            if (workflowData && workflowData.steps && workflowData.steps.length === 1) {
+                const step = workflowData.steps[0];
+                if (step.action === 'list_proofs' || step.type === 'list_proofs' || 
+                    step.description?.toLowerCase().includes('list proofs')) {
+                    debugLog('Skipping AI response for list operation', 'info');
+                    return;
+                }
+            }
+        }
+        
         // Check if this is a workflow execution response
         if (data.intent === 'workflow_executed' && data.response) {
             // For now, just show the response but don't create a workflow card
@@ -426,12 +455,15 @@ function setupMessageHandlers() {
         const isSingleProofGeneration = steps.length === 1 && 
             (steps[0].action === 'generate_proof' || 
              steps[0].action === 'proof_generation' ||
-             steps[0].type === 'proof_generation');
+             steps[0].type === 'proof_generation' ||
+             steps[0].description?.toLowerCase().includes('generate') ||
+             steps[0].description?.toLowerCase().includes('proof'));
         
         const isListOperation = steps.length === 1 && 
             (steps[0].action === 'list_proofs' || 
              steps[0].type === 'list_proofs' ||
-             steps[0].description?.toLowerCase().includes('list proofs'));
+             steps[0].description?.toLowerCase().includes('list proofs') ||
+             steps[0].description?.toLowerCase().includes('list all proofs'));
         
         console.log('[WORKFLOW_DEBUG] hasMultipleSteps:', hasMultipleSteps);
         console.log('[WORKFLOW_DEBUG] hasTransferSteps:', hasTransferSteps);
@@ -447,6 +479,7 @@ function setupMessageHandlers() {
             workflowManager.workflowStates.set(data.workflow_id, data);
         } else {
             // For single proof generation or list operations, don't track in workflowStates
+            // This allows the proof_status handler to create the proof card
             debugLog('Single operation - not tracking as workflow', 'info');
             console.log('[WORKFLOW_DEBUG] NOT adding to workflowStates for single operation');
         }
