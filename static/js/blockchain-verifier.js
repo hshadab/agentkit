@@ -448,7 +448,6 @@ export class BlockchainVerifier {
                 }
                 
                 // Add verification result to the proof card
-                const explorerUrl = `https://explorer.solana.com/tx/${result.signature}?cluster=devnet`;
                 this.proofManager.addVerificationResult(proofId, 'Solana', result, explorerUrl);
                 
                 // Update history table with verification result
