@@ -515,6 +515,15 @@ export class ProofManager {
         const proofFunction = proof.function || proof.metadata?.function || 'unknown';
         const timestamp = formatTimestamp(proof.timestamp);
         
+        // Debug log for specific proof mentioned by user
+        if (proofId.includes('1753145819566')) {
+            console.log('[VERIFICATION_DEBUG] Found proof_ai_prediction_1753145819566:', proof);
+            console.log('[VERIFICATION_DEBUG] Has on_chain_verifications:', !!proof.on_chain_verifications);
+            if (proof.on_chain_verifications) {
+                console.log('[VERIFICATION_DEBUG] on_chain_verifications data:', proof.on_chain_verifications);
+            }
+        }
+        
         const duration = proof.metrics?.time_ms ? 
             (proof.metrics.time_ms / 1000).toFixed(2) + 's' : 
             proof.metrics?.generation_time_secs ? 

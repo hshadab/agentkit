@@ -328,12 +328,17 @@ export class BlockchainVerifier {
                 const txHash = result.txHash || result.transactionHash;
                 const explorerUrl = result.explorerUrl || `https://sepolia.etherscan.io/tx/${txHash}`;
                 
-                this.proofManager.onChainVerifications.set(proofId, {
+                const verificationData = {
                     blockchain: 'Ethereum',
                     txHash: txHash,
                     explorerUrl: explorerUrl,
                     timestamp: new Date().toISOString()
-                });
+                };
+                
+                this.proofManager.onChainVerifications.set(proofId, verificationData);
+                
+                // Persist verification data to server
+                this.persistVerificationData(proofId, verificationData);
                 
                 this.uiManager.showToast('Proof verified on Ethereum!', 'success');
                 
@@ -413,12 +418,17 @@ export class BlockchainVerifier {
             
             if (result.success) {
                 // Store verification data
-                this.proofManager.onChainVerifications.set(proofId, {
+                const verificationData = {
                     blockchain: 'Solana',
                     txHash: result.signature,
                     explorerUrl: `https://explorer.solana.com/tx/${result.signature}?cluster=devnet`,
                     timestamp: new Date().toISOString()
-                });
+                };
+                
+                this.proofManager.onChainVerifications.set(proofId, verificationData);
+                
+                // Persist verification data to server
+                this.persistVerificationData(proofId, verificationData);
                 
                 this.uiManager.showToast('Proof verified on Solana!', 'success');
                 
@@ -502,12 +512,17 @@ export class BlockchainVerifier {
                 const txHash = result.txHash || result.transactionHash;
                 const explorerUrl = result.explorerUrl || `https://sepolia.basescan.org/tx/${txHash}`;
                 
-                this.proofManager.onChainVerifications.set(proofId, {
+                const verificationData = {
                     blockchain: 'Base',
                     txHash: txHash,
                     explorerUrl: explorerUrl,
                     timestamp: new Date().toISOString()
-                });
+                };
+                
+                this.proofManager.onChainVerifications.set(proofId, verificationData);
+                
+                // Persist verification data to server
+                this.persistVerificationData(proofId, verificationData);
                 
                 this.uiManager.showToast('Proof verified on Base!', 'success');
                 
@@ -613,6 +628,30 @@ export class BlockchainVerifier {
             case 'base':
                 await this.verifyOnBase(proofId, proofFunction);
                 break;
+        }
+    }
+    
+    // Persist verification data to server
+    async persistVerificationData(proofId, verificationData) {
+        try {
+            debugLog(`Persisting verification data for ${proofId}`, 'info');
+            const response = await fetch(`/api/proof/${proofId}/update-verification`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(verificationData)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            debugLog(`Verification data persisted: ${JSON.stringify(result)}`, 'success');
+        } catch (error) {
+            debugLog(`Failed to persist verification data: ${error.message}`, 'error');
+            // Don't show error to user - this is a background operation
         }
     }
     
