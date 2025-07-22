@@ -293,9 +293,60 @@ class SolanaVerifier {
             // First, check if the PDA already exists
             const accountInfo = await this.connection.getAccountInfo(proofPda);
             if (accountInfo !== null) {
-                console.log('PDA already exists, checking if proof was verified...');
-                // The account exists, which means this proof was already processed
-                throw new Error('This proof commitment has already been processed on Solana. Each unique proof can only be verified once.');
+                console.log('PDA already exists, proof was previously verified');
+                // The account exists, which means this proof was already verified
+                // Try to find the original transaction
+                console.log('Searching for original verification transaction...');
+                
+                // Get recent signatures for the program
+                const signatures = await this.connection.getSignaturesForAddress(
+                    new solanaWeb3.PublicKey(this.programId),
+                    { limit: 100 }
+                );
+                
+                // Search for a transaction that created this PDA
+                for (const sigInfo of signatures) {
+                    try {
+                        const tx = await this.connection.getTransaction(sigInfo.signature, {
+                            maxSupportedTransactionVersion: 0
+                        });
+                        
+                        // Check if this transaction involves our proof PDA
+                        if (tx && tx.transaction && tx.transaction.message) {
+                            const accountKeys = tx.transaction.message.staticAccountKeys || 
+                                               tx.transaction.message.accountKeys || [];
+                            
+                            const pdaIndex = accountKeys.findIndex(key => 
+                                key.toString() === proofPda.toString()
+                            );
+                            
+                            if (pdaIndex !== -1 && !tx.meta?.err) {
+                                console.log('Found original verification transaction:', sigInfo.signature);
+                                return {
+                                    success: true,
+                                    signature: sigInfo.signature,
+                                    explorerUrl: `https://explorer.solana.com/tx/${sigInfo.signature}?cluster=devnet`,
+                                    proofId: proofId,
+                                    alreadyVerified: true,
+                                    message: 'Proof was previously verified on Solana'
+                                };
+                            }
+                        }
+                    } catch (e) {
+                        // Continue searching
+                    }
+                }
+                
+                // If we couldn't find the transaction, still return success
+                console.log('Proof verified but original transaction not found');
+                return {
+                    success: true,
+                    signature: 'unknown',
+                    explorerUrl: `https://explorer.solana.com/address/${proofPda.toString()}?cluster=devnet`,
+                    proofId: proofId,
+                    alreadyVerified: true,
+                    message: 'Proof was previously verified on Solana (transaction history unavailable)'
+                };
             }
             
             // Send with skipPreflight to avoid simulation errors for already processed transactions

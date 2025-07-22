@@ -325,7 +325,7 @@ export class BlockchainVerifier {
             
             if (result.success) {
                 // Store verification data (handle both txHash and transactionHash)
-                const txHash = result.txHash || result.transactionHash;
+                const txHash = result.txHash || result.transactionHash || result.signature;
                 const explorerUrl = result.explorerUrl || `https://sepolia.etherscan.io/tx/${txHash}`;
                 
                 const verificationData = {
@@ -340,7 +340,11 @@ export class BlockchainVerifier {
                 // Persist verification data to server
                 this.persistVerificationData(proofId, verificationData);
                 
-                this.uiManager.showToast('Proof verified on Ethereum!', 'success');
+                if (result.alreadyVerified) {
+                    this.uiManager.showToast('Proof was already verified on Ethereum', 'info');
+                } else {
+                    this.uiManager.showToast('Proof verified on Ethereum!', 'success');
+                }
                 
                 if (ethButton) {
                     ethButton.textContent = '✅ Verified on Ethereum';
@@ -418,10 +422,11 @@ export class BlockchainVerifier {
             
             if (result.success) {
                 // Store verification data
+                const explorerUrl = result.explorerUrl || `https://explorer.solana.com/tx/${result.signature}?cluster=devnet`;
                 const verificationData = {
                     blockchain: 'Solana',
                     txHash: result.signature,
-                    explorerUrl: `https://explorer.solana.com/tx/${result.signature}?cluster=devnet`,
+                    explorerUrl: explorerUrl,
                     timestamp: new Date().toISOString()
                 };
                 
@@ -430,7 +435,11 @@ export class BlockchainVerifier {
                 // Persist verification data to server
                 this.persistVerificationData(proofId, verificationData);
                 
-                this.uiManager.showToast('Proof verified on Solana!', 'success');
+                if (result.alreadyVerified) {
+                    this.uiManager.showToast('Proof was already verified on Solana', 'info');
+                } else {
+                    this.uiManager.showToast('Proof verified on Solana!', 'success');
+                }
                 
                 if (solButton) {
                     solButton.textContent = '✅ Verified on Solana';

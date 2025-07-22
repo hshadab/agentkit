@@ -279,6 +279,30 @@ class EthereumVerifier {
             console.log('Formatted proof:', formattedProof);
             console.log('Public signals:', pubSignals);
             
+            // Check if proof is already verified
+            console.log('Checking if proof is already verified...');
+            try {
+                const proofStatus = await this.contract.methods.getProofStatus(proofIdBytes32).call();
+                console.log('Proof status:', proofStatus);
+                
+                if (proofStatus && proofStatus.isVerified) {
+                    console.log('Proof already verified on Ethereum!');
+                    // Try to find the original transaction
+                    // For now, return success with the existing verification
+                    return {
+                        success: true,
+                        transactionHash: 'previously-verified',
+                        explorerUrl: `https://sepolia.etherscan.io/address/${this.contractAddress}`,
+                        proofId: proofId,
+                        alreadyVerified: true,
+                        timestamp: proofStatus.timestamp ? new Date(proofStatus.timestamp * 1000).toISOString() : new Date().toISOString(),
+                        message: 'Proof was previously verified on Ethereum'
+                    };
+                }
+            } catch (e) {
+                console.log('Could not check proof status, proceeding with verification:', e.message);
+            }
+            
             // Check contract state before gas estimation
             console.log('=== Pre-verification checks ===');
             console.log('Contract exists:', !!this.contract);
