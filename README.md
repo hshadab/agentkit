@@ -13,9 +13,81 @@ A production-ready framework for privacy-preserving AI agents with real zero-kno
 - **No Simulations** - Everything is real: proofs, blockchain transactions, and USDC transfers
 
 ### Supported Proof Types
-1. **KYC Compliance** - Prove identity verification without revealing personal data
-2. **Location Verification** - Prove geographic location within constraints  
-3. **AI Prediction Commitment** - Prove temporal ordering of AI predictions with blockchain timestamps
+
+#### 1. **KYC Compliance Proof**
+Proves identity verification without revealing personal information.
+
+**How it works:**
+- The proof demonstrates that a user has passed KYC checks (e.g., age > 18, valid ID, not on sanctions list)
+- Zero-knowledge cryptography ensures the actual personal data (name, DOB, address) remains private
+- Only the verification result is proven, not the underlying data
+
+**What it proves:**
+- User has been verified by a trusted KYC provider
+- User meets specific compliance requirements (age, residency, etc.)
+- User is not on any prohibited lists
+
+**Use cases:**
+- DeFi platforms requiring regulatory compliance
+- Age-restricted services
+- Financial applications needing identity verification
+
+**Example command:**
+```
+"Generate KYC proof and verify on Ethereum"
+```
+
+#### 2. **Location Verification Proof**
+Proves geographic location within specified constraints without revealing exact coordinates.
+
+**How it works:**
+- The proof demonstrates a user was in a certain region at a specific time
+- Uses cryptographic commitments to timestamp and location data
+- Can prove location within a radius (e.g., "within NYC") without revealing exact GPS coordinates
+
+**What it proves:**
+- User was in a specified geographic area
+- Timestamp of when the location was verified
+- Location falls within defined boundaries or radius
+
+**Use cases:**
+- Location-based rewards or airdrops
+- Proof of attendance at events
+- Compliance with geographic restrictions
+- Supply chain verification
+
+**Example command:**
+```
+"Generate location proof for NYC and verify on Solana"
+```
+
+#### 3. **AI Prediction Commitment Proof**
+Proves that an AI made a specific prediction before an event occurred, ensuring temporal integrity.
+
+**How it works:**
+- When an AI makes a prediction, a cryptographic hash (commitment) is immediately stored on blockchain
+- The blockchain timestamp proves when the prediction was made
+- Later, the original prediction can be revealed and verified against the commitment
+- Zero-knowledge proof ensures the prediction hasn't been tampered with
+
+**What it proves:**
+- An AI system made a specific prediction at a provable time
+- The prediction was recorded BEFORE the predicted event occurred
+- The prediction content hasn't been altered after the fact
+- Temporal ordering - proves the AI didn't "predict" something after it happened
+
+**Use cases:**
+- AI trading predictions with verifiable track records
+- Weather or event forecasting with accountability
+- Medical AI diagnoses with timestamp proof
+- Any scenario requiring proof of AI prediction integrity
+
+**Example command:**
+```
+"Prove AI prediction commitment"
+```
+
+This generates a blockchain-timestamped commitment on Base Sepolia, creating an immutable record of when the AI prediction was made.
 
 ### Circle Integration (USDC Transfers)
 - **Automatic USD to USDC Conversion** - Circle converts USD to USDC during transfers
@@ -96,7 +168,7 @@ A production-ready framework for privacy-preserving AI agents with real zero-kno
 
 ### Complex Multi-Step Workflow
 ```
-"Create KYC proof, verify on chain, then check AI content proof, and if both valid send 5 USDC"
+"Create KYC proof for Alice, verify on chain, then create location proof for NYC, and if both valid send 5 USDC to Alice"
 ```
 
 ### AI Prediction Commitment
@@ -513,12 +585,12 @@ Prove location compliance for regulated services:
 // Result: Access geo-restricted services while maintaining privacy
 ```
 
-#### 3. AI Content Verification
-Prove content authenticity in the age of deepfakes:
+#### 3. AI Prediction Verification
+Prove AI predictions were made before events occurred:
 ```javascript
-// Verify AI-generated content source
-"Generate AI content proof for OpenAI GPT-4 and verify on chain"
-// Result: Immutable record of content provenance
+// Verify AI prediction timing
+"Prove AI prediction commitment"
+// Result: Blockchain-timestamped commitment proving when prediction was made
 ```
 
 #### 4. Conditional Payments
@@ -752,7 +824,7 @@ verifiable-agentkit/
     ├── zkEngine
     ├── prove_kyc.wat
     ├── prove_location.wat
-    └── prove_ai_content.wat
+    └── prove_ai_prediction.wat
 ```
 
 ### Key Technical Components
