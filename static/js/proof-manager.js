@@ -92,6 +92,10 @@ export class ProofManager {
                             onclick="window.blockchainVerifier.verifyOnBase('${data.proofId}', '${functionName}')">
                         Verify on Base
                     </button>
+                    <button class="action-btn avalanche-verify-btn" 
+                            onclick="window.blockchainVerifier.verifyOnAvalanche('${data.proofId}', '${functionName}')">
+                        Verify on Avalanche
+                    </button>
                 </div>
                 <div class="verification-results" id="verification-results-${data.proofId}">
                     <!-- Verification results will be added here -->
@@ -240,6 +244,10 @@ export class ProofManager {
                     <button class="action-btn base-verify-btn" 
                             onclick="window.blockchainVerifier.verifyOnBase('${proofId}', '${data.metadata?.function || data.proof_function || 'proof'}')">
                         Verify on Base
+                    </button>
+                    <button class="action-btn avalanche-verify-btn" 
+                            onclick="window.blockchainVerifier.verifyOnAvalanche('${proofId}', '${data.metadata?.function || data.proof_function || 'proof'}')">
+                        Verify on Avalanche
                     </button>
                 `;
                 proofCard.appendChild(actionsDiv);

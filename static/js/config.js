@@ -43,6 +43,16 @@ export const config = {
                 aiPredictionCommitment: '0xae7d069d0A45a8Ecd969ABbb2705bA96472D36FC'
             },
             explorerUrl: 'https://sepolia.basescan.org'
+        },
+        avalanche: {
+            chainId: '0xa869', // Fuji testnet
+            chainIdDecimal: 43113,
+            contracts: {
+                zkVerifier: '0x1e8150050a7a4715aad42b905c08df76883f396f' // TODO: Deploy to Fuji
+            },
+            explorerUrl: 'https://testnet.snowtrace.io',
+            rpcUrl: 'https://api.avax-test.network/ext/bc/C/rpc',
+            name: 'Avalanche Fuji Testnet'
         }
     },
     circle: {

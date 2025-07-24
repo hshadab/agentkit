@@ -9,9 +9,11 @@ export class BlockchainVerifier {
         this.ethereumConnected = false;
         this.solanaConnected = false;
         this.baseConnected = false;
+        this.avalancheConnected = false;
         this.ethereumAccount = null;
         this.solanaWallet = null;
         this.baseAccount = null;
+        this.avalancheAccount = null;
         
         // Auto-connect to wallets if previously connected
         this.autoConnect();
@@ -70,6 +72,20 @@ export class BlockchainVerifier {
         } else {
             // Show connect banner if not connected
             const banner = document.getElementById('base-connect-banner');
+            if (banner) banner.style.display = 'flex';
+            showConnectAll = true;
+        }
+        
+        // Check if previously connected to Avalanche (MetaMask)
+        if (localStorage.getItem('avalanche-connected') === 'true') {
+            debugLog('Auto-connecting to Avalanche...', 'info');
+            connections.push(this.connectAvalanche().catch(err => {
+                debugLog(`Avalanche auto-connect failed: ${err.message}`, 'warning');
+                return false;
+            }));
+        } else {
+            // Show connect banner if not connected
+            const banner = document.getElementById('avalanche-connect-banner');
             if (banner) banner.style.display = 'flex';
             showConnectAll = true;
         }
@@ -293,6 +309,79 @@ export class BlockchainVerifier {
                     });
                 } catch (addError) {
                     debugLog('Error adding Base network', 'error');
+                }
+            }
+        }
+    }
+
+    async connectAvalanche() {
+        debugLog('Connecting to Avalanche wallet...', 'info');
+        
+        // Check for MetaMask
+        if (!window.ethereum) {
+            this.uiManager.showToast('Please install MetaMask to verify on Avalanche', 'error');
+            return false;
+        }
+
+        try {
+            const provider = window.ethereum;
+            const accounts = await provider.request({ method: 'eth_requestAccounts' });
+            this.avalancheAccount = accounts[0];
+            this.avalancheConnected = true;
+            
+            // Check if on Avalanche Fuji network
+            const chainId = await provider.request({ method: 'eth_chainId' });
+            
+            if (chainId !== config.blockchain.avalanche.chainId) {
+                await this.switchToAvalanche();
+            }
+            
+            debugLog(`Connected to Avalanche: ${this.avalancheAccount}`, 'success');
+            
+            // Store connection status
+            localStorage.setItem('avalanche-connected', 'true');
+            
+            // Hide connect banner if shown
+            const banner = document.getElementById('avalanche-connect-banner');
+            if (banner) banner.style.display = 'none';
+            
+            // Show wallet status indicator
+            const statusIndicator = document.getElementById('avalanche-wallet-status');
+            if (statusIndicator) statusIndicator.style.display = 'inline-block';
+            
+            return true;
+        } catch (error) {
+            debugLog(`Avalanche connection error: ${error.message}`, 'error');
+            this.uiManager.showToast('Failed to connect Avalanche wallet', 'error');
+            return false;
+        }
+    }
+
+    async switchToAvalanche() {
+        try {
+            await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: config.blockchain.avalanche.chainId }],
+            });
+        } catch (switchError) {
+            if (switchError.code === 4902) {
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: config.blockchain.avalanche.chainId,
+                            chainName: config.blockchain.avalanche.name,
+                            nativeCurrency: {
+                                name: 'AVAX',
+                                symbol: 'AVAX',
+                                decimals: 18
+                            },
+                            rpcUrls: [config.blockchain.avalanche.rpcUrl],
+                            blockExplorerUrls: [config.blockchain.avalanche.explorerUrl]
+                        }],
+                    });
+                } catch (addError) {
+                    debugLog('Error adding Avalanche network', 'error');
                 }
             }
         }
@@ -583,6 +672,103 @@ export class BlockchainVerifier {
         throw new Error('Base verifier not loaded');
     }
 
+    async verifyOnAvalanche(proofId, proofType) {
+        debugLog(`Starting Avalanche verification for proof ${proofId}`, 'info');
+        
+        // Check connection
+        if (!this.avalancheConnected) {
+            const connected = await this.connectAvalanche();
+            if (!connected) return { success: false, error: 'Failed to connect to Avalanche wallet' };
+        }
+        
+        // Update button state
+        const proofCard = document.querySelector(`[data-proof-id="${proofId}"]`);
+        const avalancheButton = proofCard?.querySelector('.avalanche-verify-btn');
+        if (avalancheButton) {
+            avalancheButton.disabled = true;
+            avalancheButton.classList.add('verifying');
+            avalancheButton.textContent = 'Verifying on Avalanche...';
+        }
+        
+        // Update history table to show verification in progress
+        this.proofManager.updateHistoryTableVerification(proofId, 'verifying');
+        
+        try {
+            // Call the actual verification function
+            const result = await this.verifyOnAvalancheActual(proofId, proofType);
+            
+            if (result.success) {
+                // Store verification data
+                const txHash = result.txHash || result.transactionHash;
+                const explorerUrl = result.explorerUrl || `${config.blockchain.avalanche.explorerUrl}/tx/${txHash}`;
+                
+                const verificationData = {
+                    blockchain: 'Avalanche',
+                    txHash: txHash,
+                    explorerUrl: explorerUrl,
+                    timestamp: new Date().toISOString()
+                };
+                
+                this.proofManager.onChainVerifications.set(proofId, verificationData);
+                
+                // Persist verification data to server
+                this.persistVerificationData(proofId, verificationData);
+                
+                if (result.alreadyVerified) {
+                    this.uiManager.showToast('Proof was already verified on Avalanche', 'info');
+                } else {
+                    this.uiManager.showToast('Proof verified on Avalanche!', 'success');
+                }
+                
+                if (avalancheButton) {
+                    avalancheButton.textContent = '✅ Verified on Avalanche';
+                    avalancheButton.style.background = 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)';
+                    avalancheButton.disabled = true;
+                }
+                
+                // Add verification result to the proof card
+                this.proofManager.addVerificationResult(proofId, 'Avalanche', result, explorerUrl);
+                
+                // Update history table with verification result
+                this.proofManager.updateHistoryTableVerification(proofId, 'completed', {
+                    blockchain: 'Avalanche',
+                    txHash: txHash,
+                    explorerUrl: explorerUrl
+                });
+                
+                // Return result for external callers
+                return result;
+            } else {
+                throw new Error(result.error || 'Verification failed');
+            }
+        } catch (error) {
+            debugLog(`Avalanche verification error: ${error.message}`, 'error');
+            this.uiManager.showToast(`Avalanche verification failed: ${error.message}`, 'error');
+            
+            if (avalancheButton) {
+                avalancheButton.textContent = '🔷 Verify on Avalanche';
+                avalancheButton.disabled = false;
+                avalancheButton.classList.remove('verifying');
+            }
+            
+            // Update history table to show verification failed
+            this.proofManager.updateHistoryTableVerification(proofId, 'failed');
+            
+            // Return error result
+            return { success: false, error: error.message };
+        }
+    }
+
+    async verifyOnAvalancheActual(proofId, proofType) {
+        // This function should be implemented by the avalanche-verifier.js
+        // For now, we'll call the global function if it exists
+        if (typeof window.verifyOnAvalancheActual === 'function') {
+            return await window.verifyOnAvalancheActual(proofId, proofType);
+        }
+        
+        throw new Error('Avalanche verifier not loaded');
+    }
+
     addVerificationResultCard(proofId, blockchain, result) {
         const card = document.createElement('div');
         card.className = 'verification-card';
@@ -635,6 +821,9 @@ export class BlockchainVerifier {
                 break;
             case 'base':
                 await this.verifyOnBase(proofId, proofFunction);
+                break;
+            case 'avalanche':
+                await this.verifyOnAvalanche(proofId, proofFunction);
                 break;
         }
     }
