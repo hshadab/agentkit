@@ -77,9 +77,6 @@ export class ProofManager {
             </div>
             ${data.status === 'complete' ? `
                 <div class="card-actions">
-                    <button class="action-btn" onclick="window.proofManager.verifyProof('${data.proofId}')">
-                        Verify Locally
-                    </button>
                     <button class="action-btn eth-verify-btn" 
                             onclick="window.blockchainVerifier.verifyOnEthereum('${data.proofId}', '${functionName}')">
                         Verify on Ethereum
@@ -230,9 +227,6 @@ export class ProofManager {
                 const actionsDiv = document.createElement('div');
                 actionsDiv.className = 'card-actions';
                 actionsDiv.innerHTML = `
-                    <button class="action-btn" onclick="window.proofManager.verifyProof('${proofId}')">
-                        Verify Locally
-                    </button>
                     <button class="action-btn eth-verify-btn" 
                             onclick="window.blockchainVerifier.verifyOnEthereum('${proofId}', '${data.metadata?.function || data.proof_function || 'proof'}')">
                         Verify on Ethereum
