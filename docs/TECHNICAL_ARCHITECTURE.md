@@ -204,6 +204,16 @@ pub struct ProofAccount {
 - **Ethereum Sepolia**: Primary verification chain
 - **Solana Devnet**: High-speed verification
 - **Base Sepolia**: Layer 2 verification
+- **Avalanche Fuji**: C-Chain EVM-compatible verification
+
+### Deployed Contracts
+
+| Network | Contract Address | Explorer |
+|---------|-----------------|----------|
+| Ethereum Sepolia | `0x1e8150050a7a4715aad42b905c08df76883f396f` | [Etherscan](https://sepolia.etherscan.io/address/0x1e8150050a7a4715aad42b905c08df76883f396f) |
+| Solana Devnet | `2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7` | [Solana Explorer](https://explorer.solana.com/address/2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7?cluster=devnet) |
+| Base Sepolia | `0x74D68B2481d298F337e62efc50724CbBA68dCF8f` | [Basescan](https://sepolia.basescan.org/address/0x74D68B2481d298F337e62efc50724CbBA68dCF8f) |
+| Avalanche Fuji | `0x112E448fFD99c224b6aa24746E9B34E09A8E6C46` | [Snowtrace](https://testnet.snowtrace.io/address/0x112E448fFD99c224b6aa24746E9B34E09A8E6C46) |
 
 ## Data Flow & Storage
 
