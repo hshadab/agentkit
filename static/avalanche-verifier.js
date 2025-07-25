@@ -113,8 +113,8 @@ class AvalancheVerifier {
             if (typeof config !== 'undefined' && config.blockchain && config.blockchain.avalanche) {
                 this.contractAddress = config.blockchain.avalanche.contracts.zkVerifier;
             } else {
-                // Fallback to hardcoded address (same as Sepolia for now - needs deployment)
-                this.contractAddress = '0x1e8150050a7a4715aad42b905c08df76883f396f';
+                // Fallback to deployed address on Fuji
+                this.contractAddress = '0x112E448fFD99c224b6aa24746E9B34E09A8E6C46';
             }
             
             console.log('Using contract address:', this.contractAddress);

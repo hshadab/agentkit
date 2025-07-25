@@ -48,7 +48,7 @@ export const config = {
             chainId: '0xa869', // Fuji testnet
             chainIdDecimal: 43113,
             contracts: {
-                zkVerifier: '0x1e8150050a7a4715aad42b905c08df76883f396f' // TODO: Deploy to Fuji
+                zkVerifier: '0x112E448fFD99c224b6aa24746E9B34E09A8E6C46' // Deployed on Fuji
             },
             explorerUrl: 'https://testnet.snowtrace.io',
             rpcUrl: 'https://api.avax-test.network/ext/bc/C/rpc',
