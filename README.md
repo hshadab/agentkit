@@ -6,7 +6,7 @@ A production-ready framework for privacy-preserving AI agents with real zero-kno
 
 ### Core Capabilities
 - **Real Zero-Knowledge Proofs** - Generate cryptographic proofs using zkEngine (Nova → Groth16 SNARKs)
-- **Multi-Chain Verification** - Deploy and verify proofs on Ethereum Sepolia and Solana Devnet
+- **Multi-Chain Verification** - Deploy and verify proofs on Ethereum Sepolia, Solana Devnet, Base Sepolia, and Avalanche Fuji
 - **Automated USDC Transfers** - Real conditional transfers via Circle API based on proof verification
 - **OpenAI-Powered Workflows** - GPT-4o integration for intelligent natural language parsing
 - **Real-Time WebSocket UI** - Live tracking of proof generation, verification, and transfers
@@ -179,7 +179,7 @@ This creates a blockchain-timestamped commitment of AI-generated content on Base
 
 ### Verification Types
 - **Local verification**: "verify the proof" or "verify locally"
-- **On-chain verification**: "verify on Ethereum", "verify on Solana", or "verify on blockchain"
+- **On-chain verification**: "verify on Ethereum", "verify on Solana", "verify on Base", "verify on Avalanche", or "verify on blockchain"
 - **Conditional transfers**: Always specify blockchain verification for production use
 
 ## 🔧 Installation
@@ -263,11 +263,31 @@ python chat_service.py
 Navigate to `http://localhost:8001`
 
 3. **Connect your wallet**
-- For Ethereum/Base: MetaMask
+- For Ethereum/Base/Avalanche: MetaMask
 - For Solana: Solflare (preferred), Phantom, or Backpack
 
 4. **Try a workflow**
 Type a natural language command and watch the real-time execution!
+
+## 💰 Getting Test Tokens
+
+To verify proofs on-chain, you'll need test tokens for gas fees:
+
+### Ethereum Sepolia
+- [Sepolia Faucet](https://sepoliafaucet.com/)
+- [Alchemy Sepolia Faucet](https://sepoliafaucet.com/)
+
+### Base Sepolia
+- [Base Faucet](https://faucet.quicknode.com/base/sepolia)
+- Bridge from Ethereum Sepolia using [Base Bridge](https://bridge.base.org/)
+
+### Avalanche Fuji
+- [Chainlink Fuji Faucet](https://faucets.chain.link/fuji)
+- [Official AVAX Faucet](https://faucet.avax.network/)
+
+### Solana Devnet
+- Run `solana airdrop 2` in terminal (requires Solana CLI)
+- [Sol Faucet](https://solfaucet.com/)
 
 ## 🔐 Security & Privacy
 
@@ -288,6 +308,8 @@ Type a natural language command and watch the real-time execution!
 ### Blockchain Integration
 - ✅ **Ethereum**: Contract `0x1e8150050a7a4715aad42b905c08df76883f396f` on Sepolia
 - ✅ **Solana**: Program `2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7` on Devnet ([View on Solana Playground](https://beta.solpg.io/68784af1cffcf4b13384d835))
+- ✅ **Base**: Contract `0x74D68B2481d298F337e62efc50724CbBA68dCF8f` on Base Sepolia
+- ✅ **Avalanche**: Contract `0x112E448fFD99c224b6aa24746E9B34E09A8E6C46` on Fuji Testnet ([View on Snowtrace](https://testnet.snowtrace.io/address/0x112E448fFD99c224b6aa24746E9B34E09A8E6C46))
 - ✅ Real transaction hashes viewable on block explorers
 
 #### On-Chain Verification Details
@@ -593,7 +615,15 @@ Prove AI predictions were made before events occurred:
 // Result: Blockchain-timestamped commitment proving when prediction was made
 ```
 
-#### 4. Conditional Payments
+#### 4. Multi-Chain Identity
+Verify identity across different blockchain ecosystems:
+```javascript
+// Generate once, verify on any supported blockchain
+"Generate KYC proof for Alice and verify on Avalanche"
+// Result: Same proof works on Ethereum, Solana, Base, and Avalanche
+```
+
+#### 5. Conditional Payments
 Automate payments based on verified conditions:
 ```javascript
 // Release funds only after verification
