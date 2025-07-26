@@ -48,11 +48,27 @@ export const config = {
             chainId: '0xa869', // Fuji testnet
             chainIdDecimal: 43113,
             contracts: {
-                zkVerifier: '0x112E448fFD99c224b6aa24746E9B34E09A8E6C46' // Deployed on Fuji
+                zkVerifier: '0x30e93E8B0804fD60b0d151F724c307c61Be37EE1' // Real Groth16 Proof-of-Proof verifier
             },
             explorerUrl: 'https://testnet.snowtrace.io',
             rpcUrl: 'https://api.avax-test.network/ext/bc/C/rpc',
             name: 'Avalanche Fuji Testnet'
+        },
+        iotex: {
+            chainId: '0x1252', // IoTeX testnet (4690)
+            chainIdDecimal: 4690,
+            contracts: {
+                deviceVerifier: '0x74D68B2481d298F337e62efc50724CbBA68dCF8f', // IoTeX Nova Decider deployed
+                ioIDRegistry: null // IoTeX native device registry
+            },
+            explorerUrl: 'https://testnet.iotexscan.io',
+            rpcUrl: 'https://babel-api.testnet.iotex.io',
+            name: 'IoTeX Testnet',
+            nativeCurrency: {
+                name: 'IOTX',
+                symbol: 'IOTX',
+                decimals: 18
+            }
         }
     },
     circle: {

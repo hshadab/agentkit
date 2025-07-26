@@ -777,13 +777,13 @@ function loadSampleQueries() {
         'Single zkEngine Proofs': [
             'Generate KYC proof',
             'Prove AI prediction commitment',
-            'Prove location: NYC (40.7°, -74.0°)'
+            'Register IoT device DEV123 with proximity proof'
         ],
         'Workflows': [
             'Send 0.05 USDC to Alice on Ethereum if KYC compliant',
             'If Alice is KYC compliant, send her 0.04 USDC to Alice on Solana',
             'Send 0.05 USDC on Solana if Bob is KYC verified on Solana and send 0.03 USDC on Ethereum if Alice is KYC verified on Ethereum.',
-            'Generate a KYC proof for Bob then if Bob\'s wallet is KYC verified generate a NYC proof of location and if verified on Solana send him 0.03 USDC on Solana.'
+            'Register device IOT001 and if proximity verified on IoTeX, enable rewards'
         ],
         'History': [
             'Proof History'

@@ -1,88 +1,48 @@
 # Changelog
 
-All notable changes to the Verifiable Agent Kit project will be documented in this file.
-
-## [v4.5] - 2025-01-21
+## v4.6.0 (January 26, 2025)
 
 ### Added
-- Comprehensive documentation for AI Prediction Proof system in `docs/AI_PREDICTION_PROOFS.md`
-- Changelog file to track version history
+- **Avalanche C-Chain Integration**: Full support for Avalanche Fuji testnet
+  - Deployed real Groth16 Proof-of-Proof verifier at `0x30e93E8B0804fD60b0d151F724c307c61Be37EE1`
+  - Automatic network switching for better UX
+  - Red-themed UI elements for Avalanche
+  - Feature parity with Ethereum and Base verifiers
 
 ### Changed
-- **AI Prediction Proof IDs** - Now generate as `proof_ai_prediction_[timestamp]` instead of `proof_ai_content_[timestamp]`
-- **UI Improvements**:
-  - Removed toast notifications for AI prediction commitments
-  - Simplified AI commitment display to single-line format
-  - Removed emojis from AI prediction cards
-  - Streamlined commitment info: "View AI prediction commitment on Base blockchain | [Timestamp]"
-- **OpenAI Parser Enhancements**:
-  - Added explicit rules to distinguish AI proof types from AI processing requests
-  - Added examples to prevent multi-step workflows for AI predictions
-  - Improved handling of "Prove AI prediction commitment" as single-step proof
+- Updated UI with Novanet logo replacing emoji in header
+- Improved network switching logic for all chains
+- Enhanced error handling for proof verification
 
 ### Fixed
-- AI prediction proofs now correctly show as single proof cards instead of workflow cards
-- Backend no longer adds unnecessary `process_with_ai` step for AI prediction commands
+- Resolved "execution reverted" errors on Avalanche
+- Fixed proof format compatibility issues
+- Corrected API endpoints for proof data fetching
 
-## [v4.4] - 2025-01-20
+### Technical Details
+- Deployed `RealProofOfProofVerifier_New.sol` to Avalanche
+- Uses same circuit-specific verification keys as Ethereum/Base
+- Performs actual cryptographic verification with BN128 pairing checks
+- Gas cost: ~200-300k gas per verification (~$0.01-0.02 on Avalanche)
+
+## v4.5.0 (January 2025)
 
 ### Added
-- **Base Blockchain Support** - Full integration with Base (Coinbase Layer 2)
-- **AI Prediction Commitment Proofs** - Temporal commitment proofs for AI-generated content
-- **Solflare Wallet Support** - Native support for Solflare wallet on Solana
-- **Smart Contract Deployment** - AI Prediction Commitment contract on Base Sepolia
-- **Auto-Connect Wallets** - Automatic wallet reconnection on page load
+- Enhanced AI Prediction Proofs with cleaner UI
+- Single-line display for AI prediction commitments
+- Smart contract deployment for AI predictions on Base Sepolia
 
 ### Changed
-- **Gas Price Optimization** - Capped gas prices at 0.1 gwei for testnet transactions
-- **UI Consolidation** - Verification results now appear directly in proof cards
-- **Wallet Connection UX** - Removed "Connect All" button for on-demand connections
+- Removed toast notifications for AI predictions
+- Simplified commitment display in UI
+- Improved OpenAI parser for better AI proof recognition
 
-### Fixed
-- Ethereum contract initialization sync issues
-- High gas price alerts on testnet transactions
-- Blockchain verification timing issues
-
-## [v4.3] - 2025-01-19
+## v4.4.0 (January 2025)
 
 ### Added
-- **OpenAI Workflow Parser** - GPT-4o integration for natural language parsing
-- **Modular Frontend Architecture** - ES6 modules for better code organization
-- **Proof History Table** - Comprehensive view of all generated proofs
-- **Automatic Log Rotation** - Intelligent log management system
+- Base blockchain support (Coinbase Layer 2)
+- AI Prediction Commitment proofs with temporal verification
+- Real blockchain commitments for AI predictions
 
-### Changed
-- **Enhanced UI Design** - Cleaner interface with improved visual hierarchy
-- **Real-time Updates** - WebSocket-based live status tracking
-- **Optimized Dependencies** - Reduced package size and cleaner structure
-
-### Fixed
-- Solana PDA derivation for multiple verifications
-- Proof uniqueness with timestamp-based IDs
-- Memory leaks in long-running processes
-
-## [v4.2] - 2025-01-18
-
-### Added
-- Circle API integration for real USDC transfers
-- Multi-chain support (Ethereum Sepolia + Solana Devnet)
-- Conditional transfer workflows
-
-### Changed
-- Switched from simulated to real blockchain transactions
-- Updated smart contracts for production use
-
-## [v4.1] - 2025-01-17
-
-### Added
-- zkEngine integration with Nova and Groth16 SNARKs
-- WebAssembly proof generation modules
-- Basic KYC and location proof types
-
-## [v4.0] - 2025-01-16
-
-### Added
-- Initial release of Verifiable Agent Kit
-- WebSocket-based real-time UI
-- Rust backend server
-- Basic proof generation framework
+## Previous Versions
+See git history for earlier releases

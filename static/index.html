@@ -25,6 +25,7 @@
                     <span id="sol-wallet-status" style="display: none; padding: 4px 12px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-radius: 4px; font-weight: 500;">SOL Connected</span>
                     <span id="base-wallet-status" style="display: none; padding: 4px 12px; background: rgba(0, 82, 255, 0.1); color: #0052FF; border-radius: 4px; font-weight: 500;">BASE Connected</span>
                     <span id="avalanche-wallet-status" style="display: none; padding: 4px 12px; background: rgba(232, 65, 66, 0.1); color: #E84142; border-radius: 4px; font-weight: 500;">AVAX Connected</span>
+                    <span id="iotex-wallet-status" style="display: none; padding: 4px 12px; background: rgba(0, 212, 181, 0.1); color: #00D4B5; border-radius: 4px; font-weight: 500;">IoTeX Connected</span>
                 </div>
                 <div id="connection-status" class="status disconnected">
                     <div class="status-dot"></div>
@@ -80,6 +81,12 @@
         <button onclick="window.blockchainVerifier.connectAvalanche()">Connect MetaMask</button>
     </div>
 
+    <!-- IoTeX Connect Banner -->
+    <div id="iotex-connect-banner" class="iotex-connect-banner" style="display: none;">
+        Connect your wallet to register IoT devices on IoTeX
+        <button onclick="window.blockchainVerifier.connectIoTeX()">Connect MetaMask</button>
+    </div>
+
     <!-- External dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/iden3/snarkjs/build/snarkjs.min.js"></script>
@@ -90,6 +97,7 @@
     <script src="/static/solana-verifier.js"></script>
     <script src="/static/base-verifier.js"></script>
     <script src="/static/avalanche-verifier.js"></script>
+    <script src="/static/iotex-device-verifier.js"></script>
     <script src="/static/js/ai-prediction-handler-real.js?v=20250121-1"></script>
     
     <!-- Main application module -->

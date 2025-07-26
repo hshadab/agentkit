@@ -96,10 +96,11 @@ This generates a blockchain-timestamped commitment on Base Sepolia, creating an 
 - **Real Transfers** - Actual USDC sent on-chain with transaction hashes
 - See [Circle Integration Guide](docs/CIRCLE_INTEGRATION_GUIDE.md) for details
 
-### Latest v4.5 Features
+### Latest v4.6 Features
+- **Avalanche C-Chain Integration** - Full support for Avalanche Fuji testnet with real Groth16 verifier
+- **Real Proof-of-Proof Verifier on Avalanche** - Deployed production-ready verifier matching Ethereum/Base
 - **Enhanced AI Prediction Proofs** - Cleaner UI with single-line display and improved proof IDs
-- **UI Improvements** - Removed toast notifications for AI predictions, simplified commitment display
-- **OpenAI Parser Enhancements** - Better recognition of AI proof types vs AI processing requests
+- **UI Improvements** - Added Novanet logo, improved network switching, and simplified commitment display
 - **Smart Contract Deployment** - AI Prediction Commitment contract live on Base Sepolia
 
 ### v4.4 Features
@@ -309,7 +310,7 @@ To verify proofs on-chain, you'll need test tokens for gas fees:
 - ✅ **Ethereum**: Contract `0x1e8150050a7a4715aad42b905c08df76883f396f` on Sepolia
 - ✅ **Solana**: Program `2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7` on Devnet ([View on Solana Playground](https://beta.solpg.io/68784af1cffcf4b13384d835))
 - ✅ **Base**: Contract `0x74D68B2481d298F337e62efc50724CbBA68dCF8f` on Base Sepolia
-- ✅ **Avalanche**: Contract `0x112E448fFD99c224b6aa24746E9B34E09A8E6C46` on Fuji Testnet ([View on Snowtrace](https://testnet.snowtrace.io/address/0x112E448fFD99c224b6aa24746E9B34E09A8E6C46))
+- ✅ **Avalanche**: Contract `0x30e93E8B0804fD60b0d151F724c307c61Be37EE1` on Fuji Testnet ([View on Snowtrace](https://testnet.snowtrace.io/address/0x30e93E8B0804fD60b0d151F724c307c61Be37EE1))
 - ✅ Real transaction hashes viewable on block explorers
 
 #### On-Chain Verification Details

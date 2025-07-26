@@ -93,6 +93,12 @@ export class ProofManager {
                             onclick="window.blockchainVerifier.verifyOnAvalanche('${data.proofId}', '${functionName}')">
                         Verify on Avalanche
                     </button>
+                    ${functionName === 'prove_device_proximity' ? `
+                    <button class="action-btn iotex-verify-btn" 
+                            onclick="window.blockchainVerifier.verifyDeviceOnIoTeX('${data.proofId}', '${data.proofId}')">
+                        Verify on IoTeX
+                    </button>
+                    ` : ''}
                 </div>
                 <div class="verification-results" id="verification-results-${data.proofId}">
                     <!-- Verification results will be added here -->
@@ -114,6 +120,7 @@ export class ProofManager {
             'prove_kyc': 'KYC Compliance Verification',
             'prove_location': 'Location Verification',
             'prove_ai_content': 'AI Prediction Commitment',
+            'prove_device_proximity': 'Device Proximity Verification',
             'prove_age': 'Age Verification',
             'prove_identity': 'Identity Verification'
         };
@@ -125,6 +132,7 @@ export class ProofManager {
             'prove_kyc': 'KYC',
             'prove_location': 'LOCATION',
             'prove_ai_content': 'AI PREDICTION',
+            'prove_device_proximity': 'DEVICE PROXIMITY',
             'prove_age': 'AGE',
             'prove_identity': 'IDENTITY'
         };

@@ -10,10 +10,12 @@ export class BlockchainVerifier {
         this.solanaConnected = false;
         this.baseConnected = false;
         this.avalancheConnected = false;
+        this.iotexConnected = false;
         this.ethereumAccount = null;
         this.solanaWallet = null;
         this.baseAccount = null;
         this.avalancheAccount = null;
+        this.iotexAccount = null;
         
         // Auto-connect to wallets if previously connected
         this.autoConnect();
@@ -768,6 +770,182 @@ export class BlockchainVerifier {
         
         throw new Error('Avalanche verifier not loaded');
     }
+    
+    async connectIoTeX() {
+        debugLog('Connecting to IoTeX wallet...', 'info');
+        
+        // Check for MetaMask
+        if (!window.ethereum) {
+            this.uiManager.showToast('Please install MetaMask to use IoTeX device features', 'error');
+            return false;
+        }
+
+        try {
+            const provider = window.ethereum;
+            const accounts = await provider.request({ method: 'eth_requestAccounts' });
+            this.iotexAccount = accounts[0];
+            this.iotexConnected = true;
+            
+            // Check if on IoTeX testnet
+            const chainId = await provider.request({ method: 'eth_chainId' });
+            
+            if (chainId !== config.blockchain.iotex.chainId) {
+                await this.switchToIoTeX();
+            }
+            
+            debugLog(`Connected to IoTeX: ${this.iotexAccount}`, 'success');
+            
+            // Store connection status
+            localStorage.setItem('iotex-connected', 'true');
+            
+            // Hide connect banner if shown
+            const banner = document.getElementById('iotex-connect-banner');
+            if (banner) banner.style.display = 'none';
+            
+            // Update wallet status
+            this.updateWalletStatus('iotex', true);
+            
+            return true;
+        } catch (error) {
+            debugLog(`IoTeX connection error: ${error.message}`, 'error');
+            this.uiManager.showToast('Failed to connect to IoTeX', 'error');
+            return false;
+        }
+    }
+    
+    async switchToIoTeX() {
+        try {
+            await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: config.blockchain.iotex.chainId }],
+            });
+        } catch (switchError) {
+            if (switchError.code === 4902) {
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: config.blockchain.iotex.chainId,
+                            chainName: config.blockchain.iotex.name,
+                            nativeCurrency: config.blockchain.iotex.nativeCurrency,
+                            rpcUrls: [config.blockchain.iotex.rpcUrl],
+                            blockExplorerUrls: [config.blockchain.iotex.explorerUrl]
+                        }],
+                    });
+                } catch (addError) {
+                    debugLog('Error adding IoTeX network', 'error');
+                }
+            }
+        }
+    }
+    
+    async verifyDeviceOnIoTeX(deviceId, proofId) {
+        debugLog(`Starting IoTeX device verification for ${deviceId}`, 'info');
+        
+        // Check connection
+        if (!this.iotexConnected) {
+            const connected = await this.connectIoTeX();
+            if (!connected) return { success: false, error: 'Failed to connect to IoTeX wallet' };
+        }
+        
+        // Update UI to show verification in progress
+        this.uiManager.showToast('Verifying device proximity on IoTeX...', 'info');
+        
+        try {
+            // Call the device verifier
+            const result = await window.verifyDeviceProximityOnIoTeX(deviceId);
+            
+            if (result.success) {
+                const verificationData = {
+                    blockchain: 'IoTeX',
+                    deviceId: deviceId,
+                    withinProximity: result.withinProximity,
+                    rewardEligible: result.rewardEligible,
+                    timestamp: new Date().toISOString()
+                };
+                
+                this.proofManager.onChainVerifications.set(proofId || deviceId, verificationData);
+                
+                this.uiManager.showToast('Device proximity verified on IoTeX!', 'success');
+                
+                // Show verification result card
+                this.addDeviceVerificationCard(deviceId, result);
+                
+                return result;
+            } else {
+                throw new Error(result.error || 'Device verification failed');
+            }
+            
+        } catch (error) {
+            debugLog(`IoTeX device verification error: ${error.message}`, 'error');
+            this.uiManager.showToast('Device verification failed', 'error');
+            return { success: false, error: error.message };
+        }
+    }
+    
+    addDeviceVerificationCard(deviceId, result) {
+        const card = document.createElement('div');
+        card.className = 'verification-card';
+        
+        card.innerHTML = `
+            <div class="card-header">
+                <div class="card-title">IoTeX Device Verification Complete</div>
+                <span class="status-badge verified">VERIFIED</span>
+            </div>
+            <div class="card-content">
+                <div class="status-message">
+                    Device ID: ${deviceId}
+                </div>
+                <div class="status-message" style="margin-top: 8px;">
+                    Proximity Status: ${result.withinProximity ? '✅ Within Range' : '❌ Out of Range'}
+                </div>
+                <div class="proof-metrics">
+                    <div class="metric">
+                        <span class="metric-label">Center:</span>
+                        <span class="metric-value">(${result.center.x}, ${result.center.y})</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Required Radius:</span>
+                        <span class="metric-value">${result.radius} units</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Reward Eligible:</span>
+                        <span class="metric-value">${result.rewardEligible ? 'Yes' : 'No'}</span>
+                    </div>
+                </div>
+                ${result.rewardEligible ? `
+                <button class="action-btn" style="margin-top: 12px; background: linear-gradient(135deg, #00D4B5 0%, #009688 100%);"
+                        onclick="window.blockchainVerifier.claimDeviceRewards('${deviceId}')">
+                    Claim Rewards
+                </button>
+                ` : ''}
+            </div>
+        `;
+        
+        this.uiManager.addMessage(card, 'assistant');
+    }
+    
+    async claimDeviceRewards(deviceId) {
+        debugLog(`Claiming rewards for device ${deviceId}`, 'info');
+        
+        if (!this.iotexConnected) {
+            await this.connectIoTeX();
+        }
+        
+        try {
+            // Create device verifier instance
+            const verifier = new window.IoTeXDeviceVerifier();
+            const result = await verifier.claimRewards(deviceId);
+            
+            if (result.success) {
+                this.uiManager.showToast(`Claimed ${result.rewardAmount} ${result.currency}!`, 'success');
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            this.uiManager.showToast('Failed to claim rewards', 'error');
+        }
+    }
 
     addVerificationResultCard(proofId, blockchain, result) {
         const card = document.createElement('div');
@@ -824,6 +1002,10 @@ export class BlockchainVerifier {
                 break;
             case 'avalanche':
                 await this.verifyOnAvalanche(proofId, proofFunction);
+                break;
+            case 'iotex':
+                // For device proofs, use the proof ID as device ID
+                await this.verifyDeviceOnIoTeX(proofId, proofId);
                 break;
         }
     }

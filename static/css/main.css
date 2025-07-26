@@ -1123,5 +1123,86 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     white-space: nowrap;
 }
 
+/* IoTeX Connect Banner */
+.iotex-connect-banner {
+    background: linear-gradient(135deg, #00D4B5 0%, #009688 100%);
+    color: white;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-size: 14px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1001;
+    box-shadow: 0 2px 8px rgba(0, 212, 181, 0.2);
+}
+
+.iotex-connect-banner button {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.iotex-connect-banner button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+/* IoTeX device verification buttons */
+.iotex-verify-btn {
+    background: linear-gradient(135deg, #00D4B5 0%, #009688 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 212, 181, 0.15);
+}
+
+.iotex-verify-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 212, 181, 0.25);
+}
+
+.iotex-verify-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Device registration card */
+.device-card {
+    background: linear-gradient(135deg, rgba(0, 212, 181, 0.05) 0%, rgba(0, 150, 136, 0.02) 100%);
+    border: 1px solid rgba(0, 212, 181, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+}
+
+.device-card .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.device-card .device-id {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+    color: #00D4B5;
+    font-size: 14px;
+}
+
 /* Cache bust: 1752945481 */
 /* Cache bust update: 1752971016 */
+/* IoTeX integration: 1753493200 */

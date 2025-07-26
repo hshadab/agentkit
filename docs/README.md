@@ -45,8 +45,9 @@ Welcome to the comprehensive documentation for the Verifiable Agent Kit.
 
 ### Avalanche Support (January 2025)
 - Full Avalanche C-Chain integration on Fuji testnet
-- Deployed verifier contract: `0x112E448fFD99c224b6aa24746E9B34E09A8E6C46`
-- [Avalanche Deployment Guide](AVALANCHE_DEPLOYMENT.md) for complete setup
+- Real Groth16 Proof-of-Proof verifier deployed: `0x30e93E8B0804fD60b0d151F724c307c61Be37EE1`
+- Matches Ethereum and Base verifier implementations
+- [Avalanche Deployment Guide](avalanche-deployment.md) for complete setup
 
 ### Multi-Chain Verification
 The system now supports four blockchain networks:
@@ -61,7 +62,7 @@ The system now supports four blockchain networks:
 - **Ethereum**: [`0x1e8150050a7a4715aad42b905c08df76883f396f`](https://sepolia.etherscan.io/address/0x1e8150050a7a4715aad42b905c08df76883f396f)
 - **Solana**: [`2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7`](https://explorer.solana.com/address/2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7?cluster=devnet)
 - **Base**: [`0x74D68B2481d298F337e62efc50724CbBA68dCF8f`](https://sepolia.basescan.org/address/0x74D68B2481d298F337e62efc50724CbBA68dCF8f)
-- **Avalanche**: [`0x112E448fFD99c224b6aa24746E9B34E09A8E6C46`](https://testnet.snowtrace.io/address/0x112E448fFD99c224b6aa24746E9B34E09A8E6C46)
+- **Avalanche**: [`0x30e93E8B0804fD60b0d151F724c307c61Be37EE1`](https://testnet.snowtrace.io/address/0x30e93E8B0804fD60b0d151F724c307c61Be37EE1)
 
 ### Test Token Faucets
 - [Ethereum Sepolia Faucet](https://sepoliafaucet.com/)

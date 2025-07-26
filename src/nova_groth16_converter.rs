@@ -61,6 +61,7 @@ pub fn convert_nova_to_groth16(
         Some("prove_kyc") => 1,
         Some("prove_location") => 2,
         Some("prove_ai_content") => 3,
+        Some("prove_device_proximity") => 4,
         _ => 0,
     };
     

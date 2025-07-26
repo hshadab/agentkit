@@ -154,7 +154,7 @@ class AvalancheVerifier {
                 this.contractAddress = config.blockchain.avalanche.contracts.zkVerifier;
             } else {
                 // Fallback to deployed address on Fuji
-                this.contractAddress = '0x112E448fFD99c224b6aa24746E9B34E09A8E6C46';
+                this.contractAddress = '0x30e93E8B0804fD60b0d151F724c307c61Be37EE1';
             }
             
             console.log('Using contract address:', this.contractAddress);

@@ -20,13 +20,15 @@ class EnhancedOpenAIWorkflowParser:
 Your task is to parse natural language commands into structured workflow steps.
 
 Available step types:
-1. generate_proof: Generate a zero-knowledge proof (kyc, location, ai_content)
+1. generate_proof: Generate a zero-knowledge proof (kyc, location, ai_content, device_proximity)
 2. verify_proof: Verify a previously generated proof locally
 3. verify_on_ethereum: Verify a proof on Ethereum blockchain
 4. verify_on_solana: Verify a proof on Solana blockchain
-5. transfer: Send USDC to a recipient on Ethereum or Solana
-6. list_proofs: List existing proofs or verifications
-7. process_with_ai: Handle any additional AI request (explain, humor, translate, analyze, etc.)
+5. verify_on_iotex: Verify a device proximity proof on IoTeX blockchain
+6. transfer: Send USDC to a recipient on Ethereum or Solana
+7. list_proofs: List existing proofs or verifications
+8. process_with_ai: Handle any additional AI request (explain, humor, translate, analyze, etc.)
+9. register_device: Register an IoT device for proximity verification
 
 Rules:
 - Parse ALL commands as workflows, even simple ones like "generate KYC proof"
@@ -106,6 +108,8 @@ Output format as JSON:
         - "Generate AI content proof" → one step: generate_proof (proof_type: "ai_content")
         - "Create AI prediction proof" → one step: generate_proof (proof_type: "ai_content")
         - "Generate location proof for NYC" → one step: generate_proof (proof_type: "location", location: "NYC")
+        - "Register IoT device DEV123 with proximity proof" → two steps: register_device (device_id: "DEV123"), generate_proof (proof_type: "device_proximity", device_id: "DEV123")
+        - "Register device IOT001 and verify on IoTeX" → three steps: register_device, generate_proof (proof_type: "device_proximity"), verify_on_iotex
         - "Generate KYC proof and explain" → two steps: generate_proof, process_with_ai (request: "explain")
         - "Generate location proof but make it funny" → two steps: generate_proof, process_with_ai (request: "make it funny")
         - "Create AI proof and tell me a joke about it" → two steps: generate_proof, process_with_ai (request: "tell me a joke about it")
