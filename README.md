@@ -211,7 +211,7 @@ wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_20.ptau -
 cd ../..
 ```
 
-See [SETUP_PTAU.md](SETUP_PTAU.md) for alternative setup options and more details.
+See [SETUP_PTAU.md](docs/SETUP_PTAU.md) for alternative setup options and more details.
 
 4. **Configure environment**
 
@@ -221,7 +221,7 @@ See [SETUP_PTAU.md](SETUP_PTAU.md) for alternative setup options and more detail
 cp .env.example .env
 
 # Option 1: Use the setup script (recommended)
-python setup_openai.py
+python scripts/setup/setup_openai.py
 
 # Option 2: Manually edit .env
 ```
@@ -257,7 +257,7 @@ CHAT_SERVICE_PORT=8002
 cargo run
 
 # Terminal 2: Python AI service
-python chat_service.py
+python services/chat_service.py
 ```
 
 2. **Open the UI**
@@ -820,7 +820,8 @@ verifiable-agentkit/
 ├── src/
 │   ├── main.rs              # Rust WebSocket server
 │   └── nova_groth16_converter.rs # SNARK conversion logic
-├── chat_service.py          # Python AI orchestrator with OpenAI
+├── services/
+│   └── chat_service.py      # Python AI orchestrator with OpenAI
 ├── parsers/
 │   └── workflow/
 │       ├── workflowExecutor.js   # Workflow execution engine
@@ -891,10 +892,10 @@ verifiable-agentkit/
 
 ```bash
 # Test proof generation
-node test-snark.js
+node tests/integration/test-simple-snark.js
 
 # Test OpenAI workflow parsing
-python test_openai_parser.py
+python tests/unit/test_openai_parser.py
 
 # Test Circle transfers
 node circle/test-circle-transfer.js
