@@ -323,8 +323,10 @@ function setupMessageHandlers() {
                     });
             }
             
-            // Only show proof card for standalone proofs or workflows that haven't been "started"
-            if (!isPartOfWorkflow) {
+            // Only show proof card for standalone proofs or device proximity proofs
+            const showProofCard = !isPartOfWorkflow || data.metadata?.function === 'prove_device_proximity';
+            
+            if (showProofCard) {
                 console.log('[PROOF_STATUS_DEBUG] Showing proof card for:', data.proof_id);
                 const proofCard = proofManager.addProofCard({
                     proofId: data.proof_id,
@@ -338,8 +340,34 @@ function setupMessageHandlers() {
                 console.log('[PROOF_STATUS_DEBUG] Skipping proof card for workflow proof:', data.proof_id);
                 debugLog(`Skipping proof card for workflow proof: ${data.proof_id}`, 'info');
             }
+        } else if (data.status === 'complete') {
+            debugLog('Proof status: complete', 'success');
+            
+            // For device proximity proofs, ensure the card is shown even if part of workflow
+            if (data.metadata?.function === 'prove_device_proximity') {
+                // Check if card already exists
+                const existingCard = document.querySelector(`[data-proof-id="${data.proof_id}"]`);
+                if (!existingCard) {
+                    console.log('[PROOF_STATUS_DEBUG] Creating card for completed device proximity proof');
+                    const proofCard = proofManager.addProofCard({
+                        proofId: data.proof_id,
+                        status: 'complete',
+                        message: data.message || 'Device proximity proof complete',
+                        proof_function: data.metadata?.function || 'prove_device_proximity',
+                        metadata: data.metadata,
+                        metrics: data.metrics
+                    });
+                    uiManager.addMessage(proofCard, 'assistant');
+                } else {
+                    // Update existing card
+                    proofManager.updateProofCard(data.proof_id, 'complete', data);
+                }
+            } else {
+                // For other proofs, just update if card exists
+                proofManager.updateProofCard(data.proof_id, 'complete', data);
+            }
         } else {
-            console.log('[PROOF_STATUS_DEBUG] Ignoring non-generating status:', data.status);
+            console.log('[PROOF_STATUS_DEBUG] Ignoring other status:', data.status);
         }
     });
     
