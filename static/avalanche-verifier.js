@@ -143,9 +143,15 @@ class AvalancheVerifier {
     convertProofForContract(ethereumProof) {
         try {
             console.log('Converting proof for contract...');
+            console.log('Input proof structure:', Object.keys(ethereumProof));
             
-            // The ethereumProof should already be in the correct format
-            const { a, b, c, Input: publicSignals } = ethereumProof;
+            // Handle different possible formats
+            let publicSignals = ethereumProof.Input || ethereumProof.public_signals || ethereumProof.publicSignals;
+            const { a, b, c } = ethereumProof;
+            
+            if (!a || !b || !c || !publicSignals) {
+                throw new Error('Invalid proof format - missing required fields');
+            }
             
             // Ensure all values are strings and properly formatted
             const formatValue = (val) => {
@@ -312,8 +318,11 @@ window.verifyOnAvalancheActual = async function(proofId, proofType) {
             // Create verifier instance
             const verifier = new AvalancheVerifier();
             
+            // Extract the proof in the correct format
+            const proofToVerify = proofData.proof || proofData;
+            
             // Verify the proof
-            const result = await verifier.verifyProof(proofData.proof, proofId, proofType);
+            const result = await verifier.verifyProof(proofToVerify, proofId, proofType);
             
             return result;
         }
@@ -324,8 +333,11 @@ window.verifyOnAvalancheActual = async function(proofId, proofType) {
         // Create verifier instance
         const verifier = new AvalancheVerifier();
         
+        // Extract the proof in the correct format
+        const proofToVerify = proofData.proof || proofData;
+        
         // Verify the proof
-        const result = await verifier.verifyProof(proofData.proof, proofId, proofType);
+        const result = await verifier.verifyProof(proofToVerify, proofId, proofType);
         
         return result;
         
