@@ -100,6 +100,12 @@ export class ProofManager {
                     </button>
                     ` : ''}
                 </div>
+                ${functionName === 'prove_device_proximity' && data.metadata ? `
+                    <div class="device-metadata" style="margin-top: 12px; padding: 8px; background: rgba(0, 212, 181, 0.1); border-radius: 4px; font-size: 12px; color: #00D4B5;">
+                        Device: ${data.metadata.arguments?.[0] || 'Unknown'} | 
+                        Location: (${data.metadata.arguments?.[1] || '?'}, ${data.metadata.arguments?.[2] || '?'})
+                    </div>
+                ` : ''}
                 <div class="verification-results" id="verification-results-${data.proofId}">
                     <!-- Verification results will be added here -->
                 </div>

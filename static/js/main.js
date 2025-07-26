@@ -805,7 +805,9 @@ function loadSampleQueries() {
         'Single zkEngine Proofs': [
             'Generate KYC proof',
             'Prove AI prediction commitment',
-            'Register IoT device DEV123 with proximity proof'
+            'Register IoT device DEV123 with proximity proof',
+            'Register device SENSOR1 at location 5080,5020',
+            'Register device GATEWAY2 at location 4950,5100'
         ],
         'Workflows': [
             'Send 0.05 USDC to Alice on Ethereum if KYC compliant',

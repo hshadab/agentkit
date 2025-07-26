@@ -109,6 +109,7 @@ Output format as JSON:
         - "Create AI prediction proof" → one step: generate_proof (proof_type: "ai_content")
         - "Generate location proof for NYC" → one step: generate_proof (proof_type: "location", location: "NYC")
         - "Register IoT device DEV123 with proximity proof" → two steps: register_device (device_id: "DEV123"), generate_proof (proof_type: "device_proximity", device_id: "DEV123")
+        - "Register device DEV456 at location 5020,5030" → two steps: register_device (device_id: "DEV456"), generate_proof (proof_type: "device_proximity", device_id: "DEV456", x: "5020", y: "5030")
         - "Register device IOT001 and verify on IoTeX" → three steps: register_device, generate_proof (proof_type: "device_proximity"), verify_on_iotex
         - "Generate KYC proof and explain" → two steps: generate_proof, process_with_ai (request: "explain")
         - "Generate location proof but make it funny" → two steps: generate_proof, process_with_ai (request: "make it funny")

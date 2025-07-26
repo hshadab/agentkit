@@ -28,10 +28,15 @@ pub fn generate_device_proximity_proof(
     // In production, this would use the full Nova proving system
     let is_within_radius = check_proximity(location.x, location.y);
     
-    // Create mock proof data for now
+    // Create proof data with timestamp for uniqueness
+    let timestamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    
     let proof_data = format!(
-        "device_proximity_proof_{}_{}_{}",
-        location.device_id, location.x, location.y
+        "device_proximity_proof_{}_{}_{}_{}",
+        location.device_id, location.x, location.y, timestamp
     )
     .as_bytes()
     .to_vec();

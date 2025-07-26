@@ -308,9 +308,16 @@ class WorkflowExecutor {
                 } else if (proofType === 'device_proximity') {
                     // Extract device ID from step or use default
                     const deviceId = step.device_id || 'DEV123';
-                    // Default coordinates near center (5000, 5000)
-                    const x = step.x || '5050';
-                    const y = step.y || '5050';
+                    
+                    // Extract coordinates from step data or arguments
+                    let x = step.x || step.arguments?.[1] || '5050';
+                    let y = step.y || step.arguments?.[2] || '5050';
+                    
+                    // Validate coordinates are within reasonable bounds
+                    x = String(Math.max(0, Math.min(10000, parseInt(x) || 5050)));
+                    y = String(Math.max(0, Math.min(10000, parseInt(y) || 5050)));
+                    
+                    console.log(`📍 Device ${deviceId} at coordinates (${x}, ${y})`);
                     return await this.generateProof('prove_device_proximity', 
                         [deviceId, x, y], 
                         stepIndex);
