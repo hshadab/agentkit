@@ -358,8 +358,22 @@ window.verifyOnAvalancheActual = async function(proofId, proofType) {
             // Create verifier instance
             const verifier = new AvalancheVerifier();
             
-            // Extract the proof in the correct format
-            const proofToVerify = proofData.proof || proofData;
+            // Prepare the proof data with public signals
+            let proofToVerify;
+            if (proofData.proof && proofData.public_signals) {
+                // Combine proof and public_signals
+                proofToVerify = {
+                    ...proofData.proof,
+                    Input: proofData.public_signals,
+                    public_signals: proofData.public_signals
+                };
+            } else if (proofData.proof) {
+                proofToVerify = proofData.proof;
+            } else {
+                proofToVerify = proofData;
+            }
+            
+            console.log('Proof to verify (fallback):', proofToVerify);
             
             // Verify the proof
             const result = await verifier.verifyProof(proofToVerify, proofId, proofType);
@@ -373,8 +387,22 @@ window.verifyOnAvalancheActual = async function(proofId, proofType) {
         // Create verifier instance
         const verifier = new AvalancheVerifier();
         
-        // Extract the proof in the correct format
-        const proofToVerify = proofData.proof || proofData;
+        // Prepare the proof data with public signals
+        let proofToVerify;
+        if (proofData.proof && proofData.public_signals) {
+            // Combine proof and public_signals
+            proofToVerify = {
+                ...proofData.proof,
+                Input: proofData.public_signals,
+                public_signals: proofData.public_signals
+            };
+        } else if (proofData.proof) {
+            proofToVerify = proofData.proof;
+        } else {
+            proofToVerify = proofData;
+        }
+        
+        console.log('Proof to verify:', proofToVerify);
         
         // Verify the proof
         const result = await verifier.verifyProof(proofToVerify, proofId, proofType);
