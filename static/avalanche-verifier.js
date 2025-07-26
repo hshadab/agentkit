@@ -106,7 +106,47 @@ class AvalancheVerifier {
             console.log('Expected chain ID:', expectedChainId);
             
             if (Number(chainId) !== expectedChainId) {
-                throw new Error(`Please switch to Avalanche Fuji Testnet (Chain ID: ${expectedChainId})`);
+                console.log('Wrong network, attempting to switch to Avalanche Fuji...');
+                try {
+                    // Try to switch to Avalanche Fuji
+                    await provider.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0xa869' }], // 43113 in hex
+                    });
+                    console.log('Successfully switched to Avalanche Fuji');
+                } catch (switchError) {
+                    // If the network doesn't exist, add it
+                    if (switchError.code === 4902) {
+                        console.log('Avalanche Fuji not found, adding network...');
+                        try {
+                            await provider.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: '0xa869',
+                                    chainName: 'Avalanche Fuji Testnet',
+                                    nativeCurrency: {
+                                        name: 'AVAX',
+                                        symbol: 'AVAX',
+                                        decimals: 18
+                                    },
+                                    rpcUrls: ['https://api.avax-test.network/ext/bc/C/rpc'],
+                                    blockExplorerUrls: ['https://testnet.snowtrace.io']
+                                }],
+                            });
+                            console.log('Successfully added and switched to Avalanche Fuji');
+                        } catch (addError) {
+                            throw new Error('Failed to add Avalanche Fuji network. Please add it manually in MetaMask.');
+                        }
+                    } else {
+                        throw new Error('User rejected network switch. Please switch to Avalanche Fuji manually.');
+                    }
+                }
+                
+                // Verify we're now on the right network
+                const newChainId = await this.web3.eth.getChainId();
+                if (Number(newChainId) !== expectedChainId) {
+                    throw new Error('Failed to switch to Avalanche Fuji. Please switch manually.');
+                }
             }
             
             // Get contract address from config
