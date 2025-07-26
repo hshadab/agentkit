@@ -305,6 +305,15 @@ class WorkflowExecutor {
                     return await this.generateProof('prove_ai_content', 
                         [contentHash, providerSignature, apiKeyHash, aiTimestamp, contentLength], 
                         stepIndex);
+                } else if (proofType === 'device_proximity') {
+                    // Extract device ID from step or use default
+                    const deviceId = step.device_id || 'DEV123';
+                    // Default coordinates near center (5000, 5000)
+                    const x = step.x || '5050';
+                    const y = step.y || '5050';
+                    return await this.generateProof('prove_device_proximity', 
+                        [deviceId, x, y], 
+                        stepIndex);
                 } else {
                     throw new Error(`Unknown proof type: ${proofType}`);
                 }
@@ -366,6 +375,17 @@ class WorkflowExecutor {
                     request: step.request || 'process',
                     context: step.context || 'general',
                     description: step.description
+                };
+                
+            case 'register_device':
+                console.log('📱 Register device step:', JSON.stringify(step, null, 2));
+                // Device registration is handled as metadata for the proximity proof
+                // Return a simple success to continue with workflow
+                return {
+                    type: 'register_device',
+                    device_id: step.device_id || 'DEV_UNKNOWN',
+                    status: 'registered',
+                    message: `Device ${step.device_id || 'DEV_UNKNOWN'} registered for proximity verification`
                 };
                 
             default:

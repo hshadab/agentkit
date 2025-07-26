@@ -86,12 +86,11 @@ pub fn convert_nova_to_groth16(
     
     // Call the SNARK prover with proper environment
     use std::process::Stdio;
-    use std::time::Duration;
     
     eprintln!("Spawning SNARK generator process...");
     eprintln!("Command: node src/cached_snark_generator.js {}", temp_input_path.to_str().unwrap());
     
-    let mut child = Command::new("node")
+    let child = Command::new("node")
         .arg("src/cached_snark_generator.js")
         .arg(temp_input_path.to_str().unwrap())
         .current_dir("/home/hshadab/agentkit") // Use absolute path
