@@ -199,6 +199,22 @@ class AvalancheVerifier {
                 }
             }
             
+            // Double-check we're still on the right network
+            try {
+                const currentChainId = await this.web3.eth.getChainId();
+                if (Number(currentChainId) !== 43113) {
+                    console.log('Network changed, reconnecting...');
+                    this.isConnected = false;
+                    const reconnectResult = await this.connect();
+                    if (!reconnectResult.success) {
+                        throw new Error('Network changed. Please switch back to Avalanche Fuji and try again.');
+                    }
+                }
+            } catch (networkError) {
+                console.error('Network check error:', networkError);
+                throw new Error('Network connection lost. Please reconnect your wallet.');
+            }
+            
             console.log('Starting Avalanche verification for proof:', proofId);
             
             // Check if proof is already verified
@@ -283,9 +299,23 @@ window.verifyOnAvalancheActual = async function(proofId, proofType) {
     
     try {
         // Fetch proof data from server
-        const response = await fetch(`/api/v1/proof/${proofId}/ethereum-format`);
+        const response = await fetch(`/api/proof/${proofId}/ethereum`);
         if (!response.ok) {
-            throw new Error(`Failed to fetch proof data: ${response.statusText}`);
+            // Try the integrated endpoint as fallback
+            const fallbackResponse = await fetch(`/api/proof/${proofId}/ethereum-integrated`);
+            if (!fallbackResponse.ok) {
+                throw new Error(`Failed to fetch proof data: ${response.statusText}`);
+            }
+            const proofData = await fallbackResponse.json();
+            console.log('Using fallback endpoint, fetched proof data:', proofData);
+            
+            // Create verifier instance
+            const verifier = new AvalancheVerifier();
+            
+            // Verify the proof
+            const result = await verifier.verifyProof(proofData.proof, proofId, proofType);
+            
+            return result;
         }
         
         const proofData = await response.json();
