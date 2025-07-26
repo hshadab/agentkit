@@ -382,6 +382,7 @@ class WorkflowExecutor {
                 // Device registration is handled as metadata for the proximity proof
                 // Return a simple success to continue with workflow
                 return {
+                    success: true,
                     type: 'register_device',
                     device_id: step.device_id || 'DEV_UNKNOWN',
                     status: 'registered',
