@@ -29,6 +29,7 @@ Available step types:
 7. list_proofs: List existing proofs or verifications
 8. process_with_ai: Handle any additional AI request (explain, humor, translate, analyze, etc.)
 9. register_device: Register an IoT device for proximity verification
+10. claim_rewards: Claim rewards for a verified IoT device
 
 Rules:
 - Parse ALL commands as workflows, even simple ones like "generate KYC proof"
@@ -43,6 +44,7 @@ Rules:
 - Each person mentioned needs their own proof generation and verification
 - Default blockchain for transfers is Ethereum unless specified
 - For "list proofs" or "show proofs" commands, use the list_proofs step type
+- IMPORTANT: For IoT device registration with proximity proof, ALWAYS include ALL 4 steps: register_device, generate_proof (device_proximity), verify_on_iotex, claim_rewards
 
 Output format as JSON:
 {
@@ -85,6 +87,31 @@ Output format as JSON:
       "request": "explain how it works",
       "context": "kyc_proof",
       "description": "Process AI request: explain how KYC proofs work"
+    },
+    {
+      "type": "register_device",
+      "device_id": "DEV123",
+      "description": "Register IoT device DEV123"
+    },
+    {
+      "type": "generate_proof",
+      "proof_type": "device_proximity",
+      "device_id": "DEV123",
+      "x": "5080",
+      "y": "5020",
+      "description": "Generate device proximity proof for DEV123"
+    },
+    {
+      "type": "verify_on_iotex",
+      "proof_type": "device_proximity",
+      "device_id": "DEV123",
+      "description": "Verify device proximity proof on IoTeX blockchain"
+    },
+    {
+      "type": "claim_rewards",
+      "device_id": "DEV123",
+      "description": "Claim rewards for verified device DEV123",
+      "critical": false
     }
   ]
 }"""
@@ -98,6 +125,18 @@ Output format as JSON:
         - Each conditional transfer needs proof generation and verification first
         - Only include blockchain verification steps if explicitly requested
         - Simple workflows like "Generate KYC proof" only need ONE step: generate_proof
+        
+        CRITICAL RULE FOR IOT DEVICES:
+        If the command contains "register" and ("device" or "IoT" or "iot") and "proximity", you MUST create exactly 4 steps:
+        1. register_device (with device_id)
+        2. generate_proof (with proof_type: "device_proximity" and device_id)
+        3. verify_on_iotex (with proof_type: "device_proximity" and device_id)
+        4. claim_rewards (with device_id)
+        
+        This applies to ALL these patterns:
+        - "Register IoT device DEV123 with proximity proof"
+        - "Register device DEV456 with proximity verification"
+        - "Register iot device SENSOR001 and prove proximity"
         - "AI content", "AI authenticity", or "AI-generated content" refers to proof_type: "ai_content"
         - "Prove AI content authenticity" means generate_proof with proof_type: "ai_content"
         
@@ -108,9 +147,9 @@ Output format as JSON:
         - "Generate AI content proof" → one step: generate_proof (proof_type: "ai_content")
         - "Create AI prediction proof" → one step: generate_proof (proof_type: "ai_content")
         - "Generate location proof for NYC" → one step: generate_proof (proof_type: "location", location: "NYC")
-        - "Register IoT device DEV123 with proximity proof" → two steps: register_device (device_id: "DEV123"), generate_proof (proof_type: "device_proximity", device_id: "DEV123")
-        - "Register device DEV456 at location 5020,5030" → two steps: register_device (device_id: "DEV456"), generate_proof (proof_type: "device_proximity", device_id: "DEV456", x: "5020", y: "5030")
-        - "Register device IOT001 and verify on IoTeX" → three steps: register_device, generate_proof (proof_type: "device_proximity"), verify_on_iotex
+        - "Register IoT device DEV123 with proximity proof" → four steps: register_device (device_id: "DEV123"), generate_proof (proof_type: "device_proximity", device_id: "DEV123"), verify_on_iotex, claim_rewards (device_id: "DEV123")
+        - "Register device DEV456 at location 5020,5030" → four steps: register_device (device_id: "DEV456"), generate_proof (proof_type: "device_proximity", device_id: "DEV456", x: "5020", y: "5030"), verify_on_iotex, claim_rewards (device_id: "DEV456")
+        - "Register device IOT001 and verify on IoTeX" → four steps: register_device, generate_proof (proof_type: "device_proximity"), verify_on_iotex, claim_rewards
         - "Generate KYC proof and explain" → two steps: generate_proof, process_with_ai (request: "explain")
         - "Generate location proof but make it funny" → two steps: generate_proof, process_with_ai (request: "make it funny")
         - "Create AI proof and tell me a joke about it" → two steps: generate_proof, process_with_ai (request: "tell me a joke about it")
@@ -140,6 +179,48 @@ Output format as JSON:
             )
             
             result = json.loads(response.choices[0].message.content)
+            
+            # Post-process to ensure IoT workflows have all 4 steps
+            if result.get('steps'):
+                has_register_device = any(step.get('type') == 'register_device' for step in result['steps'])
+                has_device_proximity = any(
+                    step.get('type') == 'generate_proof' and 
+                    step.get('proof_type') == 'device_proximity' 
+                    for step in result['steps']
+                )
+                
+                # If it's an IoT workflow but missing steps, add them
+                if has_register_device and has_device_proximity:
+                    device_id = None
+                    # Extract device_id from existing steps
+                    for step in result['steps']:
+                        if step.get('device_id'):
+                            device_id = step['device_id']
+                            break
+                    
+                    # Check what's missing and add
+                    has_verify = any(step.get('type') == 'verify_on_iotex' for step in result['steps'])
+                    has_rewards = any(step.get('type') == 'claim_rewards' for step in result['steps'])
+                    
+                    if not has_verify:
+                        # Insert verify step after generate_proof
+                        for i, step in enumerate(result['steps']):
+                            if step.get('type') == 'generate_proof' and step.get('proof_type') == 'device_proximity':
+                                result['steps'].insert(i + 1, {
+                                    "type": "verify_on_iotex",
+                                    "proof_type": "device_proximity",
+                                    "device_id": device_id,
+                                    "description": f"Verify device proximity proof on IoTeX blockchain"
+                                })
+                                break
+                    
+                    if not has_rewards:
+                        result['steps'].append({
+                            "type": "claim_rewards",
+                            "device_id": device_id,
+                            "description": f"Claim rewards for verified device {device_id}",
+                            "critical": False  # Rewards might not be available immediately
+                        })
             
             # Add indices and additional metadata
             for i, step in enumerate(result.get('steps', [])):

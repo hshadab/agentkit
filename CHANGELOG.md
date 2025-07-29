@@ -1,48 +1,41 @@
 # Changelog
 
-## v4.6.0 (January 26, 2025)
+All notable changes to AgentKit will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [5.0.0] - 2025-01-29
 
 ### Added
-- **Avalanche C-Chain Integration**: Full support for Avalanche Fuji testnet
-  - Deployed real Groth16 Proof-of-Proof verifier at `0x30e93E8B0804fD60b0d151F724c307c61Be37EE1`
-  - Automatic network switching for better UX
-  - Red-themed UI elements for Avalanche
-  - Feature parity with Ethereum and Base verifiers
+- **5 Proof Types**: KYC, Device Proximity (IoT), AI Prediction, Age Verification, Identity Verification
+- **5 Blockchain Networks**: Ethereum, Solana, Base, Avalanche, and IoTeX support
+- **IoTeX Integration**: Full IoT device support with ioID registry and Nova Decider
+- **Device Proximity Proofs**: New proof type specifically for IoT devices
+- **Coinbase API**: Alternative USDC transfer method alongside Circle
+- **Proof History**: LocalStorage-based proof management with history table
+- **Comprehensive Testing**: Test suite for all proofs, blockchains, and transfers
+- **Documentation Overhaul**: New ARCHITECTURE.md, SETUP.md, API_DOCUMENTATION.md
+- **Test Pages**: HTML-based testing for proof history, blockchain verification, and transfers
 
 ### Changed
-- Updated UI with Novanet logo replacing emoji in header
-- Improved network switching logic for all chains
-- Enhanced error handling for proof verification
+- **Codebase Reorganization**: Clean modular structure with organized directories
+- **Port Configuration**: Chat service now on port 8002 (was 5000), Web UI on port 8000
+- **Enhanced Nova Parsers**: Multiple parser versions for different proof formats
+- **Improved Error Handling**: Better error messages and recovery mechanisms
+- **Updated Dependencies**: Latest versions of all major dependencies
 
 ### Fixed
-- Resolved "execution reverted" errors on Avalanche
-- Fixed proof format compatibility issues
-- Corrected API endpoints for proof data fetching
+- **Import Path Issues**: All paths updated after reorganization
+- **WebSocket Stability**: Improved connection handling and reconnection logic
+- **Gas Estimation**: Fixed gas limits for IoTeX and other networks
+- **Proof ID Generation**: Consistent UUID-based proof identification
 
-### Technical Details
-- Deployed `RealProofOfProofVerifier_New.sol` to Avalanche
-- Uses same circuit-specific verification keys as Ethereum/Base
-- Performs actual cryptographic verification with BN128 pairing checks
-- Gas cost: ~200-300k gas per verification (~$0.01-0.02 on Avalanche)
-
-## v4.5.0 (January 2025)
-
-### Added
-- Enhanced AI Prediction Proofs with cleaner UI
-- Single-line display for AI prediction commitments
-- Smart contract deployment for AI predictions on Base Sepolia
-
-### Changed
-- Removed toast notifications for AI predictions
-- Simplified commitment display in UI
-- Improved OpenAI parser for better AI proof recognition
-
-## v4.4.0 (January 2025)
-
-### Added
-- Base blockchain support (Coinbase Layer 2)
-- AI Prediction Commitment proofs with temporal verification
-- Real blockchain commitments for AI predictions
+### Security
+- **Environment Variables**: Better handling of sensitive configuration
+- **Input Validation**: Enhanced validation for all user inputs
+- **CORS Configuration**: Proper cross-origin resource sharing setup
 
 ## Previous Versions
-See git history for earlier releases
+
+For historical changelog entries, see the git history or documentation archive.

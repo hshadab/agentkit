@@ -87,20 +87,36 @@
         <button onclick="window.blockchainVerifier.connectIoTeX()">Connect MetaMask</button>
     </div>
 
+    <!-- SES Compatibility for snarkjs -->
+    <script src="/static/js/core/ses-compatibility.js"></script>
+    
     <!-- External dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/iden3/snarkjs/build/snarkjs.min.js"></script>
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="/static/js/core/ethers-fallback.js"></script>
     
     <!-- Blockchain verifiers (these need to be updated to work with the modular system) -->
     <script src="/static/ethereum-verifier.js?v=20250711-1945"></script>
     <script src="/static/solana-verifier.js"></script>
     <script src="/static/base-verifier.js"></script>
     <script src="/static/avalanche-verifier.js"></script>
-    <script src="/static/iotex-device-verifier.js"></script>
-    <script src="/static/js/ai-prediction-handler-real.js?v=20250121-1"></script>
+    <script src="/static/parsers/nova/nova-proof-formatter.js"></script>
+    <script src="/static/parsers/nova/nova-proof-parser.js"></script>
+    <script src="/static/parsers/nova/zkengine-nova-parser.js"></script>
+    <script src="/static/parsers/nova/nova-proof-parser-v2.js"></script>
+    <script src="/static/js/blockchain/simple-nova-verifier.js"></script>
+    <script src="/static/js/ui/ioid-official-manager.js"></script>
+    <script src="/static/js/blockchain/iotex-device-verifier.js"></script>
+    <script src="/static/js/ui/device-workflow-handler.js"></script>
+    <script src="/static/js/ui/ai-prediction-handler-real.js?v=20250121-1"></script>
     
-    <!-- Main application module -->
+    <!-- Main application module - must be loaded as module since it uses ES6 imports -->
     <script type="module" src="/static/js/main.js?v=20250120-1"></script>
+    <!-- Wrapper to expose modules to window -->
+    <script type="module" src="/static/js/blockchain/blockchain-verifier-wrapper.js?v=20250120-1"></script>
+    <!-- Debug helper -->
+    <script src="/static/js/core/debug-helper.js"></script>
 </body>
 </html>

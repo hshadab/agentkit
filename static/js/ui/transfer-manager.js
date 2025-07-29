@@ -1,6 +1,6 @@
 // Transfer Manager - Handles transfer operations and status updates
-import { debugLog, createExplorerLink } from './utils.js';
-import { config } from './config.js';
+import { debugLog, createExplorerLink } from '../core/utils.js';
+import { config } from '../core/config.js';
 
 export class TransferManager {
     constructor(uiManager) {

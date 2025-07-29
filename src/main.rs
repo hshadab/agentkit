@@ -17,6 +17,7 @@ use uuid::Uuid;
 use std::process::Stdio;
 use tokio::process::Command;
 use std::path::PathBuf;
+use base64;
 
 mod nova_groth16_converter;
 use nova_groth16_converter::convert_nova_to_groth16;
@@ -87,6 +88,7 @@ async fn main() {
         .route("/api/proof/:proof_id/ethereum", get(export_proof_ethereum))
         .route("/api/proof/:proof_id/ethereum-integrated", get(export_proof_ethereum_integrated))
         .route("/api/proof/:proof_id/solana", get(export_proof_solana))
+        .route("/api/proof/:proof_id/iotex", get(export_proof_iotex))
         .route("/api/proof/:proof_id/update-verification", post(update_proof_verification))
         .route("/api/v1/proof/:proof_id/verify", get(verify_proof_endpoint))
         .route("/api/v1/workflow/:workflow_id/status", get(get_workflow_status))
@@ -206,7 +208,7 @@ async fn verify_proof_endpoint(
         step_size: metadata.get("metadata")
             .and_then(|m| m.get("step_size"))
             .and_then(|s| s.as_u64())
-            .unwrap_or(50),
+            .unwrap_or(10), // Reduced from 50 for faster proof generation
         explanation: metadata.get("metadata")
             .and_then(|m| m.get("explanation"))
             .and_then(|e| e.as_str())
@@ -589,13 +591,133 @@ async fn export_proof_solana(
     })))
 }
 
-// --- Device Proximity Proof Generation ---
+// Export proof for IoTeX verification
+async fn export_proof_iotex(
+    Path(proof_id): Path<String>,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    info!("Exporting proof {} for IoTeX verification", proof_id);
+    
+    // Try multiple directory naming patterns
+    let mut proof_dir = PathBuf::from(&state.proofs_dir).join(&proof_id);
+    
+    // If directory doesn't exist, try alternative naming patterns
+    if !proof_dir.exists() {
+        // Try replacing "proof_" with "prove_"
+        if proof_id.starts_with("proof_") {
+            let alt_id = proof_id.replacen("proof_", "prove_", 1);
+            let alt_dir = PathBuf::from(&state.proofs_dir).join(&alt_id);
+            if alt_dir.exists() {
+                info!("Using alternative proof directory: {} -> {}", proof_id, alt_id);
+                proof_dir = alt_dir;
+            }
+        }
+        // Try replacing "prove_" with "proof_"
+        else if proof_id.starts_with("prove_") {
+            let alt_id = proof_id.replacen("prove_", "proof_", 1);
+            let alt_dir = PathBuf::from(&state.proofs_dir).join(&alt_id);
+            if alt_dir.exists() {
+                info!("Using alternative proof directory: {} -> {}", proof_id, alt_id);
+                proof_dir = alt_dir;
+            }
+        }
+    }
+    
+    // Check if proof exists
+    if !proof_dir.exists() {
+        return (
+            StatusCode::NOT_FOUND,
+            Json(json!({
+                "error": "Proof not found",
+                "proof_id": proof_id
+            }))
+        );
+    }
+    
+    // Read metadata to get proof details
+    let metadata_path = proof_dir.join("metadata.json");
+    let metadata: serde_json::Value = match std::fs::read_to_string(&metadata_path) {
+        Ok(content) => serde_json::from_str(&content).unwrap_or(json!({})),
+        Err(_) => json!({})
+    };
+    
+    // Read public inputs
+    let public_json_path = proof_dir.join("public.json");
+    let public_inputs: serde_json::Value = match std::fs::read_to_string(&public_json_path) {
+        Ok(content) => serde_json::from_str(&content).unwrap_or(json!({})),
+        Err(e) => {
+            error!("Failed to read public.json: {}", e);
+            json!({})
+        }
+    };
+    
+    // Read the Nova proof binary if it exists
+    let proof_bin_path = proof_dir.join("proof.bin");
+    let proof_data = if proof_bin_path.exists() {
+        match std::fs::read(&proof_bin_path) {
+            Ok(data) => {
+                use base64::Engine;
+                Some(base64::engine::general_purpose::STANDARD.encode(&data))
+            },
+            Err(e) => {
+                error!("Failed to read proof binary: {}", e);
+                None
+            }
+        }
+    } else {
+        None
+    };
+    
+    // Extract device-specific data from metadata
+    let device_id = metadata.get("arguments")
+        .and_then(|args| args.as_array())
+        .and_then(|arr| arr.get(0))
+        .and_then(|v| v.as_str())
+        .unwrap_or("UNKNOWN");
+    
+    // Extract coordinates from public inputs or metadata
+    let x = public_inputs.get("1")
+        .or_else(|| metadata.get("arguments").and_then(|args| args.get(1)))
+        .and_then(|v| v.as_str())
+        .and_then(|s| s.parse::<u64>().ok())
+        .unwrap_or(5050);
+    
+    let y = public_inputs.get("2")
+        .or_else(|| metadata.get("arguments").and_then(|args| args.get(2)))
+        .and_then(|v| v.as_str())
+        .and_then(|s| s.parse::<u64>().ok())
+        .unwrap_or(5050);
+    
+    // Return IoTeX-specific proof data
+    (StatusCode::OK, Json(json!({
+        "proof_id": proof_id,
+        "device_id": device_id,
+        "coordinates": {
+            "x": x,
+            "y": y
+        },
+        "proof_data": proof_data,
+        "public_inputs": public_inputs,
+        "metadata": metadata,
+        "timestamp": std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_secs(),
+        "status": "ready_for_verification"
+    })))
+}
 
+// --- Device Proximity Proof Generation ---
+// NO LONGER NEEDED - Using zkEngine with device_proximity.wasm instead
+/*
 async fn generate_device_proximity_proof_internal(
     state: AppState,
     proof_id: String,
-    metadata: ProofMetadata,
+    mut metadata: ProofMetadata,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    // Use smaller step size for device proximity
+    metadata.step_size = 10;
+    
     // Extract device location from metadata
     let device_id = metadata.arguments.get(0)
         .unwrap_or(&"DEV_UNKNOWN".to_string())
@@ -649,8 +771,8 @@ async fn generate_device_proximity_proof_internal(
     
     // Send completion message
     let completion_msg = json!({
-        "type": "proof_status",
-        "proof_id": proof_id,
+        "type": "proof_complete",
+        "proof_id": proof_id.clone(),
         "status": "complete",
         "message": format!("Device proximity proof generated. Device {} is {} the proximity zone", 
             device_id, 
@@ -661,6 +783,7 @@ async fn generate_device_proximity_proof_internal(
         "metrics": {
             "generation_time_secs": 0.5,
             "proof_size": proof_result.proof_data.len(),
+            "time_ms": 500
         }
     });
     
@@ -668,6 +791,7 @@ async fn generate_device_proximity_proof_internal(
     
     Ok(())
 }
+*/
 
 // --- WebSocket Handler ---
 
@@ -736,6 +860,23 @@ async fn process_user_command(state: AppState, message: String) {
             let workflow_id = payload.get("workflowId").and_then(|w| w.as_str()).unwrap_or("unknown");
             info!("Ignoring poll_workflow for {}", workflow_id);
             return;
+        }
+        
+        // Forward workflow-related messages to all connected clients
+        match msg_type {
+            "workflow_started" | "workflow_step_update" | "workflow_completed" | 
+            "device_registration_request" | "device_registration_response" |
+            "iotex_verification_request" | "iotex_verification_response" |
+            "blockchain_verification_request" | "blockchain_verification_response" |
+            "blockchain_verification_update" | "claim_rewards_request" | "claim_rewards_response" |
+            "proof_complete" | "proof_error" => {
+                info!("Forwarding {} message to all clients", msg_type);
+                if state.tx.send(message.clone()).is_err() {
+                    error!("Failed to broadcast {} message", msg_type);
+                }
+                return;
+            }
+            _ => {}
         }
         
         if msg_type == "execute_workflow" {
@@ -1035,43 +1176,66 @@ async fn process_user_command(state: AppState, message: String) {
     }
     
     // Create the request body in the format Python expects
-    let chat_request = json!({
-        "message": message_content
+    // Changed to use execute_workflow endpoint for all messages
+    let workflow_request = json!({
+        "command": message_content
     });
     
     let client = reqwest::Client::new();
     let res = client
-        .post(&format!("{}/chat", state.langchain_url))
-        .json(&chat_request)
+        .post(&format!("{}/execute_workflow", state.langchain_url))
+        .json(&workflow_request)
         .send()
         .await;
 
     match res {
         Ok(response) => {
-            if let Ok(chat_response) = response.json::<serde_json::Value>().await {
-                info!("Chat response received: {:?}", chat_response);
+            if let Ok(workflow_response) = response.json::<serde_json::Value>().await {
+                info!("Workflow/chat response received: {:?}", workflow_response);
                 
-                // Send the response to the UI
-                let ui_message = json!({
-                    "type": "chat_response",
-                    "response": chat_response.get("response").and_then(|r| r.as_str()).unwrap_or(""),
-                    "metadata": chat_response.get("metadata"),
-                    "intent": chat_response.get("intent"),
-                    "command": chat_response.get("command"),
-                    "messageId": chat_response.get("messageId"),
-                });
-                
-                if state.tx.send(ui_message.to_string()).is_err() {
-                    error!("Failed to broadcast message to clients");
+                // Check if it's a workflow response or chat response
+                if workflow_response.get("success").is_some() {
+                    // This is a workflow execution response
+                    if workflow_response.get("success").and_then(|s| s.as_bool()).unwrap_or(false) {
+                        info!("Workflow executed successfully");
+                        // Workflow updates will come through WebSocket
+                    } else {
+                        // Send error message to UI
+                        let error_msg = workflow_response.get("error")
+                            .and_then(|e| e.as_str())
+                            .unwrap_or("Workflow execution failed");
+                        let ui_message = json!({
+                            "type": "chat_response",
+                            "response": error_msg,
+                            "intent": "error"
+                        });
+                        if state.tx.send(ui_message.to_string()).is_err() {
+                            error!("Failed to broadcast error to clients");
+                        }
+                    }
+                } else if workflow_response.get("response").is_some() {
+                    // This is a chat response from the execute_workflow endpoint
+                    let ui_message = json!({
+                        "type": "chat_response",
+                        "response": workflow_response.get("response").and_then(|r| r.as_str()).unwrap_or(""),
+                        "metadata": workflow_response.get("metadata"),
+                        "intent": workflow_response.get("intent"),
+                        "command": workflow_response.get("command"),
+                        "messageId": workflow_response.get("messageId"),
+                    });
+                    
+                    if state.tx.send(ui_message.to_string()).is_err() {
+                        error!("Failed to broadcast message to clients");
+                    }
                 }
                 
                 // Check if the intent contains proof metadata that needs processing
-                if let Some(intent) = chat_response.get("intent") {
+                if let Some(intent) = workflow_response.get("intent") {
                     // Check if intent is an object (proof metadata) vs a string (workflow/openai_chat)
                     if intent.is_object() {
                         // This is proof metadata - process it
                         if let Ok(metadata) = serde_json::from_value::<ProofMetadata>(intent.clone()) {
-                            let proof_id = chat_response.get("metadata")
+                            let proof_id = workflow_response.get("metadata")
                                 .and_then(|m| m.get("proof_id"))
                                 .and_then(|p| p.as_str())
                                 .unwrap_or(&Uuid::new_v4().to_string())
@@ -1098,7 +1262,7 @@ async fn process_user_command(state: AppState, message: String) {
                     } else if let Some(intent_str) = intent.as_str() {
                         // Handle workflow intent
                         if intent_str == "workflow" {
-                            if let Some(command) = chat_response.get("command").and_then(|c| c.as_str()) {
+                            if let Some(command) = workflow_response.get("command").and_then(|c| c.as_str()) {
                                 info!("Executing workflow directly from chat response: {}", command);
                                 
                                 // Execute the workflow
@@ -1199,19 +1363,7 @@ async fn generate_proof(state: AppState, proof_id: String, metadata: ProofMetada
         "prove_kyc" => "kyc_compliance_real.wasm",
         "prove_ai_content" => "ai_prediction_commitment.wasm",
         "prove_location" => "depin_location_real.wasm",
-        "prove_device_proximity" => {
-            // Handle device proximity proof generation using ProximityCircuit
-            if let Err(e) = generate_device_proximity_proof_internal(state.clone(), proof_id.clone(), metadata.clone()).await {
-                error!("Failed to generate device proximity proof: {}", e);
-                let err_msg = json!({
-                    "type": "proof_error",
-                    "proof_id": proof_id,
-                    "error": format!("Failed to generate device proximity proof: {}", e)
-                });
-                let _ = state.tx.send(err_msg.to_string());
-            }
-            return;
-        }
+        "prove_device_proximity" => "device_proximity.wasm",
         "prove_custom" => {
             // Check additional context for specific custom proof
             metadata.additional_context
@@ -1310,6 +1462,37 @@ async fn generate_proof(state: AppState, proof_id: String, metadata: ProofMetada
                             error!("Failed to update proofs database: {}", e);
                         }
                         
+                        // Read the proof binary and public inputs
+                        let proof_bin_path = proof_dir.join("proof.bin");
+                        let public_json_path = proof_dir.join("public.json");
+                        
+                        let proof_data = if proof_bin_path.exists() {
+                            match std::fs::read(&proof_bin_path) {
+                                Ok(data) => {
+                                    use base64::Engine;
+                                    Some(base64::engine::general_purpose::STANDARD.encode(&data))
+                                },
+                                Err(e) => {
+                                    error!("Failed to read proof binary: {}", e);
+                                    None
+                                }
+                            }
+                        } else {
+                            None
+                        };
+                        
+                        let public_inputs = if public_json_path.exists() {
+                            match std::fs::read_to_string(&public_json_path) {
+                                Ok(content) => serde_json::from_str::<serde_json::Value>(&content).ok(),
+                                Err(e) => {
+                                    error!("Failed to read public inputs: {}", e);
+                                    None
+                                }
+                            }
+                        } else {
+                            None
+                        };
+                        
                         let success_msg = json!({
                             "type": "proof_complete",
                             "proof_id": proof_id,
@@ -1319,7 +1502,9 @@ async fn generate_proof(state: AppState, proof_id: String, metadata: ProofMetada
                             "workflowId": metadata.additional_context.as_ref()
                                 .and_then(|ctx| ctx.get("workflow_id"))
                                 .and_then(|id| id.as_str()),
-                            "additional_context": metadata.additional_context.clone()
+                            "additional_context": metadata.additional_context.clone(),
+                            "proof_data": proof_data,
+                            "public_inputs": public_inputs
                         });
                         let _ = state.tx.send(success_msg.to_string());
                         

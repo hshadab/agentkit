@@ -59,10 +59,18 @@ async function runWorkflow() {
             console.log(`   ${i + 1}. ${step.description}`);
         });
         
-        const manager = new WorkflowManager();
-        const workflowRecord = manager.createWorkflow(workflow.description, workflow.steps);
+        // Use workflow_id from parsed data if available, otherwise create new one
+        const workflowId = workflow.workflow_id || null;
         
-        console.log(`\n✅ Created workflow: ${workflowRecord.id}`);
+        if (workflowId) {
+            console.log(`\n📋 Using existing workflow ID: ${workflowId}`);
+        } else {
+            const manager = new WorkflowManager();
+            const workflowRecord = manager.createWorkflow(workflow.description, workflow.steps);
+            workflow.workflow_id = workflowRecord.id;
+            console.log(`\n✅ Created workflow: ${workflowRecord.id}`);
+        }
+        
         console.log(`🔐 All proofs will use real zkEngine - no simulations\n`);
         
         // Create and connect executor
@@ -72,8 +80,8 @@ async function runWorkflow() {
         // IMPORTANT: Give the WebSocket connection time to stabilize
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        // Execute the workflow
-        const result = await executor.executeWorkflow(workflow);
+        // Execute the workflow with the workflow ID
+        const result = await executor.executeWorkflow(workflow, workflow.workflow_id);
         
         // Extract results
         const transferIds = [];

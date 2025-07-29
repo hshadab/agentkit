@@ -17,8 +17,9 @@ export class BlockchainVerifier {
         this.avalancheAccount = null;
         this.iotexAccount = null;
         
-        // Auto-connect to wallets if previously connected
-        this.autoConnect();
+        // Disable auto-connect on startup to prevent MetaMask errors
+        // this.autoConnect();
+        debugLog('Auto-connect disabled to prevent startup errors', 'info');
     }
     
     async autoConnect() {
@@ -786,12 +787,8 @@ export class BlockchainVerifier {
             this.iotexAccount = accounts[0];
             this.iotexConnected = true;
             
-            // Check if on IoTeX testnet
-            const chainId = await provider.request({ method: 'eth_chainId' });
-            
-            if (chainId !== config.blockchain.iotex.chainId) {
-                await this.switchToIoTeX();
-            }
+            // Auto-switch to IoTeX network
+            await this.switchToIoTeX();
             
             debugLog(`Connected to IoTeX: ${this.iotexAccount}`, 'success');
             
@@ -802,8 +799,9 @@ export class BlockchainVerifier {
             const banner = document.getElementById('iotex-connect-banner');
             if (banner) banner.style.display = 'none';
             
-            // Update wallet status
-            this.updateWalletStatus('iotex', true);
+            // Update wallet status indicator
+            const statusIndicator = document.getElementById('iotex-wallet-status');
+            if (statusIndicator) statusIndicator.style.display = 'inline-block';
             
             return true;
         } catch (error) {
@@ -851,9 +849,27 @@ export class BlockchainVerifier {
         // Update UI to show verification in progress
         this.uiManager.showToast('Verifying device proximity on IoTeX...', 'info');
         
+        // Update button state
+        const proofCard = document.querySelector(`[data-proof-id="${proofId}"]`);
+        const iotexButton = proofCard?.querySelector('.iotex-verify-btn');
+        if (iotexButton) {
+            iotexButton.disabled = true;
+            iotexButton.classList.add('verifying');
+            iotexButton.textContent = 'Verifying on IoTeX...';
+        }
+        
         try {
-            // Call the device verifier
-            const result = await window.verifyDeviceProximityOnIoTeX(deviceId);
+            // Get the proof metadata to extract coordinates
+            const proofData = this.proofManager && this.proofManager.proofs ? this.proofManager.proofs.get(proofId) : null;
+            let x = 5050, y = 5050;
+            
+            if (proofData && proofData.metadata && proofData.metadata.arguments) {
+                x = proofData.metadata.arguments[1] || 5050;
+                y = proofData.metadata.arguments[2] || 5050;
+            }
+            
+            // Call the device verifier with coordinates
+            const result = await window.verifyDeviceProximityOnIoTeX(deviceId, x, y, proofData);
             
             if (result.success) {
                 const verificationData = {
@@ -861,14 +877,28 @@ export class BlockchainVerifier {
                     deviceId: deviceId,
                     withinProximity: result.withinProximity,
                     rewardEligible: result.rewardEligible,
+                    txHash: result.txHash,
+                    explorerUrl: result.explorerUrl,
                     timestamp: new Date().toISOString()
                 };
                 
                 this.proofManager.onChainVerifications.set(proofId || deviceId, verificationData);
                 
+                // Persist verification data
+                this.persistVerificationData(proofId, verificationData);
+                
                 this.uiManager.showToast('Device proximity verified on IoTeX!', 'success');
                 
-                // Show verification result card
+                if (iotexButton) {
+                    iotexButton.textContent = '✅ Verified on IoTeX';
+                    iotexButton.style.background = 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)';
+                    iotexButton.disabled = true;
+                }
+                
+                // Add verification result to the proof card
+                this.proofManager.addVerificationResult(proofId, 'IoTeX', result, result.explorerUrl);
+                
+                // Show device verification result card
                 this.addDeviceVerificationCard(deviceId, result);
                 
                 return result;
@@ -879,6 +909,13 @@ export class BlockchainVerifier {
         } catch (error) {
             debugLog(`IoTeX device verification error: ${error.message}`, 'error');
             this.uiManager.showToast('Device verification failed', 'error');
+            
+            if (iotexButton) {
+                iotexButton.textContent = '🔷 Verify on IoTeX';
+                iotexButton.disabled = false;
+                iotexButton.classList.remove('verifying');
+            }
+            
             return { success: false, error: error.message };
         }
     }

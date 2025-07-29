@@ -1,5 +1,5 @@
 // UI Manager - Handles all UI updates and DOM manipulation
-import { debugLog } from './utils.js';
+import { debugLog } from '../core/utils.js';
 
 export class UIManager {
     constructor() {

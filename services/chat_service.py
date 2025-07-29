@@ -353,12 +353,25 @@ async def execute_workflow(request: WorkflowRequest):
             print(f"[DEBUG]   workflow_data is simple: {workflow_data.get('simple', False)}")
         
         if workflow_data and not workflow_data.get('error'):
+            # Add workflow_id to the workflow data
+            workflow_data['workflow_id'] = workflow_id
+            
             # Save the parsed workflow to a temporary file for the executor
             parsed_workflow_file = os.path.join(os.path.expanduser("~/agentkit/circle"), f"parsed_workflow_{workflow_id}.json")
             print(f"[DEBUG] Saving parsed workflow to: {parsed_workflow_file}")
-            with open(parsed_workflow_file, 'w') as f:
-                json.dump(workflow_data, f, indent=2)
-            print(f"[DEBUG] Parsed workflow saved successfully")
+            try:
+                with open(parsed_workflow_file, 'w') as f:
+                    json.dump(workflow_data, f, indent=2)
+                print(f"[DEBUG] Parsed workflow saved successfully")
+                # Verify file exists
+                if os.path.exists(parsed_workflow_file):
+                    print(f"[DEBUG] Verified file exists: {parsed_workflow_file}")
+                else:
+                    print(f"[ERROR] File not found after writing: {parsed_workflow_file}")
+            except Exception as e:
+                print(f"[ERROR] Failed to save parsed workflow: {e}")
+                import traceback
+                traceback.print_exc()
         else:
             print(f"[DEBUG] NOT creating parsed file because conditions not met")
         
@@ -417,9 +430,9 @@ async def execute_workflow(request: WorkflowRequest):
         # Configure environment for REAL zkEngine ONLY
         env = os.environ.copy()
         env.update({
-            'ZKENGINE_BINARY': os.getenv('ZKENGINE_BINARY', './zkengine_binary/zkEngine'),
-            'WASM_DIR': os.getenv('WASM_DIR', './zkengine_binary'),
-            'PROOFS_DIR': os.getenv('PROOFS_DIR', './proofs')
+            'ZKENGINE_BINARY': os.getenv('ZKENGINE_BINARY', os.path.expanduser('~/agentkit/zkengine_binary/zkEngine')),
+            'WASM_DIR': os.getenv('WASM_DIR', os.path.expanduser('~/agentkit/zkengine_binary')),
+            'PROOFS_DIR': os.getenv('PROOFS_DIR', os.path.expanduser('~/agentkit/proofs'))
         })
         
         # Remove ALL simulation-related environment variables
@@ -451,14 +464,31 @@ async def execute_workflow(request: WorkflowRequest):
         
         # Execute with the parsed file
         print(f"[DEBUG] Executing with parsed file: {parsed_workflow_file}")
-        result = subprocess.run(
-            ['node', '../parsers/workflow/workflowCLI.js', '--parsed-file', parsed_workflow_file],
-            capture_output=True,
-            text=True,
-            cwd=os.path.expanduser("~/agentkit/circle"),
-            env=env,
-            timeout=300,
-        )
+        try:
+            result = subprocess.run(
+                ['node', '../parsers/workflow/workflowCLI.js', '--parsed-file', parsed_workflow_file],
+                capture_output=True,
+                text=True,
+                cwd=os.path.expanduser("~/agentkit/circle"),
+                env=env,
+                timeout=120,  # Increased timeout to 120 seconds for IoT workflows
+            )
+        except subprocess.TimeoutExpired as e:
+            print(f"[ERROR] Workflow execution timed out after 120 seconds")
+            return {
+                "success": False,
+                "error": "Workflow execution timed out",
+                "details": "The workflow took too long to execute. This might be due to network issues or MetaMask interaction."
+            }
+        except Exception as e:
+            print(f"[ERROR] Workflow execution failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                "success": False,
+                "error": f"Workflow execution failed: {str(e)}",
+                "details": "An unexpected error occurred during workflow execution."
+            }
         
         print(f"[DEBUG] CLI return code: {result.returncode}")
         print(f"[DEBUG] CLI stdout: {result.stdout[-500:]}")

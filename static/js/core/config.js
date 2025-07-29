@@ -58,8 +58,9 @@ export const config = {
             chainId: '0x1252', // IoTeX testnet (4690)
             chainIdDecimal: 4690,
             contracts: {
-                deviceVerifier: '0x74D68B2481d298F337e62efc50724CbBA68dCF8f', // IoTeX Nova Decider deployed
-                ioIDRegistry: null // IoTeX native device registry
+                deviceVerifier: '0x5967d15c7a6fD3ef7F1f309e766f35252a9de10d', // V2 using real Nova Decider, // IoTeX Nova Decider deployed
+                ioIDRegistry: '0x04e4655Cf258EC802D17c23ec6112Ef7d97Fa2aF', // Official ioID Registry
+                ioID: '0x1FCB980eD0287777ab05ADc93012332e11300e54' // Official ioID contract
             },
             explorerUrl: 'https://testnet.iotexscan.io',
             rpcUrl: 'https://babel-api.testnet.iotex.io',

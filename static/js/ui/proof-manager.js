@@ -1,5 +1,5 @@
 // Proof Manager - Handles all proof-related operations
-import { debugLog, formatProofSize, formatTimestamp, copyToClipboard } from './utils.js';
+import { debugLog, formatProofSize, formatTimestamp, copyToClipboard } from '../core/utils.js';
 
 export class ProofManager {
     constructor(uiManager) {
@@ -9,6 +9,7 @@ export class ProofManager {
         this.localVerifications = new Map();
         this.onChainVerifications = new Map();
         this.proofTimers = new Map();
+        this.proofs = new Map(); // Store proof data
     }
 
     addProofCard(data) {

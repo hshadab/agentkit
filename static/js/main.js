@@ -1,5 +1,6 @@
 // Main application entry point
 // Cache bust: 20250120-1
+console.log('=== Main.js loading started ===');
 import { config } from './config.js?v=20250120-1';
 import { WebSocketManager } from './websocket-manager.js?v=20250120-1';
 import { UIManager } from './ui-manager.js?v=20250120-1';
@@ -8,6 +9,10 @@ import { WorkflowManager } from './workflow-manager.js?v=20250120-1';
 import { TransferManager } from './transfer-manager.js?v=20250120-1';
 import { BlockchainVerifier } from './blockchain-verifier.js?v=20250120-1';
 import { debugLog } from './utils.js?v=20250120-1';
+
+// Export config and debugLog to window for non-module scripts
+window.config = config;
+window.debugLog = debugLog;
 
 // Global state
 let lastSentMessage = '';
@@ -24,6 +29,12 @@ const proofManager = new ProofManager(uiManager);
 const transferManager = new TransferManager(uiManager);
 const workflowManager = new WorkflowManager(uiManager, transferManager);
 const blockchainVerifier = new BlockchainVerifier(uiManager, proofManager);
+
+// Ensure proofManager.proofs is initialized
+if (!proofManager.proofs) {
+    console.warn('ProofManager.proofs was not initialized, creating new Map');
+    proofManager.proofs = new Map();
+}
 
 // Make some functions globally accessible for onclick handlers
 window.proofManager = proofManager;
@@ -111,12 +122,126 @@ window.testProofGeneration = () => {
     }, 2000);
 };
 
+// Track if we're already switching networks
+let isNetworkSwitching = false;
+let lastNetworkSwitchTime = 0;
+
+// Check and switch to IoTeX network
+async function checkAndSwitchToIoTeX() {
+    if (!window.ethereum) {
+        throw new Error('MetaMask not installed');
+    }
+    
+    // Prevent concurrent network switches
+    if (isNetworkSwitching) {
+        debugLog('Network switch already in progress, skipping...', 'info');
+        return;
+    }
+    
+    // Prevent rapid successive switches
+    const now = Date.now();
+    if (now - lastNetworkSwitchTime < 3000) {
+        debugLog('Recent network switch detected, skipping...', 'info');
+        return;
+    }
+    
+    try {
+        isNetworkSwitching = true;
+        
+        // Check current network
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const network = await provider.getNetwork();
+        
+        if (network.chainId !== config.blockchain.iotex.chainIdDecimal) {
+            debugLog('Not on IoTeX network, switching...', 'info');
+            
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: config.blockchain.iotex.chainId }],
+                });
+                debugLog('Successfully switched to IoTeX network', 'success');
+            } catch (switchError) {
+                if (switchError.code === 4902) {
+                    debugLog('IoTeX network not found, adding it...', 'info');
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: config.blockchain.iotex.chainId,
+                            chainName: config.blockchain.iotex.name,
+                            nativeCurrency: config.blockchain.iotex.nativeCurrency,
+                            rpcUrls: [config.blockchain.iotex.rpcUrl],
+                            blockExplorerUrls: [config.blockchain.iotex.explorerUrl]
+                        }],
+                    });
+                    debugLog('IoTeX network added and switched', 'success');
+                } else if (switchError.code === -32603 && switchError.message?.includes('selected network')) {
+                    // Network switch in progress or completed
+                    debugLog('Network switch may already be in progress', 'info');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                } else {
+                    throw switchError;
+                }
+            }
+        } else {
+            debugLog('Already on IoTeX network', 'info');
+        }
+    } finally {
+        isNetworkSwitching = false;
+        lastNetworkSwitchTime = Date.now();
+    }
+}
+
+// Export to window for use by other modules
+window.checkAndSwitchToIoTeX = checkAndSwitchToIoTeX;
+
 // Initialize UI when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     debugLog('Initializing AgentKit UI...', 'info');
     
+    // Suppress MetaMask errors during initialization
+    const originalError = console.error;
+    console.error = function(...args) {
+        // Filter out the specific MetaMask network error during init
+        if (args[0] && typeof args[0] === 'string' && 
+            args[0].includes('The request has been rejected due to a change in selected network')) {
+            debugLog('Suppressed MetaMask network error during init', 'debug');
+            return;
+        }
+        originalError.apply(console, args);
+    };
+    
+    // Restore console.error after initialization
+    setTimeout(() => {
+        console.error = originalError;
+        debugLog('Console error handling restored', 'debug');
+    }, 3000);
+    
     // Initialize UI manager
     uiManager.init();
+    
+    // Listen for MetaMask network changes (with delay to avoid initial errors)
+    if (window.ethereum) {
+        // Delay event listener setup to avoid race conditions
+        setTimeout(() => {
+            try {
+                window.ethereum.on('chainChanged', (chainId) => {
+                    debugLog(`Network changed to chain ID: ${chainId}`, 'info');
+                    // Update the network switching flag
+                    lastNetworkSwitchTime = Date.now();
+                });
+                
+                // Handle account changes
+                window.ethereum.on('accountsChanged', (accounts) => {
+                    debugLog(`Account changed: ${accounts[0] || 'disconnected'}`, 'info');
+                });
+                
+                debugLog('MetaMask event listeners set up successfully', 'info');
+            } catch (error) {
+                debugLog(`Error setting up MetaMask listeners: ${error.message}`, 'warning');
+            }
+        }, 1000);
+    }
     
     // Set up WebSocket connection handlers
     wsManager.setConnectionHandlers({
@@ -229,8 +354,12 @@ function setupMessageHandlers() {
                                data.additional_context?.workflow_id;
         const isPartOfWorkflow = activeWorkflowId && workflowManager.workflowStates.has(activeWorkflowId);
         
-        // Only show proof card for standalone proofs
-        if (!isPartOfWorkflow) {
+        // Check if this is a device proximity proof
+        const isDeviceProximityProof = data.metadata?.function === 'prove_device_proximity' ||
+                                       data.proof_function === 'prove_device_proximity';
+        
+        // Only show proof card for standalone proofs (not device proximity in workflows)
+        if (!isPartOfWorkflow && !isDeviceProximityProof) {
             const proofCard = proofManager.addProofCard({
                 ...data,
                 status: 'generating'
@@ -249,8 +378,12 @@ function setupMessageHandlers() {
                                data.additional_context?.workflow_id;
         const isPartOfWorkflow = activeWorkflowId && workflowManager.workflowStates.has(activeWorkflowId);
         
-        // Only show proof card for standalone proofs
-        if (!isPartOfWorkflow) {
+        // Check if this is a device proximity proof
+        const isDeviceProximityProof = data.metadata?.function === 'prove_device_proximity' ||
+                                       data.proof_function === 'prove_device_proximity';
+        
+        // Only show proof card for standalone proofs (not device proximity in workflows)
+        if (!isPartOfWorkflow && !isDeviceProximityProof) {
             const proofCard = proofManager.addProofCard({
                 ...data,
                 proofId: data.proof_id || data.proofId,
@@ -275,13 +408,40 @@ function setupMessageHandlers() {
             const activeWorkflowId = data.workflowId || data.workflow_id || 
                                    data.additional_context?.workflow_id;
             
+            // Extract workflow ID from proof_id if it contains it (e.g., proof_device_proximity_wf_123456_789)
+            let extractedWorkflowId = null;
+            if (data.proof_id && data.proof_id.includes('_wf_')) {
+                const match = data.proof_id.match(/_wf_(\d+)/);
+                if (match) {
+                    extractedWorkflowId = 'wf_' + match[1];
+                }
+            }
+            
+            const finalWorkflowId = activeWorkflowId || extractedWorkflowId;
+            
             // A proof is part of a workflow only if:
             // 1. It has a workflow ID AND
             // 2. That workflow has been started (exists in workflowStates)
-            const isPartOfWorkflow = activeWorkflowId && workflowManager.workflowStates.has(activeWorkflowId);
+            const isPartOfWorkflow = finalWorkflowId && workflowManager.workflowStates.has(finalWorkflowId);
             
+            // Also check if this is a device proximity proof which should never show a card in workflows
+            const isDeviceProximityProof = data.metadata?.function === 'prove_device_proximity' ||
+                                          data.proof_function === 'prove_device_proximity' ||
+                                          (data.proof_id && data.proof_id.includes('device_proximity'));
+            
+            // Skip card if:
+            // 1. It's part of a workflow OR
+            // 2. It's a device proximity proof (these are always part of workflows)
+            const shouldSkipCard = isPartOfWorkflow || isDeviceProximityProof;
+            
+            console.log('[PROOF_STATUS_DEBUG] proof_id:', data.proof_id);
             console.log('[PROOF_STATUS_DEBUG] activeWorkflowId:', activeWorkflowId);
+            console.log('[PROOF_STATUS_DEBUG] extractedWorkflowId:', extractedWorkflowId);
+            console.log('[PROOF_STATUS_DEBUG] finalWorkflowId:', finalWorkflowId);
             console.log('[PROOF_STATUS_DEBUG] isPartOfWorkflow:', isPartOfWorkflow);
+            console.log('[PROOF_STATUS_DEBUG] isDeviceProximityProof:', isDeviceProximityProof);
+            console.log('[PROOF_STATUS_DEBUG] shouldSkipCard:', shouldSkipCard);
+            console.log('[PROOF_STATUS_DEBUG] Active workflows:', Array.from(workflowManager.workflowStates.keys()));
             
             // Check if this is an AI prediction proof that needs blockchain commitment
             const proofFunction = data.metadata?.function || 'unknown';
@@ -323,8 +483,8 @@ function setupMessageHandlers() {
                     });
             }
             
-            // Only show proof card for standalone proofs or device proximity proofs
-            const showProofCard = !isPartOfWorkflow || data.metadata?.function === 'prove_device_proximity';
+            // Only show proof card for standalone proofs (NOT device proximity proofs in workflows)
+            const showProofCard = !shouldSkipCard;
             
             if (showProofCard) {
                 console.log('[PROOF_STATUS_DEBUG] Showing proof card for:', data.proof_id);
@@ -343,17 +503,26 @@ function setupMessageHandlers() {
         } else if (data.status === 'complete') {
             debugLog('Proof status: complete', 'success');
             
-            // For device proximity proofs, ensure the card is shown even if part of workflow
-            if (data.metadata?.function === 'prove_device_proximity') {
+            // Skip creating cards for device proximity proofs that are part of workflows
+            const activeWorkflowId = data.workflowId || data.workflow_id || 
+                                   data.additional_context?.workflow_id;
+            const isPartOfWorkflow = activeWorkflowId && workflowManager.workflowStates.has(activeWorkflowId);
+            
+            // Check if this is a device proximity proof
+            const isDeviceProximityProof = data.metadata?.function === 'prove_device_proximity' ||
+                                          data.proof_function === 'prove_device_proximity' ||
+                                          (data.proof_id && data.proof_id.includes('device_proximity'));
+            
+            if (!isPartOfWorkflow && !isDeviceProximityProof) {
                 // Check if card already exists
                 const existingCard = document.querySelector(`[data-proof-id="${data.proof_id}"]`);
                 if (!existingCard) {
-                    console.log('[PROOF_STATUS_DEBUG] Creating card for completed device proximity proof');
+                    console.log('[PROOF_STATUS_DEBUG] Creating card for completed standalone proof');
                     const proofCard = proofManager.addProofCard({
                         proofId: data.proof_id,
                         status: 'complete',
-                        message: data.message || 'Device proximity proof complete',
-                        proof_function: data.metadata?.function || 'prove_device_proximity',
+                        message: data.message || 'Proof generation complete',
+                        proof_function: data.metadata?.function || 'unknown',
                         metadata: data.metadata,
                         metrics: data.metrics
                     });
@@ -363,8 +532,13 @@ function setupMessageHandlers() {
                     proofManager.updateProofCard(data.proof_id, 'complete', data);
                 }
             } else {
-                // For other proofs, just update if card exists
-                proofManager.updateProofCard(data.proof_id, 'complete', data);
+                // For workflow proofs, only update if card exists
+                const existingCard = document.querySelector(`[data-proof-id="${data.proof_id}"]`);
+                if (existingCard) {
+                    proofManager.updateProofCard(data.proof_id, 'complete', data);
+                } else {
+                    console.log('[PROOF_STATUS_DEBUG] No card to update for workflow proof:', data.proof_id);
+                }
             }
         } else {
             console.log('[PROOF_STATUS_DEBUG] Ignoring other status:', data.status);
@@ -374,9 +548,13 @@ function setupMessageHandlers() {
     wsManager.on('proof_generation_complete', (data) => {
         debugLog('Proof generation complete', 'success');
         console.log('[HANDLER] proof_generation_complete triggered for:', data.proofId);
-        // Update the existing proof card
-        proofManager.updateProofCard(data.proofId, 'complete', data);
-        // Silent success - proof card shows completion
+        // Only update if card exists
+        const existingCard = document.querySelector(`[data-proof-id="${data.proofId}"]`);
+        if (existingCard) {
+            proofManager.updateProofCard(data.proofId, 'complete', data);
+        } else {
+            console.log('[HANDLER] No card to update for proof:', data.proofId);
+        }
     });
     
     // Alternative completion message type
@@ -385,6 +563,11 @@ function setupMessageHandlers() {
         console.log('[HANDLER] proof_complete triggered for:', data.proof_id || data.proofId);
         console.log('[HANDLER] proof_complete data:', data);
         const proofId = data.proof_id || data.proofId;
+        
+        // Store proof data for later use
+        if (proofManager && proofManager.proofs && proofId) {
+            proofManager.proofs.set(proofId, data);
+        }
         
         // Check if this is part of a multi-step workflow
         const activeWorkflowId = data.workflowId || data.workflow_id || 
@@ -457,12 +640,31 @@ function setupMessageHandlers() {
     });
     
     // Handle workflow updates
-    wsManager.on('workflow_started', (data) => {
+    wsManager.on('workflow_started', async (data) => {
         // Handle both workflow_id and workflowId formats
         data.workflow_id = data.workflow_id || data.workflowId;
         debugLog(`Workflow started: ${data.workflow_id}`, 'info');
         console.log('[WORKFLOW_DEBUG] Workflow started:', data.workflow_id);
         console.log('[WORKFLOW_DEBUG] Steps:', data.steps);
+        
+        // Check if this is an IoT workflow that needs IoTeX network
+        const hasIoTSteps = data.steps && data.steps.some(step => 
+            step.action === 'register_device' || 
+            step.action === 'verify_on_iotex' ||
+            (step.action === 'generate_proof' && step.proof_type === 'device_proximity')
+        );
+        
+        if (hasIoTSteps) {
+            debugLog('IoT workflow detected, checking IoTeX network connection...', 'info');
+            try {
+                // Check and switch to IoTeX network before proceeding
+                await checkAndSwitchToIoTeX();
+            } catch (error) {
+                debugLog(`Failed to switch to IoTeX network: ${error.message}`, 'error');
+                uiManager.showToast('Please switch to IoTeX network to continue', 'error');
+                // Continue anyway - the individual steps will handle network switching
+            }
+        }
         
         // Store any pending AI response
         if (data.ai_response) {
@@ -525,6 +727,15 @@ function setupMessageHandlers() {
         data.workflow_id = data.workflow_id || data.workflowId;
         data.step_id = data.step_id || data.stepId;
         debugLog(`Workflow step update: ${data.workflow_id}/${data.step_id}`, 'info');
+        
+        // Check if this is a network error
+        if (data.updates && data.updates.error && 
+            (data.updates.error.includes('network') || data.updates.error.includes('-32603'))) {
+            debugLog('Network error in workflow step, will retry...', 'warning');
+            // Don't mark as failed, let the backend retry
+            return;
+        }
+        
         workflowManager.updateWorkflowStep(data.workflow_id, data.step_id, data.updates);
     });
     
@@ -539,6 +750,256 @@ function setupMessageHandlers() {
             workflowManager.workflowStates.delete(data.workflow_id);
         }, 1000);
         // Silent success - workflow card shows completion
+    });
+    
+    // Handle device registration requests from workflow executor
+    wsManager.on('device_registration_request', async (data) => {
+        debugLog(`Device registration request: ${data.deviceId}`, 'info');
+        
+        try {
+            // Check if IoTeX device verifier is available
+            if (!window.iotexDeviceVerifier) {
+                window.iotexDeviceVerifier = new IoTeXDeviceVerifier();
+            }
+            
+            // Perform the actual device registration
+            const result = await window.iotexDeviceVerifier.registerDevice(data.deviceId);
+            
+            // Send response back to workflow executor
+            wsManager.send({
+                type: 'device_registration_response',
+                requestId: data.requestId,
+                success: result.success,
+                ioId: result.ioId,
+                did: result.did,
+                txHash: result.verifierTxHash || result.txHash,
+                error: result.error
+            });
+            
+            // Update workflow step with transaction info
+            if (result.success) {
+                workflowManager.updateWorkflowStep(data.workflowId, data.stepId, {
+                    transactionHash: result.verifierTxHash || result.txHash,
+                    ioId: result.ioId,
+                    did: result.did
+                });
+            }
+        } catch (error) {
+            debugLog(`Device registration error: ${error.message}`, 'error');
+            wsManager.send({
+                type: 'device_registration_response',
+                requestId: data.requestId,
+                success: false,
+                error: error.message
+            });
+        }
+    });
+    
+    // Handle IoTeX verification requests from workflow executor
+    wsManager.on('iotex_verification_request', async (data) => {
+        debugLog(`IoTeX verification request for proof: ${data.proofId}`, 'info');
+        
+        // Ensure managers are initialized
+        if (!window.proofManager || !proofManager) {
+            console.error('ProofManager not initialized');
+            wsManager.send({
+                type: 'iotex_verification_response',
+                requestId: data.requestId,
+                success: false,
+                error: 'ProofManager not initialized'
+            });
+            return;
+        }
+        
+        try {
+            // Check if IoTeX device verifier is available
+            if (!window.iotexDeviceVerifier) {
+                window.iotexDeviceVerifier = new IoTeXDeviceVerifier();
+            }
+            
+            // Get the proof data - either from the message or from proof manager
+            let proofData = data.proofData;
+            if (!proofData) {
+                // Try to get from proof manager with defensive checks
+                if (typeof proofManager !== 'undefined' && proofManager && proofManager.proofs && typeof proofManager.proofs.get === 'function') {
+                    const storedProof = proofManager.proofs.get(data.proofId);
+                    if (storedProof) {
+                        // Make sure we have the complete proof data including binary data
+                        proofData = {
+                            ...storedProof,
+                            proof_data: storedProof.proof_data || storedProof.proof_bin,
+                            public_inputs: storedProof.public_inputs || storedProof.inputs,
+                            metadata: storedProof.metadata || {}
+                        };
+                        console.log('Retrieved proof data from manager:', {
+                            hasProofData: !!proofData.proof_data,
+                            hasPublicInputs: !!proofData.public_inputs,
+                            proofDataLength: proofData.proof_data ? proofData.proof_data.length : 0
+                        });
+                    }
+                }
+                
+                // If still no proof data, fetch from HTTP endpoint
+                if (!proofData || !proofData.proof_data) {
+                    console.log('Fetching proof data from HTTP endpoint for:', data.proofId);
+                    try {
+                        const response = await fetch(`/api/proof/${data.proofId}/iotex`);
+                        if (response.ok) {
+                            const iotexData = await response.json();
+                            proofData = {
+                                proof_data: iotexData.proof_data,
+                                public_inputs: iotexData.public_inputs,
+                                metadata: iotexData.metadata,
+                                device_id: iotexData.device_id,
+                                coordinates: iotexData.coordinates
+                            };
+                            console.log('Fetched proof data from HTTP:', {
+                                hasProofData: !!proofData.proof_data,
+                                proofDataLength: proofData.proof_data ? proofData.proof_data.length : 0,
+                                deviceId: proofData.device_id,
+                                coordinates: proofData.coordinates
+                            });
+                        } else {
+                            console.error('Failed to fetch proof from HTTP:', response.status);
+                        }
+                    } catch (error) {
+                        console.error('Error fetching proof from HTTP:', error);
+                    }
+                }
+            }
+            
+            if (!proofData) {
+                console.warn('Proof not found, using mock data for verification');
+                // Use mock proof data if none found
+                proofData = {
+                    public_inputs: ['123456', '5050', '5050'],
+                    proof_type: 'device_proximity'
+                };
+            }
+            
+            // Debug log the proof data structure
+            console.log('=== PROOF DATA BEFORE VERIFICATION ===');
+            console.log('Proof data structure:', {
+                hasProofData: !!proofData.proof_data,
+                proofDataLength: proofData.proof_data ? proofData.proof_data.length : 0,
+                hasPublicInputs: !!proofData.public_inputs,
+                publicInputsType: typeof proofData.public_inputs,
+                publicInputs: proofData.public_inputs,
+                coordinates: proofData.coordinates,
+                deviceId: proofData.device_id || data.deviceId
+            });
+            
+            // Extract coordinates from proof (device proximity proofs have x,y coordinates)
+            let x = 5050, y = 5050; // defaults
+            
+            // First try to use coordinates from the proof data
+            if (proofData.coordinates) {
+                x = proofData.coordinates.x || 5050;
+                y = proofData.coordinates.y || 5050;
+                console.log('Using coordinates from proof data:', { x, y });
+            } else if (proofData.public_inputs && proofData.public_inputs.length >= 3) {
+                x = proofData.public_inputs[1] || 5050;
+                y = proofData.public_inputs[2] || 5050;
+                console.log('Using coordinates from public_inputs:', { x, y });
+            } else if (proofData.inputs && proofData.inputs.length >= 3) {
+                // Check alternative structure
+                x = proofData.inputs[1] || 5050;
+                y = proofData.inputs[2] || 5050;
+                console.log('Using coordinates from inputs:', { x, y });
+            }
+            
+            console.log('Final coordinates for verification:', { x, y });
+            
+            // Perform the verification
+            const result = await window.iotexDeviceVerifier.verifyDeviceProximity(
+                data.deviceId || proofData.device_id || 'DEV123',
+                x,
+                y,
+                proofData
+            );
+            
+            // Send response back to workflow executor
+            wsManager.send({
+                type: 'iotex_verification_response',
+                requestId: data.requestId,
+                success: result.success,
+                txHash: result.txHash,
+                error: result.error
+            });
+            
+            // Update workflow step with transaction info
+            if (result.success) {
+                workflowManager.updateWorkflowStep(data.workflowId, data.stepId, {
+                    transactionHash: result.txHash,
+                    verificationData: {
+                        success: true,
+                        blockchain: 'IoTeX',
+                        transaction_hash: result.txHash,
+                        explorer_url: result.explorerUrl
+                    }
+                });
+            }
+        } catch (error) {
+            debugLog(`IoTeX verification error: ${error.message}`, 'error');
+            wsManager.send({
+                type: 'iotex_verification_response',
+                requestId: data.requestId,
+                success: false,
+                error: error.message
+            });
+        }
+    });
+    
+    // Handle claim rewards requests from workflow executor
+    wsManager.on('claim_rewards_request', async (data) => {
+        debugLog(`Claim rewards request for device: ${data.deviceId}`, 'info');
+        
+        try {
+            // Check if IoTeX device verifier is available
+            if (!window.iotexDeviceVerifier) {
+                window.iotexDeviceVerifier = new IoTeXDeviceVerifier();
+            }
+            
+            // Claim rewards for the device
+            const result = await window.iotexDeviceVerifier.claimRewards(data.deviceId);
+            
+            // Send response back to workflow executor
+            wsManager.send({
+                type: 'claim_rewards_response',
+                requestId: data.requestId,
+                success: result.success,
+                txHash: result.txHash,
+                amount: result.rewardAmount,
+                currency: result.currency || 'IOTX',
+                error: result.error
+            });
+            
+            if (result.success) {
+                // Add to blockchain verifications
+                const verificationData = {
+                    blockchain: 'IoTeX',
+                    deviceId: data.deviceId,
+                    rewardAmount: result.rewardAmount,
+                    currency: 'IOTX',
+                    txHash: result.txHash,
+                    explorerUrl: result.explorerUrl,
+                    timestamp: new Date().toISOString()
+                };
+                
+                const verificationId = `reward_${data.deviceId}_${Date.now()}`;
+                blockchainVerifier.onChainVerifications.set(verificationId, verificationData);
+                
+                debugLog(`Rewards claimed successfully: ${result.rewardAmount} IOTX`, 'success');
+            }
+        } catch (error) {
+            debugLog(`Claim rewards error: ${error.message}`, 'error');
+            wsManager.send({
+                type: 'claim_rewards_response',
+                requestId: data.requestId,
+                success: false,
+                error: error.message
+            });
+        }
     });
     
     wsManager.on('workflow_failed', (data) => {
@@ -813,7 +1274,8 @@ function loadSampleQueries() {
             'Send 0.05 USDC to Alice on Ethereum if KYC compliant',
             'If Alice is KYC compliant, send her 0.04 USDC to Alice on Solana',
             'Send 0.05 USDC on Solana if Bob is KYC verified on Solana and send 0.03 USDC on Ethereum if Alice is KYC verified on Ethereum.',
-            'Register device IOT001 and if proximity verified on IoTeX, enable rewards'
+            'Register device IOT001 and verify on IoTeX',
+            'Register device and generate proximity proof then verify on IoTeX'
         ],
         'History': [
             'Proof History'

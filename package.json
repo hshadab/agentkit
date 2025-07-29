@@ -1,7 +1,8 @@
 {
   "name": "verifiable-agentkit",
-  "version": "1.0.0",
-  "description": "Zero-knowledge proof system for verifiable agent execution",
+  "version": "5.0.0",
+  "description": "Production-ready framework for privacy-preserving AI agents with zero-knowledge proofs, multi-chain verification, and USDC transfers",
+  "type": "module",
   "scripts": {
     "build:circuits": "./scripts/build_real_circuit.sh",
     "test:snark": "node src/test_real_snark.js",

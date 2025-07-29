@@ -40,15 +40,18 @@ class WorkflowExecutor {
         });
     }
 
-    async executeWorkflow(parsedWorkflow) {
+    async executeWorkflow(parsedWorkflow, existingWorkflowId = null) {
         this.currentWorkflow = parsedWorkflow;
-        this.workflowId = `wf_${uuidv4()}`;
+        this.workflowId = existingWorkflowId || `wf_${uuidv4()}`;
         this.proofResults = {};
         this.verificationResults = {};
         this.stepResults = [];
         
         console.log(`\n🚀 Starting workflow execution: ${this.workflowId}`);
+        console.log(`📋 Using ${existingWorkflowId ? 'existing' : 'new'} workflow ID`);
         console.log(`📋 Steps to execute: ${parsedWorkflow.steps.length}`);
+        console.log(`📋 WebSocket state: ${this.wsClient ? this.wsClient.readyState : 'no client'}`);
+        console.log(`📋 WebSocket OPEN constant: ${WebSocket.OPEN}`);
         
         // Send workflow started message with steps
         this.sendWorkflowUpdate('workflow_started', {
@@ -110,15 +113,28 @@ class WorkflowExecutor {
                 const endTime = Date.now();
                 
                 // Send step update: completed or failed
+                const updates = {
+                    status: result.success ? 'completed' : 'failed',
+                    endTime: endTime,
+                    startTime: startTime,
+                    result: result.success ? 'Success' : result.error
+                };
+                
+                // Add specific data for reward steps
+                if (step.type === 'claim_rewards') {
+                    updates.rewardData = {
+                        deviceId: step.device_id,
+                        error: result.error,
+                        claimed: result.success,
+                        amount: result.amount,
+                        txHash: result.txHash
+                    };
+                }
+                
                 this.sendWorkflowUpdate('workflow_step_update', {
                     workflowId: this.workflowId,
                     stepId: stepId,
-                    updates: {
-                        status: result.success ? 'completed' : 'failed',
-                        endTime: endTime,
-                        startTime: startTime,
-                        result: result.success ? 'Success' : result.error
-                    }
+                    updates: updates
                 });
                 
                 this.stepResults.push({
@@ -307,7 +323,20 @@ class WorkflowExecutor {
                         stepIndex);
                 } else if (proofType === 'device_proximity') {
                     // Extract device ID from step or use default
-                    const deviceId = step.device_id || 'DEV123';
+                    const deviceIdStr = step.device_id || 'DEV123';
+                    
+                    // Convert device ID to numeric value (hash if string)
+                    let deviceIdNum;
+                    if (/^\d+$/.test(deviceIdStr)) {
+                        deviceIdNum = deviceIdStr;
+                    } else {
+                        // Convert string to numeric hash
+                        let hash = 0;
+                        for (let c of deviceIdStr) {
+                            hash = ((hash * 31) + c.charCodeAt(0)) % 999999;
+                        }
+                        deviceIdNum = String(hash);
+                    }
                     
                     // Extract coordinates from step data or arguments
                     let x = step.x || step.arguments?.[1] || '5050';
@@ -317,9 +346,9 @@ class WorkflowExecutor {
                     x = String(Math.max(0, Math.min(10000, parseInt(x) || 5050)));
                     y = String(Math.max(0, Math.min(10000, parseInt(y) || 5050)));
                     
-                    console.log(`📍 Device ${deviceId} at coordinates (${x}, ${y})`);
+                    console.log(`📍 Device ${deviceIdStr} (ID: ${deviceIdNum}) at coordinates (${x}, ${y})`);
                     return await this.generateProof('prove_device_proximity', 
-                        [deviceId, x, y], 
+                        [deviceIdNum, x, y], 
                         stepIndex);
                 } else {
                     throw new Error(`Unknown proof type: ${proofType}`);
@@ -386,15 +415,200 @@ class WorkflowExecutor {
                 
             case 'register_device':
                 console.log('📱 Register device step:', JSON.stringify(step, null, 2));
-                // Device registration is handled as metadata for the proximity proof
-                // Return a simple success to continue with workflow
-                return {
-                    success: true,
-                    type: 'register_device',
-                    device_id: step.device_id || 'DEV_UNKNOWN',
-                    status: 'registered',
-                    message: `Device ${step.device_id || 'DEV_UNKNOWN'} registered for proximity verification`
-                };
+                const deviceId = step.device_id || 'DEV_UNKNOWN';
+                
+                // Send a message to the frontend to perform the actual registration
+                return new Promise((resolve) => {
+                    const requestId = `register_${Date.now()}`;
+                    
+                    // Send registration request
+                    this.sendWorkflowUpdate('device_registration_request', {
+                        workflowId: this.workflowId,
+                        stepId: `step_${stepIndex + 1}`,
+                        deviceId: deviceId,
+                        requestId: requestId
+                    });
+                    
+                    // Wait for response
+                    const messageHandler = (data) => {
+                        try {
+                            const message = JSON.parse(data);
+                            if (message.type === 'device_registration_response' && 
+                                message.requestId === requestId) {
+                                this.wsClient.off('message', messageHandler);
+                                
+                                if (message.success) {
+                                    resolve({
+                                        success: true,
+                                        type: 'register_device',
+                                        device_id: deviceId,
+                                        ioId: message.ioId,
+                                        did: message.did,
+                                        txHash: message.txHash,
+                                        status: 'registered',
+                                        message: `Device ${deviceId} registered on IoTeX blockchain`
+                                    });
+                                } else {
+                                    resolve({
+                                        success: false,
+                                        type: 'register_device',
+                                        device_id: deviceId,
+                                        error: message.error || 'Registration failed'
+                                    });
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Error parsing registration response:', error);
+                        }
+                    };
+                    
+                    this.wsClient.on('message', messageHandler);
+                    
+                    // Timeout after 120 seconds
+                    setTimeout(() => {
+                        this.wsClient.removeEventListener('message', messageHandler);
+                        resolve({
+                            success: false,
+                            type: 'register_device',
+                            device_id: deviceId,
+                            error: 'Registration timeout'
+                        });
+                    }, 120000); // 2 minute timeout for device registration
+                });
+            
+            case 'verify_on_iotex':
+                console.log('🔗 Verify on IoTeX step:', JSON.stringify(step, null, 2));
+                const iotexProofType = step.proof_type || 'device_proximity';
+                
+                // Debug: log available proofs
+                console.log('📋 Available proofs:', Object.keys(this.proofResults));
+                console.log('📋 Looking for proof type:', iotexProofType);
+                console.log('📋 Proof results detail:', JSON.stringify(this.proofResults, null, 2));
+                
+                // Find the proof to verify
+                const proofToVerify = this.proofResults[iotexProofType] || 
+                                    Object.values(this.proofResults).find(p => p.type === iotexProofType || p.proofType === iotexProofType);
+                
+                if (!proofToVerify) {
+                    console.error('❌ Proof results:', this.proofResults);
+                    throw new Error(`No ${iotexProofType} proof found to verify on IoTeX`);
+                }
+                
+                // Send verification request to frontend
+                return new Promise((resolve) => {
+                    const requestId = `verify_iotex_${Date.now()}`;
+                    
+                    this.sendWorkflowUpdate('iotex_verification_request', {
+                        workflowId: this.workflowId,
+                        stepId: `step_${stepIndex + 1}`,
+                        proofId: proofToVerify.proofId,
+                        proofType: iotexProofType,
+                        deviceId: step.device_id,
+                        requestId: requestId
+                        // Don't send full proof data - frontend will fetch via HTTP
+                    });
+                    
+                    // Wait for response
+                    const messageHandler = (data) => {
+                        try {
+                            const message = JSON.parse(data);
+                            if (message.type === 'iotex_verification_response' && 
+                                message.requestId === requestId) {
+                                this.wsClient.off('message', messageHandler);
+                                
+                                if (message.success) {
+                                    resolve({
+                                        success: true,
+                                        type: 'verify_on_iotex',
+                                        proofId: proofToVerify.proofId,
+                                        txHash: message.txHash,
+                                        message: `Proof verified on IoTeX blockchain`
+                                    });
+                                } else {
+                                    resolve({
+                                        success: false,
+                                        type: 'verify_on_iotex',
+                                        error: message.error || 'Verification failed'
+                                    });
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Error parsing verification response:', error);
+                        }
+                    };
+                    
+                    this.wsClient.on('message', messageHandler);
+                    
+                    // Timeout after 120 seconds
+                    setTimeout(() => {
+                        this.wsClient.removeEventListener('message', messageHandler);
+                        resolve({
+                            success: false,
+                            type: 'verify_on_iotex',
+                            error: 'Verification timeout'
+                        });
+                    }, 120000); // 2 minute timeout for IoTeX verification
+                });
+                
+            case 'claim_rewards':
+                console.log('💰 Claim rewards step:', JSON.stringify(step, null, 2));
+                
+                // For IoT devices, send request to frontend to claim IOTX rewards
+                return new Promise((resolve) => {
+                    const requestId = `claim_rewards_${Date.now()}`;
+                    const deviceId = step.device_id || this.proofResults.device_proximity?.deviceId || 'TESTDEVICE001';
+                    
+                    this.sendWorkflowUpdate('claim_rewards_request', {
+                        workflowId: this.workflowId,
+                        stepId: `step_${stepIndex + 1}`,
+                        deviceId: deviceId,
+                        requestId: requestId
+                    });
+                    
+                    // Wait for response
+                    const messageHandler = (data) => {
+                        try {
+                            const message = JSON.parse(data);
+                            if (message.type === 'claim_rewards_response' && 
+                                message.requestId === requestId) {
+                                this.wsClient.off('message', messageHandler);
+                                
+                                if (message.success) {
+                                    resolve({
+                                        success: true,
+                                        type: 'claim_rewards',
+                                        device_id: deviceId,
+                                        amount: message.amount || '0.01 IOTX',
+                                        currency: 'IOTX',
+                                        txHash: message.txHash,
+                                        status: 'claimed',
+                                        message: `Rewards claimed for device ${deviceId}: ${message.amount || '0.01'} IOTX`
+                                    });
+                                } else {
+                                    resolve({
+                                        success: false,
+                                        type: 'claim_rewards',
+                                        error: message.error || 'Reward claim failed'
+                                    });
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Error parsing reward claim response:', error);
+                        }
+                    };
+                    
+                    this.wsClient.on('message', messageHandler);
+                    
+                    // Timeout after 120 seconds
+                    setTimeout(() => {
+                        this.wsClient.removeEventListener('message', messageHandler);
+                        resolve({
+                            success: false,
+                            type: 'claim_rewards',
+                            error: 'Reward claim timeout'
+                        });
+                    }, 120000); // 2 minute timeout for reward claim
+                });
                 
             default:
                 throw new Error(`Unknown step type: ${step.type}`);
@@ -473,6 +687,13 @@ class WorkflowExecutor {
                 const message = JSON.parse(data);
                 
                 if (message.type === 'proof_complete' && message.proof_id === proofId) {
+                    console.log(`📨 Received proof_complete for ${proofId}`, {
+                        hasProofData: !!message.proof_data,
+                        proofDataLength: message.proof_data?.length,
+                        hasPublicInputs: !!message.public_inputs
+                    });
+                    
+                    clearTimeout(timeoutId); // Clear the timeout
                     this.wsClient.off('message', messageHandler);
                     
                     // Store proof result - use unique key if person is specified
@@ -485,9 +706,13 @@ class WorkflowExecutor {
                         proofId: proofId,
                         success: true,
                         timestamp: Date.now(),
+                        type: proofType, // Add type field for consistency
                         proofType: proofType,
                         person: this.currentWorkflow?.steps[stepIndex]?.person,
-                        metrics: message.metrics // Capture real metrics from zkEngine
+                        metrics: message.metrics, // Capture real metrics from zkEngine
+                        proof_data: message.proof_data, // Include binary proof data
+                        public_inputs: message.public_inputs, // Include public inputs
+                        metadata: message.metadata // Include metadata
                     };
                     
                     console.log(`✅ Proof ${proofId} completed successfully`);
@@ -498,6 +723,7 @@ class WorkflowExecutor {
                         metrics: message.metrics // Pass metrics to the result
                     });
                 } else if (message.type === 'proof_error' && message.proof_id === proofId) {
+                    clearTimeout(timeoutId); // Clear the timeout
                     this.wsClient.off('message', messageHandler);
                     console.error(`❌ Proof generation failed: ${message.error}`);
                     resolve({
@@ -508,6 +734,16 @@ class WorkflowExecutor {
             };
             
             this.wsClient.on('message', messageHandler);
+            
+            // Add timeout for proof generation
+            const timeoutId = setTimeout(() => {
+                this.wsClient.off('message', messageHandler);
+                console.error(`❌ Proof generation timeout for ${proofId}`);
+                resolve({
+                    success: false,
+                    error: 'Proof generation timeout after 90 seconds'
+                });
+            }, 90000); // 90 second timeout
             
             // Send proof generation request
             const proofRequest = {
@@ -948,6 +1184,10 @@ class WorkflowExecutor {
     }
 
     sendWorkflowUpdate(type, data) {
+        console.log(`📤 Attempting to send ${type}`);
+        console.log(`📤 WebSocket client exists: ${!!this.wsClient}`);
+        console.log(`📤 WebSocket readyState: ${this.wsClient ? this.wsClient.readyState : 'no client'}`);
+        
         if (this.wsClient && this.wsClient.readyState === WebSocket.OPEN) {
             const message = {
                 type: type,
@@ -957,6 +1197,8 @@ class WorkflowExecutor {
             console.log(`📤 Sending ${type} via WebSocket:`, jsonMessage);
             this.wsClient.send(jsonMessage);
             console.log(`✅ ${type} sent successfully`);
+        } else {
+            console.log(`❌ Cannot send ${type} - WebSocket not ready`);
         }
     }
 

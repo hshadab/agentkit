@@ -573,6 +573,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
                 inset 0 0 20px rgba(239, 68, 68, 0.08);
 }
 
+.workflow-step.failed-non-critical { 
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(251, 191, 36, 0.15) 100%);
+    border-color: #fbbf24;
+    border-style: dashed;
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2), 
+                0 4px 16px rgba(251, 191, 36, 0.2),
+                inset 0 0 20px rgba(251, 191, 36, 0.08);
+}
+
 .workflow-step.skipped { 
     opacity: 0.4;
     background: linear-gradient(135deg, rgba(30, 30, 30, 0.5) 0%, rgba(40, 40, 40, 0.4) 100%);
@@ -663,6 +672,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     border-color: rgba(239, 68, 68, 0.4);
     box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
 }
+.workflow-step.failed-non-critical .step-status { 
+    color: #fbbf24; 
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.3) 0%, rgba(251, 191, 36, 0.2) 100%);
+    border-color: rgba(251, 191, 36, 0.4);
+    box-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
+}
 .workflow-step.skipped .step-status { 
     color: #9ca3af; 
     background: linear-gradient(135deg, rgba(156, 163, 175, 0.3) 0%, rgba(156, 163, 175, 0.2) 100%);
@@ -730,6 +745,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .blockchain-status.confirmed {
     border-left: 4px solid #10b981;
     background: linear-gradient(90deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.4) 100%);
+}
+
+.blockchain-status.warning {
+    border-left: 4px solid #fbbf24;
+    background: linear-gradient(90deg, rgba(251, 191, 36, 0.08) 0%, rgba(0, 0, 0, 0.4) 100%);
+}
+
+.blockchain-status.success {
+    border-left: 4px solid #10b981;
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0%, rgba(0, 0, 0, 0.4) 100%);
 }
 
 .blockchain-link {
