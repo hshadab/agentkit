@@ -1,14 +1,14 @@
 // Main application entry point
 // Cache bust: 20250120-1
 console.log('=== Main.js loading started ===');
-import { config } from './config.js?v=20250120-1';
-import { WebSocketManager } from './websocket-manager.js?v=20250120-1';
-import { UIManager } from './ui-manager.js?v=20250120-1';
-import { ProofManager } from './proof-manager.js?v=20250120-1';
-import { WorkflowManager } from './workflow-manager.js?v=20250120-1';
-import { TransferManager } from './transfer-manager.js?v=20250120-1';
-import { BlockchainVerifier } from './blockchain-verifier.js?v=20250120-1';
-import { debugLog } from './utils.js?v=20250120-1';
+import { config } from './core/config.js?v=20250120-1';
+import { WebSocketManager } from './ui/websocket-manager.js?v=20250120-1';
+import { UIManager } from './ui/ui-manager.js?v=20250120-1';
+import { ProofManager } from './ui/proof-manager.js?v=20250120-1';
+import { WorkflowManager } from './ui/workflow-manager.js?v=20250120-1';
+import { TransferManager } from './ui/transfer-manager.js?v=20250120-1';
+import { BlockchainVerifier } from './blockchain/blockchain-verifier.js?v=20250120-1';
+import { debugLog } from './core/utils.js?v=20250120-1';
 
 // Export config and debugLog to window for non-module scripts
 window.config = config;

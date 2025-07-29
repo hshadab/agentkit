@@ -1,6 +1,6 @@
 // Blockchain Verifier - Manages blockchain verification for proofs
-import { debugLog } from './utils.js';
-import { config } from './config.js';
+import { debugLog } from '../core/utils.js';
+import { config } from '../core/config.js';
 
 export class BlockchainVerifier {
     constructor(uiManager, proofManager) {
