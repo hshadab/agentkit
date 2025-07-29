@@ -179,17 +179,22 @@ curl -X POST http://localhost:8002/chat \
 agentkit/
 ├── src/                    # Rust WebSocket server
 ├── services/               # Python AI service
-├── static/                 # Frontend files
+├── parsers/               # Parser modules
+│   ├── workflow/          # Workflow parsing logic
+│   └── nova/              # Nova proof parsers
+├── static/                # Frontend files
+│   ├── index.html         # Main UI
+│   ├── css/               # Stylesheets
 │   ├── js/
-│   │   ├── blockchain/     # Blockchain verifiers
-│   │   ├── core/          # Core utilities
-│   │   ├── device/        # IoT device management
-│   │   ├── ui/            # UI components
-│   │   └── workflow/      # Workflow management
-│   └── parsers/nova/      # Nova proof parsers
-├── circle/                # Circle API integration
-├── tests/                 # Test files
-└── zkengine_binary/       # zkEngine and WASM
+│   │   ├── blockchain/    # Blockchain verifiers
+│   │   ├── core/         # Core utilities
+│   │   ├── device/       # IoT device management
+│   │   ├── ui/           # UI components
+│   │   └── workflow/     # Workflow management
+│   └── parsers/nova/     # Nova parsers (web-accessible copies)
+├── circle/               # Circle API integration
+├── tests/                # Test files
+└── zkengine_binary/      # zkEngine and WASM
 ```
 
 ## 💰 Getting Test Tokens
