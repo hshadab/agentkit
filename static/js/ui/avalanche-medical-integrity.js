@@ -70,6 +70,46 @@ export class AvalancheMedicalIntegrity {
         
         // Create provider (ethers v5 syntax)
         this.provider = new ethers.providers.Web3Provider(window.ethereum);
+        
+        // Check current network
+        const network = await this.provider.getNetwork();
+        console.log('[AVALANCHE] Current network:', network);
+        
+        // Switch to Avalanche if not already on it
+        if (network.chainId !== 43113 && network.chainId !== 43114) {
+            console.log('[AVALANCHE] Switching to Avalanche network...');
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: '0xa869' }], // 43113 in hex (Fuji testnet)
+                });
+                // Recreate provider after network switch
+                this.provider = new ethers.providers.Web3Provider(window.ethereum);
+            } catch (switchError) {
+                if (switchError.code === 4902) {
+                    // Network not added, add it
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: '0xa869',
+                            chainName: 'Avalanche Fuji Testnet',
+                            nativeCurrency: {
+                                name: 'AVAX',
+                                symbol: 'AVAX',
+                                decimals: 18
+                            },
+                            rpcUrls: ['https://api.avax-test.network/ext/bc/C/rpc'],
+                            blockExplorerUrls: ['https://testnet.snowtrace.io/']
+                        }]
+                    });
+                    // Recreate provider after network add
+                    this.provider = new ethers.providers.Web3Provider(window.ethereum);
+                } else {
+                    throw switchError;
+                }
+            }
+        }
+        
         this.signer = await this.provider.getSigner();
         
         // Create contract instance

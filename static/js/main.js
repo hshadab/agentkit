@@ -1101,6 +1101,18 @@ function setupMessageHandlers() {
                     data.recordHash
                 );
                 
+                // Update workflow step with commitment data if this is part of a workflow
+                if (data.workflowId && data.stepId) {
+                    workflowManager.updateWorkflowStep(data.workflowId, data.stepId, {
+                        commitData: {
+                            transactionHash: recordData.transactionHash,
+                            blockNumber: recordData.blockNumber,
+                            recordId: recordData.avalancheRecordId
+                        },
+                        transactionHash: recordData.transactionHash
+                    });
+                }
+                
                 // Send success response
                 wsManager.send({
                     type: 'medical_record_complete',
@@ -1338,6 +1350,19 @@ function setupMessageHandlers() {
                 if (window.blockchainVerifier) {
                     const result = await window.blockchainVerifier.verifyOnAvalanche(data.proofData.proofId || data.proofData.proof_id, data.proofType);
                     
+                    // Update workflow step with verification data if this is part of a workflow
+                    if (data.workflowId && data.stepId) {
+                        workflowManager.updateWorkflowStep(data.workflowId, data.stepId, {
+                            verificationData: {
+                                success: result.success,
+                                blockchain: 'Avalanche',
+                                transaction_hash: result.txHash || result.transactionHash,
+                                explorer_url: result.explorerUrl
+                            },
+                            transactionHash: result.txHash || result.transactionHash
+                        });
+                    }
+                    
                     wsManager.send({
                         type: 'verification_result',
                         requestId: data.requestId,
@@ -1464,6 +1489,20 @@ function setupMessageHandlers() {
     // Handle verification results (legacy - kept for compatibility)
     wsManager.on('verification_result', (data) => {
         debugLog('Received verification result', 'info');
+        
+        // Skip displaying if this is part of a workflow
+        if (data.workflowId || data.workflow_id || data.requestId?.includes('workflow')) {
+            debugLog('Skipping verification result display for workflow', 'info');
+            return;
+        }
+        
+        // Skip displaying verification for medical proofs (they show in workflow cards)
+        if (data.requestId?.includes('medical') || data.proofType === 'medical_integrity' || 
+            data.requestId?.includes('verify_avalanche')) {
+            debugLog('Skipping verification result display for medical proof', 'info');
+            return;
+        }
+        
         // For now, still create separate card for this message type
         // as it might be used by other parts of the system
         const verificationCard = createVerificationCard(data);
@@ -1477,6 +1516,12 @@ function setupMessageHandlers() {
         // Skip displaying if this is part of a workflow
         if (data.workflowId || data.workflow_id || data.additional_context?.workflow_id) {
             debugLog('Skipping verification_complete display for workflow proof', 'info');
+            return;
+        }
+        
+        // Skip displaying local verification for medical proofs (they only do blockchain verification)
+        if (data.proof_id && data.proof_id.includes('medical')) {
+            debugLog('Skipping local verification display for medical proof', 'info');
             return;
         }
         
@@ -1772,87 +1817,10 @@ function createVerificationCard(data) {
 
 // Auto-connect wallets if previously connected
 async function autoConnectWallets() {
-    // DISABLED: Auto-connection to prevent refresh issues
-    return;
-    
-    /* Original code commented out:
-    // Check if MetaMask was previously connected
-    if (localStorage.getItem('ethereum-connected') === 'true' && typeof window.ethereum !== 'undefined') {
-        try {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            if (accounts.length > 0) {
-                await blockchainVerifier.connectEthereum();
-                debugLog('Auto-connected to Ethereum wallet', 'success');
-                // Show wallet status indicator
-                const statusIndicator = document.getElementById('eth-wallet-status');
-                if (statusIndicator) statusIndicator.style.display = 'inline-block';
-            } else {
-                // Show connect banner if not connected
-                const banner = document.getElementById('eth-connect-banner');
-                if (banner) banner.style.display = 'flex';
-            }
-        } catch (error) {
-            debugLog('Failed to auto-connect Ethereum wallet', 'error');
-            const banner = document.getElementById('eth-connect-banner');
-            if (banner) banner.style.display = 'flex';
-        }
-    } else {
-        // Show connect banner if never connected
-        const banner = document.getElementById('eth-connect-banner');
-        if (banner) banner.style.display = 'flex';
-    }
-    */
-    
-    // Check if Solflare/Phantom was previously connected
-    if (localStorage.getItem('solana-connected') === 'true') {
-        // Try Solflare first, then other wallets
-        let wallet = null;
-        let walletName = '';
-        
-        if (window.solflare && window.solflare.isSolflare) {
-            wallet = window.solflare;
-            walletName = 'Solflare';
-        } else if (window.solana && window.solana.isPhantom) {
-            wallet = window.solana;
-            walletName = 'Phantom';
-        } else if (window.solana) {
-            wallet = window.solana;
-            walletName = 'Solana';
-        }
-        
-        if (wallet) {
-            try {
-                // Try to connect silently (most wallets support this)
-                if (wallet.connect) {
-                    const resp = await wallet.connect({ onlyIfTrusted: true });
-                    if (resp.publicKey) {
-                        blockchainVerifier.solanaWallet = resp.publicKey.toString();
-                        blockchainVerifier.solanaConnected = true;
-                        blockchainVerifier.connectedWallet = wallet;
-                        debugLog(`Auto-connected to ${walletName} wallet`, 'success');
-                        const banner = document.getElementById('sol-connect-banner');
-                        if (banner) banner.style.display = 'none';
-                        // Show wallet status indicator
-                        const statusIndicator = document.getElementById('sol-wallet-status');
-                        if (statusIndicator) statusIndicator.style.display = 'inline-block';
-                    } else {
-                        throw new Error('No public key');
-                    }
-                }
-            } catch (error) {
-                debugLog(`Failed to auto-connect ${walletName} wallet`, 'error');
-                const banner = document.getElementById('sol-connect-banner');
-                if (banner) banner.style.display = 'flex';
-            }
-        } else {
-            // Show connect banner if no wallet found
-            const banner = document.getElementById('sol-connect-banner');
-            if (banner) banner.style.display = 'flex';
-        }
-    } else {
-        // Show connect banner if never connected
-        const banner = document.getElementById('sol-connect-banner');
-        if (banner) banner.style.display = 'flex';
+    // Re-enabled auto-connection as requested by user
+    // This will now use the blockchain verifier's autoConnect method
+    if (blockchainVerifier) {
+        await blockchainVerifier.autoConnect();
     }
 }
 

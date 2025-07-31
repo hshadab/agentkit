@@ -27,8 +27,34 @@ class MedicalRecordHandler {
         this.records.set(recordId, recordData);
         
         try {
-            // Check if Avalanche Medical Verifier is available
-            if (window.AvalancheMedicalVerifier) {
+            // Prefer avalancheMedicalIntegrity module which handles network switching
+            if (window.avalancheMedicalIntegrity) {
+                console.log('[MEDICAL] Using avalancheMedicalIntegrity module');
+                const result = await window.avalancheMedicalIntegrity.createMedicalRecord(
+                    patientId,
+                    recordHash,
+                    null
+                );
+                
+                console.log('[MEDICAL] Commitment successful:', result);
+                
+                // Update record data with blockchain info
+                recordData.transactionHash = result.txHash;
+                recordData.blockNumber = result.blockNumber;
+                recordData.avalancheRecordId = result.recordId;
+                recordData.status = 'committed';
+                recordData.commitment_timestamp = timestamp;
+                
+                // Store commitment data
+                this.commitments.set(recordId, {
+                    recordId: result.recordId,
+                    transactionHash: result.txHash,
+                    blockNumber: result.blockNumber,
+                    explorerUrl: `https://testnet.snowtrace.io/tx/${result.txHash}`
+                });
+                
+                return recordData;
+            } else if (window.AvalancheMedicalVerifier) {
                 const verifier = new window.AvalancheMedicalVerifier();
                 await verifier.initialize();
                 

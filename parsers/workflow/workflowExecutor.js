@@ -364,7 +364,7 @@ class WorkflowExecutor {
                         [deviceIdNum, x, y], 
                         stepIndex);
                 } else if (proofType === 'medical_integrity') {
-                    // Extract medical record parameters - similar to AI prediction approach
+                    // Extract medical record parameters
                     const patientId = step.patient_id || '12345';
                     let recordHash = step.record_hash || '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('');
                     
@@ -374,37 +374,84 @@ class WorkflowExecutor {
                         console.log(`Generated random record hash: ${recordHash}`);
                     }
                     
-                    // Generate timestamps
-                    const creationTimestamp = String(Math.floor(Date.now() / 1000) - 86400); // 1 day ago
-                    const verificationTimestamp = String(Math.floor(Date.now() / 1000)); // now
+                    // First, create and commit the medical record on Avalanche
+                    console.log('🏥 Creating medical record on Avalanche...');
                     
-                    // Convert to numeric values for WASM
-                    const patientIdNum = parseInt(patientId);
-                    const parsedHash = parseInt(recordHash.replace('0x', '').substring(0, 8), 16) || 12345678;
-                    const recordHashNum = parsedHash % 2147483647; // Keep within i32 max value
-                    
-                    // Store simulated medical record data (like AI prediction stores commitment data)
-                    this.medicalRecordData = {
-                        patient_id: patientId,
-                        record_hash: recordHash,
-                        creation_timestamp: creationTimestamp,
-                        commitment_timestamp: creationTimestamp,
-                        status: 'simulated',
-                        transactionHash: '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join(''),
-                        avalancheExplorerUrl: 'https://testnet.snowtrace.io/tx/0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')
-                    };
-                    
-                    console.log('🏥 Generating medical integrity proof (direct mode like AI prediction):', {
-                        patientId: patientIdNum,
-                        recordHash: recordHashNum,
-                        creationTime: creationTimestamp,
-                        verificationTime: verificationTimestamp
+                    return new Promise((resolve) => {
+                        const requestId = `medical_commit_${Date.now()}`;
+                        
+                        // Send request to frontend to create medical record on Avalanche
+                        this.sendWorkflowUpdate('create_medical_record_with_commitment', {
+                            workflowId: this.workflowId,
+                            stepId: `step_${stepIndex + 1}`,
+                            patientId: patientId,
+                            recordHash: recordHash,
+                            requestId: requestId
+                        });
+                        
+                        // Handle response
+                        const messageHandler = (data) => {
+                            try {
+                                const message = JSON.parse(data);
+                                if (message.type === 'medical_record_complete' && message.requestId === requestId) {
+                                    this.wsClient.off('message', messageHandler);
+                                    
+                                    if (message.success && message.recordData) {
+                                        // Store the medical record data with blockchain info
+                                        this.medicalRecordData = message.recordData;
+                                        
+                                        // Now generate the proof with the committed data
+                                        const creationTimestamp = String(message.recordData.creation_timestamp || Math.floor(Date.now() / 1000) - 86400);
+                                        const verificationTimestamp = String(Math.floor(Date.now() / 1000));
+                                        
+                                        // Convert to numeric values for WASM
+                                        const patientIdNum = parseInt(patientId);
+                                        const parsedHash = parseInt(recordHash.replace('0x', '').substring(0, 8), 16) || 12345678;
+                                        const recordHashNum = parsedHash % 2147483647;
+                                        
+                                        console.log('🏥 Medical record committed, generating integrity proof:', {
+                                            patientId: patientIdNum,
+                                            recordHash: recordHashNum,
+                                            creationTime: creationTimestamp,
+                                            verificationTime: verificationTimestamp,
+                                            transactionHash: message.recordData.transactionHash
+                                        });
+                                        
+                                        // Generate proof with committed data
+                                        this.generateProof('prove_medical_integrity',
+                                            [String(patientIdNum), String(recordHashNum), creationTimestamp, verificationTimestamp],
+                                            stepIndex
+                                        ).then(proofResult => {
+                                            resolve(proofResult);
+                                        }).catch(error => {
+                                            resolve({
+                                                success: false,
+                                                error: error.message
+                                            });
+                                        });
+                                    } else {
+                                        resolve({
+                                            success: false,
+                                            error: message.error || 'Failed to create medical record on Avalanche'
+                                        });
+                                    }
+                                }
+                            } catch (error) {
+                                console.error('Error handling medical record response:', error);
+                            }
+                        };
+                        
+                        this.wsClient.on('message', messageHandler);
+                        
+                        // Timeout after 60 seconds
+                        setTimeout(() => {
+                            this.wsClient.off('message', messageHandler);
+                            resolve({
+                                success: false,
+                                error: 'Medical record creation timed out'
+                            });
+                        }, 60000);
                     });
-                    
-                    // Generate proof directly like AI prediction does
-                    return await this.generateProof('prove_medical_integrity',
-                        [String(patientIdNum), String(recordHashNum), creationTimestamp, verificationTimestamp],
-                        stepIndex);
                 } else {
                     throw new Error(`Unknown proof type: ${proofType}`);
                 }
@@ -713,14 +760,22 @@ class WorkflowExecutor {
                         console.log('[AVALANCHE_VERIFY] Received message:', response.type);
                         if (response.type === 'verification_result' && response.requestId === requestId) {
                             console.log('✅ Received Avalanche verification result');
+                            console.log('[AVALANCHE_VERIFY] Response details:', JSON.stringify(response, null, 2));
                             clearTimeout(timeoutId);
                             this.wsClient.off('message', messageHandler);
-                            resolve({
-                                type: 'verify_on_avalanche',
-                                status: 'completed',
-                                result: response.result,
-                                transactionHash: response.transactionHash
-                            });
+                            
+                            // Handle both success and failure cases
+                            if (response.success) {
+                                resolve({
+                                    type: 'verify_on_avalanche',
+                                    status: 'completed',
+                                    result: response.result || { success: true },
+                                    transactionHash: response.transactionHash,
+                                    success: true
+                                });
+                            } else {
+                                reject(new Error(response.error || 'Verification failed'));
+                            }
                         }
                     };
                     
@@ -744,7 +799,9 @@ class WorkflowExecutor {
                         requestId: requestId,
                         proofData: avalancheProof,
                         proofType: avalancheProofType,
-                        recordId: avalancheProof.record_id || step.record_id
+                        recordId: avalancheProof.record_id || step.record_id,
+                        workflowId: this.workflowId,
+                        stepId: `step_${stepIndex + 1}`
                     };
                     console.log('📤 Sending verify_on_avalanche message:', JSON.stringify(verifyMessage));
                     console.log('WebSocket state:', this.wsClient.readyState);

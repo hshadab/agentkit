@@ -28,94 +28,138 @@ export class BlockchainVerifier {
         // Add delay to prevent network switching conflicts
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Auto-connect all chains that were previously connected
-        const connections = [];
-        let showConnectAll = false;
+        // Connect to all MetaMask-based chains (Ethereum, Base, Avalanche, IoTeX)
+        // We'll mark them as connected without switching networks to avoid conflicts
+        const metamaskChains = [
+            { name: 'ethereum', connect: () => this.connectEthereum() },
+            { name: 'base', connect: () => this.connectBase() },
+            { name: 'avalanche', connect: () => this.connectAvalanche() },
+            { name: 'iotex', connect: () => this.connectIoTeX() }
+        ];
         
-        // Check if previously connected to Ethereum (MetaMask)
-        if (localStorage.getItem('ethereum-connected') === 'true') {
-            debugLog('Auto-connecting to Ethereum...', 'info');
-            connections.push(this.connectEthereum().catch(err => {
-                debugLog(`Ethereum auto-connect failed: ${err.message}`, 'warning');
-                return false;
-            }));
+        // First, check if MetaMask is available
+        if (window.ethereum) {
+            try {
+                // Request accounts once
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if (accounts && accounts.length > 0) {
+                    const account = accounts[0];
+                    debugLog(`MetaMask connected with account: ${account}`, 'success');
+                    
+                    // Mark all MetaMask chains as connected without switching networks
+                    for (const chain of metamaskChains) {
+                        if (localStorage.getItem(`${chain.name}-connected`) === 'true') {
+                            // Set the connected status for each chain
+                            this[`${chain.name}Account`] = account;
+                            this[`${chain.name}Connected`] = true;
+                            
+                            // Hide connect banner
+                            const banner = document.getElementById(`${chain.name}-connect-banner`);
+                            if (banner) banner.style.display = 'none';
+                            
+                            // Show wallet status indicator
+                            const statusIndicator = document.getElementById(`${chain.name}-wallet-status`);
+                            if (statusIndicator) statusIndicator.style.display = 'inline-block';
+                            
+                            debugLog(`${chain.name} marked as connected (account: ${account})`, 'success');
+                        } else {
+                            // Show connect banner if not previously connected
+                            const banner = document.getElementById(`${chain.name}-connect-banner`);
+                            if (banner) banner.style.display = 'flex';
+                        }
+                    }
+                }
+            } catch (err) {
+                debugLog(`MetaMask auto-connect failed: ${err.message}`, 'warning');
+                
+                // Show connect banners for all chains
+                for (const chain of metamaskChains) {
+                    const banner = document.getElementById(`${chain.name}-connect-banner`);
+                    if (banner) banner.style.display = 'flex';
+                }
+            }
         } else {
-            // Show connect banner if not connected
-            const banner = document.getElementById('eth-connect-banner');
-            if (banner) banner.style.display = 'flex';
-            showConnectAll = true;
+            debugLog('MetaMask not found', 'warning');
+            
+            // Show connect banners for all MetaMask chains
+            for (const chain of metamaskChains) {
+                const banner = document.getElementById(`${chain.name}-connect-banner`);
+                if (banner) banner.style.display = 'flex';
+            }
         }
         
-        // Check if previously connected to Solana (Solflare/Phantom)
+        // Connect to Solana separately (different wallet)
         if (localStorage.getItem('solana-connected') === 'true') {
-            debugLog('Auto-connecting to Solana (with delay)...', 'info');
-            // Add delay for Solflare to avoid connection conflicts
-            const solanaConnectionPromise = new Promise(async (resolve) => {
-                await new Promise(r => setTimeout(r, 1500)); // 1.5 second delay
-                try {
-                    const result = await this.connectSolana();
-                    resolve(result);
-                } catch (err) {
-                    debugLog(`Solana auto-connect failed: ${err.message}`, 'warning');
-                    resolve(false);
-                }
-            });
-            connections.push(solanaConnectionPromise);
+            debugLog('Auto-connecting to Solana...', 'info');
+            try {
+                await this.connectSolana();
+                debugLog('Successfully connected to Solana', 'success');
+            } catch (err) {
+                debugLog(`Solana auto-connect failed: ${err.message}`, 'warning');
+            }
         } else {
             // Show connect banner if not connected
             const banner = document.getElementById('sol-connect-banner');
             if (banner) banner.style.display = 'flex';
-            showConnectAll = true;
         }
         
-        // Check if previously connected to Base (MetaMask)
-        if (localStorage.getItem('base-connected') === 'true') {
-            debugLog('Auto-connecting to Base...', 'info');
-            connections.push(this.connectBase().catch(err => {
-                debugLog(`Base auto-connect failed: ${err.message}`, 'warning');
-                return false;
-            }));
-        } else {
-            // Show connect banner if not connected
-            const banner = document.getElementById('base-connect-banner');
-            if (banner) banner.style.display = 'flex';
-            showConnectAll = true;
+        debugLog('Auto-connect complete', 'info');
+    }
+    
+    async connectAllChains() {
+        debugLog('Connecting to all chains...', 'info');
+        
+        const results = {
+            ethereum: false,
+            solana: false,
+            base: false,
+            avalanche: false,
+            iotex: false
+        };
+        
+        // Connect to MetaMask chains
+        if (window.ethereum) {
+            try {
+                // Request accounts
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if (accounts && accounts.length > 0) {
+                    const account = accounts[0];
+                    
+                    // Mark all MetaMask chains as connected
+                    const metamaskChains = ['ethereum', 'base', 'avalanche', 'iotex'];
+                    for (const chain of metamaskChains) {
+                        this[`${chain}Account`] = account;
+                        this[`${chain}Connected`] = true;
+                        localStorage.setItem(`${chain}-connected`, 'true');
+                        results[chain] = true;
+                        
+                        // Hide connect banner
+                        const banner = document.getElementById(`${chain}-connect-banner`);
+                        if (banner) banner.style.display = 'none';
+                        
+                        // Show wallet status indicator
+                        const statusIndicator = document.getElementById(`${chain}-wallet-status`);
+                        if (statusIndicator) statusIndicator.style.display = 'inline-block';
+                    }
+                    
+                    debugLog('Connected to all MetaMask chains', 'success');
+                    this.uiManager.showToast('Connected to all EVM chains', 'success');
+                }
+            } catch (err) {
+                debugLog(`MetaMask connection failed: ${err.message}`, 'error');
+                this.uiManager.showToast('Failed to connect MetaMask', 'error');
+            }
         }
         
-        // Check if previously connected to Avalanche (MetaMask)
-        if (localStorage.getItem('avalanche-connected') === 'true') {
-            debugLog('Auto-connecting to Avalanche...', 'info');
-            connections.push(this.connectAvalanche().catch(err => {
-                debugLog(`Avalanche auto-connect failed: ${err.message}`, 'warning');
-                return false;
-            }));
-        } else {
-            // Show connect banner if not connected
-            const banner = document.getElementById('avalanche-connect-banner');
-            if (banner) banner.style.display = 'flex';
-            showConnectAll = true;
+        // Connect to Solana
+        try {
+            await this.connectSolana();
+            results.solana = true;
+        } catch (err) {
+            debugLog(`Solana connection failed: ${err.message}`, 'warning');
         }
         
-        // Check if previously connected to IoTeX (MetaMask)
-        if (localStorage.getItem('iotex-connected') === 'true') {
-            debugLog('Auto-connecting to IoTeX...', 'info');
-            connections.push(this.connectIoTeX().catch(err => {
-                debugLog(`IoTeX auto-connect failed: ${err.message}`, 'warning');
-                return false;
-            }));
-        } else {
-            // Show connect banner if not connected
-            const banner = document.getElementById('iotex-connect-banner');
-            if (banner) banner.style.display = 'flex';
-            showConnectAll = true;
-        }
-        
-        // Wait for all connections to complete
-        if (connections.length > 0) {
-            const results = await Promise.allSettled(connections);
-            const connected = results.filter(r => r.status === 'fulfilled' && r.value).length;
-            debugLog(`Auto-connect complete: ${connected}/${connections.length} chains connected`, 'info');
-        }
+        return results;
     }
     
 

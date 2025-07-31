@@ -20,9 +20,12 @@
                 <span>Verifiable Agent Kit</span>
             </h1>
             <div style="display: flex; align-items: center; gap: 16px;">
+                <button id="connect-all-chains-btn" onclick="window.blockchainVerifier?.connectAllChains()" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.2s;">
+                    Connect All Chains
+                </button>
                 <div id="wallet-status" style="display: flex; gap: 8px; font-size: 13px;">
-                    <span id="eth-wallet-status" style="display: none; padding: 4px 12px; background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-radius: 4px; font-weight: 500;">ETH Connected</span>
-                    <span id="sol-wallet-status" style="display: none; padding: 4px 12px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-radius: 4px; font-weight: 500;">SOL Connected</span>
+                    <span id="ethereum-wallet-status" style="display: none; padding: 4px 12px; background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-radius: 4px; font-weight: 500;">ETH Connected</span>
+                    <span id="solana-wallet-status" style="display: none; padding: 4px 12px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-radius: 4px; font-weight: 500;">SOL Connected</span>
                     <span id="base-wallet-status" style="display: none; padding: 4px 12px; background: rgba(0, 82, 255, 0.1); color: #0052FF; border-radius: 4px; font-weight: 500;">BASE Connected</span>
                     <span id="avalanche-wallet-status" style="display: none; padding: 4px 12px; background: rgba(232, 65, 66, 0.1); color: #E84142; border-radius: 4px; font-weight: 500;">AVAX Connected</span>
                     <span id="iotex-wallet-status" style="display: none; padding: 4px 12px; background: rgba(0, 212, 181, 0.1); color: #00D4B5; border-radius: 4px; font-weight: 500;">IoTeX Connected</span>
