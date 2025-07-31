@@ -679,6 +679,7 @@ class WorkflowExecutor {
             case 'verify_on_avalanche':
                 console.log('🔗 Verify on Avalanche step:', JSON.stringify(step, null, 2));
                 console.log('📋 Current proof results:', Object.keys(this.proofResults));
+                console.log('📋 Proof results details:', JSON.stringify(this.proofResults, null, 2));
                 const avalancheProofType = step.proof_type || 'medical_integrity';
                 const person = step.person;
                 
@@ -687,14 +688,18 @@ class WorkflowExecutor {
                 if (person) {
                     const keyWithPerson = `${avalancheProofType}_${person}`;
                     avalancheProof = this.proofResults[keyWithPerson];
+                    console.log(`🔍 Looking for proof with key "${keyWithPerson}":`, avalancheProof ? 'FOUND' : 'NOT FOUND');
                 }
                 
                 if (!avalancheProof) {
+                    console.log(`🔍 Looking for proof with key "${avalancheProofType}"`);
                     avalancheProof = this.proofResults[avalancheProofType] || 
                                    Object.values(this.proofResults).find(p => p.type === avalancheProofType || p.proofType === avalancheProofType);
+                    console.log(`🔍 Proof search result:`, avalancheProof ? 'FOUND' : 'NOT FOUND');
                 }
                 
                 if (!avalancheProof) {
+                    console.error(`❌ Available proofs:`, Object.entries(this.proofResults).map(([k, v]) => `${k}: type=${v.type}, proofType=${v.proofType}`));
                     throw new Error(`No ${avalancheProofType} proof found to verify on Avalanche`);
                 }
                 
