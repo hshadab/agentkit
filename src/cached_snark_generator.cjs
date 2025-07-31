@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const RealSNARKProver = require('./real_snark_prover');
+const RealSNARKProver = require('./real_snark_prover.cjs');
 const fs = require('fs');
 
 async function main() {

@@ -866,6 +866,10 @@ async fn process_user_command(state: AppState, message: String) {
         match msg_type {
             "workflow_started" | "workflow_step_update" | "workflow_completed" | 
             "device_registration_request" | "device_registration_response" |
+            "medical_record_creation_request" | "medical_record_creation_response" |
+            "create_medical_record_with_commitment" | "medical_record_complete" |
+            "commit_to_avalanche" | "commit_result" |
+            "verify_on_avalanche" | "verification_result" |
             "iotex_verification_request" | "iotex_verification_response" |
             "blockchain_verification_request" | "blockchain_verification_response" |
             "blockchain_verification_update" | "claim_rewards_request" | "claim_rewards_response" |
@@ -1364,6 +1368,7 @@ async fn generate_proof(state: AppState, proof_id: String, metadata: ProofMetada
         "prove_ai_content" => "ai_prediction_commitment.wasm",
         "prove_location" => "depin_location_real.wasm",
         "prove_device_proximity" => "device_proximity.wasm",
+        "prove_medical_integrity" => "medical_integrity.wasm",
         "prove_custom" => {
             // Check additional context for specific custom proof
             metadata.additional_context

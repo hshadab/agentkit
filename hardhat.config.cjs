@@ -50,6 +50,13 @@ module.exports = {
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 4690,
       gasPrice: 1000000000000, // 1000 gwei for IoTeX
+    },
+    // Avalanche Fuji Testnet
+    avalanche_fuji: {
+      url: "https://api.avax-test.network/ext/bc/C/rpc",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 43113,
+      gasPrice: 25000000000, // 25 gwei
     }
   },
   etherscan: {

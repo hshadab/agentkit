@@ -87,6 +87,9 @@
         <button onclick="window.blockchainVerifier.connectIoTeX()">Connect MetaMask</button>
     </div>
 
+    <!-- Emergency stop refresh loop -->
+    <script src="/static/stop-refresh.js"></script>
+    
     <!-- SES Compatibility for snarkjs -->
     <script src="/static/js/core/ses-compatibility.js"></script>
     
@@ -106,10 +109,11 @@
     <script src="/static/parsers/nova/nova-proof-parser.js"></script>
     <script src="/static/parsers/nova/zkengine-nova-parser.js"></script>
     <script src="/static/parsers/nova/nova-proof-parser-v2.js"></script>
-    <script src="/static/parsers/nova/nova-proof-parser-v3.js"></script>
     <script src="/static/js/blockchain/simple-nova-verifier.js"></script>
     <script src="/static/js/ui/ioid-official-manager.js"></script>
     <script src="/static/js/blockchain/iotex-device-verifier.js"></script>
+    <script src="/static/js/blockchain/avalanche-medical-verifier.js"></script>
+    <script src="/static/js/ui/medical-record-handler.js"></script>
     <script src="/static/js/ui/device-workflow-handler.js"></script>
     <script src="/static/js/ui/ai-prediction-handler-real.js?v=20250121-1"></script>
     
@@ -117,7 +121,14 @@
     <script type="module" src="/static/js/main.js?v=20250120-1"></script>
     <!-- Wrapper to expose modules to window -->
     <script type="module" src="/static/js/blockchain/blockchain-verifier-wrapper.js?v=20250120-1"></script>
+    <script type="module" src="/static/js/blockchain/avalanche-medical-wrapper.js?v=20250129-1"></script>
     <!-- Debug helper -->
     <script src="/static/js/core/debug-helper.js"></script>
+    <!-- Avalanche verify wrapper -->
+    <script src="/static/js/ui/avalanche-verify-wrapper.js"></script>
+    <!-- Base verify wrapper -->
+    <script src="/static/js/ui/base-verify-wrapper.js"></script>
+    <!-- Auto-initialize blockchain connections -->
+    <script src="/static/js/auto-init-blockchain.js"></script>
 </body>
 </html>

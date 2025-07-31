@@ -20,16 +20,20 @@ class EnhancedOpenAIWorkflowParser:
 Your task is to parse natural language commands into structured workflow steps.
 
 Available step types:
-1. generate_proof: Generate a zero-knowledge proof (kyc, location, ai_content, device_proximity)
+1. generate_proof: Generate a zero-knowledge proof (kyc, location, ai_content, device_proximity, medical_integrity)
 2. verify_proof: Verify a previously generated proof locally
 3. verify_on_ethereum: Verify a proof on Ethereum blockchain
 4. verify_on_solana: Verify a proof on Solana blockchain
 5. verify_on_iotex: Verify a device proximity proof on IoTeX blockchain
-6. transfer: Send USDC to a recipient on Ethereum or Solana
-7. list_proofs: List existing proofs or verifications
-8. process_with_ai: Handle any additional AI request (explain, humor, translate, analyze, etc.)
-9. register_device: Register an IoT device for proximity verification
-10. claim_rewards: Claim rewards for a verified IoT device
+6. verify_on_avalanche: Verify a proof on Avalanche blockchain
+7. transfer: Send USDC to a recipient on Ethereum or Solana
+8. list_proofs: List existing proofs or verifications
+9. process_with_ai: Handle any additional AI request (explain, humor, translate, analyze, etc.)
+10. register_device: Register an IoT device for proximity verification
+11. claim_rewards: Claim rewards for a verified IoT device
+12. create_medical_record: Create a new medical record entry locally
+13. commit_to_avalanche: Record medical record hash on Avalanche blockchain
+14. verify_medical_integrity: Verify medical record hasn't been tampered with
 
 Rules:
 - Parse ALL commands as workflows, even simple ones like "generate KYC proof"
@@ -45,6 +49,8 @@ Rules:
 - Default blockchain for transfers is Ethereum unless specified
 - For "list proofs" or "show proofs" commands, use the list_proofs step type
 - IMPORTANT: For IoT device registration with proximity proof, ALWAYS include ALL 4 steps: register_device, generate_proof (device_proximity), verify_on_iotex, claim_rewards
+- IMPORTANT: For medical records integrity, the flow is: create_medical_record (prepare record), commit_to_avalanche (record hash on Avalanche), generate_proof (medical_integrity), verify_on_avalanche (verify integrity proof)
+- Medical integrity proofs should use patient_id, record_hash, and timestamps as parameters
 
 Output format as JSON:
 {
@@ -112,6 +118,25 @@ Output format as JSON:
       "device_id": "DEV123",
       "description": "Claim rewards for verified device DEV123",
       "critical": false
+    },
+    {
+      "type": "create_medical_record",
+      "patient_id": "12345",
+      "record_hash": "0xabc123def456789",
+      "description": "Create medical record for patient 12345"
+    },
+    {
+      "type": "generate_proof",
+      "proof_type": "medical_integrity",
+      "patient_id": "12345",
+      "record_hash": "0xabc123def456789",
+      "description": "Generate medical integrity proof"
+    },
+    {
+      "type": "verify_on_avalanche",
+      "proof_type": "medical_integrity",
+      "record_id": "0xdef456...",
+      "description": "Verify medical integrity on Avalanche"
     }
   ]
 }"""
@@ -132,6 +157,13 @@ Output format as JSON:
         2. generate_proof (with proof_type: "device_proximity" and device_id)
         3. verify_on_iotex (with proof_type: "device_proximity" and device_id)
         4. claim_rewards (with device_id)
+        
+        CRITICAL RULE FOR MEDICAL RECORDS:
+        If the command contains "medical" and ("record" or "integrity"), you MUST create ONLY these 2 steps:
+        1. generate_proof (with proof_type: "medical_integrity", patient_id, and record_hash) - This step will handle medical record creation AND Avalanche commitment internally
+        2. verify_on_avalanche (with proof_type: "medical_integrity") - verify the integrity proof on-chain
+        
+        IMPORTANT: Do NOT create separate create_medical_record or commit_to_avalanche steps. The generate_proof step handles everything.
         
         This applies to ALL these patterns:
         - "Register IoT device DEV123 with proximity proof"

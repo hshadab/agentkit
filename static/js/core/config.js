@@ -20,10 +20,12 @@ export const config = {
         maxPollingDuration: 300000 // 5 minutes
     },
     blockchain: {
+        // IMPORTANT: All EVM chains (Ethereum, Base, Avalanche) use the same proof format
+        // and API endpoint: /api/proof/{proofId}/ethereum
         ethereum: {
             chainId: '0xaa36a7', // Sepolia
             chainIdDecimal: 11155111,
-            verifierAddress: '0x1e8150050a7a4715aad42b905c08df76883f396f',
+            verifierAddress: '0x09378444046d1ccb32ca2d5b44fab6634738d067', // Real Groth16 Verifier (not simple ProofVerifier)
             explorerUrl: 'https://sepolia.etherscan.io'
         },
         solana: {
@@ -48,7 +50,8 @@ export const config = {
             chainId: '0xa869', // Fuji testnet
             chainIdDecimal: 43113,
             contracts: {
-                zkVerifier: '0x30e93E8B0804fD60b0d151F724c307c61Be37EE1' // Real Groth16 Proof-of-Proof verifier
+                zkVerifier: '0x30e93E8B0804fD60b0d151F724c307c61Be37EE1', // Real Groth16 Proof-of-Proof verifier
+                medicalIntegrity: '0x1698ebB10e789EebE7A66bDb096F0a65ce49Dc68' // Mock address for testing
             },
             explorerUrl: 'https://testnet.snowtrace.io',
             rpcUrl: 'https://api.avax-test.network/ext/bc/C/rpc',

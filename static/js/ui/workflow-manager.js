@@ -321,6 +321,18 @@ export class WorkflowManager {
             stepContent.appendChild(this.createRewardStatusElement(updates.rewardData));
         }
         
+        // Update commit data if this is a commit step
+        if (updates.commitData) {
+            let stepContent = stepElement.querySelector('.step-content');
+            if (!stepContent) {
+                stepContent = document.createElement('div');
+                stepContent.className = 'step-content';
+                stepElement.appendChild(stepContent);
+            }
+            stepContent.innerHTML = '';
+            stepContent.appendChild(this.createCommitStatusElement(updates.commitData));
+        }
+        
         // If workflow is complete, update the workflow card status
         if (updates.workflowStatus) {
             this.updateWorkflowStatus(workflowId, updates.workflowStatus);
@@ -534,6 +546,50 @@ export class WorkflowManager {
             statusDiv.innerHTML = `
                 <div class="blockchain-status pending">
                     <div style="font-weight: 600;">⏳ Claiming rewards...</div>
+                </div>
+            `;
+        }
+        
+        return statusDiv;
+    }
+    
+    createCommitStatusElement(commitData) {
+        const statusDiv = document.createElement('div');
+        statusDiv.className = 'commit-status';
+        
+        if (commitData.transactionHash) {
+            const explorerUrl = `${config.blockchain.avalanche.explorerUrl}/tx/${commitData.transactionHash}`;
+            statusDiv.innerHTML = `
+                <div class="blockchain-status success">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-weight: 600;">✓ Recorded on Avalanche</span>
+                        <a href="${explorerUrl}" target="_blank" class="explorer-link">
+                            View on Snowtrace
+                        </a>
+                    </div>
+                    <div style="font-size: 12px; color: rgba(255, 255, 255, 0.7); margin-top: 4px;">
+                        Tx: ${commitData.transactionHash.substring(0, 16)}...
+                    </div>
+                    ${commitData.blockNumber ? `
+                        <div style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">
+                            Block: ${commitData.blockNumber}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        } else if (commitData.error) {
+            statusDiv.innerHTML = `
+                <div class="blockchain-status error">
+                    <div style="font-weight: 600;">❌ Commit Failed</div>
+                    <div style="font-size: 12px; color: rgba(255, 255, 255, 0.7); margin-top: 4px;">
+                        ${commitData.error}
+                    </div>
+                </div>
+            `;
+        } else {
+            statusDiv.innerHTML = `
+                <div class="blockchain-status pending">
+                    <div style="font-weight: 600;">⏳ Recording on Avalanche...</div>
                 </div>
             `;
         }

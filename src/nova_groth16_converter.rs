@@ -88,10 +88,10 @@ pub fn convert_nova_to_groth16(
     use std::process::Stdio;
     
     eprintln!("Spawning SNARK generator process...");
-    eprintln!("Command: node src/cached_snark_generator.js {}", temp_input_path.to_str().unwrap());
+    eprintln!("Command: node src/cached_snark_generator.cjs {}", temp_input_path.to_str().unwrap());
     
     let child = Command::new("node")
-        .arg("src/cached_snark_generator.js")
+        .arg("src/cached_snark_generator.cjs")
         .arg(temp_input_path.to_str().unwrap())
         .current_dir("/home/hshadab/agentkit") // Use absolute path
         .stdout(Stdio::piped())

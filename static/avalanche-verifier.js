@@ -1,5 +1,5 @@
-// Avalanche Proof Verifier Integration
-// This handles the connection to Avalanche C-Chain and proof verification on-chain
+// Avalanche Groth16 Proof Verifier - Rebuilt based on working Ethereum implementation
+// This verifier handles Groth16 proof verification on Avalanche C-Chain
 
 class AvalancheVerifier {
     constructor() {
@@ -9,161 +9,92 @@ class AvalancheVerifier {
         this.contractAddress = null;
         this.isConnected = false;
         
-        // Same Groth16Verifier contract ABI as Ethereum
+        // Groth16 Verifier ABI - same as Ethereum
         this.contractABI = [
             {
                 "inputs": [
-                    {
-                        "internalType": "uint[2]",
-                        "name": "_pA",
-                        "type": "uint256[2]"
-                    },
-                    {
-                        "internalType": "uint[2][2]",
-                        "name": "_pB",
-                        "type": "uint256[2][2]"
-                    },
-                    {
-                        "internalType": "uint[2]",
-                        "name": "_pC",
-                        "type": "uint256[2]"
-                    },
-                    {
-                        "internalType": "uint[6]",
-                        "name": "_pubSignals",
-                        "type": "uint256[6]"
-                    }
+                    {"internalType": "uint[2]", "name": "_pA", "type": "uint256[2]"},
+                    {"internalType": "uint[2][2]", "name": "_pB", "type": "uint256[2][2]"},
+                    {"internalType": "uint[2]", "name": "_pC", "type": "uint256[2]"},
+                    {"internalType": "uint[6]", "name": "_pubSignals", "type": "uint256[6]"}
                 ],
                 "name": "verifyProof",
                 "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
                 "stateMutability": "view",
                 "type": "function"
-            },
-            {
-                "inputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}],
-                "name": "verifiedProofs",
-                "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {"internalType": "address", "name": "user", "type": "address"},
-                    {"internalType": "uint256", "name": "proofType", "type": "uint256"}
-                ],
-                "name": "isUserVerified",
-                "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {"indexed": true, "internalType": "bytes32", "name": "proofId", "type": "bytes32"},
-                    {"indexed": true, "internalType": "address", "name": "verifier", "type": "address"},
-                    {"indexed": false, "internalType": "bool", "name": "isValid", "type": "bool"},
-                    {"indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256"}
-                ],
-                "name": "ProofVerified",
-                "type": "event"
             }
         ];
     }
     
     async connect() {
         try {
-            // Check for wallet provider
-            let provider = null;
-            let walletName = '';
+            console.log('Connecting to Avalanche...');
             
-            // Use any available Ethereum wallet (MetaMask, etc.)
-            if (window.ethereum) {
-                provider = window.ethereum;
-                walletName = window.ethereum.isMetaMask ? 'MetaMask' : 'Ethereum Wallet';
-                console.log(`${walletName} detected`);
-            } 
-            else {
-                throw new Error('No wallet detected. Please install MetaMask or another Ethereum wallet.');
+            if (!window.ethereum) {
+                throw new Error('MetaMask not detected');
             }
             
             // Request account access
-            const accounts = await provider.request({ method: 'eth_requestAccounts' });
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             this.account = accounts[0];
-            
-            console.log(`Connected to ${walletName} wallet:`, this.account);
+            console.log('Connected account:', this.account);
             
             // Initialize Web3
-            this.web3 = new Web3(provider);
+            this.web3 = new Web3(window.ethereum);
             
-            // Store wallet type for later checks
-            this.walletType = walletName;
-            
-            // Check network
+            // Check and switch to Avalanche Fuji
             const chainId = await this.web3.eth.getChainId();
-            const expectedChainId = 43113; // Avalanche Fuji testnet
-            
-            console.log('Current chain ID:', chainId);
-            console.log('Expected chain ID:', expectedChainId);
+            const expectedChainId = 43113; // Avalanche Fuji
             
             if (Number(chainId) !== expectedChainId) {
-                console.log('Wrong network, attempting to switch to Avalanche Fuji...');
+                console.log('Switching to Avalanche Fuji...');
                 try {
-                    // Try to switch to Avalanche Fuji
-                    await provider.request({
+                    await window.ethereum.request({
                         method: 'wallet_switchEthereumChain',
                         params: [{ chainId: '0xa869' }], // 43113 in hex
                     });
-                    console.log('Successfully switched to Avalanche Fuji');
                 } catch (switchError) {
-                    // If the network doesn't exist, add it
                     if (switchError.code === 4902) {
-                        console.log('Avalanche Fuji not found, adding network...');
-                        try {
-                            await provider.request({
-                                method: 'wallet_addEthereumChain',
-                                params: [{
-                                    chainId: '0xa869',
-                                    chainName: 'Avalanche Fuji Testnet',
-                                    nativeCurrency: {
-                                        name: 'AVAX',
-                                        symbol: 'AVAX',
-                                        decimals: 18
-                                    },
-                                    rpcUrls: ['https://api.avax-test.network/ext/bc/C/rpc'],
-                                    blockExplorerUrls: ['https://testnet.snowtrace.io']
-                                }],
-                            });
-                            console.log('Successfully added and switched to Avalanche Fuji');
-                        } catch (addError) {
-                            throw new Error('Failed to add Avalanche Fuji network. Please add it manually in MetaMask.');
-                        }
+                        // Add the network
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: '0xa869',
+                                chainName: 'Avalanche Fuji Testnet',
+                                nativeCurrency: {
+                                    name: 'AVAX',
+                                    symbol: 'AVAX',
+                                    decimals: 18
+                                },
+                                rpcUrls: ['https://api.avax-test.network/ext/bc/C/rpc'],
+                                blockExplorerUrls: ['https://testnet.snowtrace.io']
+                            }],
+                        });
                     } else {
-                        throw new Error('User rejected network switch. Please switch to Avalanche Fuji manually.');
+                        throw switchError;
                     }
-                }
-                
-                // Verify we're now on the right network
-                const newChainId = await this.web3.eth.getChainId();
-                if (Number(newChainId) !== expectedChainId) {
-                    throw new Error('Failed to switch to Avalanche Fuji. Please switch manually.');
                 }
             }
             
-            // Get contract address from config
-            if (typeof config !== 'undefined' && config.blockchain && config.blockchain.avalanche) {
+            // Set contract address
+            if (typeof config !== 'undefined' && config.blockchain?.avalanche?.contracts?.zkVerifier) {
                 this.contractAddress = config.blockchain.avalanche.contracts.zkVerifier;
             } else {
-                // Fallback to deployed address on Fuji
                 this.contractAddress = '0x30e93E8B0804fD60b0d151F724c307c61Be37EE1';
             }
             
-            console.log('Using contract address:', this.contractAddress);
+            console.log('Using contract:', this.contractAddress);
             
             // Initialize contract
             this.contract = new this.web3.eth.Contract(this.contractABI, this.contractAddress);
-            
             this.isConnected = true;
-            return { success: true, account: this.account };
+            
+            return { 
+                success: true, 
+                account: this.account,
+                network: 'Avalanche Fuji',
+                contractAddress: this.contractAddress
+            };
             
         } catch (error) {
             console.error('Connection error:', error);
@@ -172,248 +103,224 @@ class AvalancheVerifier {
         }
     }
     
-    async disconnect() {
-        this.web3 = null;
-        this.contract = null;
-        this.account = null;
-        this.isConnected = false;
-    }
-    
-    // Convert proof data to format expected by the smart contract
-    convertProofForContract(ethereumProof) {
+    async verifyProof(proofId, proofType) {
         try {
-            console.log('Converting proof for contract...');
-            console.log('Input proof structure:', Object.keys(ethereumProof));
+            console.log('Starting Avalanche verification for:', proofId);
+            console.log('Current state:', {
+                isConnected: this.isConnected,
+                hasWeb3: !!this.web3,
+                hasContract: !!this.contract,
+                hasAccount: !!this.account,
+                contractAddress: this.contractAddress
+            });
             
-            // Handle different possible formats
-            let publicSignals = ethereumProof.Input || ethereumProof.public_signals || ethereumProof.publicSignals;
-            const { a, b, c } = ethereumProof;
-            
-            if (!a || !b || !c || !publicSignals) {
-                throw new Error('Invalid proof format - missing required fields');
-            }
-            
-            // Ensure all values are strings and properly formatted
-            const formatValue = (val) => {
-                if (typeof val === 'string') return val;
-                if (typeof val === 'number') return val.toString();
-                if (typeof val === 'bigint') return val.toString();
-                return String(val);
-            };
-            
-            const proof = {
-                a: a.map(formatValue),
-                b: b.map(arr => arr.map(formatValue)),
-                c: c.map(formatValue),
-                publicSignals: publicSignals.map(formatValue)
-            };
-            
-            console.log('Formatted proof:', proof);
-            return proof;
-            
-        } catch (error) {
-            console.error('Error converting proof:', error);
-            throw error;
-        }
-    }
-
-    async getProofStatus(proofId) {
-        try {
-            if (!this.isConnected) {
-                await this.connect();
-            }
-            
-            // Convert proofId to bytes32 if needed
-            const proofIdBytes32 = proofId.startsWith('0x') ? proofId : this.web3.utils.keccak256(proofId);
-            
-            // Call the contract to check if proof is already verified
-            const isVerified = await this.contract.methods.verifiedProofs(proofIdBytes32).call();
-            
-            return isVerified;
-        } catch (error) {
-            console.error('Error checking proof status:', error);
-            return false;
-        }
-    }
-    
-    async verifyProof(proofData, proofId, proofType) {
-        try {
-            if (!this.isConnected) {
+            if (!this.isConnected || !this.contract || !this.web3) {
+                console.log('Not properly initialized, connecting now...');
                 const connectResult = await this.connect();
                 if (!connectResult.success) {
                     throw new Error(connectResult.error);
                 }
+                console.log('Connected successfully:', {
+                    account: this.account,
+                    contractAddress: this.contractAddress,
+                    hasContract: !!this.contract,
+                    hasWeb3: !!this.web3
+                });
             }
             
-            // Double-check we're still on the right network
+            // Fetch proof data from API
+            console.log('Fetching proof data from:', `/api/proof/${proofId}/ethereum`);
+            console.log('Proof ID:', proofId);
+            
+            // First check if proof exists
             try {
-                const currentChainId = await this.web3.eth.getChainId();
-                if (Number(currentChainId) !== 43113) {
-                    console.log('Network changed, reconnecting...');
-                    this.isConnected = false;
-                    const reconnectResult = await this.connect();
-                    if (!reconnectResult.success) {
-                        throw new Error('Network changed. Please switch back to Avalanche Fuji and try again.');
+                const proofsResponse = await fetch('/api/proofs');
+                if (proofsResponse.ok) {
+                    const proofs = await proofsResponse.json();
+                    console.log('Available proofs:', proofs);
+                    const proofExists = proofs.some(p => p.proof_id === proofId || p === proofId);
+                    console.log('Proof exists in list:', proofExists);
+                }
+            } catch (e) {
+                console.log('Could not check proofs list');
+            }
+            
+            const response = await fetch(`/api/proof/${proofId}/ethereum`);
+            
+            if (!response.ok) {
+                console.error('Fetch failed:', response.status, response.statusText);
+                // Log available proof IDs
+                try {
+                    const proofsResponse = await fetch('/api/proofs');
+                    if (proofsResponse.ok) {
+                        const proofs = await proofsResponse.json();
+                        console.log('Available proofs:', proofs);
                     }
+                } catch (e) {
+                    console.error('Could not fetch proofs list:', e);
                 }
-            } catch (networkError) {
-                console.error('Network check error:', networkError);
-                throw new Error('Network connection lost. Please reconnect your wallet.');
+                throw new Error(`Failed to fetch proof: ${response.status}`);
             }
             
-            console.log('Starting Avalanche verification for proof:', proofId);
+            const proofData = await response.json();
+            console.log('Proof data received:', proofData);
+            console.log('Proof structure:', {
+                hasProof: !!proofData.proof,
+                hasPublicSignals: !!proofData.public_signals,
+                hasPublicInputs: !!proofData.public_inputs,
+                proofKeys: proofData.proof ? Object.keys(proofData.proof) : 'N/A'
+            });
             
-            // Check if proof is already verified
-            const isAlreadyVerified = await this.getProofStatus(proofId);
-            if (isAlreadyVerified) {
-                console.log('Proof already verified on Avalanche');
-                return {
-                    success: true,
-                    alreadyVerified: true,
-                    message: 'Proof was already verified on Avalanche'
-                };
-            }
-            
-            // Convert proof to contract format
-            const { a, b, c, publicSignals } = this.convertProofForContract(proofData);
-            
-            // Prepare verification transaction based on proof type
-            let txData;
-            const proofIdBytes32 = this.web3.utils.keccak256(proofId);
-            
-            if (proofType === 'prove_ai_content') {
-                // For AI prediction proofs, we need to use a specific contract
-                // This would need to be deployed on Avalanche
-                console.log('AI prediction proof verification not yet deployed on Avalanche');
-                throw new Error('AI prediction verifier not yet deployed on Avalanche Fuji testnet');
+            // Extract proof components
+            let proof;
+            if (proofData.proof) {
+                proof = proofData.proof;
             } else {
-                // Standard proof verification
-                const verifyMethod = this.contract.methods.verifyProof(a, b, c, publicSignals);
-                
-                // First do a call to check if the proof is valid
-                const isValid = await verifyMethod.call({ from: this.account });
-                console.log('Proof validity check:', isValid);
-                
-                if (!isValid) {
-                    throw new Error('Proof verification failed on Avalanche');
-                }
-                
-                // Estimate gas
-                const gasEstimate = await verifyMethod.estimateGas({ from: this.account });
-                console.log('Gas estimate:', gasEstimate);
-                
-                // Get current gas price
-                const gasPrice = await this.web3.eth.getGasPrice();
-                console.log('Current gas price:', gasPrice);
-                
-                txData = {
-                    from: this.account,
-                    to: this.contractAddress,
-                    data: verifyMethod.encodeABI(),
-                    gas: Math.floor(gasEstimate * 1.2), // Add 20% buffer
-                    gasPrice: gasPrice
-                };
+                proof = proofData;
             }
             
-            // Send the transaction
-            console.log('Sending verification transaction...');
-            const tx = await this.web3.eth.sendTransaction(txData);
-            
-            console.log('Transaction sent:', tx.transactionHash);
-            
-            return {
-                success: true,
-                txHash: tx.transactionHash,
-                explorerUrl: `https://testnet.snowtrace.io/tx/${tx.transactionHash}`,
-                blockNumber: tx.blockNumber,
-                gasUsed: tx.gasUsed
+            // Format proof for contract
+            const formattedProof = {
+                a: proof.a,
+                b: proof.b,
+                c: proof.c
             };
+            
+            // Get public signals - ensure we have exactly 6
+            let pubSignals = proofData.public_signals || [];
+            
+            // If we don't have public_signals, try to construct from public_inputs
+            if (!pubSignals.length && proofData.public_inputs) {
+                console.log('No public_signals found, constructing from public_inputs');
+                const inputs = proofData.public_inputs;
+                pubSignals = [
+                    inputs.commitment || "0",
+                    "1", // isValid
+                    inputs.commitment || "0",
+                    inputs.proof_type ? inputs.proof_type.toString() : "1",
+                    inputs.timestamp ? inputs.timestamp.toString() : "0",
+                    "1" // verificationResult
+                ];
+            }
+            
+            console.log('Proof components:', {
+                a: formattedProof.a,
+                b: formattedProof.b,
+                c: formattedProof.c,
+                signals: pubSignals,
+                signalsLength: pubSignals.length
+            });
+            
+            // Verify proof on-chain
+            const result = await this.verifyProofOnChain(
+                proofId,
+                formattedProof,
+                pubSignals,
+                proofType
+            );
+            
+            return result;
             
         } catch (error) {
             console.error('Avalanche verification error:', error);
             return {
                 success: false,
-                error: error.message || 'Verification failed'
+                error: error.message
             };
+        }
+    }
+    
+    async verifyProofOnChain(proofId, formattedProof, pubSignals, proofType) {
+        try {
+            console.log('=== Starting on-chain verification ===');
+            console.log('Account:', this.account);
+            console.log('Contract:', this.contractAddress);
+            console.log('Formatted proof:', formattedProof);
+            console.log('Public signals:', pubSignals);
+            console.log('Public signals length:', pubSignals.length);
+            
+            // First check with call()
+            console.log('Checking proof validity...');
+            console.log('Contract methods available:', Object.keys(this.contract.methods));
+            
+            let isValid;
+            try {
+                isValid = await this.contract.methods
+                    .verifyProof(
+                        formattedProof.a,
+                        formattedProof.b,
+                        formattedProof.c,
+                        pubSignals
+                    )
+                    .call({ from: this.account });
+                console.log('Call succeeded, isValid:', isValid);
+            } catch (callError) {
+                console.error('Call failed:', callError);
+                console.error('Error details:', {
+                    message: callError.message,
+                    code: callError.code,
+                    data: callError.data
+                });
+                throw callError;
+            }
+            
+            console.log('Proof validity:', isValid);
+            
+            if (!isValid) {
+                throw new Error('Proof verification failed - invalid proof');
+            }
+            
+            // Estimate gas
+            console.log('Estimating gas...');
+            const gasEstimate = await this.contract.methods
+                .verifyProof(
+                    formattedProof.a,
+                    formattedProof.b,
+                    formattedProof.c,
+                    pubSignals
+                )
+                .estimateGas({ from: this.account });
+            
+            console.log('Gas estimate:', gasEstimate);
+            
+            // Send transaction
+            console.log('Sending transaction...');
+            const receipt = await this.contract.methods
+                .verifyProof(
+                    formattedProof.a,
+                    formattedProof.b,
+                    formattedProof.c,
+                    pubSignals
+                )
+                .send({ 
+                    from: this.account,
+                    gas: Math.floor(Number(gasEstimate) * 1.2) // 20% buffer
+                });
+            
+            console.log('Transaction successful:', receipt.transactionHash);
+            
+            return {
+                success: true,
+                txHash: receipt.transactionHash,
+                transactionHash: receipt.transactionHash,
+                blockNumber: receipt.blockNumber,
+                gasUsed: receipt.gasUsed,
+                explorerUrl: `https://testnet.snowtrace.io/tx/${receipt.transactionHash}`
+            };
+            
+        } catch (error) {
+            console.error('On-chain verification failed:', error);
+            throw error;
         }
     }
 }
 
-// Global function to be called from blockchain-verifier.js
+// Create global instance
+window.avalancheVerifier = new AvalancheVerifier();
+
+// Global verification function
 window.verifyOnAvalancheActual = async function(proofId, proofType) {
-    console.log('verifyOnAvalancheActual called with:', proofId, proofType);
-    
-    try {
-        // Fetch proof data from server
-        const response = await fetch(`/api/proof/${proofId}/ethereum`);
-        if (!response.ok) {
-            // Try the integrated endpoint as fallback
-            const fallbackResponse = await fetch(`/api/proof/${proofId}/ethereum-integrated`);
-            if (!fallbackResponse.ok) {
-                throw new Error(`Failed to fetch proof data: ${response.statusText}`);
-            }
-            const proofData = await fallbackResponse.json();
-            console.log('Using fallback endpoint, fetched proof data:', proofData);
-            
-            // Create verifier instance
-            const verifier = new AvalancheVerifier();
-            
-            // Prepare the proof data with public signals
-            let proofToVerify;
-            if (proofData.proof && proofData.public_signals) {
-                // Combine proof and public_signals
-                proofToVerify = {
-                    ...proofData.proof,
-                    Input: proofData.public_signals,
-                    public_signals: proofData.public_signals
-                };
-            } else if (proofData.proof) {
-                proofToVerify = proofData.proof;
-            } else {
-                proofToVerify = proofData;
-            }
-            
-            console.log('Proof to verify (fallback):', proofToVerify);
-            
-            // Verify the proof
-            const result = await verifier.verifyProof(proofToVerify, proofId, proofType);
-            
-            return result;
-        }
-        
-        const proofData = await response.json();
-        console.log('Fetched proof data:', proofData);
-        
-        // Create verifier instance
-        const verifier = new AvalancheVerifier();
-        
-        // Prepare the proof data with public signals
-        let proofToVerify;
-        if (proofData.proof && proofData.public_signals) {
-            // Combine proof and public_signals
-            proofToVerify = {
-                ...proofData.proof,
-                Input: proofData.public_signals,
-                public_signals: proofData.public_signals
-            };
-        } else if (proofData.proof) {
-            proofToVerify = proofData.proof;
-        } else {
-            proofToVerify = proofData;
-        }
-        
-        console.log('Proof to verify:', proofToVerify);
-        
-        // Verify the proof
-        const result = await verifier.verifyProof(proofToVerify, proofId, proofType);
-        
-        return result;
-        
-    } catch (error) {
-        console.error('Error in verifyOnAvalancheActual:', error);
-        return {
-            success: false,
-            error: error.message
-        };
-    }
+    return await window.avalancheVerifier.verifyProof(proofId, proofType);
 };
+
+console.log('[AVALANCHE] Rebuilt Groth16 verifier loaded');

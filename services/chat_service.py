@@ -357,7 +357,9 @@ async def execute_workflow(request: WorkflowRequest):
             workflow_data['workflow_id'] = workflow_id
             
             # Save the parsed workflow to a temporary file for the executor
-            parsed_workflow_file = os.path.join(os.path.expanduser("~/agentkit/circle"), f"parsed_workflow_{workflow_id}.json")
+            parsed_workflow_dir = os.path.join(os.path.expanduser("~/agentkit"), "temp_workflows")
+            os.makedirs(parsed_workflow_dir, exist_ok=True)
+            parsed_workflow_file = os.path.join(parsed_workflow_dir, f"parsed_workflow_{workflow_id}.json")
             print(f"[DEBUG] Saving parsed workflow to: {parsed_workflow_file}")
             try:
                 with open(parsed_workflow_file, 'w') as f:
@@ -471,10 +473,10 @@ async def execute_workflow(request: WorkflowRequest):
                 text=True,
                 cwd=os.path.expanduser("~/agentkit/circle"),
                 env=env,
-                timeout=120,  # Increased timeout to 120 seconds for IoT workflows
+                timeout=300,  # Increased timeout to 300 seconds for blockchain workflows
             )
         except subprocess.TimeoutExpired as e:
-            print(f"[ERROR] Workflow execution timed out after 120 seconds")
+            print(f"[ERROR] Workflow execution timed out after 300 seconds")
             return {
                 "success": False,
                 "error": "Workflow execution timed out",

@@ -113,8 +113,8 @@ class EthereumVerifier {
             // Contract addresses by network
             const contractAddresses = {
                 // Ethereum Sepolia - Deployed ZK Verifier
-                11155111: '0x1e8150050a7a4715aad42b905c08df76883f396f', // Sepolia - Deployed
-                // Alternative: 0x09378444046d1ccb32ca2d5b44fab6634738d067
+                // OLD WRONG CONTRACT: 11155111: '0x1e8150050a7a4715aad42b905c08df76883f396f', // This was a simple ProofVerifier, not Groth16!
+                11155111: '0x09378444046d1ccb32ca2d5b44fab6634738d067', // Sepolia - Real Groth16 Verifier
                 31337: '0x5FbDB2315678afecb367f032d93F642f64180aa3' // Local Hardhat
             };
             
@@ -137,8 +137,9 @@ class EthereumVerifier {
             
             // Listen for chain changes
             provider.on('chainChanged', (chainId) => {
-                // Reload the page when chain changes
-                window.location.reload();
+                // DISABLED: Don't reload on chain change to prevent refresh loops
+                console.log('Chain changed to:', chainId);
+                // Just log the change, don't reload
             });
             
             return {
@@ -325,6 +326,27 @@ class EthereumVerifier {
                 }
             }
             
+            
+            // First do a call to check if the proof is valid
+            console.log('Checking proof validity with call()...');
+            try {
+                const isValid = await this.contract.methods
+                    .verifyProof(
+                        formattedProof.a,
+                        formattedProof.b,
+                        formattedProof.c,
+                        pubSignals
+                    )
+                    .call({ from: this.account });
+                console.log('Proof validity check:', isValid);
+                
+                if (!isValid) {
+                    throw new Error('Proof verification failed - the proof is invalid');
+                }
+            } catch (callError) {
+                console.error('Proof validity check failed:', callError);
+                throw new Error('Proof verification failed: ' + callError.message);
+            }
             
             // Estimate gas for real verification
             console.log('Starting gas estimation at', new Date().toISOString());
@@ -590,7 +612,7 @@ window.verifyOnEthereumActual = async function(proofId, proofType) {
                 console.log('Current network ID after switch:', networkId);
                 
                 const contractAddresses = {
-                    11155111: '0x1e8150050a7a4715aad42b905c08df76883f396f', // Sepolia - Deployed
+                    11155111: '0x09378444046d1ccb32ca2d5b44fab6634738d067', // Sepolia - Real Groth16 Verifier
                     31337: '0x5FbDB2315678afecb367f032d93F642f64180aa3' // Local Hardhat
                 };
                 

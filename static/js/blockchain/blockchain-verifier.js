@@ -23,6 +23,11 @@ export class BlockchainVerifier {
     }
     
     async autoConnect() {
+        debugLog('Auto-connect DISABLED - connections will happen on-demand', 'info');
+        return;
+        
+        /* DISABLED: The entire autoConnect function is commented out
+        
         debugLog('Starting auto-connect for all chains...', 'info');
         
         // Auto-connect all chains that were previously connected
@@ -99,6 +104,8 @@ export class BlockchainVerifier {
             const connected = results.filter(r => r.status === 'fulfilled' && r.value).length;
             debugLog(`Auto-connect complete: ${connected}/${connections.length} chains connected`, 'info');
         }
+        
+        */ // End of disabled autoConnect code
     }
     
 
@@ -591,9 +598,15 @@ export class BlockchainVerifier {
             if (!connected) return { success: false, error: 'Failed to connect to Base wallet' };
         }
         
-        // Update button state
-        const proofCard = document.querySelector(`[data-proof-id="${proofId}"]`);
+        // Update button state - handle both proof cards and table rows
+        const proofCard = document.querySelector(`[data-proof-id="${proofId}"].proof-card`) || 
+                         document.querySelector(`[data-proof-id="${proofId}"]`);
         const baseButton = proofCard?.querySelector('.base-verify-btn');
+        
+        if (!proofCard) {
+            debugLog(`Warning: No proof card found for ${proofId}, continuing without UI updates`, 'warning');
+        }
+        
         if (baseButton) {
             baseButton.disabled = true;
             baseButton.classList.add('verifying');
@@ -684,9 +697,15 @@ export class BlockchainVerifier {
             if (!connected) return { success: false, error: 'Failed to connect to Avalanche wallet' };
         }
         
-        // Update button state
-        const proofCard = document.querySelector(`[data-proof-id="${proofId}"]`);
+        // Update button state - handle both proof cards and table rows
+        const proofCard = document.querySelector(`[data-proof-id="${proofId}"].proof-card`) || 
+                         document.querySelector(`[data-proof-id="${proofId}"]`);
         const avalancheButton = proofCard?.querySelector('.avalanche-verify-btn');
+        
+        if (!proofCard) {
+            debugLog(`Warning: No proof card found for ${proofId}, continuing without UI updates`, 'warning');
+        }
+        
         if (avalancheButton) {
             avalancheButton.disabled = true;
             avalancheButton.classList.add('verifying');

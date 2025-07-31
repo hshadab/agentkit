@@ -1,5 +1,5 @@
-// Base Proof Verifier Integration
-// This handles the connection to Base (Coinbase L2) and proof verification on-chain
+// Base Groth16 Proof Verifier - Rebuilt based on working Ethereum implementation
+// This verifier handles Groth16 proof verification on Base Sepolia
 
 class BaseVerifier {
     constructor() {
@@ -9,353 +9,220 @@ class BaseVerifier {
         this.contractAddress = null;
         this.isConnected = false;
         
-        // Same Groth16Verifier contract ABI as Ethereum
+        // Groth16 Verifier ABI - same as Ethereum
         this.contractABI = [
             {
                 "inputs": [
-                    {
-                        "internalType": "uint[2]",
-                        "name": "_pA",
-                        "type": "uint256[2]"
-                    },
-                    {
-                        "internalType": "uint[2][2]",
-                        "name": "_pB",
-                        "type": "uint256[2][2]"
-                    },
-                    {
-                        "internalType": "uint[2]",
-                        "name": "_pC",
-                        "type": "uint256[2]"
-                    },
-                    {
-                        "internalType": "uint[6]",
-                        "name": "_pubSignals",
-                        "type": "uint256[6]"
-                    }
+                    {"internalType": "uint[2]", "name": "_pA", "type": "uint256[2]"},
+                    {"internalType": "uint[2][2]", "name": "_pB", "type": "uint256[2][2]"},
+                    {"internalType": "uint[2]", "name": "_pC", "type": "uint256[2]"},
+                    {"internalType": "uint[6]", "name": "_pubSignals", "type": "uint256[6]"}
                 ],
                 "name": "verifyProof",
                 "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
                 "stateMutability": "view",
                 "type": "function"
-            },
-            {
-                "inputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}],
-                "name": "verifiedProofs",
-                "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {"internalType": "address", "name": "user", "type": "address"},
-                    {"internalType": "uint256", "name": "proofType", "type": "uint256"}
-                ],
-                "name": "isUserVerified",
-                "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "anonymous": false,
-                "inputs": [
-                    {"indexed": true, "internalType": "bytes32", "name": "proofId", "type": "bytes32"},
-                    {"indexed": true, "internalType": "address", "name": "verifier", "type": "address"},
-                    {"indexed": false, "internalType": "bool", "name": "isValid", "type": "bool"},
-                    {"indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256"}
-                ],
-                "name": "ProofVerified",
-                "type": "event"
             }
         ];
     }
     
     async connect() {
         try {
-            // Check for wallet provider
-            let provider = null;
-            let walletName = '';
+            console.log('Connecting to Base...');
             
-            // Use any available Ethereum wallet (MetaMask, etc.)
-            if (window.ethereum) {
-                provider = window.ethereum;
-                walletName = window.ethereum.isMetaMask ? 'MetaMask' : 'Ethereum Wallet';
-                console.log(`${walletName} detected`);
-            } 
-            else {
-                throw new Error('No wallet detected. Please install MetaMask or another Ethereum wallet.');
+            if (!window.ethereum) {
+                throw new Error('MetaMask not detected');
             }
             
             // Request account access
-            const accounts = await provider.request({ method: 'eth_requestAccounts' });
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             this.account = accounts[0];
-            
-            console.log(`Connected to ${walletName} wallet:`, this.account);
+            console.log('Connected account:', this.account);
             
             // Initialize Web3
-            this.web3 = new Web3(provider);
+            this.web3 = new Web3(window.ethereum);
             
-            // Store wallet type for later checks
-            this.walletType = walletName;
+            // Check and switch to Base Sepolia
+            const chainId = await this.web3.eth.getChainId();
+            const expectedChainId = 84532; // Base Sepolia
             
-            // Get network ID
-            let networkId = await this.web3.eth.net.getId();
-            let chainId = await this.web3.eth.getChainId();
-            console.log('Initial Network ID:', networkId, 'Chain ID:', chainId);
-            
-            // Base network IDs
-            // Base Mainnet: 8453
-            // Base Sepolia (testnet): 84532
-            const expectedChainId = '0x14a34'; // 84532 in hex for Base Sepolia
-            
-            // Check if on Base network
-            if (chainId !== 84532 && chainId !== 8453) {
-                console.log('Not on Base network, switching...');
-                await this.switchToBase();
-                // Re-fetch network ID after switching
-                networkId = await this.web3.eth.net.getId();
-                chainId = await this.web3.eth.getChainId();
-                console.log('Network ID after switch:', networkId, 'Chain ID:', chainId);
+            if (Number(chainId) !== expectedChainId) {
+                console.log('Switching to Base Sepolia...');
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0x14a34' }], // 84532 in hex
+                    });
+                } catch (switchError) {
+                    if (switchError.code === 4902) {
+                        // Add the network
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: '0x14a34',
+                                chainName: 'Base Sepolia',
+                                nativeCurrency: {
+                                    name: 'ETH',
+                                    symbol: 'ETH',
+                                    decimals: 18
+                                },
+                                rpcUrls: ['https://sepolia.base.org'],
+                                blockExplorerUrls: ['https://sepolia.basescan.org']
+                            }],
+                        });
+                    } else {
+                        throw switchError;
+                    }
+                }
             }
             
-            // Contract addresses by network
-            const contractAddresses = {
-                8453: '0x...', // Base Mainnet (not deployed yet)
-                84532: '0x74D68B2481d298F337e62efc50724CbBA68dCF8f', // Base Sepolia
-                11155111: '0x09378444046d1ccb32ca2d5b44fab6634738d067', // Sepolia (for reference)
-            };
-            
-            this.contractAddress = contractAddresses[networkId];
-            
-            if (!this.contractAddress) {
-                console.warn(`No contract deployed on Base network ${networkId}. Contract deployment needed.`);
-                throw new Error(`No contract deployed on Base network ${networkId}`);
+            // Set contract address
+            if (typeof config !== 'undefined' && config.blockchain?.base?.contracts?.zkVerifier) {
+                this.contractAddress = config.blockchain.base.contracts.zkVerifier;
+            } else {
+                this.contractAddress = '0x74D68B2481d298F337e62efc50724CbBA68dCF8f';
             }
+            
+            console.log('Using contract:', this.contractAddress);
             
             // Initialize contract
             this.contract = new this.web3.eth.Contract(this.contractABI, this.contractAddress);
-            
             this.isConnected = true;
             
-            // Listen for account changes
-            provider.on('accountsChanged', (accounts) => {
-                this.account = accounts[0];
-                this.onAccountChange(accounts[0]);
-            });
-            
-            // Listen for chain changes
-            provider.on('chainChanged', (chainId) => {
-                // Reload the page when chain changes
-                window.location.reload();
-            });
-            
-            return {
-                success: true,
+            return { 
+                success: true, 
                 account: this.account,
-                network: networkId,
-                contractAddress: this.contractAddress,
-                wallet: walletName
+                network: 'Base Sepolia',
+                contractAddress: this.contractAddress
             };
             
         } catch (error) {
-            console.error('Failed to connect to Base:', error);
-            return {
-                success: false,
-                error: error.message
-            };
+            console.error('Connection error:', error);
+            this.isConnected = false;
+            return { success: false, error: error.message };
         }
     }
     
-    async switchToBase() {
-        try {
-            // Try to switch to Base Sepolia testnet
-            await window.ethereum.request({
-                method: 'wallet_switchEthereumChain',
-                params: [{ chainId: '0x14a34' }], // 84532 in hex
-            });
-        } catch (switchError) {
-            // This error code indicates that the chain has not been added
-            if (switchError.code === 4902) {
-                try {
-                    await window.ethereum.request({
-                        method: 'wallet_addEthereumChain',
-                        params: [{
-                            chainId: '0x14a34', // 84532 in hex
-                            chainName: 'Base Sepolia',
-                            nativeCurrency: {
-                                name: 'Ethereum',
-                                symbol: 'ETH',
-                                decimals: 18
-                            },
-                            rpcUrls: ['https://sepolia.base.org'],
-                            blockExplorerUrls: ['https://sepolia.basescan.org']
-                        }],
-                    });
-                } catch (addError) {
-                    console.error('Error adding Base network:', addError);
-                    throw addError;
-                }
-            } else {
-                throw switchError;
-            }
-        }
-    }
-    
-    // Wrapper method for workflow compatibility
     async verifyProof(proofId, proofType) {
         try {
-            console.log('Base verifyProof called for workflow:', proofId, proofType);
-            console.log('Current connection state:', {
-                isConnected: this.isConnected,
-                account: this.account,
-                hasWeb3: !!this.web3,
-                hasContract: !!this.contract,
-                contractAddress: this.contractAddress
-            });
+            console.log('Starting Base verification for:', proofId);
             
-            // If contract is not initialized but we have web3, try to initialize it
-            if (this.isConnected && this.web3 && !this.contract && this.contractAddress && this.contractAddress !== '0x0000000000000000000000000000000000000000') {
-                console.log('Reinitializing contract...');
-                if (!this.contractABI) {
-                    console.log('contractABI is missing, recreating from constructor...');
-                    const tempVerifier = new BaseVerifier();
-                    this.contractABI = tempVerifier.contractABI;
+            if (!this.isConnected) {
+                const connectResult = await this.connect();
+                if (!connectResult.success) {
+                    throw new Error(connectResult.error);
                 }
-                this.contract = new this.web3.eth.Contract(this.contractABI, this.contractAddress);
             }
             
-            // Fetch proof data from backend (same endpoint as Ethereum)
+            // Fetch proof data from API
+            console.log('Fetching proof data...');
             const response = await fetch(`/api/proof/${proofId}/ethereum`);
+            
             if (!response.ok) {
-                throw new Error(`Failed to fetch proof data: ${response.statusText}`);
+                throw new Error(`Failed to fetch proof: ${response.status}`);
             }
             
             const proofData = await response.json();
-            console.log('Fetched proof data for Base:', proofData);
-            console.log('Proof structure:', {
-                hasProof: !!proofData.proof,
-                hasPublicInputs: !!proofData.publicInputs,
-                hasProofIdBytes32: !!proofData.proofIdBytes32,
-                hasPublicSignals: !!proofData.public_signals,
-                publicSignalsLength: proofData.public_signals?.length
-            });
+            console.log('Proof data received');
             
-            // Call the actual verification method
-            const result = await this.verifyProofOnChain(proofId, proofData, proofData.publicInputs, proofType);
-            
-            // Return in the same format as other verifiers
-            return {
-                success: result.success,
-                transactionHash: result.transactionHash,
-                explorerUrl: result.explorerUrl || `https://sepolia.basescan.org/tx/${result.transactionHash}`,
-                proofId: proofId
-            };
-        } catch (error) {
-            console.error('Base verification failed:', error);
-            return {
-                success: false,
-                error: error.message
-            };
-        }
-    }
-    
-    async verifyProofOnChain(proofId, fetchedProofData, publicInputs, proofType) {
-        try {
-            console.log('=== Starting Base verifyProofOnChain ===');
-            console.log('ProofId:', proofId);
-            console.log('ProofType:', proofType);
-            console.log('IsConnected:', this.isConnected);
-            
-            if (!this.isConnected) {
-                throw new Error('Not connected to Base. Please connect first.');
+            // Extract proof components
+            let proof;
+            if (proofData.proof) {
+                proof = proofData.proof;
+            } else {
+                proof = proofData;
             }
             
-            
-            console.log('Verifying proof on Base:', proofId);
-            console.log('Using fetched proof data:', fetchedProofData);
-            
-            // Use the fetched proof data
-            const proof = fetchedProofData.proof;
-            const publicInputsStruct = fetchedProofData.publicInputs;
-            const proofIdBytes32 = fetchedProofData.proofIdBytes32;
-            
-            // Validate proof structure
-            if (!proof || !proof.a || !proof.b || !proof.c) {
-                throw new Error('Invalid proof structure - missing a, b, or c components');
-            }
-            
-            console.log('Proof components exist:', {
-                hasA: !!proof.a,
-                hasB: !!proof.b,
-                hasC: !!proof.c,
-                aLength: proof.a?.length,
-                bLength: proof.b?.length,
-                cLength: proof.c?.length
-            });
-            
-            // Format proof for verifier
+            // Format proof for contract
             const formattedProof = {
                 a: proof.a,
                 b: proof.b,
                 c: proof.c
             };
             
-            // The verifier expects 6 public signals
-            const pubSignals = fetchedProofData.public_signals || [
-                publicInputsStruct.commitment,
-                "1", // isValid
-                publicInputsStruct.commitment,
-                publicInputsStruct.proof_type ? publicInputsStruct.proof_type.toString() : "1",
-                publicInputsStruct.timestamp.toString(),
-                "1" // verificationResult
-            ];
+            // Get public signals
+            const pubSignals = proofData.public_signals || [];
             
-            console.log('Formatted proof:', formattedProof);
-            console.log('Public signals:', pubSignals);
-            console.log('Contract address:', this.contractAddress);
-            console.log('Account:', this.account);
+            console.log('Proof components:', {
+                a: formattedProof.a,
+                b: formattedProof.b,
+                c: formattedProof.c,
+                signals: pubSignals
+            });
+            
+            // Check for AI prediction commitment on Base
+            if (proofType === 'prove_ai_content' || proofId.includes('ai_prediction')) {
+                console.log('AI prediction proof detected - checking commitment contract');
+                // For AI predictions, there might be additional commitment verification
+                // but for now, proceed with standard verification
+            }
+            
+            // Verify proof on-chain
+            const result = await this.verifyProofOnChain(
+                proofId,
+                formattedProof,
+                pubSignals,
+                proofType
+            );
+            
+            return result;
+            
+        } catch (error) {
+            console.error('Base verification error:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+    
+    async verifyProofOnChain(proofId, formattedProof, pubSignals, proofType) {
+        try {
+            console.log('=== Starting on-chain verification ===');
+            
+            // First check with call()
+            console.log('Checking proof validity...');
+            const isValid = await this.contract.methods
+                .verifyProof(
+                    formattedProof.a,
+                    formattedProof.b,
+                    formattedProof.c,
+                    pubSignals
+                )
+                .call({ from: this.account });
+            
+            console.log('Proof validity:', isValid);
+            
+            if (!isValid) {
+                throw new Error('Proof verification failed - invalid proof');
+            }
             
             // Estimate gas
-            console.log('Starting gas estimation...');
-            let gasEstimate;
-            try {
-                gasEstimate = await this.contract.methods
-                    .verifyProof(
-                        formattedProof.a,
-                        formattedProof.b,
-                        formattedProof.c,
-                        pubSignals
-                    )
-                    .estimateGas({ from: this.account });
-                console.log('Estimated gas:', gasEstimate);
-            } catch (gasError) {
-                console.error('Gas estimation failed:', gasError);
-                console.error('Gas error details:', {
-                    message: gasError.message,
-                    code: gasError.code,
-                    data: gasError.data
-                });
-                // Try to decode the revert reason if available
-                if (gasError.message && gasError.message.includes('revert')) {
-                    console.error('Contract reverted during gas estimation - proof verification would fail');
-                }
-                gasEstimate = 300000; // Default gas limit
+            console.log('Estimating gas...');
+            const gasEstimate = await this.contract.methods
+                .verifyProof(
+                    formattedProof.a,
+                    formattedProof.b,
+                    formattedProof.c,
+                    pubSignals
+                )
+                .estimateGas({ from: this.account });
+            
+            console.log('Gas estimate:', gasEstimate);
+            
+            // Get gas price and cap it for testnet
+            let gasPrice = await this.web3.eth.getGasPrice();
+            console.log('Current gas price:', gasPrice, 'wei');
+            
+            // Cap gas price to 0.1 gwei for Base Sepolia testnet
+            const maxGasPrice = this.web3.utils.toWei('0.1', 'gwei');
+            if (BigInt(gasPrice) > BigInt(maxGasPrice)) {
+                console.log('Capping gas price to 0.1 gwei for testnet');
+                gasPrice = maxGasPrice;
             }
             
-            // Send transaction with Base-optimized gas settings
-            console.log('Sending transaction to Base...');
-            
-            // Base Sepolia testnet should use very low gas prices
-            let baseGasPrice = await this.web3.eth.getGasPrice();
-            console.log('Network gas price:', baseGasPrice, 'wei');
-            
-            // For Base Sepolia testnet, cap the gas price to ensure it's reasonable
-            const maxTestnetGasPrice = this.web3.utils.toWei('0.1', 'gwei'); // 0.1 gwei max for testnet
-            if (BigInt(baseGasPrice) > BigInt(maxTestnetGasPrice)) {
-                console.log('Capping gas price for testnet to 0.1 gwei');
-                baseGasPrice = maxTestnetGasPrice;
-            }
-            
+            // Send transaction
+            console.log('Sending transaction with gas price:', gasPrice);
             const receipt = await this.contract.methods
                 .verifyProof(
                     formattedProof.a,
@@ -365,16 +232,11 @@ class BaseVerifier {
                 )
                 .send({ 
                     from: this.account,
-                    gas: Math.floor(Number(gasEstimate) * 1.2), // Add 20% buffer
-                    gasPrice: baseGasPrice // Use network's gas price
+                    gas: Math.floor(Number(gasEstimate) * 1.2), // 20% buffer
+                    gasPrice: gasPrice
                 });
             
-            console.log('Transaction receipt:', receipt);
-            
-            // Check if verification succeeded
-            if (!receipt.status) {
-                throw new Error('Transaction failed - proof verification rejected');
-            }
+            console.log('Transaction successful:', receipt.transactionHash);
             
             return {
                 success: true,
@@ -385,86 +247,18 @@ class BaseVerifier {
             };
             
         } catch (error) {
-            console.error('Base on-chain verification failed:', error);
-            
-            // Provide specific error messages
-            let errorMessage = error.message || 'Unknown error';
-            
-            if (error.code === 4001) {
-                errorMessage = 'Transaction rejected by user';
-            } else if (error.message && error.message.includes('execution reverted')) {
-                errorMessage = 'Smart contract execution failed - proof verification failed';
-            } else if (error.message && error.message.includes('insufficient funds')) {
-                errorMessage = 'Insufficient funds for gas on Base';
-            }
-            
-            return {
-                success: false,
-                error: errorMessage
-            };
+            console.error('On-chain verification failed:', error);
+            throw error;
         }
-    }
-    
-    onAccountChange(account) {
-        console.log('Account changed:', account);
     }
 }
 
-// Initialize global instance
+// Create global instance
 window.baseVerifier = new BaseVerifier();
 
-// Expose the verification function for the blockchain verifier
+// Global verification function
 window.verifyOnBaseActual = async function(proofId, proofType) {
-    // Check if we need to sync connection state from blockchainVerifier
-    if (window.blockchainVerifier && window.blockchainVerifier.baseConnected && !window.baseVerifier.isConnected) {
-        console.log('Syncing Base connection state from blockchainVerifier');
-        // Sync the connection state
-        window.baseVerifier.isConnected = true;
-        window.baseVerifier.account = window.blockchainVerifier.baseAccount;
-        
-        // Initialize Web3 with the existing provider
-        if (window.ethereum) {
-            window.baseVerifier.web3 = new Web3(window.ethereum);
-            
-            // Get network ID and set contract
-            try {
-                // First ensure we're on Base network
-                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-                const baseSepoliaChainId = '0x14a34'; // 84532 in hex
-                
-                if (chainId !== baseSepoliaChainId) {
-                    console.log('Not on Base network, switching...');
-                    await window.baseVerifier.switchToBase();
-                }
-                
-                // Now get the network ID
-                const networkId = await window.baseVerifier.web3.eth.net.getId();
-                console.log('Current network ID after switch:', networkId);
-                
-                const contractAddresses = {
-                    8453: '0x...', // Base Mainnet (not deployed)
-                    84532: '0x74D68B2481d298F337e62efc50724CbBA68dCF8f', // Base Sepolia
-                };
-                
-                window.baseVerifier.contractAddress = contractAddresses[networkId];
-                if (window.baseVerifier.contractAddress && window.baseVerifier.contractAddress !== '0x0000000000000000000000000000000000000000') {
-                    // Create a new instance of BaseVerifier to get the contractABI
-                    const tempVerifier = new BaseVerifier();
-                    window.baseVerifier.contractABI = tempVerifier.contractABI;
-                    
-                    window.baseVerifier.contract = new window.baseVerifier.web3.eth.Contract(
-                        window.baseVerifier.contractABI, 
-                        window.baseVerifier.contractAddress
-                    );
-                    console.log('Base contract initialized:', window.baseVerifier.contractAddress);
-                } else {
-                    console.error('No Base contract address for network:', networkId);
-                }
-            } catch (error) {
-                console.error('Failed to sync contract setup:', error);
-            }
-        }
-    }
-    
     return await window.baseVerifier.verifyProof(proofId, proofType);
 };
+
+console.log('[BASE] Rebuilt Groth16 verifier loaded');

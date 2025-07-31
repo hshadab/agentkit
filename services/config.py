@@ -28,7 +28,7 @@ class BlockchainConfig:
     class Ethereum:
         network: str = os.getenv('ETH_NETWORK', 'sepolia')
         rpc_url: str = os.getenv('ETH_RPC_URL', 'https://sepolia.infura.io/v3/YOUR_KEY')
-        contract_address: str = '0x1e8150050a7a4715aad42b905c08df76883f396f'
+        contract_address: str = '0x09378444046d1ccb32ca2d5b44fab6634738d067'  # Real Groth16 Verifier
         chain_id: int = 11155111  # Sepolia
         explorer_url: str = 'https://sepolia.etherscan.io'
     

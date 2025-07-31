@@ -12,6 +12,73 @@ export class ProofManager {
         this.proofs = new Map(); // Store proof data
     }
 
+    generateActionButtons(proofId, functionName) {
+        const bv = window.blockchainVerifier;
+        let buttons = '';
+        
+        // Ethereum
+        if (bv && bv.ethereumConnected) {
+            buttons += `
+                <button type="button" class="action-btn eth-verify-btn" 
+                        onclick="window.blockchainVerifier.verifyOnEthereum('${proofId}', '${functionName}')">
+                    Verify on Ethereum
+                </button>`;
+        } else {
+            buttons += `
+                <button type="button" class="action-btn eth-connect-btn" 
+                        onclick="window.blockchainVerifier.connectEthereum().then(() => { const card = document.querySelector('[data-proof-id=\\'${proofId}\\']'); if(card) { card.querySelector('.card-actions').innerHTML = window.proofManager.generateActionButtons('${proofId}', '${functionName}'); } })">
+                    Connect to Ethereum
+                </button>`;
+        }
+        
+        // Solana
+        if (bv && bv.solanaConnected) {
+            buttons += `
+                <button type="button" class="action-btn sol-verify-btn" 
+                        onclick="window.blockchainVerifier.verifyOnSolana('${proofId}', '${functionName}')">
+                    Verify on Solana
+                </button>`;
+        } else {
+            buttons += `
+                <button type="button" class="action-btn sol-connect-btn" 
+                        onclick="window.blockchainVerifier.connectSolana().then(() => { const card = document.querySelector('[data-proof-id=\\'${proofId}\\']'); if(card) { card.querySelector('.card-actions').innerHTML = window.proofManager.generateActionButtons('${proofId}', '${functionName}'); } })">
+                    Connect to Solana
+                </button>`;
+        }
+        
+        // Base
+        if (bv && bv.baseConnected) {
+            buttons += `
+                <button type="button" class="action-btn base-verify-btn" 
+                        onclick="return window.safeVerifyOnBase('${proofId}', '${functionName}');">
+                    Verify on Base
+                </button>`;
+        } else {
+            buttons += `
+                <button type="button" class="action-btn base-connect-btn" 
+                        onclick="window.blockchainVerifier.connectBase().then(() => { const card = document.querySelector('[data-proof-id=\\'${proofId}\\']'); if(card) { card.querySelector('.card-actions').innerHTML = window.proofManager.generateActionButtons('${proofId}', '${functionName}'); } })">
+                    Connect to Base
+                </button>`;
+        }
+        
+        // Avalanche
+        if (bv && bv.avalancheConnected) {
+            buttons += `
+                <button type="button" class="action-btn avalanche-verify-btn" 
+                        onclick="event.preventDefault(); event.stopPropagation(); window.safeVerifyOnAvalanche('${proofId}', '${functionName}'); return false;">
+                    Verify on Avalanche
+                </button>`;
+        } else {
+            buttons += `
+                <button type="button" class="action-btn avalanche-connect-btn" 
+                        onclick="window.blockchainVerifier.connectAvalanche().then(() => { const card = document.querySelector('[data-proof-id=\\'${proofId}\\']'); if(card) { card.querySelector('.card-actions').innerHTML = window.proofManager.generateActionButtons('${proofId}', '${functionName}'); } })">
+                    Connect to Avalanche
+                </button>`;
+        }
+        
+        return buttons;
+    }
+
     addProofCard(data) {
         debugLog(`Adding proof card for ${data.proofId}`, 'info');
         console.log('Proof card data:', data);
@@ -69,6 +136,7 @@ export class ProofManager {
                         </div>
                     </div>
                     ${functionName === 'prove_ai_content' ? this.getAICommitmentHTML(data) : ''}
+                    ${functionName === 'prove_medical_integrity' ? this.getMedicalCommitmentHTML(data) : ''}
                 ` : `
                     <div class="proof-generating-box pulsating">
                         <div class="proof-type-name">${plainEnglishName}</div>
@@ -78,22 +146,7 @@ export class ProofManager {
             </div>
             ${data.status === 'complete' ? `
                 <div class="card-actions">
-                    <button class="action-btn eth-verify-btn" 
-                            onclick="window.blockchainVerifier.verifyOnEthereum('${data.proofId}', '${functionName}')">
-                        Verify on Ethereum
-                    </button>
-                    <button class="action-btn sol-verify-btn" 
-                            onclick="window.blockchainVerifier.verifyOnSolana('${data.proofId}', '${functionName}')">
-                        Verify on Solana
-                    </button>
-                    <button class="action-btn base-verify-btn" 
-                            onclick="window.blockchainVerifier.verifyOnBase('${data.proofId}', '${functionName}')">
-                        Verify on Base
-                    </button>
-                    <button class="action-btn avalanche-verify-btn" 
-                            onclick="window.blockchainVerifier.verifyOnAvalanche('${data.proofId}', '${functionName}')">
-                        Verify on Avalanche
-                    </button>
+                    ${this.generateActionButtons(data.proofId, functionName)}
                     ${functionName === 'prove_device_proximity' ? `
                     <button class="action-btn iotex-verify-btn" 
                             onclick="window.blockchainVerifier.verifyDeviceOnIoTeX('${data.proofId}', '${data.proofId}')">
@@ -140,6 +193,7 @@ export class ProofManager {
             'prove_location': 'LOCATION',
             'prove_ai_content': 'AI PREDICTION',
             'prove_device_proximity': 'DEVICE PROXIMITY',
+            'prove_medical_integrity': 'MEDICAL INTEGRITY',
             'prove_age': 'AGE',
             'prove_identity': 'IDENTITY'
         };
@@ -231,6 +285,7 @@ export class ProofManager {
                         </div>
                     </div>
                     ${functionName === 'prove_ai_content' ? this.getAICommitmentHTML(data) : ''}
+                    ${functionName === 'prove_medical_integrity' ? this.getMedicalCommitmentHTML(data) : ''}
                 `;
                 console.log('[UPDATE_PROOF_CARD] Setting innerHTML, includes Base link:', functionName === 'prove_ai_content');
                 contentDiv.innerHTML = newContent;
@@ -241,24 +296,7 @@ export class ProofManager {
                 console.log('[UPDATE_PROOF_CARD] Adding actions section');
                 const actionsDiv = document.createElement('div');
                 actionsDiv.className = 'card-actions';
-                actionsDiv.innerHTML = `
-                    <button class="action-btn eth-verify-btn" 
-                            onclick="window.blockchainVerifier.verifyOnEthereum('${proofId}', '${data.metadata?.function || data.proof_function || 'proof'}')">
-                        Verify on Ethereum
-                    </button>
-                    <button class="action-btn sol-verify-btn" 
-                            onclick="window.blockchainVerifier.verifyOnSolana('${proofId}', '${data.metadata?.function || data.proof_function || 'proof'}')">
-                        Verify on Solana
-                    </button>
-                    <button class="action-btn base-verify-btn" 
-                            onclick="window.blockchainVerifier.verifyOnBase('${proofId}', '${data.metadata?.function || data.proof_function || 'proof'}')">
-                        Verify on Base
-                    </button>
-                    <button class="action-btn avalanche-verify-btn" 
-                            onclick="window.blockchainVerifier.verifyOnAvalanche('${proofId}', '${data.metadata?.function || data.proof_function || 'proof'}')">
-                        Verify on Avalanche
-                    </button>
-                `;
+                actionsDiv.innerHTML = this.generateActionButtons(proofId, data.metadata?.function || data.proof_function || 'proof');
                 proofCard.appendChild(actionsDiv);
                 
                 // Also add the verification results container
@@ -477,6 +515,62 @@ export class ProofManager {
         }
     }
 
+    getMedicalCommitmentHTML(data) {
+        // Get medical record data from proof metadata
+        console.log('[MEDICAL_COMMITMENT] Looking for medical data in:', {
+            direct: !!data.medicalRecordData,
+            metadata: !!data.metadata?.medicalRecordData,
+            metadataAdditional: !!data.metadata?.additional_context?.medicalRecordData,
+            additional: !!data.additional_context?.medicalRecordData,
+            fullData: data
+        });
+        
+        const medicalData = data.medicalRecordData || 
+                           data.metadata?.medicalRecordData ||
+                           data.metadata?.additional_context?.medicalRecordData ||
+                           data.additional_context?.medicalRecordData;
+        
+        console.log('[MEDICAL_COMMITMENT] Found medical data:', medicalData);
+        
+        if (medicalData && medicalData.transactionHash) {
+            // Real Avalanche commitment
+            const timestamp = new Date((medicalData.creation_timestamp || medicalData.commitment_timestamp) * 1000).toLocaleString();
+            const explorerUrl = `https://testnet.snowtrace.io/tx/${medicalData.transactionHash}`;
+            
+            return `
+                <div class="commitment-info" style="margin: 8px -8px -8px -8px; padding: 12px; background: #2a2a3a; border-radius: 0 0 4px 4px; border: 1px solid #3a3a4a; border-top: none;">
+                    <div style="font-size: 12px; color: #888;">
+                        <a href="${explorerUrl}" 
+                           target="_blank" 
+                           style="color: #E84142; text-decoration: none;">
+                            View medical record on Avalanche blockchain
+                        </a>
+                        <span style="color: #666; margin-left: 8px;">| ${timestamp}</span>
+                    </div>
+                </div>
+            `;
+        } else if (medicalData && medicalData.status === 'simulated') {
+            // Simulated commitment (fallback)
+            return `
+                <div class="commitment-info" style="margin: 8px -8px -8px -8px; padding: 12px; background: #2a2a3a; border-radius: 0 0 4px 4px; border: 1px solid #3a3a4a; border-top: none;">
+                    <div style="font-size: 12px; color: #666;">
+                        Medical record created (simulated mode)
+                        <div style="margin-top: 4px; font-size: 11px;">Patient ID: ${medicalData.patient_id}</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Waiting for commitment
+            return `
+                <div class="commitment-info" style="margin: 8px -8px -8px -8px; padding: 12px; background: #2a2a3a; border-radius: 0 0 4px 4px; border: 1px solid #3a3a4a; border-top: none;">
+                    <div style="font-size: 12px; color: #666;">
+                        Creating medical record on Avalanche...
+                        <div style="margin-top: 4px; font-size: 11px;">Please approve the transaction in MetaMask</div>
+                    </div>
+                </div>
+            `;
+        }
+    }
 
     copyProofId(proofId) {
         copyToClipboard(proofId);
