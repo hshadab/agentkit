@@ -1037,7 +1037,8 @@ class WorkflowExecutor {
                 metadata: {
                     function: functionName,
                     arguments: args,
-                    step_size: 50,
+                    // Use smaller step size for medical proofs to reduce data size
+                    step_size: functionName === 'prove_medical_integrity' ? 10 : 50,
                     explanation: "Zero-knowledge proof generation",  // REQUIRED FIELD ADDED!
                     additional_context: {
                         workflow_id: this.workflowId,
