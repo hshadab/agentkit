@@ -505,13 +505,26 @@ export class ProofManager {
             const timestamp = new Date((medicalData.creation_timestamp || medicalData.commitment_timestamp) * 1000).toLocaleString();
             const explorerUrl = `https://testnet.snowtrace.io/tx/${medicalData.transactionHash}`;
             
+            // Format record hash for display
+            const recordHash = medicalData.record_hash || medicalData.recordHash || '';
+            const shortHash = recordHash.length > 20 ? 
+                `${recordHash.slice(0, 10)}...${recordHash.slice(-8)}` : 
+                recordHash;
+            
             return `
                 <div class="commitment-info" style="margin: 8px -8px -8px -8px; padding: 12px; background: #2a2a3a; border-radius: 0 0 4px 4px; border: 1px solid #3a3a4a; border-top: none;">
                     <div style="font-size: 12px; color: #888;">
+                        <div style="margin-bottom: 6px;">
+                            <span style="color: #aaa;">Patient ID:</span> 
+                            <span style="color: #E84142; font-family: monospace;">${medicalData.patient_id || 'Unknown'}</span>
+                            <span style="color: #666; margin: 0 8px;">|</span>
+                            <span style="color: #aaa;">Record Hash:</span> 
+                            <span style="color: #E84142; font-family: monospace;" title="${recordHash}">${shortHash}</span>
+                        </div>
                         <a href="${explorerUrl}" 
                            target="_blank" 
                            style="color: #E84142; text-decoration: none;">
-                            View medical record on Avalanche blockchain
+                            View medical record commitment on Avalanche ↗
                         </a>
                         <span style="color: #666; margin-left: 8px;">| ${timestamp}</span>
                     </div>
@@ -519,11 +532,33 @@ export class ProofManager {
             `;
         } else if (medicalData && medicalData.status === 'simulated') {
             // Simulated commitment (fallback)
+            const recordHash = medicalData.record_hash || medicalData.recordHash || '';
+            const shortHash = recordHash.length > 20 ? 
+                `${recordHash.slice(0, 10)}...${recordHash.slice(-8)}` : 
+                recordHash;
+            
             return `
                 <div class="commitment-info" style="margin: 8px -8px -8px -8px; padding: 12px; background: #2a2a3a; border-radius: 0 0 4px 4px; border: 1px solid #3a3a4a; border-top: none;">
                     <div style="font-size: 12px; color: #666;">
-                        Medical record created (simulated mode)
-                        <div style="margin-top: 4px; font-size: 11px;">Patient ID: ${medicalData.patient_id}</div>
+                        <div style="margin-bottom: 6px;">
+                            <span style="color: #888;">Medical record created (simulated mode)</span>
+                        </div>
+                        <div style="font-size: 11px;">
+                            <span style="color: #777;">Patient ID:</span> 
+                            <span style="color: #999; font-family: monospace;">${medicalData.patient_id || 'Unknown'}</span>
+                            <span style="color: #555; margin: 0 6px;">|</span>
+                            <span style="color: #777;">Record Hash:</span> 
+                            <span style="color: #999; font-family: monospace;" title="${recordHash}">${shortHash}</span>
+                        </div>
+                        ${medicalData.avalancheExplorerUrl ? `
+                            <div style="margin-top: 6px;">
+                                <a href="${medicalData.avalancheExplorerUrl}" 
+                                   target="_blank" 
+                                   style="color: #E84142; text-decoration: none; font-size: 11px;">
+                                    View simulated transaction ↗
+                                </a>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
             `;
