@@ -727,6 +727,12 @@ class WorkflowExecutor {
                         avalancheProof.medicalRecordData = this.medicalRecordData;
                     }
                     
+                    // Ensure avalancheProof has the required fields
+                    if (!avalancheProof.proofId && !avalancheProof.proof_id) {
+                        console.error('❌ No proof ID found in avalancheProof:', avalancheProof);
+                        throw new Error('Proof ID missing for Avalanche verification');
+                    }
+                    
                     // Send verification request
                     const verifyMessage = {
                         type: 'verify_on_avalanche',
@@ -738,6 +744,7 @@ class WorkflowExecutor {
                     console.log('📤 Sending verify_on_avalanche message:', JSON.stringify(verifyMessage));
                     console.log('WebSocket state:', this.wsClient.readyState);
                     console.log('WebSocket connected:', this.wsClient.readyState === 1);
+                    console.log('Proof ID being sent:', avalancheProof.proofId || avalancheProof.proof_id);
                     this.wsClient.send(JSON.stringify(verifyMessage));
                     
                     // Set timeout
