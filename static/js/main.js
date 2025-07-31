@@ -1330,102 +1330,11 @@ function setupMessageHandlers() {
         console.log('[AVALANCHE_VERIFY] Request ID:', data.requestId);
         
         try {
-            // Use the existing Avalanche Medical Verifier
-            if (data.proofType === 'medical_integrity') {
-                console.log('[AVALANCHE_VERIFY] Medical integrity verification requested');
-                
-                // Check if we have medical record data from the proof
-                const medicalData = data.proofData?.medicalRecordData || data.medicalRecordData;
-                
-                if (medicalData && medicalData.status === 'simulated') {
-                    // Simulated verification for fallback mode
-                    console.log('[AVALANCHE_VERIFY] Using simulated verification (no blockchain)');
-                    const simulatedTxHash = '0x' + Math.random().toString(16).substring(2, 66);
-                    
-                    wsManager.send({
-                        type: 'verification_result',
-                        requestId: data.requestId,
-                        success: true,
-                        result: {
-                            success: true,
-                            verified: true,
-                            integrityScore: 100,
-                            transactionHash: simulatedTxHash,
-                            blockNumber: Math.floor(Math.random() * 1000000),
-                            gasUsed: '150000',
-                            message: 'Medical integrity proof verified (simulated)'
-                        },
-                        transactionHash: simulatedTxHash
-                    });
-                    
-                    debugLog(`Medical integrity verification complete (simulated): ${simulatedTxHash}`, 'success');
-                } else if (window.AvalancheMedicalVerifier) {
-                    console.log('[AVALANCHE_VERIFY] Using AvalancheMedicalVerifier');
-                    try {
-                        const verifier = new window.AvalancheMedicalVerifier();
-                        await verifier.initialize();
-                        
-                        // Verify integrity using the proof data
-                        console.log('[AVALANCHE_VERIFY] Calling verifyIntegrity with:', data.proofData);
-                        const result = await verifier.verifyIntegrity(data.proofData);
-                        console.log('[AVALANCHE_VERIFY] Verification result:', result);
-                        
-                        wsManager.send({
-                            type: 'verification_result',
-                            requestId: data.requestId,
-                            success: true,
-                            result: {
-                                ...result,
-                                message: 'Medical integrity proof verified on Avalanche'
-                            },
-                            transactionHash: result.transactionHash
-                        });
-                        
-                        debugLog(`Medical integrity verification complete: ${result.transactionHash}`, 'success');
-                    } catch (verifyError) {
-                        console.error('[AVALANCHE_VERIFY] Verification failed:', verifyError);
-                        // Fall back to simulated mode
-                        const simulatedTxHash = '0x' + Math.random().toString(16).substring(2, 66);
-                        
-                        wsManager.send({
-                            type: 'verification_result',
-                            requestId: data.requestId,
-                            success: true,
-                            result: {
-                                success: true,
-                                verified: true,
-                                integrityScore: 100,
-                                transactionHash: simulatedTxHash,
-                                blockNumber: Math.floor(Math.random() * 1000000),
-                                gasUsed: '150000',
-                                message: 'Medical integrity proof verified (simulated due to network issue)'
-                            },
-                            transactionHash: simulatedTxHash
-                        });
-                    }
-                } else {
-                    // No verifier available, use simulated mode
-                    console.log('[AVALANCHE_VERIFY] No AvalancheMedicalVerifier, using simulated mode');
-                    const simulatedTxHash = '0x' + Math.random().toString(16).substring(2, 66);
-                    
-                    wsManager.send({
-                        type: 'verification_result',
-                        requestId: data.requestId,
-                        success: true,
-                        result: {
-                            success: true,
-                            verified: true,
-                            integrityScore: 100,
-                            transactionHash: simulatedTxHash,
-                            blockNumber: Math.floor(Math.random() * 1000000),
-                            gasUsed: '150000',
-                            message: 'Medical integrity proof verified (simulated)'
-                        },
-                        transactionHash: simulatedTxHash
-                    });
-                }
-            } else {
-                // For other proof types, use the blockchain verifier
+            // For ALL proof types including medical_integrity, use the standard blockchain verifier
+            // Medical proofs are zkEngine proofs just like KYC, age, etc.
+            console.log('[AVALANCHE_VERIFY] Using standard blockchain verifier for proof type:', data.proofType);
+            
+            if (true) {  // Always use standard flow
                 if (window.blockchainVerifier) {
                     const result = await window.blockchainVerifier.verifyOnAvalanche(data.proofData.proofId || data.proofData.proof_id, data.proofType);
                     

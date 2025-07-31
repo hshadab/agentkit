@@ -720,6 +720,8 @@ export class BlockchainVerifier {
         if (!this.avalancheConnected) {
             const connected = await this.connectAvalanche();
             if (!connected) return { success: false, error: 'Failed to connect to Avalanche wallet' };
+            // Add delay after connection to avoid network switch conflicts
+            await new Promise(resolve => setTimeout(resolve, 1000));
         }
         
         // Update button state - handle both proof cards and table rows
