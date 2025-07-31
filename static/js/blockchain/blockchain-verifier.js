@@ -17,17 +17,12 @@ export class BlockchainVerifier {
         this.avalancheAccount = null;
         this.iotexAccount = null;
         
-        // Disable auto-connect on startup to prevent MetaMask errors
-        // this.autoConnect();
-        debugLog('Auto-connect disabled to prevent startup errors', 'info');
+        // Enable auto-connect on startup
+        this.autoConnect();
+        debugLog('Auto-connect enabled for all 5 blockchains', 'info');
     }
     
     async autoConnect() {
-        debugLog('Auto-connect DISABLED - connections will happen on-demand', 'info');
-        return;
-        
-        /* DISABLED: The entire autoConnect function is commented out
-        
         debugLog('Starting auto-connect for all chains...', 'info');
         
         // Auto-connect all chains that were previously connected
@@ -98,14 +93,26 @@ export class BlockchainVerifier {
             showConnectAll = true;
         }
         
+        // Check if previously connected to IoTeX (MetaMask)
+        if (localStorage.getItem('iotex-connected') === 'true') {
+            debugLog('Auto-connecting to IoTeX...', 'info');
+            connections.push(this.connectIoTeX().catch(err => {
+                debugLog(`IoTeX auto-connect failed: ${err.message}`, 'warning');
+                return false;
+            }));
+        } else {
+            // Show connect banner if not connected
+            const banner = document.getElementById('iotex-connect-banner');
+            if (banner) banner.style.display = 'flex';
+            showConnectAll = true;
+        }
+        
         // Wait for all connections to complete
         if (connections.length > 0) {
             const results = await Promise.allSettled(connections);
             const connected = results.filter(r => r.status === 'fulfilled' && r.value).length;
             debugLog(`Auto-connect complete: ${connected}/${connections.length} chains connected`, 'info');
         }
-        
-        */ // End of disabled autoConnect code
     }
     
 

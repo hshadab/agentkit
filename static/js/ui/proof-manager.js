@@ -13,68 +13,36 @@ export class ProofManager {
     }
 
     generateActionButtons(proofId, functionName) {
-        const bv = window.blockchainVerifier;
+        // Always show verify buttons - auto-connection handles the connection
         let buttons = '';
         
         // Ethereum
-        if (bv && bv.ethereumConnected) {
-            buttons += `
-                <button type="button" class="action-btn eth-verify-btn" 
-                        onclick="window.blockchainVerifier.verifyOnEthereum('${proofId}', '${functionName}')">
-                    Verify on Ethereum
-                </button>`;
-        } else {
-            buttons += `
-                <button type="button" class="action-btn eth-connect-btn" 
-                        onclick="window.blockchainVerifier.connectEthereum().then(() => { const card = document.querySelector('[data-proof-id=\\'${proofId}\\']'); if(card) { card.querySelector('.card-actions').innerHTML = window.proofManager.generateActionButtons('${proofId}', '${functionName}'); } })">
-                    Connect to Ethereum
-                </button>`;
-        }
+        buttons += `
+            <button type="button" class="action-btn eth-verify-btn" 
+                    onclick="window.blockchainVerifier.verifyOnEthereum('${proofId}', '${functionName}')">
+                Verify on Ethereum
+            </button>`;
         
         // Solana
-        if (bv && bv.solanaConnected) {
-            buttons += `
-                <button type="button" class="action-btn sol-verify-btn" 
-                        onclick="window.blockchainVerifier.verifyOnSolana('${proofId}', '${functionName}')">
-                    Verify on Solana
-                </button>`;
-        } else {
-            buttons += `
-                <button type="button" class="action-btn sol-connect-btn" 
-                        onclick="window.blockchainVerifier.connectSolana().then(() => { const card = document.querySelector('[data-proof-id=\\'${proofId}\\']'); if(card) { card.querySelector('.card-actions').innerHTML = window.proofManager.generateActionButtons('${proofId}', '${functionName}'); } })">
-                    Connect to Solana
-                </button>`;
-        }
+        buttons += `
+            <button type="button" class="action-btn sol-verify-btn" 
+                    onclick="window.blockchainVerifier.verifyOnSolana('${proofId}', '${functionName}')">
+                Verify on Solana
+            </button>`;
         
         // Base
-        if (bv && bv.baseConnected) {
-            buttons += `
-                <button type="button" class="action-btn base-verify-btn" 
-                        onclick="return window.safeVerifyOnBase('${proofId}', '${functionName}');">
-                    Verify on Base
-                </button>`;
-        } else {
-            buttons += `
-                <button type="button" class="action-btn base-connect-btn" 
-                        onclick="window.blockchainVerifier.connectBase().then(() => { const card = document.querySelector('[data-proof-id=\\'${proofId}\\']'); if(card) { card.querySelector('.card-actions').innerHTML = window.proofManager.generateActionButtons('${proofId}', '${functionName}'); } })">
-                    Connect to Base
-                </button>`;
-        }
+        buttons += `
+            <button type="button" class="action-btn base-verify-btn" 
+                    onclick="return window.safeVerifyOnBase('${proofId}', '${functionName}');">
+                Verify on Base
+            </button>`;
         
         // Avalanche
-        if (bv && bv.avalancheConnected) {
-            buttons += `
-                <button type="button" class="action-btn avalanche-verify-btn" 
-                        onclick="event.preventDefault(); event.stopPropagation(); window.safeVerifyOnAvalanche('${proofId}', '${functionName}'); return false;">
-                    Verify on Avalanche
-                </button>`;
-        } else {
-            buttons += `
-                <button type="button" class="action-btn avalanche-connect-btn" 
-                        onclick="window.blockchainVerifier.connectAvalanche().then(() => { const card = document.querySelector('[data-proof-id=\\'${proofId}\\']'); if(card) { card.querySelector('.card-actions').innerHTML = window.proofManager.generateActionButtons('${proofId}', '${functionName}'); } })">
-                    Connect to Avalanche
-                </button>`;
-        }
+        buttons += `
+            <button type="button" class="action-btn avalanche-verify-btn" 
+                    onclick="event.preventDefault(); event.stopPropagation(); window.safeVerifyOnAvalanche('${proofId}', '${functionName}'); return false;">
+                Verify on Avalanche
+            </button>`;
         
         return buttons;
     }
