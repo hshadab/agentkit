@@ -25,6 +25,9 @@ export class BlockchainVerifier {
     async autoConnect() {
         debugLog('Starting auto-connect for all chains...', 'info');
         
+        // Add delay to prevent network switching conflicts
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
         // Auto-connect all chains that were previously connected
         const connections = [];
         let showConnectAll = false;
@@ -163,6 +166,11 @@ export class BlockchainVerifier {
                 params: [{ chainId: config.blockchain.ethereum.chainId }],
             });
         } catch (switchError) {
+            // Ignore network switch errors during auto-connect
+            if (switchError.code === -32603 && switchError.message?.includes('selected network')) {
+                debugLog('Network switch rejected (user may have changed network)', 'warning');
+                return;
+            }
             // This error code indicates that the chain has not been added to MetaMask
             if (switchError.code === 4902) {
                 try {
@@ -308,6 +316,11 @@ export class BlockchainVerifier {
                 params: [{ chainId: '0x14a34' }], // Base Sepolia
             });
         } catch (switchError) {
+            // Ignore network switch errors during auto-connect
+            if (switchError.code === -32603 && switchError.message?.includes('selected network')) {
+                debugLog('Network switch rejected (user may have changed network)', 'warning');
+                return;
+            }
             if (switchError.code === 4902) {
                 try {
                     await window.ethereum.request({
@@ -381,6 +394,11 @@ export class BlockchainVerifier {
                 params: [{ chainId: config.blockchain.avalanche.chainId }],
             });
         } catch (switchError) {
+            // Ignore network switch errors during auto-connect
+            if (switchError.code === -32603 && switchError.message?.includes('selected network')) {
+                debugLog('Network switch rejected (user may have changed network)', 'warning');
+                return;
+            }
             if (switchError.code === 4902) {
                 try {
                     await window.ethereum.request({
@@ -844,6 +862,11 @@ export class BlockchainVerifier {
                 params: [{ chainId: config.blockchain.iotex.chainId }],
             });
         } catch (switchError) {
+            // Ignore network switch errors during auto-connect
+            if (switchError.code === -32603 && switchError.message?.includes('selected network')) {
+                debugLog('Network switch rejected (user may have changed network)', 'warning');
+                return;
+            }
             if (switchError.code === 4902) {
                 try {
                     await window.ethereum.request({
