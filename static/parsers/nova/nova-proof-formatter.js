@@ -36,7 +36,23 @@ class NovaProofFormatter {
             console.log('Found proof_data, length:', proofData.proof_data.length);
             console.log('Proof data first 100 chars:', proofData.proof_data.substring(0, 100));
             
-            // Try V3 parser first (handles zkEngine binary format better)
+            // Try the new calldata parser first (designed for zkEngine binary format)
+            if (window.ZKEngineCalldataParser) {
+                console.log('Trying ZKEngine Calldata Parser...');
+                const calldataParser = new ZKEngineCalldataParser();
+                const parsedComponents = calldataParser.parseZKEngineProof(proofData);
+                
+                if (parsedComponents) {
+                    console.log('Successfully parsed with calldata parser');
+                    const formatted = calldataParser.formatForIoTeXContract(parsedComponents, x, y);
+                    if (formatted) {
+                        console.log('Successfully formatted for IoTeX contract');
+                        return formatted;
+                    }
+                }
+            }
+            
+            // Try V3 parser next (handles zkEngine binary format better)
             if (window.NovaProofParserV3) {
                 console.log('Trying Nova Proof Parser V3...');
                 const parserV3 = new NovaProofParserV3();
