@@ -23,21 +23,24 @@ Proves identity verification without revealing personal information.
 
 #### 2. **Device Proximity Proof** (IoT Integration)
 Proves IoT device location and proximity for IoTeX blockchain with real Nova proofs.
-- **Features**: IoT device authentication, ioID integration, IOTX reward mechanisms
-- **Use cases**: Smart city applications, supply chain tracking, DePIN verification
+- **Features**: IoT device authentication, ioID DID integration, IOTX reward mechanisms
+- **Use cases**: Smart city applications, supply chain tracking, DePIN verification, decentralized device identity (DID)
 - **Blockchain**: IoTeX with ProximityNovaDecider
+- **IoTeX Integration**: Official ioID Registry for device DIDs, Nova Decider for proof verification
 - **Example**: `"Register IoT device TESTDEV123 with proximity proof at location 5050,5050"`
 
 #### 3. **AI Prediction Proof**
 Proves AI predictions were made before events occurred with blockchain timestamps.
 - **Use cases**: Trading predictions, weather forecasting, outcome verification
 - **Blockchain**: Base with commitment contract
+- **Base Integration**: Coinbase Developer Platform SDK, low-cost L2 for high-volume predictions
 - **Example**: `"Generate an AI prediction proof that Bitcoin will reach $100k by end of 2025"`
 
 #### 4. **Medical Integrity Proof**
 Proves medical record integrity and patient data validity without exposing sensitive information.
-- **Use cases**: Healthcare data verification, clinical trial integrity, patient privacy
+- **Use cases**: Healthcare data verification, clinical trial integrity, patient privacy, HIPAA compliance
 - **Blockchain**: Avalanche Fuji
+- **Avalanche Integration**: High-throughput C-Chain, sub-second finality for medical applications
 - **Example**: `"Generate medical integrity proof for patient record and verify on Avalanche"`
 
 #### 5. **AI Content Proof**
@@ -56,11 +59,14 @@ Proves AI-generated content authenticity and ownership with cryptographic verifi
 | **Avalanche** | Fuji | 0x30e93E8B0804fD60b0d151F724c307c61Be37EE1 | Medical integrity verifier |
 | **IoTeX** | Testnet | 0xd3778e76ce0131762337464EEF1BAefFc608e8e0 | ProximityNovaDecider for IoT |
 
-### USDC Transfer Integration
-- **Circle Developer Wallet** - Programmable wallets with automated transfers
-- **Coinbase API** - Alternative transfer method with API integration
-- **Multi-blockchain Support** - Send USDC on Ethereum and Solana
+### USDC Transfer Integration (Circle API)
+- **Circle Developer Platform** - Programmable wallets with automated transfers
+  - **SDK Integration**: Circle Web3 Services SDK for wallet management
+  - **API Features**: Create wallets, execute transfers, monitor transactions
+  - **Supported Networks**: Ethereum Sepolia, Solana Devnet
+- **Coinbase Commerce API** - Alternative transfer method with merchant tools
 - **Conditional Transfers** - Automated based on proof verification
+- **Real USDC**: Testnet USDC for development, production-ready architecture
 
 ## 🏗️ Architecture
 
@@ -72,9 +78,10 @@ Proves AI-generated content authenticity and ownership with cryptographic verifi
          │                           │                             │
          ▼                           ▼                             ▼
 ┌─────────────────────┐     ┌──────────────────────┐     ┌─────────────────────┐
-│ Blockchain Wallets  │     │ Python AI Service    │     │ Transfer APIs       │
-│ • MetaMask          │     │ • OpenAI GPT-4o      │     │ • Circle API        │
-│ • Solflare          │     │ • Port 8002          │     │ • Coinbase API      │
+│ Blockchain SDKs     │     │ Python AI Service    │     │ Platform APIs       │
+│ • MetaMask (EVM)    │     │ • OpenAI GPT-4o      │     │ • Circle SDK        │
+│ • Solflare (Solana) │     │ • Workflow Parser    │     │ • Coinbase SDK      │
+│ • IoTeX SDK         │     │ • Port 8002          │     │ • Avalanche Core    │
 └─────────────────────┘     └──────────────────────┘     └─────────────────────┘
 ```
 
@@ -247,12 +254,35 @@ agentkit/
 
 MIT License - see [LICENSE](LICENSE) file for details
 
+## 🔌 Key Integrations
+
+### Circle Developer Platform
+- **SDK**: Circle Web3 Services SDK for programmable wallets
+- **Features**: Multi-chain USDC transfers, wallet creation, transaction monitoring
+- **API**: RESTful API with webhook support for real-time updates
+
+### IoTeX Blockchain
+- **ioID Registry**: Official decentralized identity (DID) system for IoT devices
+- **Nova Decider**: Real cryptographic verification for device proximity proofs
+- **Use Cases**: DePIN applications, smart cities, supply chain, device authentication
+
+### Base (Coinbase L2)
+- **SDK**: Coinbase Developer Platform SDK
+- **Features**: Low-cost AI prediction commitments, high throughput
+- **Use Cases**: AI model predictions, trading strategies, content verification
+
+### Avalanche
+- **Integration**: Avalanche Core API for sub-second finality
+- **Features**: High-throughput medical data verification
+- **Use Cases**: Healthcare records, clinical trials, HIPAA-compliant data proofs
+
 ## 🙏 Acknowledgments
 
-- **Circle** for the Programmable Wallets API
-- **Coinbase** for their API integration
-- **IoTeX** for IoT blockchain infrastructure
-- zkEngine team for the zero-knowledge proof system
+- **Circle** for the Developer Platform and Web3 Services SDK
+- **Coinbase** for Base L2 and Developer Platform
+- **IoTeX** for DePIN infrastructure and ioID DID system
+- **Avalanche** for high-performance blockchain infrastructure
+- zkEngine team for the Nova recursive proof system
 - OpenAI for GPT-4o integration
 - The Ethereum, Solana, and broader blockchain communities
 
