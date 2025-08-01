@@ -7,7 +7,7 @@ A production-ready framework for privacy-preserving AI agents with real zero-kno
 ### Core Capabilities
 - **Real Zero-Knowledge Proofs** - Generate cryptographic proofs using zkEngine (Nova → Groth16 SNARKs)
 - **5 Blockchain Networks** - Deploy and verify proofs on Ethereum, Solana, Base, Avalanche, and IoTeX
-- **5 Proof Types** - KYC, Device Proximity (IoT), AI Prediction, Age Verification, Identity Verification
+- **5 Proof Types** - KYC, Device Proximity (IoT), AI Prediction, Medical Integrity, AI Content
 - **Automated USDC Transfers** - Real conditional transfers via Circle API and Coinbase API
 - **OpenAI-Powered Workflows** - GPT-4o integration for intelligent natural language parsing
 - **Real-Time WebSocket UI** - Live tracking of proof generation, verification, and transfers
@@ -17,29 +17,34 @@ A production-ready framework for privacy-preserving AI agents with real zero-kno
 
 #### 1. **KYC Compliance Proof**
 Proves identity verification without revealing personal information.
-- **Use cases**: DeFi compliance, age-restricted services, financial applications
+- **Use cases**: DeFi compliance, financial applications, regulatory requirements
+- **Blockchain**: Ethereum, Base, Avalanche
 - **Example**: `"Generate a KYC proof and verify on Ethereum"`
 
 #### 2. **Device Proximity Proof** (IoT Integration)
-Proves IoT device location and proximity for IoTeX blockchain.
-- **Features**: IoT device authentication, ioID integration, reward mechanisms
-- **Use cases**: Smart city applications, supply chain tracking, device authentication
-- **Example**: `"Generate device proximity proof for my IoT device at coordinates x=5000, y=5000"`
+Proves IoT device location and proximity for IoTeX blockchain with real Nova proofs.
+- **Features**: IoT device authentication, ioID integration, IOTX reward mechanisms
+- **Use cases**: Smart city applications, supply chain tracking, DePIN verification
+- **Blockchain**: IoTeX with ProximityNovaDecider
+- **Example**: `"Register IoT device TESTDEV123 with proximity proof at location 5050,5050"`
 
 #### 3. **AI Prediction Proof**
 Proves AI predictions were made before events occurred with blockchain timestamps.
-- **Use cases**: Trading predictions, weather forecasting, medical diagnoses
+- **Use cases**: Trading predictions, weather forecasting, outcome verification
+- **Blockchain**: Base with commitment contract
 - **Example**: `"Generate an AI prediction proof that Bitcoin will reach $100k by end of 2025"`
 
-#### 4. **Age Verification Proof**
-Proves age requirements without revealing exact date of birth.
-- **Use cases**: Age-restricted content, senior discounts, regulatory compliance
-- **Example**: `"Generate an age verification proof that I am over 21 years old"`
+#### 4. **Medical Integrity Proof**
+Proves medical record integrity and patient data validity without exposing sensitive information.
+- **Use cases**: Healthcare data verification, clinical trial integrity, patient privacy
+- **Blockchain**: Avalanche Fuji
+- **Example**: `"Generate medical integrity proof for patient record and verify on Avalanche"`
 
-#### 5. **Identity Verification Proof**
-Proves identity attributes with selective disclosure.
-- **Use cases**: Access control, membership verification, professional credentials
-- **Example**: `"Generate an identity verification proof for secure access"`
+#### 5. **AI Content Proof**
+Proves AI-generated content authenticity and ownership with cryptographic verification.
+- **Use cases**: Content attribution, AI art verification, intellectual property
+- **Blockchain**: Multi-chain support
+- **Example**: `"Generate AI content proof for my generated text"`
 
 ### Blockchain Support
 
@@ -48,8 +53,8 @@ Proves identity attributes with selective disclosure.
 | **Ethereum** | Sepolia | 0x1e8150050a7a4715aad42b905c08df76883f396f | EVM verification |
 | **Solana** | Devnet | 2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7 | High-speed verification |
 | **Base** | Sepolia | 0x74D68B2481d298F337e62efc50724CbBA68dCF8f | AI commitment contract |
-| **Avalanche** | Fuji | 0x30e93E8B0804fD60b0d151F724c307c61Be37EE1 | Groth16 verifier |
-| **IoTeX** | Testnet | 0x5967d15c7a6fD3ef7F1f309e766f35252a9de10d | Nova Decider for IoT |
+| **Avalanche** | Fuji | 0x30e93E8B0804fD60b0d151F724c307c61Be37EE1 | Medical integrity verifier |
+| **IoTeX** | Testnet | 0xd3778e76ce0131762337464EEF1BAefFc608e8e0 | ProximityNovaDecider for IoT |
 
 ### USDC Transfer Integration
 - **Circle Developer Wallet** - Programmable wallets with automated transfers
