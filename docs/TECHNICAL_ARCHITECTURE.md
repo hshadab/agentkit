@@ -84,20 +84,31 @@ async def process_with_ai(request: str, context: str) -> str
 async def execute_workflow(request: WorkflowRequest) -> Dict
 ```
 
-### 3. zkEngine Binary
+### 3. zkEngine Binary (Real Nova Recursive SNARKs)
 
-**Purpose**: Zero-knowledge proof generation using Nova-Groth16
+**Purpose**: Real zero-knowledge proof generation using Nova IVC (Incremental Verifiable Computation)
 
 **Technical Specifications**:
-- Binary size: 8.8MB
-- Proof size: ~19MB per proof
-- Generation time: 10-20 seconds
-- Memory usage: ~500MB during generation
+- Binary location: `/home/hshadab/agentic/zkEngine_dev/wasm_file`
+- Proof format: CompressedSNARK (bincode serialized)
+- Proof size: ~18-19MB per proof
+- Generation time: 15-35 seconds (depending on circuit complexity)
+- Memory usage: ~500MB-1GB during generation
+- Framework: Arecibo/Nova with KZG polynomial commitments
+
+**Real Proof Generation Process**:
+1. WASM circuit execution with zkEngine
+2. Nova folding for recursive computation
+3. CompressedSNARK generation with ~27-30 field elements
+4. Binary proof output with base64 encoding
+5. Parser extraction for on-chain verification
 
 **Supported Proof Types**:
-1. **KYC Compliance** (`prove_kyc`)
-2. **Location Verification** (`prove_location`)
-3. **AI Prediction Commitment** (`prove_ai_content`)
+1. **KYC Compliance** (`kyc_compliance_real.wasm`)
+2. **Device Proximity IoT** (`device_proximity.wasm`)
+3. **AI Prediction Commitment** (`ai_prediction_commitment.wasm`)
+4. **Medical Integrity** (`medical_integrity.wasm`)
+5. **DePIN Location** (`depin_location_real.wasm`)
 
 ### 4. Frontend UI (`static/`)
 

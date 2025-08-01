@@ -1,6 +1,6 @@
 # Verifiable Agent Kit
 
-A production-ready framework for privacy-preserving AI agents with real zero-knowledge proofs, multi-chain verification, and automated USDC transfers. Build trustless, verifiable compute applications using natural language commands.
+A production-ready framework for privacy-preserving AI agents with real zero-knowledge proofs using zkEngine Nova recursive proofs. Features multi-chain verification, automated USDC transfers, and IoTeX DePIN integration. Build trustless, verifiable compute applications using natural language commands.
 
 ## 🚀 Key Features
 

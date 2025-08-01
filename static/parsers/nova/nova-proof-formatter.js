@@ -39,17 +39,28 @@ class NovaProofFormatter {
             // Try the new calldata parser first (designed for zkEngine binary format)
             if (window.ZKEngineCalldataParser) {
                 console.log('Trying ZKEngine Calldata Parser...');
-                const calldataParser = new ZKEngineCalldataParser();
-                const parsedComponents = calldataParser.parseZKEngineProof(proofData);
-                
-                if (parsedComponents) {
-                    console.log('Successfully parsed with calldata parser');
-                    const formatted = calldataParser.formatForIoTeXContract(parsedComponents, x, y);
-                    if (formatted) {
-                        console.log('Successfully formatted for IoTeX contract');
-                        return formatted;
+                try {
+                    const calldataParser = new ZKEngineCalldataParser();
+                    const parsedComponents = calldataParser.parseZKEngineProof(proofData);
+                    
+                    if (parsedComponents) {
+                        console.log('Successfully parsed with calldata parser');
+                        const formatted = calldataParser.formatForIoTeXContract(parsedComponents, x, y);
+                        if (formatted) {
+                            console.log('Successfully formatted for IoTeX contract');
+                            console.log('Using real proof data - should pass verification!');
+                            return formatted;
+                        } else {
+                            console.error('Failed to format parsed components');
+                        }
+                    } else {
+                        console.error('Calldata parser returned null');
                     }
+                } catch (error) {
+                    console.error('Calldata parser error:', error);
                 }
+            } else {
+                console.warn('ZKEngineCalldataParser not available');
             }
             
             // Try V3 parser next (handles zkEngine binary format better)

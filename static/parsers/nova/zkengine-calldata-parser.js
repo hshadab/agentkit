@@ -84,18 +84,29 @@ class ZKEngineCalldataParser {
                 // Try to parse as a serialized proof
                 // The proof might have different structures, so we'll be flexible
                 
+                console.log('Starting field element extraction...');
+                console.log('Total bytes available:', bytes.length);
+                console.log('Expected field elements: ~27-30');
+                
+                // Reset offset to beginning
+                offset = 0;
+                
                 // Look for patterns in the binary data
                 // Field elements are typically 32 bytes
                 const fieldElements = [];
-                const pointElements = [];
                 
                 // Extract all possible 32-byte field elements
-                for (let i = 0; i <= bytes.length - 32; i += 32) {
+                while (offset + 32 <= bytes.length) {
                     const element = readFieldElement();
                     fieldElements.push(element);
+                    
+                    // Log progress every 10 elements
+                    if (fieldElements.length % 10 === 0) {
+                        console.log(`Extracted ${fieldElements.length} elements, offset: ${offset}/${bytes.length}`);
+                    }
                 }
                 
-                console.log(`Extracted ${fieldElements.length} field elements`);
+                console.log(`Extracted ${fieldElements.length} field elements total`);
                 
                 // If we have at least 27 elements (minimum for IoTeX verifier)
                 if (fieldElements.length >= 27) {
