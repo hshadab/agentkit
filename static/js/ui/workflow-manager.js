@@ -110,12 +110,34 @@ export class WorkflowManager {
         // Step details
         const stepDetails = document.createElement('div');
         stepDetails.className = 'step-details';
-        stepDetails.innerHTML = `
-            <div class="step-title">STEP ${index + 1} OF ${totalSteps}</div>
-            <div class="step-description">${getStepIcon(step)} ${step.description}</div>
-            ${step.startTime ? `<div class="step-timing">Started: ${new Date(step.startTime).toLocaleTimeString()}</div>` : ''}
-            ${this.getBlockchainLink(step, workflowData)}
-        `;
+        
+        // Create elements individually to avoid HTML parsing issues
+        const stepTitle = document.createElement('div');
+        stepTitle.className = 'step-title';
+        stepTitle.textContent = `STEP ${index + 1} OF ${totalSteps}`;
+        
+        const stepDescription = document.createElement('div');
+        stepDescription.className = 'step-description';
+        stepDescription.textContent = `${getStepIcon(step)} ${step.description}`;
+        
+        stepDetails.appendChild(stepTitle);
+        stepDetails.appendChild(stepDescription);
+        
+        // Add timing if available
+        if (step.startTime) {
+            const stepTiming = document.createElement('div');
+            stepTiming.className = 'step-timing';
+            stepTiming.textContent = `Started: ${new Date(step.startTime).toLocaleTimeString()}`;
+            stepDetails.appendChild(stepTiming);
+        }
+        
+        // Add blockchain link HTML (this needs innerHTML for links)
+        const blockchainLinkHTML = this.getBlockchainLink(step, workflowData);
+        if (blockchainLinkHTML) {
+            const linkContainer = document.createElement('div');
+            linkContainer.innerHTML = blockchainLinkHTML;
+            stepDetails.appendChild(linkContainer);
+        }
         
         // Step status
         const stepStatus = document.createElement('div');

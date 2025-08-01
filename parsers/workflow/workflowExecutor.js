@@ -492,6 +492,9 @@ class WorkflowExecutor {
             case 'verify_on_solana':
                 return await this.verifyOnBlockchain('solana', step.proofType || step.proof_type, step.person, stepIndex);
                 
+            case 'verify_on_base':
+                return await this.verifyOnBlockchain('base', step.proofType || step.proof_type, step.person, stepIndex);
+                
             case 'transfer':
                 // CRITICAL: Check if we should execute transfer based on verification results
                 if (step.condition && !(await this.checkTransferCondition(step.condition, step.recipient))) {

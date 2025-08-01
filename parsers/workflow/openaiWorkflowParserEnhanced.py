@@ -26,14 +26,15 @@ Available step types:
 4. verify_on_solana: Verify a proof on Solana blockchain
 5. verify_on_iotex: Verify a device proximity proof on IoTeX blockchain
 6. verify_on_avalanche: Verify a proof on Avalanche blockchain
-7. transfer: Send USDC to a recipient on Ethereum or Solana
-8. list_proofs: List existing proofs or verifications
-9. process_with_ai: Handle any additional AI request (explain, humor, translate, analyze, etc.)
-10. register_device: Register an IoT device for proximity verification
-11. claim_rewards: Claim rewards for a verified IoT device
-12. create_medical_record: Create a new medical record entry locally
-13. commit_to_avalanche: Record medical record hash on Avalanche blockchain
-14. verify_medical_integrity: Verify medical record hasn't been tampered with
+7. verify_on_base: Verify a proof on Base blockchain
+8. transfer: Send USDC to a recipient on Ethereum or Solana
+9. list_proofs: List existing proofs or verifications
+10. process_with_ai: Handle any additional AI request (explain, humor, translate, analyze, etc.)
+11. register_device: Register an IoT device for proximity verification
+12. claim_rewards: Claim rewards for a verified IoT device
+13. create_medical_record: Create a new medical record entry locally
+14. commit_to_avalanche: Record medical record hash on Avalanche blockchain
+15. verify_medical_integrity: Verify medical record hasn't been tampered with
 
 Rules:
 - Parse ALL commands as workflows, even simple ones like "generate KYC proof"
@@ -137,6 +138,11 @@ Output format as JSON:
       "proof_type": "medical_integrity",
       "record_id": "0xdef456...",
       "description": "Verify medical integrity on Avalanche"
+    },
+    {
+      "type": "verify_on_base",
+      "proof_type": "ai_content",
+      "description": "Verify AI content proof on Base blockchain"
     }
   ]
 }"""
@@ -165,6 +171,13 @@ Output format as JSON:
         
         IMPORTANT: Do NOT create separate create_medical_record or commit_to_avalanche steps. The generate_proof step handles everything.
         
+        CRITICAL RULE FOR AI PREDICTION/COMMITMENT:
+        If the command contains "AI prediction" or "AI commitment" or "prove AI prediction", you MUST create ONLY these 2 steps:
+        1. generate_proof (with proof_type: "ai_content") - This step will handle AI prediction commitment internally
+        2. verify_on_base (with proof_type: "ai_content") - automatically verify the AI proof on Base blockchain
+        
+        IMPORTANT: AI prediction proofs are ALWAYS verified on Base blockchain, NOT Ethereum or other chains.
+        
         This applies to ALL these patterns:
         - "Register IoT device DEV123 with proximity proof"
         - "Register device DEV456 with proximity verification"
@@ -174,10 +187,10 @@ Output format as JSON:
         
         Examples:
         - "Generate KYC proof" → one step: generate_proof (proof_type: "kyc")
-        - "Prove AI content authenticity" → one step: generate_proof (proof_type: "ai_content")
-        - "Prove AI prediction commitment" → one step: generate_proof (proof_type: "ai_content")
-        - "Generate AI content proof" → one step: generate_proof (proof_type: "ai_content")
-        - "Create AI prediction proof" → one step: generate_proof (proof_type: "ai_content")
+        - "Prove AI content authenticity" → two steps: generate_proof (proof_type: "ai_content"), verify_on_base (proof_type: "ai_content")
+        - "Prove AI prediction commitment" → two steps: generate_proof (proof_type: "ai_content"), verify_on_base (proof_type: "ai_content")
+        - "Generate AI content proof" → two steps: generate_proof (proof_type: "ai_content"), verify_on_base (proof_type: "ai_content")
+        - "Create AI prediction proof" → two steps: generate_proof (proof_type: "ai_content"), verify_on_base (proof_type: "ai_content")
         - "Generate location proof for NYC" → one step: generate_proof (proof_type: "location", location: "NYC")
         - "Register IoT device DEV123 with proximity proof" → four steps: register_device (device_id: "DEV123"), generate_proof (proof_type: "device_proximity", device_id: "DEV123"), verify_on_iotex, claim_rewards (device_id: "DEV123")
         - "Register device DEV456 at location 5020,5030" → four steps: register_device (device_id: "DEV456"), generate_proof (proof_type: "device_proximity", device_id: "DEV456", x: "5020", y: "5030"), verify_on_iotex, claim_rewards (device_id: "DEV456")
@@ -287,7 +300,7 @@ Output format as JSON:
                 proof_key = f"{step.get('proof_type')}_{step.get('person', 'user')}"
                 generated_proofs.add(proof_key)
                 
-            elif step_type in ['verify_proof', 'verify_on_ethereum', 'verify_on_solana']:
+            elif step_type in ['verify_proof', 'verify_on_ethereum', 'verify_on_solana', 'verify_on_base', 'verify_on_avalanche', 'verify_on_iotex']:
                 proof_key = f"{step.get('proof_type')}_{step.get('person', 'user')}"
                 
                 # Check if proof was generated first
