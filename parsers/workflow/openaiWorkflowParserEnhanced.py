@@ -267,6 +267,33 @@ Output format as JSON:
                             "critical": False  # Rewards might not be available immediately
                         })
             
+            # Post-process to ensure AI content proofs have Base verification
+            if result.get('steps'):
+                has_ai_content_proof = any(
+                    step.get('type') == 'generate_proof' and 
+                    step.get('proof_type') == 'ai_content' 
+                    for step in result['steps']
+                )
+                
+                if has_ai_content_proof:
+                    # Check if verify_on_base already exists
+                    has_base_verify = any(
+                        step.get('type') == 'verify_on_base' and
+                        step.get('proof_type') == 'ai_content'
+                        for step in result['steps']
+                    )
+                    
+                    if not has_base_verify:
+                        # Find the generate_proof step and add verify_on_base after it
+                        for i, step in enumerate(result['steps']):
+                            if step.get('type') == 'generate_proof' and step.get('proof_type') == 'ai_content':
+                                result['steps'].insert(i + 1, {
+                                    "type": "verify_on_base",
+                                    "proof_type": "ai_content",
+                                    "description": "Verify AI content proof on Base blockchain"
+                                })
+                                break
+            
             # Add indices and additional metadata
             for i, step in enumerate(result.get('steps', [])):
                 step['index'] = i
