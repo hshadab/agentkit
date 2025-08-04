@@ -2,6 +2,7 @@ const snarkjs = require("snarkjs");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const { debug, log, error } = require("./utils/debug");
 
 class SNARKPrecomputeService {
     constructor() {
@@ -15,7 +16,7 @@ class SNARKPrecomputeService {
         
         // Fallback to existing circuit if simple one doesn't exist
         if (!fs.existsSync(this.wasmPath)) {
-            console.log("Simple circuit not found, using existing circuit");
+            debug("Simple circuit not found, using existing circuit");
             this.wasmPath = path.join(__dirname, "../ProofOfProof_js/ProofOfProof.wasm");
             this.zkeyPath = path.join(__dirname, "../proof_of_proof_final.zkey");
         }
@@ -29,7 +30,7 @@ class SNARKPrecomputeService {
         
         // Check cache first
         if (this.cache.has(cacheKey)) {
-            console.log(`SNARK already cached for ${proofId}`);
+            debug(`SNARK already cached for ${proofId}`);
             return this.cache.get(cacheKey);
         }
         

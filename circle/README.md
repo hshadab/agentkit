@@ -76,4 +76,4 @@ This directory contains scripts for managing Circle wallets and USDC transfers.
 2. **"wallet id not parsable"**: Update .env with real wallet IDs
 3. **Pending transfers**: May take 10-60 seconds to complete
 
-See `/docs/CIRCLE_SETUP_COMPLETE_GUIDE.md` for detailed documentation.
+See `/docs/guides/circle-integration.md` for detailed documentation.

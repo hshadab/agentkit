@@ -12,7 +12,7 @@ mkdir -p "$SCRIPT_DIR/../logs"
 echo "[$(date)] Starting automated cleanup..." >> "$LOG_FILE"
 
 # Run proof cleanup
-cd "$SCRIPT_DIR/.." && node scripts/cleanup-proofs.js >> "$LOG_FILE" 2>&1
+cd "$SCRIPT_DIR/.." && node scripts/cleanup-proofs.cjs >> "$LOG_FILE" 2>&1
 
 # Clean up old log files (keep last 30 days)
 find "$SCRIPT_DIR/../logs" -name "cleanup-*.log" -mtime +30 -delete

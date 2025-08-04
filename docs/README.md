@@ -1,94 +1,90 @@
-# Verifiable Agent Kit Documentation
+# AgentKit Documentation
 
-Welcome to the comprehensive documentation for the Verifiable Agent Kit.
+Welcome to the AgentKit documentation. This guide will help you get started with the Verifiable Agent Kit for zero-knowledge proof generation and blockchain verification.
 
-## 📚 Documentation Overview
+## Quick Links
 
-### Getting Started
-- [Quick Start Guide](../README.md) - Main project README
-- [Configuration Guide](CONFIGURATION.md) - Complete configuration reference
-- [OpenAI Setup](OPENAI_SETUP.md) - Setting up OpenAI API
+- 🚀 [Quick Start Guide](../README.md) - Get up and running in 5 minutes
+- 🔧 [Installation](getting-started/installation.md) - Detailed setup instructions
+- 🔍 [Troubleshooting](getting-started/troubleshooting.md) - Common issues and solutions
+- 📖 [API Documentation](api/) - REST and WebSocket APIs
 
-### Technical Documentation
-- [Technical Architecture](TECHNICAL_ARCHITECTURE.md) - System design and components
-- [Technical Specification](TECHNICAL_SPEC.md) - Detailed technical specs
-- [Complete Specification](VERIFIABLE_AGENT_KIT_COMPLETE_SPEC.md) - Full system specification
+## Documentation Structure
 
-### Blockchain Integration
-- [Avalanche Deployment Guide](AVALANCHE_DEPLOYMENT.md) - **NEW** Deploy and use Avalanche verifier
-- [Deploy to Base](deploy_to_base.md) - Base network deployment
-- [AI Prediction Proofs](AI_PREDICTION_PROOFS.md) - AI commitment proofs
-- [AI Prediction Guide](AI_PREDICTION_PROOF_GUIDE.md) - Implementation guide
+### 📚 Getting Started
+- [Installation](getting-started/installation.md) - Set up AgentKit
+- [Configuration](getting-started/configuration.md) - Configure environment and services
+- [Troubleshooting](getting-started/troubleshooting.md) - Solve common problems
 
-### Wallet Setup
-- [Quick Wallet Setup](QUICK_WALLET_SETUP.md) - Fast wallet configuration
-- [Solflare Setup](SOLFLARE_SETUP.md) - Solana wallet setup
+### 📖 Guides
+- [Circle Integration](guides/circle-integration.md) - Set up USDC transfers
+- [Blockchain Deployment](guides/blockchain-deployment.md) - Deploy to all networks
+- [Wallet Setup](guides/wallet-setup.md) - Configure wallets
 
-### Circle Integration (USDC)
-- [Circle Integration Guide](CIRCLE_INTEGRATION_GUIDE.md) - Main Circle guide
-- [Circle Setup Complete](CIRCLE_SETUP_COMPLETE_GUIDE.md) - Detailed setup
-- [Circle Wallet Setup](CIRCLE_WALLET_SETUP.md) - Wallet configuration
-- [Get Test USDC](GET_TEST_USDC.md) - Obtaining test USDC
-- [Fund Wallet Guide](fund_wallet_guide.md) - Funding wallets
+### 🏗️ Architecture
+- [Overview](architecture/overview.md) - System architecture
+- [Technical Design](architecture/technical-design.md) - Deep technical details
+- [Directory Structure](architecture/directory-structure.md) - Project organization
 
-### Development
-- [Repository Organization](REPOSITORY_ORGANIZATION.md) - Code structure
-- [Developer Notes](DEVELOPER_NOTES.md) - Development tips
-- [Setup PTAU](SETUP_PTAU.md) - Powers of Tau setup
+### 🔄 Workflows
+- [KYC Verification](workflows/kyc-verification.md) - Privacy-preserving KYC
+- [AI Prediction](workflows/ai-prediction.md) - AI model predictions with proofs
+- [Medical Integrity](workflows/medical-integrity.md) - Medical data verification
 
-### Troubleshooting
-- [Common Issues](TROUBLESHOOTING_COMMON_ISSUES.md) - General troubleshooting
-- [Circle Troubleshooting](CIRCLE_TROUBLESHOOTING.md) - Circle-specific issues
-- [Local Verification Test](LOCAL_VERIFICATION_TEST_GUIDE.md) - Testing verification
+### 🔌 API Reference
+- [REST API](api/rest-api.md) - HTTP endpoints
+- [WebSocket API](api/websocket-api.md) - Real-time communication
+- [SDK Reference](api/sdk-reference.md) - Client libraries
 
-## 🆕 Latest Updates
+## Deployed Contracts
 
-### Avalanche Support (January 2025)
-- Full Avalanche C-Chain integration on Fuji testnet
-- Real Groth16 Proof-of-Proof verifier deployed: `0x30e93E8B0804fD60b0d151F724c307c61Be37EE1`
-- Matches Ethereum and Base verifier implementations
-- [Avalanche Deployment Guide](avalanche-deployment.md) for complete setup
+### Mainnet/Testnet Addresses
+- **Ethereum Sepolia**: [`0x09378444046d1ccb32ca2d5b44fab6634738d067`](https://sepolia.etherscan.io/address/0x09378444046d1ccb32ca2d5b44fab6634738d067)
+- **Solana Devnet**: [`2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7`](https://explorer.solana.com/address/2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7?cluster=devnet)
+- **Base Sepolia**: [`0x74D68B2481d298F337e62efc50724CbBA68dCF8f`](https://sepolia.basescan.org/address/0x74D68B2481d298F337e62efc50724CbBA68dCF8f)
+- **Avalanche Fuji**: [`0x30e93E8B0804fD60b0d151F724c307c61Be37EE1`](https://testnet.snowtrace.io/address/0x30e93E8B0804fD60b0d151F724c307c61Be37EE1)
+- **IoTeX Testnet**: [`0xd3778e76ce0131762337464EEF1BAefFc608e8e0`](https://testnet.iotexscan.io/address/0xd3778e76ce0131762337464EEF1BAefFc608e8e0)
 
-### Multi-Chain Verification
-The system now supports four blockchain networks:
-- Ethereum Sepolia
-- Solana Devnet
-- Base Sepolia
-- Avalanche Fuji
+## Key Features
 
-## 🔗 Quick Links
+- 🔐 **Zero-Knowledge Proofs** - Generate privacy-preserving proofs
+- ⛓️ **Multi-Chain Support** - Ethereum, Solana, Base, Avalanche, IoTeX
+- 💸 **USDC Integration** - Automated payments via Circle API
+- 🤖 **AI-Powered Workflows** - Natural language to proof generation
+- 🏭 **Production Ready** - Real zkEngine Nova proof system
 
-### Deployed Contracts
-- **Ethereum**: [`0x1e8150050a7a4715aad42b905c08df76883f396f`](https://sepolia.etherscan.io/address/0x1e8150050a7a4715aad42b905c08df76883f396f)
-- **Solana**: [`2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7`](https://explorer.solana.com/address/2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7?cluster=devnet)
-- **Base**: [`0x74D68B2481d298F337e62efc50724CbBA68dCF8f`](https://sepolia.basescan.org/address/0x74D68B2481d298F337e62efc50724CbBA68dCF8f)
-- **Avalanche**: [`0x30e93E8B0804fD60b0d151F724c307c61Be37EE1`](https://testnet.snowtrace.io/address/0x30e93E8B0804fD60b0d151F724c307c61Be37EE1)
+## Quick Start Example
 
-### Test Token Faucets
-- [Ethereum Sepolia Faucet](https://sepoliafaucet.com/)
-- [Avalanche Fuji Faucet](https://faucets.chain.link/fuji)
-- [Base Sepolia Faucet](https://faucet.quicknode.com/base/sepolia)
-- [Solana Devnet](https://solfaucet.com/)
+```bash
+# Install dependencies
+npm install
 
-## 📖 Reading Order
+# Set up environment
+cp .env.example .env
+# Add your OPENAI_API_KEY to .env
 
-For new users:
-1. [Main README](../README.md)
-2. [Configuration Guide](CONFIGURATION.md)
-3. [Quick Wallet Setup](QUICK_WALLET_SETUP.md)
-4. Network-specific guide (e.g., [Avalanche](AVALANCHE_DEPLOYMENT.md))
+# Start the system
+npm start
 
-For developers:
-1. [Technical Architecture](TECHNICAL_ARCHITECTURE.md)
-2. [Repository Organization](REPOSITORY_ORGANIZATION.md)
-3. [Developer Notes](DEVELOPER_NOTES.md)
+# Open browser
+# Navigate to http://localhost:8001
+# Try: "I am KYC verified"
+```
 
-## 🤝 Contributing
+## Test Token Faucets
 
-When adding new documentation:
-1. Place files in the `docs/` directory
-2. Use UPPERCASE_WITH_UNDERSCORES.md naming
-3. Add to this index with appropriate category
-4. Include clear headers and examples
+- [Ethereum Sepolia](https://sepoliafaucet.com/)
+- [Base Sepolia](https://faucet.quicknode.com/base/sepolia)  
+- [Avalanche Fuji](https://faucets.chain.link/fuji)
+- [IoTeX Testnet](https://faucet.iotex.io/)
+- [Solana Devnet](https://faucet.solana.com/)
 
-For questions or updates, please open an issue on GitHub.
+## Getting Help
+
+- 📋 Check [Troubleshooting](getting-started/troubleshooting.md)
+- 🐛 Enable debug mode: `DEBUG=true npm start`
+- 💬 [Create an issue](https://github.com/yourusername/agentkit/issues)
+
+---
+
+For the main project README and quick start, see [../README.md](../README.md)

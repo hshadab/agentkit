@@ -43,7 +43,7 @@ if [ ! -f "$PTAU_FILE" ]; then
     echo "  cd resources/ptau"
     echo "  wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_20.ptau -O pot20_final.ptau"
     echo ""
-    echo "Or see SETUP_PTAU.md for alternative options (like using the smaller pot12 file for testing)"
+    echo "Or see docs/SETUP_PTAU.md for alternative options (like using the smaller pot12 file for testing)"
     exit 1
 fi
 
