@@ -59,32 +59,145 @@ Proves AI-generated content authenticity and ownership with cryptographic verifi
 | **Avalanche** | Fuji | 0x30e93E8B0804fD60b0d151F724c307c61Be37EE1 | Medical integrity verifier |
 | **IoTeX** | Testnet | 0xd3778e76ce0131762337464EEF1BAefFc608e8e0 | ProximityNovaDecider for IoT |
 
-### USDC Transfer Integration (Circle API)
+### 🔐 Blockchain Verification Approaches
 
-#### Circle's Most Advanced Integration Features
-- **Programmable Wallets**: Full developer-controlled wallet implementation
-- **Smart Transfer Automation**: ZK proof verification triggers automatic USDC transfers
-- **Multi-Chain Orchestration**: Unified interface for Ethereum and Solana operations
-- **Enterprise-Grade Security**: Entity secret encryption for all sensitive operations
+Our system implements distinct verification approaches tailored to each blockchain's unique architecture:
 
-#### Unique Integration Capabilities
-- **Proof-to-Payment Pipeline**: Direct connection between ZK verification and USDC transfers
-- **Natural Language to Transfer**: "Send 5 USDC to Alice if KYC proof verifies" → Automated execution
-- **Cross-Chain Transfer Logic**: Verify on Ethereum, pay on Solana (or vice versa)
-- **Workflow-Driven Transfers**: Complex multi-step conditions with automatic fund distribution
+#### **IoTeX Device Location Verification (Nova-based)**
+- **Proof System**: Nova recursive SNARK proofs with complex multi-component structure
+- **Contract Method**: `verifyDeviceProximity()` with 11 parameters including:
+  - Nova folding components (i_z0_zi, U_i_cmW_U_i_cmE, u_i_cmW, cmT_r)
+  - Groth16 proof elements (pA, pB, pC)
+  - KZG commitment proofs (challenge_W_challenge_E_kzg_evals, kzg_proof)
+- **Unique Features**:
+  - Device pre-registration via `registerDevice()`
+  - Built-in IOTX reward mechanism for proximity proofs
+  - Stateful verification tracking device history
+  - ~2M gas due to Nova verification complexity
+- **Use Case**: IoT device proximity verification for DePIN applications
 
-#### Technical Implementation
-```javascript
-// Example: Conditional transfer after proof verification
-if (proofVerified) {
-  await circleHandler.createTransfer({
-    walletId: sourceWallet,
-    amounts: ["5.00"],
-    destinationAddress: recipientAddress,
-    blockchain: "ETH-SEPOLIA"
-  });
-}
+#### **EVM Chains (Ethereum, Base, Avalanche) - Groth16 Verification**
+- **Proof System**: Standard Groth16 proofs with streamlined structure
+- **Contract Method**: `verifyProof()` with 4 parameters:
+  - _pA: uint256[2]
+  - _pB: uint256[2][2]
+  - _pC: uint256[2]
+  - _pubSignals: uint256[6]
+- **Features**:
+  - Direct verification without registration
+  - Stateless cryptographic validation
+  - ~300K gas typical usage
+  - General-purpose ZK proof verification
+- **Use Cases**: KYC, AI predictions, medical records, any computation proof
+
+#### **Solana - Program-Based Verification**
+- **Proof System**: Custom Solana program with instruction-based verification
+- **Architecture**: 
+  - Uses Solana's account model with Program Derived Addresses (PDAs)
+  - Instruction data contains serialized proof components
+  - Parallel transaction processing for high throughput
+- **Unique Implementation**:
+  - No smart contracts - uses native Solana programs
+  - Proof data stored in transaction logs
+  - Sub-second finality with ~5000 TPS capacity
+  - Cost: ~0.00025 SOL per verification
+- **Integration**: Solflare/Phantom wallet with Web3.js
+- **Use Cases**: High-frequency verifications, micropayments, gaming proofs
+
+### 🔄 Deep Circle API Integration
+
+This project represents one of the most comprehensive Circle API integrations, combining programmable wallets, USDC transfers, and cross-chain capabilities with zero-knowledge proof verification.
+
+#### **Architecture Overview**
 ```
+AI Agent → ZK Proof Generation → Blockchain Verification → Circle API → USDC Transfer
+```
+
+#### **Circle Technologies Integrated**
+
+##### **1. Programmable Wallets API**
+- **Developer-Controlled Wallets**: Create and manage wallets programmatically
+- **Wallet Sets**: Organized wallet management with UUID-based identification
+- **Multi-Chain Support**: Simultaneous Ethereum and Solana wallet operations
+- **Implementation**: Full wallet lifecycle management in `circle/circleAccountsHandler.js`
+
+##### **2. Cross-Chain Transfer Protocol (CCTP)**
+- **USDC Bridging**: Move USDC between Ethereum ↔ Avalanche
+- **Attestation Monitoring**: Real-time tracking via Circle's attestation service
+- **Message Verification**: Cryptographic proof of cross-chain transfers
+- **Use Case**: Verify proof on one chain, pay on another
+
+##### **3. Transfer Automation**
+- **Conditional Logic**: ZK proof verification triggers automatic transfers
+- **Natural Language Processing**: Convert commands to transfer operations
+- **Batch Operations**: Multiple transfers in single workflow
+- **Example Flow**:
+  ```javascript
+  // Actual implementation from workflowExecutor.js
+  if (step.type === 'verify_proof' && verificationResult.success) {
+    // Trigger Circle transfer based on verification
+    await circleHandler.createTransfer({
+      walletId: sourceWallet,
+      amounts: [step.transferAmount],
+      destinationAddress: recipientAddress,
+      blockchain: targetBlockchain
+    });
+  }
+  ```
+
+#### **Integration Features**
+
+##### **Authentication & Security**
+- **API Key Management**: Secure storage in environment variables
+- **Entity Secret Encryption**: All sensitive operations encrypted
+- **Idempotency Keys**: Prevent duplicate transfers
+- **Error Recovery**: Comprehensive retry logic with exponential backoff
+
+##### **Workflow Pipeline**
+1. **AI Processing**: OpenAI GPT-4o parses natural language commands
+2. **Proof Generation**: zkEngine creates cryptographic proofs
+3. **Blockchain Verification**: Deploy proofs to 5 different chains
+4. **Circle Wallet Selection**: Intelligent wallet routing
+5. **USDC Transfer Execution**: Automated conditional transfers
+6. **Status Monitoring**: Real-time transfer tracking
+
+##### **Advanced Capabilities**
+- **Multi-Step Workflows**: Complex conditions with multiple proofs
+- **Cross-Chain Logic**: Verify on Ethereum, pay on Solana
+- **Balance Management**: Real-time balance checking before transfers
+- **Gas Abstraction**: Circle handles all gas fees
+- **Transaction History**: Complete audit trail with blockchain links
+
+#### **Real Implementation Examples**
+
+```javascript
+// From our production code:
+
+// 1. Create programmable wallet
+const wallet = await circleHandler.createWallet({
+  blockchain: "ETH-SEPOLIA",
+  walletSetId: config.circle.walletSetId
+});
+
+// 2. Execute conditional transfer after ZK verification
+const transferResult = await executeTransfer({
+  sourceWalletId: wallet.id,
+  destinationAddress: recipientAddress,
+  amount: "10.00",
+  condition: proofVerified,
+  blockchain: "ETH-SEPOLIA"
+});
+
+// 3. Monitor transfer status
+const status = await circleHandler.getTransferStatus(transferResult.id);
+```
+
+#### **Why This Integration Stands Out**
+1. **First-of-its-kind**: ZK proofs triggering USDC transfers
+2. **Production-Ready**: Complete error handling and monitoring
+3. **Natural Language**: Non-technical users can specify transfer logic
+4. **Multi-Chain Native**: Not just support, but cross-chain orchestration
+5. **Open Source**: Full implementation for developers to build upon
 
 ## 🏗️ Architecture
 
