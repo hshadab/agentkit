@@ -1779,8 +1779,7 @@ function loadSampleQueries() {
         ],
         'Single zkEngine Proofs': [
             'Generate KYC proof',
-            'Prove AI prediction commitment',
-            'Register device SENSOR1 at location 5080,5020'
+            'Prove AI prediction commitment'
         ],
         'Workflows': [
             'Send 0.05 USDC to Alice on Ethereum if KYC compliant',
@@ -1788,6 +1787,7 @@ function loadSampleQueries() {
             'Send 0.05 USDC on Solana if Bob is KYC verified on Solana and send 0.03 USDC on Ethereum if Alice is KYC verified on Ethereum.',
             'Register device IOT001 and verify on IoTeX',
             'Register device and generate proximity proof then verify on IoTeX',
+            'Register device SENSOR1 at location 5080,5020',
             'Create medical record for patient 12345 and verify integrity'
         ],
         'History': [
