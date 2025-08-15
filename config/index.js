@@ -89,10 +89,10 @@ const config = {
       rpcUrl: 'https://babel-api.testnet.iotex.io',
       gasPrice: 1000000000, // 1 gwei
       contracts: {
-        deviceVerifier: '0xd3778e76ce0131762337464EEF1BAefFc608e8e0',
+        deviceVerifier: '0x5967d15c7a6fD3ef7F1f309e766f35252a9de10d',
         novaDecider: '0x4EF6152c952dA7A27bb57E8b989348a73aB850d2',
-        ioIDRegistry: '0x04e4655Cf258EC802D17c23ec6112Ef7d97Fa2aF',
-        ioID: '0x1FCB980eD0287777ab05ADc93012332e11300e54'
+        ioIDRegistry: '0x0A7e595C7889dF3652A19aF52C18377bF17e027D',
+        ioID: '0x45Ce3E6f526e597628c73B731a3e9Af7Fc32f5b7'
       },
       explorerUrl: 'https://testnet.iotexscan.io',
       nativeCurrency: {

@@ -178,7 +178,17 @@ async function checkAndSwitchToIoTeX() {
                 } else if (switchError.code === -32603 && switchError.message?.includes('selected network')) {
                     // Network switch in progress or completed
                     debugLog('Network switch may already be in progress', 'info');
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    
+                    // Check if we're now on the right network
+                    const newProvider = new ethers.providers.Web3Provider(window.ethereum);
+                    const newNetwork = await newProvider.getNetwork();
+                    if (newNetwork.chainId === config.blockchain.iotex.chainIdDecimal) {
+                        debugLog('Network switch completed successfully', 'success');
+                    }
+                } else if (switchError.code === 4001) {
+                    debugLog('User rejected network switch', 'warning');
+                    throw new Error('Please switch to IoTeX network to continue');
                 } else {
                     throw switchError;
                 }
@@ -785,6 +795,9 @@ function setupMessageHandlers() {
         console.log('[WORKFLOW_DEBUG] Workflow started:', data.workflow_id);
         console.log('[WORKFLOW_DEBUG] Steps:', data.steps);
         
+        // Remove the waiting message when workflow starts
+        uiManager.removeWaitingMessage();
+        
         // Check if this is an IoT workflow that needs IoTeX network
         const hasIoTSteps = data.steps && data.steps.some(step => 
             step.action === 'register_device' || 
@@ -1035,14 +1048,15 @@ function setupMessageHandlers() {
                 x = proofData.coordinates.x || 5050;
                 y = proofData.coordinates.y || 5050;
                 console.log('Using coordinates from proof data:', { x, y });
-            } else if (proofData.public_inputs && proofData.public_inputs.length >= 3) {
-                x = proofData.public_inputs[1] || 5050;
-                y = proofData.public_inputs[2] || 5050;
+            } else if (proofData.public_inputs && proofData.public_inputs.length >= 4) {
+                // Public inputs structure: [device_id_hash, within_radius, x, y]
+                x = proofData.public_inputs[2] || 5050;
+                y = proofData.public_inputs[3] || 5050;
                 console.log('Using coordinates from public_inputs:', { x, y });
-            } else if (proofData.inputs && proofData.inputs.length >= 3) {
+            } else if (proofData.inputs && proofData.inputs.length >= 4) {
                 // Check alternative structure
-                x = proofData.inputs[1] || 5050;
-                y = proofData.inputs[2] || 5050;
+                x = proofData.inputs[2] || 5050;
+                y = proofData.inputs[3] || 5050;
                 console.log('Using coordinates from inputs:', { x, y });
             }
             
@@ -1418,6 +1432,20 @@ function setupMessageHandlers() {
             });
             
             if (result.success) {
+                // Update workflow step with reward data
+                if (data.workflowId && data.stepId) {
+                    workflowManager.updateWorkflowStep(data.workflowId, data.stepId, {
+                        rewardData: {
+                            deviceId: data.deviceId,
+                            amount: result.rewardAmount || '0 IOTX',
+                            claimed: true,
+                            txHash: result.txHash,
+                            message: 'Rewards claimed successfully'
+                        },
+                        transactionHash: result.txHash
+                    });
+                }
+                
                 // Add to blockchain verifications
                 const verificationData = {
                     blockchain: 'IoTeX',
@@ -1433,9 +1461,32 @@ function setupMessageHandlers() {
                 blockchainVerifier.onChainVerifications.set(verificationId, verificationData);
                 
                 debugLog(`Rewards claimed successfully: ${result.rewardAmount} IOTX`, 'success');
+            } else {
+                // Update workflow step with error
+                if (data.workflowId && data.stepId) {
+                    workflowManager.updateWorkflowStep(data.workflowId, data.stepId, {
+                        rewardData: {
+                            deviceId: data.deviceId,
+                            error: result.error,
+                            claimed: false
+                        }
+                    });
+                }
             }
         } catch (error) {
             debugLog(`Claim rewards error: ${error.message}`, 'error');
+            
+            // Update workflow step with error
+            if (data.workflowId && data.stepId) {
+                workflowManager.updateWorkflowStep(data.workflowId, data.stepId, {
+                    rewardData: {
+                        deviceId: data.deviceId,
+                        error: error.message,
+                        claimed: false
+                    }
+                });
+            }
+            
             wsManager.send({
                 type: 'claim_rewards_response',
                 requestId: data.requestId,

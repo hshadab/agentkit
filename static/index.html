@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verifiable Agent Kit</title>
-    <link rel="icon" type="image/png" href="/static/favicon.png">
-    <link rel="stylesheet" href="/static/css/main.css?v=20250120-3">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="css/main.css?v=20250120-3">
 </head>
 <body>
     <div class="sidebar">
@@ -20,9 +20,6 @@
                 <span>Verifiable Agent Kit</span>
             </h1>
             <div style="display: flex; align-items: center; gap: 16px;">
-                <button id="connect-all-chains-btn" onclick="window.blockchainVerifier?.connectAllChains()" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.2s;">
-                    Connect All Chains
-                </button>
                 <div id="wallet-status" style="display: flex; gap: 8px; font-size: 13px;">
                     <span id="ethereum-wallet-status" style="display: none; padding: 4px 12px; background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-radius: 4px; font-weight: 500;">ETH Connected</span>
                     <span id="solana-wallet-status" style="display: none; padding: 4px 12px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-radius: 4px; font-weight: 500;">SOL Connected</span>
@@ -91,46 +88,83 @@
     </div>
 
     <!-- Emergency stop refresh loop -->
-    <script src="/static/stop-refresh.js"></script>
+    <script src="./stop-refresh.js"></script>
     
     <!-- SES Compatibility for snarkjs -->
-    <script src="/static/js/core/ses-compatibility.js"></script>
+    <script src="./js/core/ses-compatibility.js"></script>
     
     <!-- External dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/iden3/snarkjs/build/snarkjs.min.js"></script>
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    <script src="/static/js/core/ethers-fallback.js"></script>
+    <script src="./js/core/ethers-fallback.js"></script>
     
     <!-- Blockchain verifiers (these need to be updated to work with the modular system) -->
-    <script src="/static/ethereum-verifier.js?v=20250711-1945"></script>
-    <script src="/static/solana-verifier.js"></script>
-    <script src="/static/base-verifier.js"></script>
-    <script src="/static/avalanche-verifier.js"></script>
-    <script src="/static/parsers/nova/nova-proof-formatter.js"></script>
-    <script src="/static/parsers/nova/nova-proof-parser.js"></script>
-    <script src="/static/parsers/nova/zkengine-nova-parser.js"></script>
-    <script src="/static/parsers/nova/nova-proof-parser-v2.js"></script>
-    <script src="/static/parsers/nova/zkengine-calldata-parser.js"></script>
-    <script src="/static/js/blockchain/simple-nova-verifier.js"></script>
-    <script src="/static/js/ui/ioid-official-manager.js"></script>
-    <script src="/static/js/blockchain/iotex-device-verifier.js"></script>
-    <script src="/static/js/blockchain/avalanche-medical-verifier.js"></script>
-    <script src="/static/js/ui/medical-record-handler.js"></script>
-    <script src="/static/js/ui/device-workflow-handler.js"></script>
-    <script src="/static/js/ui/ai-prediction-handler-real.js?v=20250121-1"></script>
+    <script src="./ethereum-verifier.js?v=20250711-1945"></script>
+    <script src="./solana-verifier.js"></script>
+    <script src="./base-verifier.js"></script>
+    <script src="./avalanche-verifier.js"></script>
+    <script src="./parsers/nova/nova-proof-formatter.js"></script>
+    <script src="./parsers/nova/nova-proof-parser.js"></script>
+    <script src="./parsers/nova/zkengine-nova-parser.js"></script>
+    <script src="./parsers/nova/nova-proof-parser-v2.js"></script>
+    <script src="./parsers/nova/zkengine-calldata-parser.js"></script>
+    <script src="./parsers/nova/zkengine-binary-parser.js"></script>
+    <script src="./parsers/nova/zkengine-simple-parser.js"></script>
+    <script src="./js/blockchain/simple-nova-verifier.js"></script>
+    <script src="./js/ui/ioid-official-manager.js"></script>
+    <script src="./js/utils/iotex-address-converter.js"></script>
+    <script src="./js/blockchain/iotex-device-verifier.js?v=20250815-10"></script>
+    <script src="./js/blockchain/avalanche-medical-verifier.js"></script>
+    <script src="./js/ui/medical-record-handler.js"></script>
+    <script src="./js/ui/device-workflow-handler.js"></script>
+    <script src="./js/ui/ai-prediction-handler-real.js?v=20250121-1"></script>
     
     <!-- Main application module - must be loaded as module since it uses ES6 imports -->
-    <script type="module" src="/static/js/main.js?v=20250120-1"></script>
+    <script type="module" src="./js/main.js?v=20250815-1"></script>
     <!-- Wrapper to expose modules to window -->
-    <script type="module" src="/static/js/blockchain/blockchain-verifier-wrapper.js?v=20250120-1"></script>
-    <script type="module" src="/static/js/blockchain/avalanche-medical-wrapper.js?v=20250129-1"></script>
+    <script type="module" src="./js/blockchain/blockchain-verifier-wrapper.js?v=20250120-1"></script>
+    <script type="module" src="./js/blockchain/avalanche-medical-wrapper.js?v=20250129-1"></script>
     <!-- Debug helper -->
-    <script src="/static/js/core/debug-helper.js"></script>
+    <script src="./js/core/debug-helper.js"></script>
+    <!-- Device registration monitor -->
+    <script src="./js/debug/device-registration-monitor.js"></script>
+    <!-- Proof verification monitor -->
+    <script src="./js/debug/proof-verification-monitor.js"></script>
+    <!-- Proof generation monitor -->
+    <script src="./js/debug/proof-generation-monitor.js"></script>
     <!-- Avalanche verify wrapper -->
-    <script src="/static/js/ui/avalanche-verify-wrapper.js"></script>
+    <script src="./js/ui/avalanche-verify-wrapper.js"></script>
     <!-- Base verify wrapper -->
-    <script src="/static/js/ui/base-verify-wrapper.js"></script>
+    <script src="./js/ui/base-verify-wrapper.js"></script>
+    <!-- Coordinate fix -->
+    <script src="./js/debug/coordinate-fix.js"></script>
+    <!-- Coordinate parser fix -->
+    <script src="./js/debug/coordinate-parser-fix.js"></script>
+    <!-- Metadata arguments fix -->
+    <script src="./js/debug/metadata-arguments-fix.js"></script>
+    <!-- Reward monitor -->
+    <script src="./js/debug/reward-monitor.js"></script>
+    <!-- Proof coordinate fix -->
+    <script src="./js/debug/proof-coordinate-fix.js"></script>
+    <!-- Public inputs fix -->
+    <script src="./js/debug/public-inputs-fix.js"></script>
+    <!-- Workflow coordinate trace -->
+    <script src="./js/debug/workflow-coordinate-trace.js"></script>
+    <!-- Workflow step fix -->
+    <script src="./js/debug/workflow-step-fix.js"></script>
+    <!-- Force coordinates fix -->
+    <script src="./js/debug/force-coordinates-fix.js"></script>
+    <!-- Backend step interceptor -->
+    <script src="./js/debug/backend-step-interceptor.js"></script>
+    <!-- LocalStorage coordinate override -->
+    <script src="./js/debug/localstorage-coordinate-override.js"></script>
+    <!-- Main coordinate override fixed -->
+    <script src="./js/debug/main-coordinate-override-fixed.js"></script>
+    <!-- Coordinate injection final -->
+    <script src="./js/debug/coordinate-injection-final.js"></script>
+    <!-- Proof analysis -->
+    <script src="./js/debug/proof-analysis.js"></script>
 </body>
 </html>

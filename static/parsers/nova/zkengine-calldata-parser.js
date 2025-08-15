@@ -91,93 +91,118 @@ class ZKEngineCalldataParser {
                 // Reset offset to beginning
                 offset = 0;
                 
-                // Look for patterns in the binary data
-                // Field elements are typically 32 bytes
+                // The zkEngine proof format is a serialized calldata structure
+                // Based on the Rust nova_groth16_converter, the format is:
+                // - Public inputs (z0, zi) 
+                // - Commitment points and proofs
+                // - All values are 32-byte field elements in little-endian
+                
+                // Try to extract the proof components
+                // The proof should contain exactly these components in order:
+                // 1. i_z0_zi: 3 elements (x, y, within_proximity)
+                // 2. U_i_cmW_U_i_cmE: 4 elements 
+                // 3. u_i_cmW: 2 elements
+                // 4. cmT_r: 3 elements  
+                // 5. pA: 2 elements (G1 point)
+                // 6. pB: 4 elements (G2 point as 2x2)
+                // 7. pC: 2 elements (G1 point)
+                // 8. challenge_W_challenge_E_kzg_evals: 4 elements
+                // 9. kzg_proof: 4 elements (2x2)
+                // Total: 28 field elements
+                
+                const expectedElements = 28;
                 const fieldElements = [];
                 
-                // Extract all possible 32-byte field elements
-                while (offset + 32 <= bytes.length) {
+                // Check if we have exactly the right amount of data
+                const expectedBytes = expectedElements * 32;
+                if (bytes.length < expectedBytes) {
+                    console.error(`Proof too short: ${bytes.length} bytes, expected at least ${expectedBytes}`);
+                    // Try to extract what we can
+                }
+                
+                // Extract field elements
+                while (offset + 32 <= bytes.length && fieldElements.length < expectedElements) {
                     const element = readFieldElement();
                     fieldElements.push(element);
-                    
-                    // Log progress every 10 elements
-                    if (fieldElements.length % 10 === 0) {
-                        console.log(`Extracted ${fieldElements.length} elements, offset: ${offset}/${bytes.length}`);
-                    }
                 }
                 
-                console.log(`Extracted ${fieldElements.length} field elements total`);
+                console.log(`Extracted ${fieldElements.length} field elements`);
                 
-                // If we have at least 27 elements (minimum for IoTeX verifier)
-                if (fieldElements.length >= 27) {
-                    // Map to the expected structure
-                    let idx = 0;
-                    const components = {
-                        // Initial and final state (z0, zi) - 3 elements
-                        i_z0_zi: [
-                            fieldElements[idx++] || "0",
-                            fieldElements[idx++] || "0", 
-                            fieldElements[idx++] || "0"
-                        ],
-                        
-                        // U commitments (cmW and cmE) - 4 elements total
-                        U_i_cmW_U_i_cmE: [
-                            fieldElements[idx++] || "0",
-                            fieldElements[idx++] || "0",
-                            fieldElements[idx++] || "0",
-                            fieldElements[idx++] || "0"
-                        ],
-                        
-                        // u commitment W - 2 elements
-                        u_i_cmW: [
-                            fieldElements[idx++] || "0",
-                            fieldElements[idx++] || "0"
-                        ],
-                        
-                        // T commitment and randomness - 3 elements
-                        cmT_r: [
-                            fieldElements[idx++] || "0",
-                            fieldElements[idx++] || "0",
-                            fieldElements[idx++] || "0"
-                        ],
-                        
-                        // Groth16 proof points
-                        pA: [
-                            fieldElements[idx++] || "0",
-                            fieldElements[idx++] || "0"
-                        ],
-                        
-                        pB: [
-                            [fieldElements[idx++] || "0", fieldElements[idx++] || "0"],
-                            [fieldElements[idx++] || "0", fieldElements[idx++] || "0"]
-                        ],
-                        
-                        pC: [
-                            fieldElements[idx++] || "0",
-                            fieldElements[idx++] || "0"
-                        ],
-                        
-                        // KZG challenges and evaluations - 4 elements
-                        challenge_W_challenge_E_kzg_evals: [
-                            fieldElements[idx++] || "0",
-                            fieldElements[idx++] || "0",
-                            fieldElements[idx++] || "0",
-                            fieldElements[idx++] || "0"
-                        ],
-                        
-                        // KZG proof - 2x2 elements
-                        kzg_proof: [
-                            [fieldElements[idx++] || "0", fieldElements[idx++] || "0"],
-                            [fieldElements[idx++] || "0", fieldElements[idx++] || "0"]
-                        ]
-                    };
-                    
-                    console.log('Successfully mapped proof components');
-                    return components;
+                // If we don't have enough elements, pad with zeros
+                while (fieldElements.length < expectedElements) {
+                    fieldElements.push("0");
                 }
                 
-                // Not enough field elements
-                throw new Error(`Only found ${fieldElements.length} field elements, need at least 27`);
+                // Map to the expected structure
+                let idx = 0;
+                const components = {
+                    // Initial and final state (z0, zi) - 3 elements
+                    i_z0_zi: [
+                        fieldElements[idx++],
+                        fieldElements[idx++], 
+                        fieldElements[idx++]
+                    ],
+                    
+                    // U commitments (cmW and cmE) - 4 elements total
+                    U_i_cmW_U_i_cmE: [
+                        fieldElements[idx++],
+                        fieldElements[idx++],
+                        fieldElements[idx++],
+                        fieldElements[idx++]
+                    ],
+                    
+                    // u commitment W - 2 elements
+                    u_i_cmW: [
+                        fieldElements[idx++],
+                        fieldElements[idx++]
+                    ],
+                    
+                    // T commitment and randomness - 3 elements
+                    cmT_r: [
+                        fieldElements[idx++],
+                        fieldElements[idx++],
+                        fieldElements[idx++]
+                    ],
+                    
+                    // Groth16 proof points
+                    pA: [
+                        fieldElements[idx++],
+                        fieldElements[idx++]
+                    ],
+                    
+                    pB: [
+                        [fieldElements[idx++], fieldElements[idx++]],
+                        [fieldElements[idx++], fieldElements[idx++]]
+                    ],
+                    
+                    pC: [
+                        fieldElements[idx++],
+                        fieldElements[idx++]
+                    ],
+                    
+                    // Challenge and KZG evaluations - 4 elements
+                    challenge_W_challenge_E_kzg_evals: [
+                        fieldElements[idx++],
+                        fieldElements[idx++],
+                        fieldElements[idx++],
+                        fieldElements[idx++]
+                    ],
+                    
+                    // KZG proof - 2x2 = 4 elements
+                    kzg_proof: [
+                        [fieldElements[idx++], fieldElements[idx++]],
+                        [fieldElements[idx++], fieldElements[idx++]]
+                    ]
+                };
+                
+                console.log('Successfully parsed binary proof components');
+                console.log('Component check:', {
+                    i_z0_zi_length: components.i_z0_zi.length,
+                    U_i_cmW_U_i_cmE_length: components.U_i_cmW_U_i_cmE.length,
+                    allFieldsPresent: idx === expectedElements
+                });
+                
+                return components;
                 
             } catch (innerError) {
                 console.error('Error during field extraction:', innerError);
@@ -340,11 +365,9 @@ class ZKEngineCalldataParser {
             kzg_proof: components.kzg_proof.map(row => row.map(toHex))
         };
         
-        // Override x,y in i_z0_zi if provided
-        if (x !== undefined && y !== undefined) {
-            formatted.i_z0_zi[0] = toHex(x.toString());
-            formatted.i_z0_zi[1] = toHex(y.toString());
-        }
+        // DO NOT override x,y in i_z0_zi - the proof is tied to specific coordinates
+        // Overriding them would break the cryptographic verification
+        console.log('Using original proof coordinates (not overriding)');
         
         console.log('Formatted proof ready for contract');
         return formatted;

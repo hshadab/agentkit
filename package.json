@@ -5,12 +5,11 @@
   "type": "module",
   "scripts": {
     "build:circuits": "./scripts/build_real_circuit.sh",
-    "test:snark": "node src/test_real_snark.js",
     "compile": "hardhat compile",
     "deploy": "hardhat run scripts/deploy.js --network sepolia",
     "deploy:base": "hardhat run scripts/deploy-base.js --network baseSepolia",
     "rotate-logs": "node scripts/log-rotation.js",
-    "cleanup-proofs": "node scripts/cleanup-proofs.js"
+    "cleanup-proofs": "node scripts/cleanup-proofs.cjs"
   },
   "dependencies": {
     "@circle-fin/circle-sdk": "^2.9.0",

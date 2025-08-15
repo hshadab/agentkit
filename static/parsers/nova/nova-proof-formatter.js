@@ -15,6 +15,18 @@ class NovaProofFormatter {
         // 9. kzg_proof: [2][2] - KZG proof
     }
     
+    // Helper to convert number to hex
+    toHex(value) {
+        try {
+            const bn = BigInt(value);
+            const hex = bn.toString(16);
+            return '0x' + hex.padStart(64, '0');
+        } catch (e) {
+            console.error('Error converting to hex:', value, e);
+            return '0x' + '0'.repeat(64);
+        }
+    }
+    
     // Format a device proximity proof for the Nova Decider
     formatDeviceProximityProof(deviceId, x, y, proofData) {
         // Extract device coordinates
@@ -36,7 +48,67 @@ class NovaProofFormatter {
             console.log('Found proof_data, length:', proofData.proof_data.length);
             console.log('Proof data first 100 chars:', proofData.proof_data.substring(0, 100));
             
-            // Try the new calldata parser first (designed for zkEngine binary format)
+            // Try the simple parser first (looks for coordinate patterns)
+            if (window.ZKEngineSimpleParser) {
+                console.log('Trying ZKEngine Simple Parser...');
+                try {
+                    const simpleParser = new ZKEngineSimpleParser();
+                    const parsedComponents = simpleParser.parseProofBinary(proofData);
+                    
+                    if (parsedComponents) {
+                        console.log('Successfully parsed with simple parser');
+                        const formatted = simpleParser.formatForContract(parsedComponents);
+                        if (formatted) {
+                            console.log('Successfully formatted for IoTeX contract');
+                            console.log('Using zkEngine proof with detected coordinates!');
+                            return formatted;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Simple parser error:', error);
+                }
+            }
+            
+            // Try the new binary parser next (designed for zkEngine proof.bin format)
+            if (window.ZKEngineBinaryParser) {
+                console.log('Trying ZKEngine Binary Parser...');
+                try {
+                    const binaryParser = new ZKEngineBinaryParser();
+                    const parsedComponents = binaryParser.parseProofBinary(proofData);
+                    
+                    if (parsedComponents) {
+                        console.log('Successfully parsed with binary parser');
+                        const formatted = binaryParser.formatForContract(parsedComponents);
+                        if (formatted) {
+                            console.log('Successfully formatted for IoTeX contract');
+                            console.log('Using real zkEngine proof data!');
+                            
+                            // DO NOT override x,y coordinates - the proof was generated for specific values
+                            // Changing them would invalidate the cryptographic proof
+                            console.log('Note: Using original proof coordinates from zkEngine');
+                            
+                            // Log what coordinates are in the proof
+                            if (formatted.i_z0_zi && formatted.i_z0_zi.length >= 2) {
+                                const proofX = BigInt(formatted.i_z0_zi[0]).toString();
+                                const proofY = BigInt(formatted.i_z0_zi[1]).toString();
+                                console.log(`Proof generated for coordinates: (${proofX}, ${proofY})`);
+                            }
+                            
+                            return formatted;
+                        } else {
+                            console.error('Failed to format parsed components');
+                        }
+                    } else {
+                        console.error('Binary parser returned null');
+                    }
+                } catch (error) {
+                    console.error('Binary parser error:', error);
+                }
+            } else {
+                console.warn('ZKEngineBinaryParser not available');
+            }
+            
+            // Try the calldata parser next
             if (window.ZKEngineCalldataParser) {
                 console.log('Trying ZKEngine Calldata Parser...');
                 try {
@@ -48,19 +120,12 @@ class NovaProofFormatter {
                         const formatted = calldataParser.formatForIoTeXContract(parsedComponents, x, y);
                         if (formatted) {
                             console.log('Successfully formatted for IoTeX contract');
-                            console.log('Using real proof data - should pass verification!');
                             return formatted;
-                        } else {
-                            console.error('Failed to format parsed components');
                         }
-                    } else {
-                        console.error('Calldata parser returned null');
                     }
                 } catch (error) {
                     console.error('Calldata parser error:', error);
                 }
-            } else {
-                console.warn('ZKEngineCalldataParser not available');
             }
             
             // Try V3 parser next (handles zkEngine binary format better)
