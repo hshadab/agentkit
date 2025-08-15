@@ -1,6 +1,6 @@
 # Verifiable Agent Kit
 
-A production-ready framework for privacy-preserving AI agents with real zero-knowledge proofs using zkEngine Nova recursive proofs. Features multi-chain verification, automated USDC transfers, and IoTeX DePIN integration. Build trustless, verifiable compute applications using natural language commands.
+A production-ready framework for privacy-preserving AI agents with real zero-knowledge proofs using zkEngine Nova recursive proofs. Features multi-chain verification, automated USDC transfers, and complete IoTeX DePIN integration with real on-chain device registration, proximity verification, and reward distribution. Build trustless, verifiable compute applications using natural language commands.
 
 ## 🚀 Key Features
 
@@ -21,9 +21,11 @@ Proves identity verification without revealing personal information.
 - **Blockchain**: Ethereum, Base, Avalanche
 - **Example**: `"Generate a KYC proof and verify on Ethereum"`
 
-#### 2. **Device Proximity Proof** (IoT Integration)
-Proves IoT device location and proximity for IoTeX blockchain with real Nova proofs.
-- **Features**: IoT device authentication, ioID DID integration, IOTX reward mechanisms
+#### 2. **Device Proximity Proof** (IoT Integration) 🔥
+Proves IoT device location and proximity for IoTeX blockchain with real Nova recursive SNARKs.
+- **Complete Workflow**: Device Registration (0.01 IOTX) → Nova Proof Generation → Blockchain Verification (0.001 IOTX) → Reward Distribution (0.1 IOTX)
+- **Live Smart Contract**: Deployed on IoTeX Testnet with 110.5 IOTX reward pool
+- **Features**: Real on-chain transactions, ioID DID generation, W3C-compliant identity, MetaMask integration
 - **Use cases**: Smart city applications, supply chain tracking, DePIN verification, decentralized device identity (DID)
 - **Blockchain**: IoTeX with ProximityNovaDecider
 - **IoTeX Integration**: Official ioID Registry for device DIDs, Nova Decider for proof verification
