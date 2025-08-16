@@ -20,6 +20,13 @@ class WorkflowExecutor {
         this.isBlockchainVerification = false; // Track if we're doing blockchain verification
     }
 
+    // Generate unique device ID to avoid "already registered" errors
+    generateUniqueDeviceId() {
+        const timestamp = Date.now();
+        const random = Math.floor(Math.random() * 1000);
+        return `SENSOR_${timestamp}_${random}`;
+    }
+
     async connect() {
         return new Promise((resolve, reject) => {
             this.wsClient = new WebSocket('ws://localhost:8001/ws');
@@ -335,8 +342,17 @@ class WorkflowExecutor {
                         [contentHash, providerSignature, apiKeyHash, aiTimestamp, contentLength], 
                         stepIndex);
                 } else if (proofType === 'device_proximity') {
-                    // Extract device ID from step or use default
-                    const deviceIdStr = step.device_id || 'DEV123';
+                    // Extract device ID from step or use the SAME device ID that was registered
+                    const deviceIdStr = step.device_id || this.registeredDeviceId || this.generateUniqueDeviceId();
+                    
+                    // CRITICAL FIX: Use the SAME device ID string for both registration and proof generation
+                    // This ensures the device registered in Step 1 matches the device used in proof verification
+                    console.log(`🔧 DEVICE ID CONSISTENCY FIX: Using registered device ID: ${deviceIdStr}`);
+                    
+                    // Store the device ID string for use in verification steps
+                    if (!this.registeredDeviceId) {
+                        this.registeredDeviceId = deviceIdStr;
+                    }
                     
                     // Convert device ID to numeric value (hash if string)
                     let deviceIdNum;
@@ -359,7 +375,15 @@ class WorkflowExecutor {
                     x = String(Math.max(0, Math.min(10000, parseInt(x) || 5050)));
                     y = String(Math.max(0, Math.min(10000, parseInt(y) || 5050)));
                     
-                    console.log(`📍 Device ${deviceIdStr} (ID: ${deviceIdNum}) at coordinates (${x}, ${y})`);
+                    console.log(`📍 Device ${deviceIdStr} (Numeric: ${deviceIdNum}) at coordinates (${x}, ${y})`);
+                    
+                    // Store proof metadata for verification step
+                    this.proofResults.device_proximity = {
+                        deviceId: deviceIdStr,  // Store original string ID
+                        deviceIdNumeric: deviceIdNum,
+                        coordinates: { x, y }
+                    };
+                    
                     return await this.generateProof('prove_device_proximity', 
                         [deviceIdNum, x, y], 
                         stepIndex);
@@ -598,7 +622,12 @@ class WorkflowExecutor {
                 
             case 'register_device':
                 console.log('📱 Register device step:', JSON.stringify(step, null, 2));
-                const deviceId = step.device_id || 'DEV_UNKNOWN';
+                // Generate unique device ID to avoid "already registered" errors
+                const deviceId = step.device_id || this.generateUniqueDeviceId();
+                
+                // CRITICAL FIX: Store the device ID immediately to ensure consistency across all steps
+                this.registeredDeviceId = deviceId;
+                console.log(`🔧 REGISTRATION FIX: Storing device ID for workflow consistency: ${deviceId}`);
                 
                 // Send a message to the frontend to perform the actual registration
                 return new Promise((resolve) => {
@@ -621,6 +650,9 @@ class WorkflowExecutor {
                                 this.wsClient.off('message', messageHandler);
                                 
                                 if (message.success) {
+                                    // Store device ID for use in subsequent steps
+                                    this.registeredDeviceId = deviceId;
+                                    
                                     resolve({
                                         success: true,
                                         type: 'register_device',
@@ -628,8 +660,11 @@ class WorkflowExecutor {
                                         ioId: message.ioId,
                                         did: message.did,
                                         txHash: message.txHash,
+                                        alreadyRegistered: message.alreadyRegistered,
                                         status: 'registered',
-                                        message: `Device ${deviceId} registered on IoTeX blockchain`
+                                        message: message.alreadyRegistered ? 
+                                            `Device ${deviceId} was already registered on IoTeX blockchain` :
+                                            `Device ${deviceId} registered on IoTeX blockchain`
                                     });
                                 } else {
                                     resolve({
@@ -901,7 +936,7 @@ class WorkflowExecutor {
                 // For IoT devices, send request to frontend to claim IOTX rewards
                 return new Promise((resolve) => {
                     const requestId = `claim_rewards_${Date.now()}`;
-                    const deviceId = step.device_id || this.proofResults.device_proximity?.deviceId || 'TESTDEVICE001';
+                    const deviceId = step.device_id || this.registeredDeviceId || this.proofResults.device_proximity?.deviceId || this.generateUniqueDeviceId(); // Use registered device ID if available
                     
                     this.sendWorkflowUpdate('claim_rewards_request', {
                         workflowId: this.workflowId,
@@ -1054,6 +1089,7 @@ class WorkflowExecutor {
                         type: proofType, // Add type field for consistency
                         proofType: proofType,
                         person: this.currentWorkflow?.steps[stepIndex]?.person,
+                        deviceId: this.currentWorkflow?.steps[stepIndex]?.device_id || this.registeredDeviceId, // Store device ID
                         metrics: message.metrics, // Capture real metrics from zkEngine
                         proof_data: message.proof_data, // Include binary proof data
                         public_inputs: message.public_inputs, // Include public inputs

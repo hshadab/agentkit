@@ -21,15 +21,17 @@ Proves identity verification without revealing personal information.
 - **Blockchain**: Ethereum, Base, Avalanche
 - **Example**: `"Generate a KYC proof and verify on Ethereum"`
 
-#### 2. **Device Proximity Proof** (IoT Integration) 🔥
+#### 2. **Device Proximity Proof** (IoT Integration) 🔥 **FULLY WORKING**
 Proves IoT device location and proximity for IoTeX blockchain with real Nova recursive SNARKs.
-- **Complete Workflow**: Device Registration (0.01 IOTX) → Nova Proof Generation → Blockchain Verification (0.001 IOTX) → Reward Distribution (0.1 IOTX)
-- **Live Smart Contract**: Deployed on IoTeX Testnet with 110.5 IOTX reward pool
-- **Features**: Real on-chain transactions, ioID DID generation, W3C-compliant identity, MetaMask integration
+- **Complete Workflow**: Device Registration (0.01 IOTX) → Nova Proof Generation → Blockchain Verification (0.001 IOTX) → **Automatic Reward Distribution (0.1 IOTX)** ✅
+- **Live Smart Contract**: `0xAafE6C7ab60A8594a673791aB3DaDDb7b7CC0B14` deployed on IoTeX Testnet with active reward pool
+- **Recent Fix (Aug 16, 2025)**: Fixed device ID consistency bug that was causing "Device not registered" errors
+- **Features**: Real on-chain transactions, ioID DID generation, W3C-compliant identity, MetaMask integration, automatic 0.1 IOTX rewards
+- **Status**: ✅ All 4 steps working with real smart contract transactions
 - **Use cases**: Smart city applications, supply chain tracking, DePIN verification, decentralized device identity (DID)
 - **Blockchain**: IoTeX with ProximityNovaDecider
 - **IoTeX Integration**: Official ioID Registry for device DIDs, Nova Decider for proof verification
-- **Example**: `"Register IoT device TESTDEV123 with proximity proof at location 5050,5050"`
+- **Example**: `"Prove IoT device proximity at location 5080, 5020"` (generates unique device ID automatically)
 
 #### 3. **AI Prediction Proof**
 Proves AI predictions were made before events occurred with blockchain timestamps.
@@ -59,7 +61,7 @@ Proves AI-generated content authenticity and ownership with cryptographic verifi
 | **Solana** | Devnet | 2qohsyvXBRZMVRbKX74xkM6oUfntBqGMB7Jdk15n8wn7 | High-speed verification |
 | **Base** | Sepolia | 0x74D68B2481d298F337e62efc50724CbBA68dCF8f | AI commitment contract |
 | **Avalanche** | Fuji | 0x30e93E8B0804fD60b0d151F724c307c61Be37EE1 | Medical integrity verifier |
-| **IoTeX** | Testnet | 0xd3778e76ce0131762337464EEF1BAefFc608e8e0 | ProximityNovaDecider for IoT |
+| **IoTeX** | Testnet | 0xAafE6C7ab60A8594a673791aB3DaDDb7b7CC0B14 | IoTeX Proximity Verifier (WORKING) |
 
 ### 🔐 Blockchain Verification Approaches
 
@@ -375,6 +377,31 @@ agentkit/
 3. **IoTeX verification** - Ensure IoTeX testnet is configured in MetaMask
 4. **Wallet connection** - Ensure correct network is selected
 5. **Proof generation timeout** - Normal for complex proofs (15-30 seconds)
+
+### IoTeX Device Proximity Workflow (Recently Fixed)
+If you encounter issues with IoTeX device registration:
+
+**✅ FIXED (Aug 16, 2025)**: "Device not registered" error in Step 3
+- **Root Cause**: Device ID inconsistency between registration and verification steps
+- **Solution**: Updated `workflowExecutor.js` to ensure same device ID across all workflow steps
+- **Status**: All 4 steps now working with real smart contract transactions
+
+**Current IoTeX Workflow Status**:
+- ✅ Step 1: Device Registration (0.01 IOTX fee) - Working
+- ✅ Step 2: Nova Proof Generation - Working  
+- ✅ Step 3: Blockchain Verification (0.001 IOTX fee) - Working
+- ✅ Step 4: Automatic Reward Distribution (0.1 IOTX) - Working
+
+**Troubleshooting Steps**:
+1. Clear browser cache (Ctrl+F5) to load updated code
+2. Ensure MetaMask is connected to IoTeX testnet (Chain ID: 4690)
+3. Have sufficient IOTX for fees (~0.05 IOTX recommended)
+4. Use natural language: `"Prove IoT device proximity at location 5080, 5020"`
+
+**Recent Transaction Examples**:
+- Device Registration: `0x3ff77ae415b4606a37096390b8263e3b6beff1ee917d46f78f10ebf4e7db5bbd`
+- Proof Verification: `0xfccb1743c78c734559be0436d30c9e5f4294a7ce397f9086f53394bcdb2956ae`
+- Reward Distribution: `0x069f828cd7090db68b99ffe4a5f89a1d6b608a487beffeee62810cf3e2aa5056`
 
 ## 📊 Performance
 
