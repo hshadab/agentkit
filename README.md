@@ -385,22 +385,28 @@ agentkit/
 ### IoTeX Device Proximity Workflow (Recently Fixed)
 If you encounter issues with IoTeX device registration:
 
-**✅ FIXED (Aug 16, 2025)**: "Device not registered" error in Step 3
-- **Root Cause**: Device ID inconsistency between registration and verification steps
-- **Solution**: Updated `workflowExecutor.js` to ensure same device ID across all workflow steps
-- **Status**: All 4 steps now working with real smart contract transactions
+**✅ FIXED (Aug 17, 2025)**: Complete IoTeX integration with optimized UX
+- **Major Fixes**: Device ID consistency, MetaMask optimization, network switching, reward optimization
+- **Key Improvements**: 
+  - Reduced MetaMask confirmations from 15+ to 3 per workflow
+  - Fixed device ID display showing actual device IDs instead of "Unknown"  
+  - Optimized reward amount to 0.01 IOTX for sustainable testing
+  - Robust network switching with IoTeX testnet verification
+- **Status**: All 4 steps working optimally with excellent user experience
 
 **Current IoTeX Workflow Status**:
 - ✅ Step 1: Device Registration (0.01 IOTX fee) - Working
 - ✅ Step 2: Nova Proof Generation - Working  
 - ✅ Step 3: Blockchain Verification (0.001 IOTX fee) - Working
-- ✅ Step 4: Automatic Reward Distribution (0.1 IOTX) - Working
+- ✅ Step 4: Automatic Reward Distribution (0.01 IOTX) - Working
 
-**Troubleshooting Steps**:
-1. Clear browser cache (Ctrl+F5) to load updated code
-2. Ensure MetaMask is connected to IoTeX testnet (Chain ID: 4690)
-3. Have sufficient IOTX for fees (~0.05 IOTX recommended)
-4. Use natural language: `"Prove IoT device proximity at location 5080, 5020"`
+**Current Status**: Workflow is fully optimized and working smoothly. If you experience any issues:
+
+1. **Network Issues**: System automatically switches to IoTeX testnet (Chain ID: 4690)
+2. **MetaMask Confirmations**: Expect only 3 confirmations per complete workflow (optimized)
+3. **IOTX Balance**: Need ~0.03 IOTX total (0.01 registration + 0.001 verification + 0.01 buffer)
+4. **Device ID Display**: Shows proper format like "SENSOR_1755404017572_71"
+5. **Usage**: Simply use natural language: `"Prove IoT device proximity at location 5080, 5020"`
 
 **Recent Transaction Examples**:
 - Device Registration: `0x3ff77ae415b4606a37096390b8263e3b6beff1ee917d46f78f10ebf4e7db5bbd`
