@@ -135,31 +135,82 @@ class IoTeXDeviceVerifier {
             throw new Error('MetaMask not installed');
         }
         
-        // Connect to MetaMask
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        this.account = accounts[0];
+        // OPTIMIZATION: Reuse existing connection if available
+        if (window.iotexConnection && window.iotexConnection.account && window.iotexConnection.provider) {
+            debugLog('Reusing existing IoTeX connection to avoid extra MetaMask confirmations', 'info');
+            this.account = window.iotexConnection.account;
+            this.provider = window.iotexConnection.provider;
+            this.signer = window.iotexConnection.signer;
+        } else {
+            debugLog('Creating new IoTeX connection', 'info');
+            // Connect to MetaMask
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            this.account = accounts[0];
+            
+            // Create Web3 provider
+            this.provider = new ethers.providers.Web3Provider(window.ethereum);
+            this.signer = this.provider.getSigner();
+            
+            // Cache connection for reuse
+            window.iotexConnection = {
+                account: this.account,
+                provider: this.provider,
+                signer: this.signer
+            };
+        }
         
-        // Create Web3 provider
-        this.provider = new ethers.providers.Web3Provider(window.ethereum);
-        this.signer = this.provider.getSigner();
+        // Listen for account/network changes to invalidate cache
+        if (!window.iotexListenersSet) {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                debugLog('MetaMask account changed, clearing IoTeX connection cache', 'info');
+                window.iotexConnection = null;
+                window.iotexNetworkSwitched = false;
+            });
+            
+            window.ethereum.on('chainChanged', (chainId) => {
+                debugLog('MetaMask network changed, clearing IoTeX connection cache', 'info');
+                window.iotexConnection = null;
+                window.iotexNetworkSwitched = false;
+            });
+            
+            window.iotexListenersSet = true;
+        }
         
-        // Check current network first - but use the shared network switch function if available
+        // CRITICAL FIX: Always check and switch network - don't rely on session cache
         try {
             const config = getConfig();
             const network = await this.provider.getNetwork();
+            debugLog(`Current network: ${network.chainId}, expected: ${config.blockchain.iotex.chainIdDecimal}`, 'debug');
+            
             if (network.chainId !== config.blockchain.iotex.chainIdDecimal) {
+                debugLog(`Network mismatch detected! Current: ${network.chainId}, expected: ${config.blockchain.iotex.chainIdDecimal}`, 'warning');
+                debugLog('Forcing network switch to IoTeX...', 'info');
+                
+                // Clear any cached network state to force fresh switch
+                window.iotexNetworkSwitched = false;
+                
                 // Use the global checkAndSwitchToIoTeX if available
                 if (window.checkAndSwitchToIoTeX) {
                     await window.checkAndSwitchToIoTeX();
                 } else {
                     await this.switchToIoTeX();
                 }
+                
+                // Verify the switch worked
+                const newNetwork = await this.provider.getNetwork();
+                if (newNetwork.chainId !== config.blockchain.iotex.chainIdDecimal) {
+                    throw new Error(`Network switch failed: still on ${newNetwork.chainId}, expected ${config.blockchain.iotex.chainIdDecimal}`);
+                }
+                
+                window.iotexNetworkSwitched = true; // Mark as switched only after verification
+                debugLog('✅ Network successfully switched to IoTeX', 'success');
             } else {
                 debugLog('Already on IoTeX network', 'info');
+                window.iotexNetworkSwitched = true; // Mark as already on correct network
             }
         } catch (error) {
-            debugLog(`Network check error: ${error.message}`, 'warning');
-            // Try to continue anyway
+            debugLog(`❌ Network switch error: ${error.message}`, 'error');
+            throw error; // Re-throw to stop execution if network is wrong
         }
         
         // Create contract instance for demo device verifier
@@ -302,6 +353,9 @@ class IoTeXDeviceVerifier {
             
         } catch (error) {
             debugLog(`Smart contract registration failed: ${error.message}`, 'error');
+            debugLog(`Error code: ${error.code}`, 'error');
+            debugLog(`Error reason: ${error.reason}`, 'error');
+            debugLog(`Error data: ${error.data}`, 'error');
             
             // Check if device is already registered
             if (error.message.includes('Device already registered') || error.reason === 'Device already registered') {
@@ -410,6 +464,8 @@ class IoTeXDeviceVerifier {
                 return result;
             } else {
                 debugLog(`Smart contract registration failed, trying demo mode...`, 'warning');
+                debugLog(`❌ CRITICAL: Falling back to demo mode - rewards will not work!`, 'error');
+                debugLog(`To fix this, check MetaMask for transaction failures or gas estimation errors`, 'warning');
                 return await this.registerDeviceDemo(deviceId, registrationFee);
             }
             
@@ -660,11 +716,11 @@ class IoTeXDeviceVerifier {
                         // Check the balance change by examining logs for potential reward patterns
                         // Look for internal transfers in the logs
                         for (const log of receipt.logs) {
-                            // Standard reward amounts in the contract might be 0.1 IOTX
+                            // Standard reward amounts in the contract might be 0.01 IOTX
                             if (log.address === this.verifierContract.address) {
                                 // This is a log from our contract - likely contains reward info
                                 debugLog('Found contract log, likely reward transfer occurred', 'info');
-                                claimedAmount = ethers.utils.parseEther('0.1').toString(); // Standard reward amount
+                                claimedAmount = ethers.utils.parseEther('0.01').toString(); // Standard reward amount
                                 debugLog(`Inferred reward amount: ${ethers.utils.formatEther(claimedAmount)} IOTX`, 'success');
                                 break;
                             }
@@ -673,7 +729,7 @@ class IoTeXDeviceVerifier {
                         debugLog(`Could not check transaction logs: ${logCheckError.message}`, 'warning');
                         // Fallback: if transaction succeeded and we're here, assume standard reward
                         if (receipt.status === 1) {
-                            claimedAmount = ethers.utils.parseEther('0.1').toString();
+                            claimedAmount = ethers.utils.parseEther('0.01').toString();
                             debugLog(`Transaction successful - assuming standard reward: ${ethers.utils.formatEther(claimedAmount)} IOTX`, 'info');
                         }
                     }
@@ -698,7 +754,7 @@ class IoTeXDeviceVerifier {
                 
                 // Fallback to demo mode (simple payment to show transaction)
                 const config = getConfig();
-                const rewardAmount = ethers.utils.parseEther('0.001'); // 0.001 IOTX reward simulation
+                const rewardAmount = ethers.utils.parseEther('0.01'); // 0.01 IOTX reward simulation
                 
                 const tx = await this.signer.sendTransaction({
                     to: config.blockchain.iotex.contracts.deviceVerifier,
@@ -715,7 +771,7 @@ class IoTeXDeviceVerifier {
                     transactionHash: tx.hash,
                     rewardData: {
                         claimed: true,
-                        amount: '0.001 IOTX',
+                        amount: '0.01 IOTX',
                         txHash: tx.hash,
                         deviceId: deviceId,
                         demoMode: true,

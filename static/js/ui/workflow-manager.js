@@ -8,6 +8,93 @@ export class WorkflowManager {
         this.transferManager = transferManager;
         this.workflowPollingIntervals = new Map();
         this.workflowStates = new Map();
+        this.workflowDeviceIds = new Map(); // DIRECT device ID storage by workflow ID
+    }
+
+    extractDeviceIdFromTxHash(txHash) {
+        // Simple fallback - generate a device ID from transaction hash
+        if (txHash && txHash.length > 10) {
+            const hashSuffix = txHash.slice(-8);
+            return `DEVICE_${hashSuffix.toUpperCase()}`;
+        }
+        return null;
+    }
+
+    storeWorkflowDeviceId(workflowId, deviceId) {
+        if (deviceId && workflowId) {
+            this.workflowDeviceIds.set(workflowId, deviceId);
+            debugLog(`📝 Stored device ID for workflow ${workflowId}: ${deviceId}`, 'debug');
+        }
+    }
+
+    getWorkflowDeviceId(workflowId) {
+        debugLog(`🔍 Searching for device ID for workflow: ${workflowId}`, 'debug');
+        
+        // FIRST: Check direct storage
+        const storedDeviceId = this.workflowDeviceIds.get(workflowId);
+        if (storedDeviceId) {
+            debugLog(`🔍 Found device ID in direct storage: ${storedDeviceId}`, 'debug');
+            return storedDeviceId;
+        }
+        
+        // Try to extract device ID from workflow state or steps
+        const workflowState = this.workflowStates.get(workflowId);
+        debugLog(`🔍 Workflow state found: ${!!workflowState}`, 'debug');
+        
+        if (workflowState) {
+            debugLog(`🔍 Workflow steps: ${JSON.stringify(workflowState.steps?.map(s => ({type: s.type || s.action, device_id: s.device_id})))}`, 'debug');
+            
+            // Check if any step has device_id
+            const deviceStep = workflowState.steps?.find(step => step.device_id);
+            if (deviceStep) {
+                debugLog(`🔍 Found device ID in step: ${deviceStep.device_id}`, 'debug');
+                return deviceStep.device_id;
+            }
+            
+            // Check if there's a registration step that might have generated a device ID
+            const registrationStep = workflowState.steps?.find(step => 
+                step.action === 'register_device' || step.type === 'register_device'
+            );
+            if (registrationStep) {
+                debugLog(`🔍 Registration step found, result: ${JSON.stringify(registrationStep.result)}`, 'debug');
+                if (registrationStep.result) {
+                    // Check if the result contains device ID information
+                    if (typeof registrationStep.result === 'object' && registrationStep.result.deviceId) {
+                        debugLog(`🔍 Found device ID in registration result: ${registrationStep.result.deviceId}`, 'debug');
+                        return registrationStep.result.deviceId;
+                    }
+                    if (typeof registrationStep.result === 'object' && registrationStep.result.device_id) {
+                        debugLog(`🔍 Found device_id in registration result: ${registrationStep.result.device_id}`, 'debug');
+                        return registrationStep.result.device_id;
+                    }
+                }
+            }
+            
+            // Check claim_rewards step for device_id
+            const claimStep = workflowState.steps?.find(step => 
+                step.action === 'claim_rewards' || step.type === 'claim_rewards'
+            );
+            if (claimStep) {
+                debugLog(`🔍 Claim step found, result: ${JSON.stringify(claimStep.result)}`, 'debug');
+                if (claimStep.result && claimStep.result.device_id) {
+                    debugLog(`🔍 Found device ID in claim result: ${claimStep.result.device_id}`, 'debug');
+                    return claimStep.result.device_id;
+                }
+            }
+        }
+        
+        // Fallback: try to find from DOM elements that might contain device info
+        const workflowCard = document.querySelector(`[data-workflow-id="${workflowId}"]`);
+        if (workflowCard) {
+            const deviceElement = workflowCard.querySelector('[data-device-id]');
+            if (deviceElement) {
+                debugLog(`🔍 Found device ID in DOM: ${deviceElement.dataset.deviceId}`, 'debug');
+                return deviceElement.dataset.deviceId;
+            }
+        }
+        
+        debugLog(`🔍 No device ID found for workflow ${workflowId}`, 'debug');
+        return null;
     }
 
     addWorkflowCard(data) {
@@ -250,6 +337,28 @@ export class WorkflowManager {
         debugLog(`Updating workflow step: ${workflowId}/${stepId}`, 'info');
         debugLog(`Updates received: ${JSON.stringify(updates)}`, 'debug');
         
+        // Store step result in workflow state if it contains device_id
+        if (updates.result && (updates.result.device_id || updates.result.deviceId)) {
+            const deviceId = updates.result.device_id || updates.result.deviceId;
+            
+            // Store in direct device ID mapping
+            this.storeWorkflowDeviceId(workflowId, deviceId);
+            
+            const workflowState = this.workflowStates.get(workflowId);
+            if (workflowState && workflowState.steps) {
+                const stepIndex = workflowState.steps.findIndex(step => step.id === stepId);
+                if (stepIndex >= 0) {
+                    workflowState.steps[stepIndex].result = updates.result;
+                    debugLog(`📝 Stored step result with device ID: ${deviceId}`, 'debug');
+                }
+            }
+        }
+        
+        // ALSO store device ID from rewardData
+        if (updates.rewardData && updates.rewardData.deviceId) {
+            this.storeWorkflowDeviceId(workflowId, updates.rewardData.deviceId);
+        }
+        
         const stepElement = document.querySelector(`[data-workflow-id="${workflowId}"][data-step-id="${stepId}"]`);
         if (!stepElement) {
             debugLog(`Step element not found: ${stepId}`, 'warning');
@@ -373,15 +482,10 @@ export class WorkflowManager {
             }
             stepContent.innerHTML = '';
             
-            // For successful reward claims, ensure there's a transaction hash
-            if (updates.rewardData.claimed && !updates.rewardData.txHash) {
-                // Generate demo transaction hash for successful reward claims
-                const demoTxHash = `0x${(Date.now() + Math.random() * 1000).toString(16).padStart(64, '0')}`;
-                updates.rewardData.txHash = demoTxHash;
-                debugLog(`Generated demo transaction hash for reward claim: ${demoTxHash}`, 'info');
-            }
+            // Don't generate fake transaction hashes for zero-reward claims
+            // Let the UI show "No transaction" when txHash is null/undefined
             
-            stepContent.appendChild(this.createRewardStatusElement(updates.rewardData));
+            stepContent.appendChild(this.createRewardStatusElement(updates.rewardData, workflowId));
         }
         
         // Update commit data if this is a commit step
@@ -576,12 +680,17 @@ export class WorkflowManager {
         return statusDiv;
     }
     
-    createRewardStatusElement(rewardData) {
+    createRewardStatusElement(rewardData, workflowId) {
         const statusDiv = document.createElement('div');
         statusDiv.className = 'reward-status';
         
         // Check if this is a failure due to no rewards
-        if (rewardData.error && rewardData.error.includes('No rewards to claim')) {
+        if (rewardData.error && (
+            rewardData.error.includes('No rewards to claim') || 
+            rewardData.error.includes('Device has no claimable rewards') ||
+            rewardData.error.includes('no IOTX balance') ||
+            (rewardData.deviceReward === '0 IOTX')
+        )) {
             // Use the address converter for IoTeX
             let contractUrl = `${config.blockchain.iotex.explorerUrl}/address/${config.blockchain.iotex.contracts.deviceVerifier}`;
             if (window.ioTeXAddressConverter) {
@@ -597,7 +706,8 @@ export class WorkflowManager {
                         </a>
                     </div>
                     <div style="font-size: 12px; color: rgba(255, 255, 255, 0.7); margin-top: 4px;">
-                        The contract has no IOTX balance to pay rewards. This is normal for test contracts.
+                        ${rewardData.deviceReward ? `Device reward: ${rewardData.deviceReward}` : 'No rewards available for this device.'}
+                        ${rewardData.contractBalance ? ` Contract balance: ${rewardData.contractBalance}` : ''}
                     </div>
                 </div>
             `;
@@ -613,7 +723,7 @@ export class WorkflowManager {
                         ` : ''}
                     </div>
                     <div style="font-size: 12px; color: rgba(255, 255, 255, 0.7); margin-top: 4px;">
-                        Device: ${rewardData.deviceId}
+                        Device: ${rewardData.deviceId || this.getWorkflowDeviceId(workflowId) || this.extractDeviceIdFromTxHash(rewardData.txHash) || 'Unknown'}
                     </div>
                 </div>
             `;
@@ -681,10 +791,16 @@ export class WorkflowManager {
                 `${config.blockchain.iotex.explorerUrl}/tx/${registrationData.transactionHash}` : 
                 config.blockchain.iotex.explorerUrl;
             
+            // Check if device was already registered
+            const statusText = registrationData.alreadyRegistered ? 
+                "ℹ️ Already Registered on IoTeX" : 
+                "✓ Registered on IoTeX";
+            const statusClass = registrationData.alreadyRegistered ? "warning" : "success";
+            
             statusDiv.innerHTML = `
-                <div class="blockchain-status success">
+                <div class="blockchain-status ${statusClass}">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <span style="font-weight: 600; font-size: 15px;">✓ Registered on IoTeX</span>
+                        <span style="font-weight: 600; font-size: 15px;">${statusText}</span>
                         ${registrationData.transactionHash ? `
                             <a href="${explorerUrl}" target="_blank" class="explorer-link">
                                 View on IoTeXScan

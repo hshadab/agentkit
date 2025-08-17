@@ -50,7 +50,7 @@ export const config = {
             chainId: '0x1252',
             chainIdDecimal: 4690,
             contracts: {
-                deviceVerifier: '0x4d36690090D365709eeEA35B90D5d81e481Aef79',
+                deviceVerifier: '0xAafE6C7ab60A8594a673791aB3DaDDb7b7CC0B14',
                 novaDecider: '0x4EF6152c952dA7A27bb57E8b989348a73aB850d2',
                 ioIDRegistry: '0x0A7e595C7889dF3652A19aF52C18377bF17e027D',
                 ioID: '0x45Ce3E6f526e597628c73B731a3e9Af7Fc32f5b7'

@@ -11,6 +11,18 @@ const __dirname = dirname(__filename);
 
 class WorkflowExecutor {
     constructor() {
+        // CRITICAL DEBUG: Prove this version is being loaded
+        console.log('🚀 WorkflowExecutor CONSTRUCTOR: Loading FIXED version with master device ID system (v2025-08-16-7:20)');
+        
+        // Also write to a file to debug subprocess execution
+        try {
+            const fs = require('fs');
+            const timestamp = new Date().toISOString();
+            fs.appendFileSync('/tmp/workflow_executor_debug.log', `${timestamp}: WorkflowExecutor CONSTRUCTOR CALLED - FIXED VERSION\n`);
+        } catch (e) {
+            // Ignore file write errors
+        }
+        
         this.wsClient = null;
         this.currentWorkflow = null;
         this.proofResults = {}; // Store proof results for conditional checks
@@ -18,6 +30,10 @@ class WorkflowExecutor {
         this.workflowId = null;
         this.stepResults = [];
         this.isBlockchainVerification = false; // Track if we're doing blockchain verification
+        
+        // CRITICAL FIX: Master device ID store for workflow consistency
+        this.masterDeviceId = null; // Single source of truth for device ID across all steps
+        this.deviceIdLocked = false; // Prevent device ID changes once set
     }
 
     // Generate unique device ID to avoid "already registered" errors
@@ -25,6 +41,25 @@ class WorkflowExecutor {
         const timestamp = Date.now();
         const random = Math.floor(Math.random() * 1000);
         return `SENSOR_${timestamp}_${random}`;
+    }
+    
+    // CRITICAL FIX: Master device ID management
+    setMasterDeviceId(deviceId, source = 'unknown') {
+        if (!this.deviceIdLocked && deviceId) {
+            this.masterDeviceId = deviceId;
+            this.registeredDeviceId = deviceId; // Keep legacy compatibility
+            this.deviceIdLocked = true; // Lock to prevent changes
+            console.log(`🔒 MASTER DEVICE ID SET: "${deviceId}" (source: ${source})`);
+            console.log(`🔒 Device ID is now LOCKED for workflow consistency`);
+        } else if (this.deviceIdLocked && deviceId !== this.masterDeviceId) {
+            console.log(`⚠️  DEVICE ID CONFLICT PREVENTED: Attempted to change from "${this.masterDeviceId}" to "${deviceId}" (source: ${source})`);
+            console.log(`⚠️  Using master device ID: "${this.masterDeviceId}"`);
+        }
+        return this.masterDeviceId;
+    }
+    
+    getMasterDeviceId() {
+        return this.masterDeviceId || this.registeredDeviceId;
     }
 
     async connect() {
@@ -342,17 +377,16 @@ class WorkflowExecutor {
                         [contentHash, providerSignature, apiKeyHash, aiTimestamp, contentLength], 
                         stepIndex);
                 } else if (proofType === 'device_proximity') {
-                    // Extract device ID from step or use the SAME device ID that was registered
-                    const deviceIdStr = step.device_id || this.registeredDeviceId || this.generateUniqueDeviceId();
+                    // CRITICAL FIX: Use master device ID for absolute consistency
+                    let deviceIdStr = this.getMasterDeviceId();
                     
-                    // CRITICAL FIX: Use the SAME device ID string for both registration and proof generation
-                    // This ensures the device registered in Step 1 matches the device used in proof verification
-                    console.log(`🔧 DEVICE ID CONSISTENCY FIX: Using registered device ID: ${deviceIdStr}`);
-                    
-                    // Store the device ID string for use in verification steps
-                    if (!this.registeredDeviceId) {
-                        this.registeredDeviceId = deviceIdStr;
+                    // If no master device ID set, use step data but set it as master
+                    if (!deviceIdStr) {
+                        deviceIdStr = step.device_id || this.generateUniqueDeviceId();
+                        this.setMasterDeviceId(deviceIdStr, 'proof_generation_fallback');
                     }
+                    
+                    console.log(`🔧 PROOF GENERATION: Using master device ID: ${deviceIdStr}`);
                     
                     // Convert device ID to numeric value (hash if string)
                     let deviceIdNum;
@@ -625,9 +659,8 @@ class WorkflowExecutor {
                 // Generate unique device ID to avoid "already registered" errors
                 const deviceId = step.device_id || this.generateUniqueDeviceId();
                 
-                // CRITICAL FIX: Store the device ID immediately to ensure consistency across all steps
-                this.registeredDeviceId = deviceId;
-                console.log(`🔧 REGISTRATION FIX: Storing device ID for workflow consistency: ${deviceId}`);
+                // CRITICAL FIX: Set master device ID for entire workflow
+                this.setMasterDeviceId(deviceId, 'register_device_step');
                 
                 // Send a message to the frontend to perform the actual registration
                 return new Promise((resolve) => {
@@ -878,12 +911,16 @@ class WorkflowExecutor {
                 return new Promise((resolve) => {
                     const requestId = `verify_iotex_${Date.now()}`;
                     
+                    // CRITICAL FIX: Use master device ID for verification consistency
+                    const verificationDeviceId = this.masterDeviceId || step.device_id;
+                    console.log(`🔒 Using device ID for verification: "${verificationDeviceId}" (master: ${this.masterDeviceId}, step: ${step.device_id})`);
+                    
                     this.sendWorkflowUpdate('iotex_verification_request', {
                         workflowId: this.workflowId,
                         stepId: `step_${stepIndex + 1}`,
                         proofId: proofToVerify.proofId,
                         proofType: iotexProofType,
-                        deviceId: step.device_id,
+                        deviceId: verificationDeviceId,
                         requestId: requestId
                         // Don't send full proof data - frontend will fetch via HTTP
                     });
@@ -936,7 +973,17 @@ class WorkflowExecutor {
                 // For IoT devices, send request to frontend to claim IOTX rewards
                 return new Promise((resolve) => {
                     const requestId = `claim_rewards_${Date.now()}`;
-                    const deviceId = step.device_id || this.registeredDeviceId || this.proofResults.device_proximity?.deviceId || this.generateUniqueDeviceId(); // Use registered device ID if available
+                    
+                    // CRITICAL FIX: Use master device ID for reward claiming
+                    const deviceId = this.getMasterDeviceId() || step.device_id || this.generateUniqueDeviceId();
+                    
+                    // CRITICAL DEBUG: Log all device ID sources
+                    console.log(`🔧 REWARD CLAIM DEBUG - Device ID sources:`);
+                    console.log(`  this.getMasterDeviceId(): ${this.getMasterDeviceId()}`);
+                    console.log(`  step.device_id: ${step.device_id}`);
+                    console.log(`  this.registeredDeviceId: ${this.registeredDeviceId}`);
+                    console.log(`  this.proofResults.device_proximity?.deviceId: ${this.proofResults.device_proximity?.deviceId}`);
+                    console.log(`  Final deviceId for claim: ${deviceId}`);
                     
                     this.sendWorkflowUpdate('claim_rewards_request', {
                         workflowId: this.workflowId,

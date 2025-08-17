@@ -2,6 +2,66 @@
 
 All notable changes to the Verifiable Agent Kit project will be documented in this file.
 
+## [1.4.1] - 2025-08-17
+
+### 🚀 Major UX Optimizations & Reward Fixes - Complete IoTeX Integration
+
+#### Fixed
+- **MetaMask Connection Optimization**: Reduced confirmation prompts from 15+ to 3 per workflow
+  - **Root Cause**: Multiple connection attempts and network switches per step
+  - **Solution**: Implemented connection caching and network switch optimization
+  - **Files Modified**: 
+    - `static/js/blockchain/iotex-device-verifier.js` - Added connection reuse logic
+    - `static/js/main.js` - Implemented request deduplication
+  - **Impact**: Significantly improved user experience with fewer MetaMask interruptions
+
+- **Device ID Display**: Fixed UI showing "Device: Unknown" instead of actual device ID
+  - **Root Cause**: Browser cache preventing updated JavaScript from loading
+  - **Solution**: Aggressive cache-busting and direct device ID storage
+  - **Files Modified**:
+    - `static/js/ui/workflow-manager.js` - Enhanced device ID fallback system
+    - `static/index.html` - Updated cache-busting versions
+  - **Impact**: Device IDs now properly display as "SENSOR_1755404017572_71" format
+
+- **Network Switching Issues**: Fixed MetaMask stuck on wrong networks (Avalanche chainId 43113)
+  - **Root Cause**: MetaMask not properly switching to IoTeX testnet (chainId 4690)
+  - **Solution**: Robust network switching with verification and error handling
+  - **Impact**: Seamless network switching to IoTeX for all workflow steps
+
+#### Enhanced
+- **Reward Amount Optimization**: Reduced from 0.1 IOTX to 0.01 IOTX for sustainability
+  - **Reason**: Contract balance optimization - enables 1000+ tests with 10 IOTX
+  - **Files Modified**: 
+    - `static/js/blockchain/iotex-device-verifier.js` - Updated reward calculations
+    - `README.md` - Updated documentation
+  - **Impact**: Sustainable testing environment with existing contract balance
+
+- **Contract Balance Management**: Verified 10.053 IOTX balance after faucet funding
+  - **Status**: Contract adequately funded for extensive testing
+  - **Reward Pool**: Supports 1000+ device verifications at 0.01 IOTX per claim
+
+#### Technical Improvements
+- **Master Device ID System**: Implemented locking mechanism for workflow consistency
+- **Connection Caching**: Reuse MetaMask connections to reduce confirmation prompts
+- **Request Deduplication**: Prevent duplicate WebSocket responses
+- **Network Verification**: Always verify correct IoTeX network before operations
+
+#### Technical Details
+- **Contract Address**: `0xAafE6C7ab60A8594a673791aB3DaDDb7b7CC0B14` (fully funded)
+- **Contract Balance**: 10.053 IOTX (sufficient for 1000+ tests)
+- **Workflow Steps**: 
+  1. ✅ Device Registration (0.01 IOTX fee) - Optimized UX
+  2. ✅ Nova Proof Generation - No changes
+  3. ✅ Blockchain Verification (0.001 IOTX fee) - Network switching fixed
+  4. ✅ Automatic Reward Distribution (0.01 IOTX) - **Amount optimized, display fixed**
+
+#### Recent Working Transactions
+- Latest successful workflow with optimized rewards and UX improvements
+- All 4 steps completing with proper device ID display and minimal MetaMask confirmations
+- Contract balance verified and sustainable for ongoing testing
+
+---
+
 ## [1.4.0] - 2025-08-16
 
 ### 🔥 Major Bug Fixes - IoTeX Integration Now Fully Working

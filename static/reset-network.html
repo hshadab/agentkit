@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reset Network State</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .button { padding: 12px 24px; margin: 10px; background: #007cba; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        .button:hover { background: #005a87; }
+        .success { color: #155724; background: #d4edda; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .error { color: #721c24; background: #f8d7da; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .info { color: #0c5460; background: #d1ecf1; padding: 10px; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Network State Reset</h1>
+        
+        <div class="info">
+            <strong>Issue:</strong> MetaMask is stuck on Avalanche (chainId: 43113) instead of IoTeX (chainId: 4690).
+            <br><strong>Solution:</strong> Reset the cached network state and force proper network switching.
+        </div>
+        
+        <button class="button" onclick="resetNetworkState()">🔄 Reset Network State</button>
+        <button class="button" onclick="checkCurrentNetwork()">📋 Check Current Network</button>
+        <button class="button" onclick="forceIoTeXSwitch()">🚀 Force Switch to IoTeX</button>
+        
+        <div id="output"></div>
+        
+        <h3>Manual Steps:</h3>
+        <ol>
+            <li>Open MetaMask</li>
+            <li>Click on the network dropdown (currently showing "Avalanche Fuji C-Chain")</li>
+            <li>Select "IoTeX Network Testnet" (or add it if not present)</li>
+            <li>Refresh this page and test the workflow again</li>
+        </ol>
+        
+        <a href="/index.html?v=20250817-devicefix" class="button">🏠 Back to Main App</a>
+    </div>
+    
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            output.innerHTML += `<div class="${className}">${message}</div>`;
+        }
+        
+        async function resetNetworkState() {
+            log('🔄 Resetting network state...', 'info');
+            
+            // Clear all cached network states
+            try {
+                window.iotexNetworkSwitched = false;
+                window.iotexConnection = null;
+                localStorage.removeItem('iotexNetworkSwitched');
+                sessionStorage.removeItem('iotexNetworkSwitched');
+                log('✅ Network cache cleared successfully', 'success');
+            } catch (e) {
+                log(`❌ Cache clear error: ${e.message}`, 'error');
+            }
+        }
+        
+        async function checkCurrentNetwork() {
+            log('📋 Checking current network...', 'info');
+            
+            if (!window.ethereum) {
+                log('❌ MetaMask not found', 'error');
+                return;
+            }
+            
+            try {
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                const chainIdDecimal = parseInt(chainId, 16);
+                
+                log(`Current network: ${chainId} (decimal: ${chainIdDecimal})`, 'info');
+                
+                if (chainIdDecimal === 4690) {
+                    log('✅ Correct! Already on IoTeX Testnet (4690)', 'success');
+                } else if (chainIdDecimal === 43113) {
+                    log('❌ Wrong network! Currently on Avalanche Fuji (43113)', 'error');
+                } else {
+                    log(`❌ Wrong network! Currently on chainId ${chainIdDecimal}`, 'error');
+                }
+            } catch (e) {
+                log(`❌ Network check error: ${e.message}`, 'error');
+            }
+        }
+        
+        async function forceIoTeXSwitch() {
+            log('🚀 Forcing switch to IoTeX...', 'info');
+            
+            if (!window.ethereum) {
+                log('❌ MetaMask not found', 'error');
+                return;
+            }
+            
+            try {
+                // Try to switch to IoTeX
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: '0x1252' }], // IoTeX testnet
+                });
+                log('✅ Successfully switched to IoTeX testnet', 'success');
+                
+                // Verify the switch
+                setTimeout(async () => {
+                    await checkCurrentNetwork();
+                }, 1000);
+                
+            } catch (switchError) {
+                if (switchError.code === 4902) {
+                    log('🔧 IoTeX network not found, adding it...', 'info');
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: '0x1252',
+                                chainName: 'IoTeX Network Testnet',
+                                nativeCurrency: {
+                                    name: 'IOTX',
+                                    symbol: 'IOTX',
+                                    decimals: 18
+                                },
+                                rpcUrls: ['https://babel-api.testnet.iotex.io'],
+                                blockExplorerUrls: ['https://testnet.iotexscan.io']
+                            }],
+                        });
+                        log('✅ IoTeX network added and switched successfully', 'success');
+                    } catch (addError) {
+                        log(`❌ Failed to add IoTeX network: ${addError.message}`, 'error');
+                    }
+                } else {
+                    log(`❌ Network switch failed: ${switchError.message}`, 'error');
+                }
+            }
+        }
+        
+        // Auto-check network on page load
+        setTimeout(checkCurrentNetwork, 500);
+    </script>
+</body>
+</html>

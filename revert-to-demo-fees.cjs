@@ -4,7 +4,7 @@ require('dotenv').config();
 async function revertToDemoFees() {
     console.log("🔄 Reverting to Demo-Friendly Fee Structure...\n");
 
-    const provider = new ethers.JsonRpcProvider("https://babel-api.testnet.iotex.io");
+    const provider = new ethers.providers.JsonRpcProvider("https://babel-api.testnet.iotex.io");
     const wallet = new ethers.Wallet(process.env.IOTEX_PRIVATE_KEY, provider);
     
     const deviceVerifierAddress = "0x4d36690090D365709eeEA35B90D5d81e481Aef79";
@@ -23,19 +23,19 @@ async function revertToDemoFees() {
     const currentVerFee = await contract.verificationFee();
     const currentReward = await contract.rewardAmount();
     
-    console.log("  Registration:", ethers.formatEther(currentRegFee), "IOTX");
-    console.log("  Verification:", ethers.formatEther(currentVerFee), "IOTX");  
-    console.log("  Reward:", ethers.formatEther(currentReward), "IOTX");
+    console.log("  Registration:", ethers.utils.formatEther(currentRegFee), "IOTX");
+    console.log("  Verification:", ethers.utils.formatEther(currentVerFee), "IOTX");  
+    console.log("  Reward:", ethers.utils.formatEther(currentReward), "IOTX");
 
     // Revert to demo-friendly fees
-    const demoRegFee = ethers.parseEther("0.01");    // 0.01 IOTX
-    const demoVerFee = ethers.parseEther("0.001");   // 0.001 IOTX
-    const demoReward = ethers.parseEther("0.1");     // 0.1 IOTX
+    const demoRegFee = ethers.utils.parseEther("0.01");    // 0.01 IOTX
+    const demoVerFee = ethers.utils.parseEther("0.001");   // 0.001 IOTX
+    const demoReward = ethers.utils.parseEther("0.1");     // 0.1 IOTX
 
     console.log("\n💡 Demo-Friendly Fees:");
-    console.log("  Registration:", ethers.formatEther(demoRegFee), "IOTX (affordable for demos)");
-    console.log("  Verification:", ethers.formatEther(demoVerFee), "IOTX");
-    console.log("  Reward:", ethers.formatEther(demoReward), "IOTX");
+    console.log("  Registration:", ethers.utils.formatEther(demoRegFee), "IOTX (affordable for demos)");
+    console.log("  Verification:", ethers.utils.formatEther(demoVerFee), "IOTX");
+    console.log("  Reward:", ethers.utils.formatEther(demoReward), "IOTX");
 
     try {
         console.log("\n🔄 Reverting to demo-friendly fees...");

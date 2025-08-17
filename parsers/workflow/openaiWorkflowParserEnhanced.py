@@ -234,8 +234,8 @@ Output format as JSON:
                     for step in result['steps']
                 )
                 
-                # If it's an IoT workflow but missing steps, add them
-                if has_register_device and has_device_proximity:
+                # If it's an IoT workflow (has device_proximity proof), ensure all 4 steps exist
+                if has_device_proximity:
                     device_id = None
                     # Extract device_id from existing steps
                     for step in result['steps']:
@@ -243,7 +243,22 @@ Output format as JSON:
                             device_id = step['device_id']
                             break
                     
+                    # Remove any unwanted AI processing steps from IoT workflows
+                    result['steps'] = [step for step in result['steps'] if step.get('type') != 'process_with_ai']
+                    
                     # Check what's missing and add
+                    if not has_register_device:
+                        # Insert register_device step at the beginning
+                        result['steps'].insert(0, {
+                            "type": "register_device",
+                            "device_id": device_id,
+                            "description": f"Register IoT device {device_id}",
+                            "index": 0
+                        })
+                        # Update indices of other steps
+                        for i, step in enumerate(result['steps'][1:], 1):
+                            step['index'] = i
+                    
                     has_verify = any(step.get('type') == 'verify_on_iotex' for step in result['steps'])
                     has_rewards = any(step.get('type') == 'claim_rewards' for step in result['steps'])
                     

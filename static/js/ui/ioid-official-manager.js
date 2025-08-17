@@ -149,7 +149,7 @@ class OfficialIoIDManager {
         await this.ensureIoTeXNetwork();
         
         try {
-            // Generate device ID (32 bytes)
+            // Generate device ID (32 bytes) - using ethers v5 syntax
             const deviceId = ethers.utils.id(deviceName);
             
             // For demo purposes, we'll create a simulated ioID

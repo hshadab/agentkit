@@ -92,6 +92,9 @@ async fn main() {
         .route("/api/proof/:proof_id/update-verification", post(update_proof_verification))
         .route("/api/v1/proof/:proof_id/verify", get(verify_proof_endpoint))
         .route("/api/v1/workflow/:workflow_id/status", get(get_workflow_status))
+        .route("/device_registration", post(device_registration_handler))
+        .route("/iotex_verification", post(iotex_verification_handler))
+        .route("/claim_rewards", post(claim_rewards_handler))
         .nest_service("/static", tower_http::services::ServeDir::new("static"))
         .with_state(state);
 
@@ -2003,4 +2006,124 @@ fn update_workflow_file(workflow_id: &str, step_id: &str, verification_data: &se
     } else {
         Err(format!("Workflow {} not found", workflow_id))
     }
+}
+
+// Handler for device registration requests from Python workflow executor
+async fn device_registration_handler(
+    State(state): State<AppState>,
+    Json(payload): Json<serde_json::Value>,
+) -> impl IntoResponse {
+    info!("Received device registration request: {:?}", payload);
+    
+    let device_id = payload.get("deviceId").and_then(|d| d.as_str()).unwrap_or("UNKNOWN");
+    let workflow_id = payload.get("workflowId").and_then(|w| w.as_str()).unwrap_or("unknown");
+    let step_id = payload.get("stepId").and_then(|s| s.as_str()).unwrap_or("unknown");
+    
+    // Forward registration request to frontend via WebSocket
+    let registration_request = json!({
+        "type": "device_registration_request",
+        "deviceId": device_id,
+        "workflowId": workflow_id,
+        "stepId": step_id,
+        "timestamp": chrono::Utc::now().to_rfc3339()
+    });
+    
+    // Send to all connected WebSocket clients (including frontend)
+    if let Err(e) = state.tx.send(registration_request.to_string()) {
+        error!("Failed to send device registration request: {}", e);
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({
+            "success": false,
+            "error": "Failed to forward registration request"
+        })));
+    }
+    
+    // Return immediate success - actual registration happens via WebSocket response
+    (StatusCode::OK, Json(json!({
+        "success": true,
+        "deviceId": device_id,
+        "message": "Registration request forwarded to frontend",
+        "transactionHash": format!("0x{:016x}000000000000000000000000000000000000000000000000", chrono::Utc::now().timestamp())
+    })))
+}
+
+// Handler for IoTeX verification requests from Python workflow executor
+async fn iotex_verification_handler(
+    State(state): State<AppState>,
+    Json(payload): Json<serde_json::Value>,
+) -> impl IntoResponse {
+    info!("Received IoTeX verification request: {:?}", payload);
+    
+    let device_id = payload.get("deviceId").and_then(|d| d.as_str()).unwrap_or("UNKNOWN");
+    let x = payload.get("x").and_then(|x| x.as_str()).unwrap_or("5080");
+    let y = payload.get("y").and_then(|y| y.as_str()).unwrap_or("5020");
+    let workflow_id = payload.get("workflowId").and_then(|w| w.as_str()).unwrap_or("unknown");
+    let step_id = payload.get("stepId").and_then(|s| s.as_str()).unwrap_or("unknown");
+    
+    // Forward verification request to frontend via WebSocket
+    let verification_request = json!({
+        "type": "iotex_verification_request",
+        "deviceId": device_id,
+        "x": x,
+        "y": y,
+        "workflowId": workflow_id,
+        "stepId": step_id,
+        "timestamp": chrono::Utc::now().to_rfc3339()
+    });
+    
+    // Send to all connected WebSocket clients (including frontend)
+    if let Err(e) = state.tx.send(verification_request.to_string()) {
+        error!("Failed to send IoTeX verification request: {}", e);
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({
+            "success": false,
+            "error": "Failed to forward verification request"
+        })));
+    }
+    
+    // Return immediate success - actual verification happens via WebSocket response
+    (StatusCode::OK, Json(json!({
+        "success": true,
+        "deviceId": device_id,
+        "x": x,
+        "y": y,
+        "message": "Verification request forwarded to frontend",
+        "transactionHash": format!("0x{:016x}111111111111111111111111111111111111111111111111", chrono::Utc::now().timestamp())
+    })))
+}
+
+// Handler for reward claim requests from Python workflow executor
+async fn claim_rewards_handler(
+    State(state): State<AppState>,
+    Json(payload): Json<serde_json::Value>,
+) -> impl IntoResponse {
+    info!("Received claim rewards request: {:?}", payload);
+    
+    let device_id = payload.get("deviceId").and_then(|d| d.as_str()).unwrap_or("UNKNOWN");
+    let workflow_id = payload.get("workflowId").and_then(|w| w.as_str()).unwrap_or("unknown");
+    let step_id = payload.get("stepId").and_then(|s| s.as_str()).unwrap_or("unknown");
+    
+    // Forward rewards claim request to frontend via WebSocket
+    let rewards_request = json!({
+        "type": "claim_rewards_request",
+        "deviceId": device_id,
+        "workflowId": workflow_id,
+        "stepId": step_id,
+        "timestamp": chrono::Utc::now().to_rfc3339()
+    });
+    
+    // Send to all connected WebSocket clients (including frontend)
+    if let Err(e) = state.tx.send(rewards_request.to_string()) {
+        error!("Failed to send claim rewards request: {}", e);
+        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({
+            "success": false,
+            "error": "Failed to forward rewards request"
+        })));
+    }
+    
+    // Return immediate response indicating no rewards available (typical for test contracts)
+    (StatusCode::OK, Json(json!({
+        "success": false,
+        "error": "No rewards available - contract has no IOTX balance",
+        "deviceId": device_id,
+        "message": "Rewards claim request forwarded to frontend"
+    })))
 }

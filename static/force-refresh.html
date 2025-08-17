@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Force Cache Refresh</title>
+    <script>
+        // Force refresh the main page to clear JavaScript cache
+        setTimeout(() => {
+            window.location.href = '/index.html?v=' + Date.now();
+        }, 1000);
+    </script>
+</head>
+<body>
+    <h1>Refreshing cache...</h1>
+    <p>Forcing browser to reload with latest device ID fixes...</p>
+    <p>You will be redirected to the main page in 1 second.</p>
+    <script>
+        // Also clear any localStorage/sessionStorage
+        try {
+            localStorage.clear();
+            sessionStorage.clear();
+            console.log('Cache cleared');
+        } catch(e) {
+            console.log('Cache clear failed:', e);
+        }
+    </script>
+</body>
+</html>

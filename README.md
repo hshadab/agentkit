@@ -23,11 +23,15 @@ Proves identity verification without revealing personal information.
 
 #### 2. **Device Proximity Proof** (IoT Integration) 🔥 **FULLY WORKING**
 Proves IoT device location and proximity for IoTeX blockchain with real Nova recursive SNARKs.
-- **Complete Workflow**: Device Registration (0.01 IOTX) → Nova Proof Generation → Blockchain Verification (0.001 IOTX) → **Automatic Reward Distribution (0.1 IOTX)** ✅
-- **Live Smart Contract**: `0xAafE6C7ab60A8594a673791aB3DaDDb7b7CC0B14` deployed on IoTeX Testnet with active reward pool
-- **Recent Fix (Aug 16, 2025)**: Fixed device ID consistency bug that was causing "Device not registered" errors
-- **Features**: Real on-chain transactions, ioID DID generation, W3C-compliant identity, MetaMask integration, automatic 0.1 IOTX rewards
-- **Status**: ✅ All 4 steps working with real smart contract transactions
+- **Complete Workflow**: Device Registration (0.01 IOTX) → Nova Proof Generation → Blockchain Verification (0.001 IOTX) → **Automatic Reward Distribution (0.01 IOTX)** ✅
+- **Live Smart Contract**: `0xAafE6C7ab60A8594a673791aB3DaDDb7b7CC0B14` deployed on IoTeX Testnet with 10+ IOTX reward pool
+- **Recent Fixes (Aug 17, 2025)**: 
+  - ✅ Fixed device ID display showing "Device: SENSOR_xxxxx" instead of "Unknown"
+  - ✅ Reduced MetaMask confirmations from 15+ to 3 (connection optimization)
+  - ✅ Fixed network switching issues (MetaMask stuck on wrong networks)
+  - ✅ Optimized reward amount to 0.01 IOTX for sustainable testing (1000+ tests possible)
+- **Features**: Real on-chain transactions, ioID DID generation, W3C-compliant identity, MetaMask integration, automatic 0.01 IOTX rewards
+- **Status**: ✅ All 4 steps working with real smart contract transactions, device ID tracking, optimized UX
 - **Use cases**: Smart city applications, supply chain tracking, DePIN verification, decentralized device identity (DID)
 - **Blockchain**: IoTeX with ProximityNovaDecider
 - **IoTeX Integration**: Official ioID Registry for device DIDs, Nova Decider for proof verification

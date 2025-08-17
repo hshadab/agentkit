@@ -4,7 +4,7 @@ require('dotenv').config();
 async function updateToMainnetFees() {
     console.log("💰 Updating to Mainnet-Like Fee Structure...\n");
 
-    const provider = new ethers.JsonRpcProvider("https://babel-api.testnet.iotex.io");
+    const provider = new ethers.providers.JsonRpcProvider("https://babel-api.testnet.iotex.io");
     const wallet = new ethers.Wallet(process.env.IOTEX_PRIVATE_KEY, provider);
     
     const deviceVerifierAddress = "0x4d36690090D365709eeEA35B90D5d81e481Aef79";
@@ -24,19 +24,19 @@ async function updateToMainnetFees() {
     const currentVerFee = await contract.verificationFee();
     const currentReward = await contract.rewardAmount();
     
-    console.log("  Registration:", ethers.formatEther(currentRegFee), "IOTX");
-    console.log("  Verification:", ethers.formatEther(currentVerFee), "IOTX");  
-    console.log("  Reward:", ethers.formatEther(currentReward), "IOTX");
+    console.log("  Registration:", ethers.utils.formatEther(currentRegFee), "IOTX");
+    console.log("  Verification:", ethers.utils.formatEther(currentVerFee), "IOTX");  
+    console.log("  Reward:", ethers.utils.formatEther(currentReward), "IOTX");
 
     // Mainnet-like fees (scaled down for testnet)
-    const newRegFee = ethers.parseEther("10.0");    // 10 IOTX (instead of 1000)
-    const newVerFee = ethers.parseEther("0.1");     // 0.1 IOTX
-    const newReward = ethers.parseEther("1.0");     // 1.0 IOTX
+    const newRegFee = ethers.utils.parseEther("10.0");    // 10 IOTX (instead of 1000)
+    const newVerFee = ethers.utils.parseEther("0.1");     // 0.1 IOTX
+    const newReward = ethers.utils.parseEther("1.0");     // 1.0 IOTX
 
     console.log("\n💡 Proposed Mainnet-Like Fees:");
-    console.log("  Registration:", ethers.formatEther(newRegFee), "IOTX (closer to mainnet scale)");
-    console.log("  Verification:", ethers.formatEther(newVerFee), "IOTX");
-    console.log("  Reward:", ethers.formatEther(newReward), "IOTX");
+    console.log("  Registration:", ethers.utils.formatEther(newRegFee), "IOTX (closer to mainnet scale)");
+    console.log("  Verification:", ethers.utils.formatEther(newVerFee), "IOTX");
+    console.log("  Reward:", ethers.utils.formatEther(newReward), "IOTX");
 
     try {
         const owner = await contract.owner();

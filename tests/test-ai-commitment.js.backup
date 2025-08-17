@@ -16,7 +16,7 @@ async function testAICommitment() {
   console.log("🔗 View on BaseScan: https://sepolia.basescan.org/address/" + contractAddress);
   
   // Connect to Base Sepolia
-  const provider = new ethers.providers.JsonRpcProvider("https://sepolia.base.org");
+  const provider = new ethers.JsonRpcProvider("https://sepolia.base.org");
   const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
   const contract = new ethers.Contract(contractAddress, contractABI, wallet);
   
@@ -31,8 +31,8 @@ async function testAICommitment() {
   console.log("Nonce:", nonce);
   
   // Create hashes
-  const promptHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(prompt + nonce));
-  const responseHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(aiResponse + nonce));
+  const promptHash = ethers.keccak256(ethers.toUtf8Bytes(prompt + nonce));
+  const responseHash = ethers.keccak256(ethers.toUtf8Bytes(aiResponse + nonce));
   
   console.log("\n🔐 Hashes:");
   console.log("Prompt hash:", promptHash);
@@ -83,7 +83,7 @@ async function testAICommitment() {
     
     // Check final balance
     const finalBalance = await provider.getBalance(wallet.address);
-    console.log("\n💰 Final balance:", ethers.utils.formatEther(finalBalance), "ETH");
+    console.log("\n💰 Final balance:", ethers.formatEther(finalBalance), "ETH");
     
     console.log("\n🎉 Test completed successfully!");
     console.log("🔗 View transaction: https://sepolia.basescan.org/tx/" + tx.hash);

@@ -1,7 +1,7 @@
 const { ethers } = require('ethers');
 
 async function checkContracts() {
-    const provider = new ethers.JsonRpcProvider("https://babel-api.testnet.iotex.io");
+    const provider = new ethers.providers.JsonRpcProvider("https://babel-api.testnet.iotex.io");
     
     const contracts = {
         deviceVerifier: '0x4d36690090D365709eeEA35B90D5d81e481Aef79',
@@ -22,7 +22,7 @@ async function checkContracts() {
                 console.log(`   No contract code deployed`);
             } else {
                 console.log(`✅ ${name}: ${address}`);
-                console.log(`   Code size: ${code.length} chars, Balance: ${ethers.formatEther(balance)} IOTX`);
+                console.log(`   Code size: ${code.length} chars, Balance: ${ethers.utils.formatEther(balance)} IOTX`);
             }
         } catch (error) {
             console.log(`❌ ${name}: ${address}`);

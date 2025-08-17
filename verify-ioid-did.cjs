@@ -4,7 +4,7 @@ require('dotenv').config();
 async function verifyIoIDAndDID() {
     console.log("🔍 Verifying ioID and DID authenticity...\n");
 
-    const provider = new ethers.JsonRpcProvider("https://babel-api.testnet.iotex.io");
+    const provider = new ethers.providers.JsonRpcProvider("https://babel-api.testnet.iotex.io");
     const deviceVerifierAddress = "0x4d36690090D365709eeEA35B90D5d81e481Aef79";
     
     const contractABI = [
@@ -28,7 +28,7 @@ async function verifyIoIDAndDID() {
         console.log("  ⏰ Registration Time:", new Date(Number(deviceData.registrationTime) * 1000).toISOString());
         console.log("  🆔 ioID:", deviceData.ioId);
         console.log("  🔒 DID:", deviceData.did);
-        console.log("  💰 Total Rewards:", ethers.formatEther(deviceData.totalRewards), "IOTX");
+        console.log("  💰 Total Rewards:", ethers.utils.formatEther(deviceData.totalRewards), "IOTX");
         console.log("  ✅ Verified:", deviceData.isVerified);
         
         console.log("\n🎯 Authenticity Check:");

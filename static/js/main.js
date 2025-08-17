@@ -5,7 +5,7 @@ import { config } from './core/config.js?v=20250120-1';
 import { WebSocketManager } from './ui/websocket-manager.js?v=20250120-1';
 import { UIManager } from './ui/ui-manager.js?v=20250120-1';
 import { ProofManager } from './ui/proof-manager.js?v=20250120-1';
-import { WorkflowManager } from './ui/workflow-manager.js?v=20250120-1';
+import { WorkflowManager } from './ui/workflow-manager.js?v=20250816-8';
 import { TransferManager } from './ui/transfer-manager.js?v=20250120-1';
 import { BlockchainVerifier } from './blockchain/blockchain-verifier.js?v=20250120-1';
 import { debugLog } from './core/utils.js?v=20250120-1';
@@ -878,6 +878,7 @@ function setupMessageHandlers() {
         data.workflow_id = data.workflow_id || data.workflowId;
         data.step_id = data.step_id || data.stepId;
         debugLog(`Workflow step update: ${data.workflow_id}/${data.step_id}`, 'info');
+        debugLog(`Step update data: ${JSON.stringify(data, null, 2)}`, 'debug');
         
         // Check if this is a network error
         if (data.updates && data.updates.error && 
@@ -887,7 +888,28 @@ function setupMessageHandlers() {
             return;
         }
         
-        workflowManager.updateWorkflowStep(data.workflow_id, data.step_id, data.updates);
+        // Enhanced updates processing - include any result data
+        let updates = data.updates || {};
+        
+        // If the step update contains result information, make sure it's preserved
+        if (data.result) {
+            updates.result = data.result;
+        }
+        
+        // Check if this is a claim_rewards step completion and has device_id in any field
+        if (data.step_id && data.step_id.includes('step_4') && 
+            (data.result?.device_id || data.device_id || data.deviceId)) {
+            const deviceId = data.result?.device_id || data.device_id || data.deviceId;
+            debugLog(`🔍 Found device ID in step update: ${deviceId}`, 'debug');
+            
+            // Ensure rewardData includes the device ID
+            if (!updates.rewardData) {
+                updates.rewardData = {};
+            }
+            updates.rewardData.deviceId = deviceId;
+        }
+        
+        workflowManager.updateWorkflowStep(data.workflow_id, data.step_id, updates);
     });
     
     wsManager.on('workflow_completed', (data) => {
@@ -903,8 +925,24 @@ function setupMessageHandlers() {
         // Silent success - workflow card shows completion
     });
     
+    // Response deduplication to prevent multiple MetaMask confirmations
+    const processedRequests = new Set();
+    
+    // Clean up old processed requests every 5 minutes to prevent memory leaks
+    setInterval(() => {
+        processedRequests.clear();
+        debugLog('Cleared processed requests cache', 'debug');
+    }, 300000); // 5 minutes
+    
     // Handle device registration requests from workflow executor
     wsManager.on('device_registration_request', async (data) => {
+        // Check for duplicate request
+        const requestKey = `device_registration_${data.requestId}`;
+        if (processedRequests.has(requestKey)) {
+            debugLog(`Ignoring duplicate device registration request: ${data.requestId}`, 'warning');
+            return;
+        }
+        processedRequests.add(requestKey);
         debugLog(`Device registration request: ${data.deviceId}`, 'info');
         
         try {
@@ -923,14 +961,14 @@ function setupMessageHandlers() {
                 success: result.success,
                 ioId: result.ioId,
                 did: result.did,
-                txHash: result.verifierTxHash || result.txHash,
+                txHash: result.transactionHash || result.verifierTxHash || result.txHash,
                 error: result.error
             });
             
             // Update workflow step with transaction info
             if (result.success) {
                 workflowManager.updateWorkflowStep(data.workflowId, data.stepId, {
-                    transactionHash: result.verifierTxHash || result.txHash,
+                    transactionHash: result.transactionHash || result.verifierTxHash || result.txHash,
                     ioId: result.ioId,
                     did: result.did
                 });
@@ -948,6 +986,13 @@ function setupMessageHandlers() {
     
     // Handle IoTeX verification requests from workflow executor
     wsManager.on('iotex_verification_request', async (data) => {
+        // Check for duplicate request
+        const requestKey = `iotex_verification_${data.requestId}`;
+        if (processedRequests.has(requestKey)) {
+            debugLog(`Ignoring duplicate IoTeX verification request: ${data.requestId}`, 'warning');
+            return;
+        }
+        processedRequests.add(requestKey);
         debugLog(`IoTeX verification request for proof: ${data.proofId}`, 'info');
         
         // Ensure managers are initialized
@@ -1075,19 +1120,23 @@ function setupMessageHandlers() {
                 type: 'iotex_verification_response',
                 requestId: data.requestId,
                 success: result.success,
-                txHash: result.txHash,
+                txHash: result.transactionHash || result.txHash,
                 error: result.error
             });
             
             // Update workflow step with transaction info
             if (result.success) {
+                const config = getConfig();
+                const txHash = result.transactionHash || result.txHash;
+                const explorerUrl = txHash ? `${config.blockchain.iotex.explorerUrl}/tx/${txHash}` : null;
+                
                 workflowManager.updateWorkflowStep(data.workflowId, data.stepId, {
-                    transactionHash: result.txHash,
+                    transactionHash: txHash,
                     verificationData: {
                         success: true,
                         blockchain: 'IoTeX',
-                        transaction_hash: result.txHash,
-                        explorer_url: result.explorerUrl
+                        transaction_hash: txHash,
+                        explorer_url: explorerUrl
                     }
                 });
             }
@@ -1409,7 +1458,14 @@ function setupMessageHandlers() {
     
     // Handle claim rewards requests from workflow executor
     wsManager.on('claim_rewards_request', async (data) => {
-        debugLog(`Claim rewards request for device: ${data.deviceId}`, 'info');
+        // Check for duplicate request
+        const requestKey = `claim_rewards_${data.requestId}`;
+        if (processedRequests.has(requestKey)) {
+            debugLog(`Ignoring duplicate claim rewards request: ${data.requestId}`, 'warning');
+            return;
+        }
+        processedRequests.add(requestKey);
+        debugLog(`Claim rewards request for device: ${data.deviceId || 'undefined device ID'}`, 'info');
         
         try {
             // Check if IoTeX device verifier is available
@@ -1425,24 +1481,26 @@ function setupMessageHandlers() {
                 type: 'claim_rewards_response',
                 requestId: data.requestId,
                 success: result.success,
-                txHash: result.txHash,
-                amount: result.rewardAmount,
+                txHash: result.rewardData?.txHash || result.txHash,
+                amount: result.rewardData?.amount || result.rewardAmount,
                 currency: result.currency || 'IOTX',
+                deviceId: data.deviceId, // CRITICAL: Include device ID in response
                 error: result.error
             });
             
             if (result.success) {
                 // Update workflow step with reward data
                 if (data.workflowId && data.stepId) {
+                    debugLog(`Updating reward step with deviceId: ${data.deviceId}`, 'debug');
                     workflowManager.updateWorkflowStep(data.workflowId, data.stepId, {
                         rewardData: {
                             deviceId: data.deviceId,
-                            amount: result.rewardAmount || '0 IOTX',
+                            amount: result.rewardData?.amount || result.rewardAmount || '0 IOTX',
                             claimed: true,
-                            txHash: result.txHash,
+                            txHash: result.rewardData?.txHash || result.txHash,
                             message: 'Rewards claimed successfully'
                         },
-                        transactionHash: result.txHash
+                        transactionHash: result.rewardData?.txHash || result.txHash
                     });
                 }
                 
@@ -1496,6 +1554,26 @@ function setupMessageHandlers() {
         }
     });
     
+    // Handle claim_rewards_response from workflow executor
+    wsManager.on('claim_rewards_response', (data) => {
+        debugLog(`Received claim_rewards_response: ${JSON.stringify(data)}`, 'debug');
+        
+        // If this response contains device ID and is for a workflow step, ensure it gets to the UI
+        if (data.success && data.deviceId && data.workflowId && data.stepId) {
+            debugLog(`📋 Processing claim response with device ID: ${data.deviceId}`, 'debug');
+            workflowManager.updateWorkflowStep(data.workflowId, data.stepId, {
+                rewardData: {
+                    deviceId: data.deviceId,
+                    amount: data.amount || '0 IOTX',
+                    claimed: true,
+                    txHash: data.txHash,
+                    message: 'Rewards claimed successfully'
+                },
+                transactionHash: data.txHash
+            });
+        }
+    });
+
     wsManager.on('workflow_failed', (data) => {
         debugLog(`Workflow failed: ${data.workflow_id}`, 'error');
         workflowManager.updateWorkflowStatus(data.workflow_id, 'failed');
@@ -1785,7 +1863,7 @@ function loadSampleQueries() {
             'Send 0.05 USDC to Alice on Ethereum if KYC compliant',
             'If Alice is KYC compliant, send her 0.04 USDC to Alice on Solana',
             'Send 0.05 USDC on Solana if Bob is KYC verified on Solana and send 0.03 USDC on Ethereum if Alice is KYC verified on Ethereum.',
-            'Prove device SENSOR1 at location 5080, 5020',
+            'Prove IoT device proximity at location 5080, 5020',
             'Create medical record for patient 12345 and verify integrity'
         ],
         'History': [

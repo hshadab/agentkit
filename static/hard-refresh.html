@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hard Refresh - Device ID Fix</title>
+    <script>
+        // Aggressive cache clearing and refresh
+        const timestamp = Date.now();
+        
+        // Clear all storage
+        try {
+            localStorage.clear();
+            sessionStorage.clear();
+            if ('caches' in window) {
+                caches.keys().then(function(names) {
+                    for (let name of names) caches.delete(name);
+                });
+            }
+        } catch(e) {
+            console.log('Cache clear failed:', e);
+        }
+        
+        // Force redirect with new timestamp
+        setTimeout(() => {
+            window.location.href = `/index.html?v=${timestamp}&hard-refresh=true`;
+        }, 500);
+    </script>
+</head>
+<body>
+    <h1>🔄 Forcing Hard Refresh...</h1>
+    <p>Clearing all caches and loading latest device ID fixes...</p>
+    <p>Redirecting in 0.5 seconds...</p>
+    
+    <script>
+        // Also try to force reload main.js specifically
+        const script = document.createElement('script');
+        script.src = `/js/main.js?v=${Date.now()}`;
+        script.type = 'module';
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>

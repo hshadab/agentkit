@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 
+// CRITICAL DEBUG: Prove this CLI file is being executed
 import { execSync } from 'child_process';
+import { writeFileSync } from 'fs';
+try {
+    writeFileSync('/tmp/cli_execution_debug.log', `${new Date().toISOString()}: workflowCLI.js STARTED\n`, { flag: 'a' });
+} catch (e) {}
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -72,6 +77,13 @@ async function runWorkflow() {
         }
         
         console.log(`🔐 All proofs will use real zkEngine - no simulations\n`);
+        
+        // CRITICAL FIX: Clear module cache to ensure latest WorkflowExecutor is loaded
+        const workflowExecutorPath = new URL('./workflowExecutor.js', import.meta.url).href;
+        if (typeof global !== 'undefined' && global.nodeRequireCache) {
+            delete global.nodeRequireCache[workflowExecutorPath];
+        }
+        console.log('🔄 Cleared module cache for WorkflowExecutor to load latest fixes');
         
         // Create and connect executor
         executor = new WorkflowExecutor();

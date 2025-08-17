@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fund IoTeX Contract</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .button { padding: 12px 24px; margin: 10px; background: #007cba; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        .button:hover { background: #005a87; }
+        .success { color: #155724; background: #d4edda; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .error { color: #721c24; background: #f8d7da; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .info { color: #0c5460; background: #d1ecf1; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .balance { font-size: 18px; font-weight: bold; margin: 15px 0; }
+        .address { font-family: monospace; background: #f8f9fa; padding: 8px; border-radius: 4px; word-break: break-all; }
+    </style>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Fund IoTeX Smart Contract</h1>
+        
+        <div class="info">
+            <strong>Issue:</strong> Contract has insufficient balance (0.053 IOTX) to pay 0.1 IOTX rewards.
+            <br><strong>Solution:</strong> Add 1.0 IOTX to contract for multiple reward payments.
+        </div>
+        
+        <div class="balance" id="balance">Current Balance: Checking...</div>
+        
+        <div class="address">
+            <strong>Contract Address:</strong><br>
+            0xAafE6C7ab60A8594a673791aB3DaDDb7b7CC0B14
+        </div>
+        
+        <button class="button" onclick="checkBalance()">🔄 Check Current Balance</button>
+        <button class="button" onclick="fundContract()">💰 Send 1.0 IOTX to Contract</button>
+        <button class="button" onclick="fundContractSmall()">💎 Send 0.5 IOTX to Contract</button>
+        
+        <div id="output"></div>
+        
+        <h3>Manual Funding Steps:</h3>
+        <ol>
+            <li>Open MetaMask and ensure you're on <strong>IoTeX Network Testnet</strong></li>
+            <li>Click "Send" in MetaMask</li>
+            <li>Paste contract address: <code>0xAafE6C7ab60A8594a673791aB3DaDDb7b7CC0B14</code></li>
+            <li>Enter amount: <strong>1.0 IOTX</strong></li>
+            <li>Confirm transaction</li>
+            <li>Wait for confirmation and test workflow again</li>
+        </ol>
+        
+        <a href="/index.html" class="button">🏠 Back to Main App</a>
+    </div>
+    
+    <script>
+        const contractAddress = '0xAafE6C7ab60A8594a673791aB3DaDDb7b7CC0B14';
+        const iotexRpcUrl = 'https://babel-api.testnet.iotex.io';
+        
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            output.innerHTML += `<div class="${className}">${message}</div>`;
+        }
+        
+        async function checkBalance() {
+            log('🔄 Checking contract balance...', 'info');
+            
+            try {
+                const provider = new ethers.providers.JsonRpcProvider(iotexRpcUrl);
+                const balance = await provider.getBalance(contractAddress);
+                const balanceEth = ethers.utils.formatEther(balance);
+                
+                document.getElementById('balance').textContent = `Current Balance: ${balanceEth} IOTX`;
+                
+                if (parseFloat(balanceEth) >= 0.1) {
+                    log(`✅ Good! Contract has ${balanceEth} IOTX (enough for rewards)`, 'success');
+                } else {
+                    log(`⚠️ Low balance: ${balanceEth} IOTX (need at least 0.1 IOTX per reward)`, 'error');
+                }
+            } catch (e) {
+                log(`❌ Balance check error: ${e.message}`, 'error');
+            }
+        }
+        
+        async function fundContract(amount = '1.0') {
+            log(`💰 Funding contract with ${amount} IOTX...`, 'info');
+            
+            if (!window.ethereum) {
+                log('❌ MetaMask not found', 'error');
+                return;
+            }
+            
+            try {
+                // Request account access
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const signer = provider.getSigner();
+                const userAddress = await signer.getAddress();
+                
+                log(`📋 Sending from: ${userAddress}`, 'info');
+                
+                // Check user balance
+                const userBalance = await provider.getBalance(userAddress);
+                const userBalanceEth = ethers.utils.formatEther(userBalance);
+                log(`💳 Your balance: ${userBalanceEth} IOTX`, 'info');
+                
+                if (parseFloat(userBalanceEth) < parseFloat(amount)) {
+                    log(`❌ Insufficient balance! You have ${userBalanceEth} IOTX, need ${amount} IOTX`, 'error');
+                    return;
+                }
+                
+                // Send transaction
+                const tx = await signer.sendTransaction({
+                    to: contractAddress,
+                    value: ethers.utils.parseEther(amount),
+                    gasLimit: 21000
+                });
+                
+                log(`📤 Transaction sent: ${tx.hash}`, 'info');
+                log('⏳ Waiting for confirmation...', 'info');
+                
+                const receipt = await tx.wait();
+                log(`✅ Success! Transaction confirmed in block ${receipt.blockNumber}`, 'success');
+                log(`🔗 View on explorer: https://testnet.iotexscan.io/tx/${tx.hash}`, 'success');
+                
+                // Check new balance
+                setTimeout(checkBalance, 2000);
+                
+            } catch (e) {
+                log(`❌ Funding error: ${e.message}`, 'error');
+                if (e.code === 4001) {
+                    log('User rejected the transaction', 'error');
+                }
+            }
+        }
+        
+        async function fundContractSmall() {
+            await fundContract('0.5');
+        }
+        
+        // Auto-check balance on page load
+        setTimeout(checkBalance, 500);
+    </script>
+</body>
+</html>

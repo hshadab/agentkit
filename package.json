@@ -28,7 +28,7 @@
     "@nomiclabs/hardhat-ethers": "^2.2.3",
     "@nomiclabs/hardhat-etherscan": "^3.1.8",
     "dotenv": "^17.2.0",
-    "ethers": "^6.15.0",
+    "ethers": "^5.7.2",
     "hardhat": "^2.25.0",
     "solc": "^0.8.30"
   }
