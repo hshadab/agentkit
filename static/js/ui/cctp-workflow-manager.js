@@ -65,18 +65,18 @@ export class CCTPWorkflowManager {
         const steps = this.getCCTPSteps(data);
         
         card.innerHTML = `
-            <div class="workflow-header">
-                <div class="workflow-title">
-                    🌉 Cross-Chain USDC Transfer (CCTP Enhanced)
-                    <span class="workflow-subtitle">${data.fromNetwork} → ${data.toNetwork}</span>
+            <div class="card-header">
+                <div class="card-header-row">
+                    <div class="card-title">CROSS-CHAIN TRANSFER PROTOCOL</div>
+                    <div class="workflow-status in-progress">IN PROGRESS</div>
                 </div>
-                <div class="workflow-id">ID: ${data.workflow_id}</div>
-                <div class="workflow-status in-progress">IN PROGRESS</div>
+                <div class="card-function-name">🌉 USDC Bridge ${data.fromNetwork} → ${data.toNetwork}</div>
+                <div class="workflow-id" style="font-size: 11px; color: #8b9aff; opacity: 0.7;">ID: ${data.workflow_id}</div>
             </div>
-            <div class="transfer-details">
-                <div class="transfer-amount">${data.amount} USDC</div>
-                <div class="transfer-agent">Agent: ${data.agentId}</div>
-                <div class="transfer-recipient">To: ${data.recipient ? data.recipient.substring(0, 10) + '...' : '0x742d35Cc...'}</div>
+            <div class="transfer-details" style="display: flex; gap: 16px; margin: 12px 0; font-size: 13px;">
+                <div class="transfer-amount" style="color: #10b981; font-weight: 600;">${data.amount} USDC</div>
+                <div class="transfer-agent" style="color: #8b9aff;">Agent: ${data.agentId}</div>
+                <div class="transfer-recipient" style="color: #9ca3af;">To: ${data.recipient ? data.recipient.substring(0, 10) + '...' : '0x742d35Cc...'}</div>
             </div>
             <div class="workflow-steps-container">
                 ${steps.map((step, index) => this.createCCTPStepHTML(step, index)).join('')}
@@ -123,33 +123,74 @@ export class CCTPWorkflowManager {
 
     createCCTPStepHTML(step, index) {
         const statusClass = step.status === 'awaiting' ? 'pending' : 
-                           step.status === 'in_progress' ? 'in_progress' : 
+                           step.status === 'in_progress' ? 'executing' : 
                            step.status === 'completed' ? 'completed' : 'pending';
         
         return `
             <div class="workflow-step ${statusClass}" data-step-id="${step.id}">
-                <div class="step-header">
-                    <div class="step-title">STEP ${index + 1} OF 5</div>
-                    <div class="step-status">${step.status === 'completed' ? 'Completed' : 
-                                               step.status === 'in_progress' ? 'Processing' : 'Pending'}</div>
-                </div>
-                <div class="step-content">
-                    <div class="step-description">• ${step.description}</div>
-                    <div class="step-details" style="display: none;">
-                        <div class="step-result">Waiting...</div>
+                <div class="workflow-step-header">
+                    <div class="step-details">
+                        <div class="step-title" style="font-size: 11px; color: #8b9aff; font-weight: 600; letter-spacing: 0.05em; margin-bottom: 4px;">
+                            STEP ${index + 1} OF 5
+                        </div>
+                        <div class="step-name" style="font-size: 14px; color: #ffffff; font-weight: 500; margin-bottom: 6px;">
+                            ${step.description}
+                        </div>
+                        <div class="step-message" style="font-size: 12px; color: #9ca3af; line-height: 1.4;">
+                            ${this.getStepMessage(step.status)}
+                        </div>
                     </div>
+                    <div class="step-status ${statusClass}" style="font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: 600; letter-spacing: 0.05em;">
+                        ${this.getStepStatusText(step.status)}
+                    </div>
+                </div>
+                <div class="step-content" id="step-content-${step.id}" style="margin-top: 8px;">
+                    <!-- Dynamic content will be added here -->
                 </div>
             </div>
         `;
     }
 
-    getStepStatusIcon(status) {
+    getStepStatusText(status) {
         switch (status) {
-            case 'completed': return '✅';
-            case 'in_progress': return '🔄';
-            case 'failed': return '❌';
-            default: return '⏳';
+            case 'completed': return 'COMPLETED';
+            case 'in_progress': return 'PROCESSING';
+            case 'executing': return 'PROCESSING';
+            case 'failed': return 'FAILED';
+            default: return 'PENDING';
         }
+    }
+    
+    getStepMessage(status) {
+        switch (status) {
+            case 'completed': return '✅ Step completed successfully';
+            case 'in_progress': return '⏳ Processing... Check MetaMask if needed';
+            case 'executing': return '⏳ Processing... Check MetaMask if needed';
+            case 'failed': return '❌ Step failed - check console for details';
+            default: return 'Waiting for previous steps to complete';
+        }
+    }
+    
+    getExplorerName(network) {
+        switch (network) {
+            case 'ethereum-sepolia': return 'Sepolia Etherscan';
+            case 'base-sepolia': return 'Base Sepolia Explorer';
+            case 'ethereum': return 'Etherscan';
+            case 'base': return 'Base Explorer';
+            default: return 'Blockchain Explorer';
+        }
+    }
+    
+    getExplorerUrl(network, txHash) {
+        const baseUrls = {
+            'ethereum-sepolia': 'https://sepolia.etherscan.io',
+            'base-sepolia': 'https://sepolia.basescan.org',
+            'ethereum': 'https://etherscan.io',
+            'base': 'https://basescan.org'
+        };
+        
+        const baseUrl = baseUrls[network] || 'https://etherscan.io';
+        return `${baseUrl}/tx/${txHash}`;
     }
 
     updateCCTPStep(data) {
@@ -159,32 +200,120 @@ export class CCTPWorkflowManager {
         const step = workflowCard.querySelector(`[data-step-id="${data.step_id}"]`);
         if (!step) return;
 
-        // Update step class based on status
-        const statusClass = data.status === 'in_progress' ? 'in_progress' : 
-                           data.status === 'completed' ? 'completed' : 'pending';
+        // Update step class based on status  
+        const statusClass = data.status === 'in_progress' ? 'executing' : 
+                           data.status === 'completed' ? 'completed' : 
+                           data.status === 'failed' ? 'failed' : 'pending';
         step.className = `workflow-step ${statusClass}`;
         
-        // Update step status text
+        // Update step status text and message
         const stepStatus = step.querySelector('.step-status');
+        const stepMessage = step.querySelector('.step-message');
+        
         if (stepStatus) {
-            stepStatus.textContent = data.status === 'completed' ? 'Completed' : 
-                                   data.status === 'in_progress' ? 'Processing' : 'Pending';
+            stepStatus.textContent = this.getStepStatusText(data.status);
+            stepStatus.className = `step-status ${statusClass}`;
+        }
+        
+        if (stepMessage) {
+            stepMessage.textContent = data.message || this.getStepMessage(data.status);
         }
 
-        // Update step details
-        const stepDetails = step.querySelector('.step-details');
-        const stepResult = step.querySelector('.step-result');
+        // Update step content with blockchain links and results
+        this.updateStepContent(step, data);
+    }
+    
+    updateStepContent(step, data) {
+        const stepContent = step.querySelector('.step-content');
+        if (!stepContent) return;
         
-        if (stepDetails && stepResult) {
-            stepDetails.style.display = 'block';
+        // Clear existing content
+        stepContent.innerHTML = '';
+        
+        if (data.status === 'completed' && data.result) {
+            const result = data.result;
+            let contentHtml = '';
             
-            if (data.status === 'completed' && data.result) {
-                stepResult.innerHTML = this.formatStepResult(data.step_id, data.result);
-            } else if (data.status === 'in_progress') {
-                stepResult.textContent = data.message || 'Processing...';
-            } else if (data.status === 'failed') {
-                stepResult.innerHTML = `<span class="error">Error: ${data.error}</span>`;
+            // Add transaction links with clear labels
+            if (result.transactionHash && result.transactionHash !== 'verification_failed') {
+                const network = this.getNetworkFromStepId(data.step_id);
+                const explorerName = this.getExplorerName(network);
+                const explorerUrl = this.getExplorerUrl(network, result.transactionHash);
+                
+                contentHtml += `
+                    <div class="blockchain-status confirmed" style="margin-top: 12px; padding: 8px 12px; background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%); border-left: 4px solid #10b981; border-radius: 4px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-size: 12px; color: #10b981; font-weight: 600; margin-bottom: 2px;">
+                                    ✅ Transaction Confirmed
+                                </div>
+                                <div style="font-size: 11px; color: #9ca3af;">
+                                    ${result.transactionHash.substring(0, 20)}...${result.transactionHash.slice(-8)}
+                                </div>
+                            </div>
+                            <a href="${explorerUrl}" target="_blank" class="blockchain-link" 
+                               style="color: #8b9aff; text-decoration: none; font-size: 11px; font-weight: 600; 
+                                      padding: 4px 8px; background: rgba(139, 154, 255, 0.1); border-radius: 3px;
+                                      border: 1px solid rgba(139, 154, 255, 0.2); transition: all 0.2s ease;">
+                                📄 View on ${explorerName}
+                            </a>
+                        </div>
+                    </div>
+                `;
             }
+            
+            // Add specific step result content
+            if (result.proofId) {
+                contentHtml += `
+                    <div style="margin-top: 8px; font-size: 12px;">
+                        <span style="color: #8b9aff;">✅ Proof generated:</span> 
+                        <span style="color: #10b981; font-weight: 500;">${result.proofId}</span>
+                    </div>
+                `;
+            }
+            
+            if (result.burnedAmount) {
+                contentHtml += `
+                    <div style="margin-top: 4px; font-size: 12px;">
+                        <span style="color: #8b9aff;">🔥 Burned:</span> 
+                        <span style="color: #fbbf24; font-weight: 500;">${result.burnedAmount} USDC</span>
+                    </div>
+                `;
+            }
+            
+            if (result.verified && data.step_id === 'onchain_verification') {
+                contentHtml += `
+                    <div style="margin-top: 4px; font-size: 12px;">
+                        <span style="color: #8b9aff;">🔗 Verified:</span> 
+                        <span style="color: #10b981; font-weight: 500;">On-chain proof confirmed</span>
+                    </div>
+                `;
+            }
+            
+            if (result.received && data.step_id === 'circle_attestation') {
+                contentHtml += `
+                    <div style="margin-top: 4px; font-size: 12px;">
+                        <span style="color: #8b9aff;">📡 Attestation:</span> 
+                        <span style="color: #10b981; font-weight: 500;">Circle CCTP confirmed</span>
+                    </div>
+                `;
+            }
+            
+            stepContent.innerHTML = contentHtml;
+        }
+    }
+    
+    getNetworkFromStepId(stepId) {
+        // Determine network based on step ID
+        switch (stepId) {
+            case 'zkp_authorization':
+            case 'onchain_verification': 
+            case 'usdc_burn':
+                return 'ethereum-sepolia'; // Source network
+            case 'usdc_mint':
+                return 'base-sepolia'; // Destination network
+            default:
+                return 'ethereum-sepolia';
         }
     }
 
@@ -193,14 +322,20 @@ export class CCTPWorkflowManager {
             case 'zkp_authorization':
                 return `<span class="success">✅ Proof generated: ${result.proofId}</span>`;
             case 'onchain_verification':
-                const contractLink = `<a href="https://sepolia.basescan.org/address/0x74D68B2481d298F337e62efc50724CbBA68dCF8f" target="_blank" class="contract-link" title="Base Verifier Contract">📄 Verifier</a>`;
-                return `<span class="success">✅ Verified on-chain: <a href="${result.explorerUrl}" target="_blank">${result.transactionHash?.substring(0, 10)}...</a> ${contractLink}</span>`;
+                const network = this.getNetworkFromStepId(stepId);
+                const explorerName = this.getExplorerName(network);
+                const contractLink = `<a href="https://sepolia.etherscan.io/address/0x09378444046d1ccb32ca2d5b44fab6634738d067" target="_blank" class="contract-link" title="View Ethereum Verifier Contract">📄 View on ${explorerName}</a>`;
+                return `<span class="success">✅ Verified on-chain: <a href="${result.explorerUrl}" target="_blank" title="View transaction on ${explorerName}">${result.transactionHash?.substring(0, 10)}...</a> ${contractLink}</span>`;
             case 'usdc_burn':
-                return `<span class="success">✅ USDC burned: <a href="${result.explorerUrl}" target="_blank">${result.transactionHash?.substring(0, 10)}...</a></span>`;
+                const burnNetwork = this.getNetworkFromStepId(stepId);
+                const burnExplorerName = this.getExplorerName(burnNetwork);
+                return `<span class="success">✅ USDC burned: <a href="${result.explorerUrl}" target="_blank" title="View burn transaction on ${burnExplorerName}">${result.transactionHash?.substring(0, 10)}...</a></span>`;
             case 'circle_attestation':
-                return `<span class="success">✅ Attestation received</span>`;
+                return `<span class="success">✅ Circle CCTP attestation received</span>`;
             case 'usdc_mint':
-                return `<span class="success">✅ USDC minted: <a href="${result.explorerUrl}" target="_blank">${result.transactionHash?.substring(0, 10)}...</a></span>`;
+                const mintNetwork = this.getNetworkFromStepId(stepId);
+                const mintExplorerName = this.getExplorerName(mintNetwork);
+                return `<span class="success">✅ USDC minted: <a href="${result.explorerUrl}" target="_blank" title="View mint transaction on ${mintExplorerName}">${result.transactionHash?.substring(0, 10)}...</a></span>`;
             default:
                 return `<span class="success">✅ Completed</span>`;
         }

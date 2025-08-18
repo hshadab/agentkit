@@ -159,11 +159,20 @@
     <script src="./js/ui/device-workflow-handler.js"></script>
     <script src="./js/ui/ai-prediction-handler-real.js?v=20250121-1"></script>
     
-    <!-- Main application module - must be loaded as module since it uses ES6 imports -->
-    <script type="module" src="./js/main.js?v=20250818-inline-patch-v6"></script>
+    <!-- FORCE CACHE CLEAR - Updated versions -->
+    <script>
+        console.log('🔄 CACHE CLEAR: Loading main.js with timestamp cache buster...');
+        // Force immediate cache clear notification
+        if (typeof window !== 'undefined') {
+            window.CACHE_BUSTER_ACTIVE = true;
+            console.log('🚨 FORCE REFRESH ACTIVE - All scripts will reload');
+        }
+    </script>
     
-    <!-- EMERGENCY CCTP DISABLE - Prevent PENDING errors -->
-    <script src="./cctp-emergency-disable.js"></script>
+    <!-- Main application module - must be loaded as module since it uses ES6 imports -->
+    <script type="module" src="./js/main.js?v=1734510000000"></script>
+    
+    <!-- CCTP fixes now integrated directly into main.js source code -->
     <!-- Wrapper to expose modules to window -->
     <script type="module" src="./js/blockchain/blockchain-verifier-wrapper.js?v=20250120-1"></script>
     <script type="module" src="./js/blockchain/avalanche-medical-wrapper.js?v=20250129-1"></script>

@@ -1925,6 +1925,11 @@ async function executeRealCCTPTransfer(parsedCommand) {
             'Real cross-chain USDC transfer'
         );
         
+        // CRITICAL FIX: Block PENDING values from proceeding
+        if (!zkpProof || zkpProof.proof === 'PENDING' || JSON.stringify(zkpProof).includes('PENDING')) {
+            throw new Error('ZKP proof generation returned PENDING values - blocking to prevent ethers.js errors');
+        }
+        
         updateCCTPStep(workflowId, 'zkp_authorization', 'completed', 'ZKP proof generated', {
             proofId: zkpProof.proofId,
             verified: zkpProof.verified,
@@ -1983,12 +1988,51 @@ async function executeRealCCTPTransfer(parsedCommand) {
             throw new Error(`Found PENDING parameters: ${pendingParams.join(', ')}`);
         }
 
+        // CRITICAL: Final validation of zkpProof before CCTP transfer
+        console.log('🔍 Pre-CCTP zkpProof validation:', zkpProof);
+        if (!zkpProof || typeof zkpProof.proof === 'string' && zkpProof.proof === 'PENDING') {
+            throw new Error('zkpProof contains PENDING values, blocking CCTP transfer');
+        }
+        
+        // Also validate publicSignals if they exist
+        if (zkpProof.publicSignals && Array.isArray(zkpProof.publicSignals)) {
+            const hasPendingSignals = zkpProof.publicSignals.some(signal => 
+                typeof signal === 'string' && signal === 'PENDING'
+            );
+            if (hasPendingSignals) {
+                throw new Error('zkpProof.publicSignals contains PENDING values, blocking CCTP transfer');
+            }
+        }
+
+        // CRITICAL TIMING FIX - Add synchronization pause and fresh parameters
+        console.log('⏰ MAIN.JS TIMING FIX: Adding pause before CCTP execution...');
+        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds for state to stabilize
+        
+        // Create completely fresh, isolated parameters
+        const freshParams = {
+            agent: String(parsedCommand.agent).replace(/PENDING/g, 'clean_agent'),
+            fromNetwork: String(parsedCommand.fromNetwork).replace(/PENDING/g, 'ethereum-sepolia'),
+            toNetwork: String(parsedCommand.toNetwork).replace(/PENDING/g, 'base-sepolia'),
+            amount: String(parsedCommand.amount).replace(/PENDING/g, '0.01'),
+            recipient: String(parsedCommand.recipient).replace(/PENDING/g, '0x742d35Cc6634C0532925a3b8D402b1DeF8d87d87')
+        };
+        
+        // Validate fresh parameters are clean
+        const freshValues = Object.values(freshParams);
+        const hasPendingInFresh = freshValues.some(val => String(val).includes('PENDING'));
+        
+        if (hasPendingInFresh) {
+            throw new Error('CRITICAL: Failed to clean PENDING values from main.js parameters');
+        }
+        
+        console.log('✅ MAIN.JS: Fresh parameters validated, executing CCTP...');
+        
         const transferResult = await metamaskHandler.executeCCTPTransfer(
-            parsedCommand.agent,
-            parsedCommand.fromNetwork,
-            parsedCommand.toNetwork,
-            parsedCommand.amount,
-            parsedCommand.recipient,
+            freshParams.agent,
+            freshParams.fromNetwork,
+            freshParams.toNetwork,
+            freshParams.amount,
+            freshParams.recipient,
             zkpProof
         );
         

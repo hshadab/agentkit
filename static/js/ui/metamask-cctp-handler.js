@@ -518,11 +518,60 @@ export class MetaMaskCCTPHandler {
             }
         }
         
+        // Ensure proper type casting for CCTP contract
+        const amountParam = ethers.BigNumber.from(amountWei.toString());
+        const domainParam = ethers.BigNumber.from(toConfig.domain.toString()); // uint32
+        const recipientParam = recipientBytes32.toString();
+        const tokenParam = fromConfig.usdc.toString();
+        
+        console.log('🔍 Final contract parameters:');
+        console.log(`   amount: ${amountParam} (${typeof amountParam})`);
+        console.log(`   domain: ${domainParam} (${typeof domainParam})`);  
+        console.log(`   recipient: ${recipientParam} (${typeof recipientParam})`);
+        console.log(`   token: ${tokenParam} (${typeof tokenParam})`);
+        
+        // CRITICAL DIAGNOSTICS - Check common failure points
+        try {
+            console.log('🔍 Pre-transaction diagnostics:');
+            const userAddress = await this.signer.getAddress();
+            const network = await this.provider.getNetwork();
+            const balance = await this.provider.getBalance(userAddress);
+            const usdcBalance = await usdcContract.balanceOf(userAddress);
+            const allowance = await usdcContract.allowance(userAddress, fromConfig.tokenMessenger);
+            
+            console.log(`   User address: ${userAddress}`);
+            console.log(`   Network: ${network.name} (${network.chainId})`);
+            console.log(`   ETH balance: ${ethers.utils.formatEther(balance)} ETH`);
+            console.log(`   USDC balance: ${ethers.utils.formatUnits(usdcBalance, 6)} USDC`);
+            console.log(`   USDC allowance: ${ethers.utils.formatUnits(allowance, 6)} USDC`);
+            console.log(`   Amount needed: ${ethers.utils.formatUnits(amountWei, 6)} USDC`);
+            console.log(`   TokenMessenger: ${fromConfig.tokenMessenger}`);
+            console.log(`   Contract address: ${tokenMessengerContract.address}`);
+            
+            // Check if we have enough balance and allowance
+            if (usdcBalance.lt(amountWei)) {
+                throw new Error(`Insufficient USDC: Have ${ethers.utils.formatUnits(usdcBalance, 6)}, need ${ethers.utils.formatUnits(amountWei, 6)}`);
+            }
+            
+            if (allowance.lt(amountWei)) {
+                throw new Error(`Insufficient allowance: Have ${ethers.utils.formatUnits(allowance, 6)}, need ${ethers.utils.formatUnits(amountWei, 6)}`);
+            }
+            
+            if (balance.lt(ethers.utils.parseEther('0.001'))) {
+                console.warn('⚠️ Low ETH balance for gas fees');
+            }
+            
+        } catch (diagError) {
+            console.error('❌ Diagnostic check failed:', diagError);
+            throw diagError;
+        }
+        
+        console.log('🚀 All diagnostics passed, executing depositForBurn...');
         const burnTx = await tokenMessengerContract.depositForBurn(
-            amountWei,
-            toConfig.domain,
-            recipientBytes32,
-            fromConfig.usdc
+            amountParam,
+            domainParam,
+            recipientParam,
+            tokenParam
         );
         
         console.log('⏳ Waiting for burn transaction confirmation...');
@@ -580,6 +629,36 @@ export class MetaMaskCCTPHandler {
         
         const toMessageTransmitter = new ethers.Contract(toConfig.messageTransmitter, this.abis.messageTransmitter, this.signer);
         
+        // CRITICAL FIX: Validate mint parameters for PENDING values
+        console.log('🔍 MINT VALIDATION: Checking receiveMessage parameters for PENDING...');
+        console.log('   messageBytes type:', typeof messageBytes);
+        console.log('   messageBytes length:', messageBytes ? messageBytes.length : 'null');
+        console.log('   attestation type:', typeof attestation); 
+        console.log('   attestation length:', attestation ? attestation.length : 'null');
+        
+        // Check messageBytes for PENDING
+        if (!messageBytes || typeof messageBytes === 'string' && messageBytes.includes('PENDING')) {
+            throw new Error('MINT ERROR: messageBytes contains PENDING values');
+        }
+        
+        // Check attestation for PENDING  
+        if (!attestation || typeof attestation === 'string' && attestation.includes('PENDING')) {
+            throw new Error('MINT ERROR: attestation contains PENDING values');
+        }
+        
+        // Additional validation - ensure parameters are proper hex strings
+        if (typeof messageBytes === 'string' && !messageBytes.startsWith('0x')) {
+            console.warn('⚠️ messageBytes missing 0x prefix, adding...');
+            messageBytes = '0x' + messageBytes;
+        }
+        
+        if (typeof attestation === 'string' && !attestation.startsWith('0x')) {
+            console.warn('⚠️ attestation missing 0x prefix, adding...');
+            attestation = '0x' + attestation;
+        }
+        
+        console.log('✅ MINT VALIDATION: Parameters validated, executing receiveMessage...');
+        
         const mintTx = await toMessageTransmitter.receiveMessage(messageBytes, attestation);
         console.log('⏳ Waiting for mint transaction confirmation...');
         const mintReceipt = await mintTx.wait();
@@ -615,7 +694,18 @@ export class MetaMaskCCTPHandler {
                     if (v2Data.messages && v2Data.messages.length > 0) {
                         const message = v2Data.messages[0];
                         if (message.attestation) {
-                            console.log('✅ CCTP attestation received!');
+                            // CRITICAL: Validate attestation for PENDING values
+                            const attestationStr = String(message.attestation);
+                            if (attestationStr.includes('PENDING')) {
+                                console.warn(`⚠️ Circle API returned attestation with PENDING values: ${attestationStr.substring(0, 100)}...`);
+                                console.log(`   Retrying in 3 seconds (attempt ${i + 1}/${maxRetries})`);
+                                await new Promise(resolve => setTimeout(resolve, 3000));
+                                continue; // Retry instead of returning PENDING
+                            }
+                            
+                            console.log('✅ CCTP attestation received and validated!');
+                            console.log(`   Attestation length: ${attestationStr.length} chars`);
+                            console.log(`   Attestation preview: ${attestationStr.substring(0, 50)}...`);
                             return message.attestation;
                         }
                     }
@@ -627,7 +717,17 @@ export class MetaMaskCCTPHandler {
                 if (v1Response.ok) {
                     const v1Data = await v1Response.json();
                     if (v1Data.status === 'complete') {
-                        console.log('✅ CCTP V1 fallback attestation received');
+                        // CRITICAL: Validate V1 attestation for PENDING values too
+                        const v1AttestationStr = String(v1Data.attestation);
+                        if (v1AttestationStr.includes('PENDING')) {
+                            console.warn(`⚠️ Circle V1 API returned attestation with PENDING values: ${v1AttestationStr.substring(0, 100)}...`);
+                            console.log(`   Retrying in 6 seconds (attempt ${i + 1}/${maxRetries})`);
+                            await new Promise(resolve => setTimeout(resolve, 6000));
+                            continue; // Retry instead of returning PENDING
+                        }
+                        
+                        console.log('✅ CCTP V1 fallback attestation received and validated!');
+                        console.log(`   V1 Attestation length: ${v1AttestationStr.length} chars`);
                         return v1Data.attestation;
                     }
                 }

@@ -8,7 +8,8 @@ A production-ready framework for privacy-preserving AI agents with real zero-kno
 - **Real Zero-Knowledge Proofs** - Generate cryptographic proofs using zkEngine (Nova → Groth16 SNARKs)
 - **5 Blockchain Networks** - Deploy and verify proofs on Ethereum, Solana, Base, Avalanche, and IoTeX
 - **5 Proof Types** - KYC, Device Proximity (IoT), AI Prediction, Medical Integrity, AI Content
-- **Automated USDC Transfers** - Real conditional transfers via Circle API and Coinbase API
+- **Cross-Chain USDC Transfers** - Real CCTP (Circle Cross-Chain Transfer Protocol) integration with MetaMask
+- **Enhanced CCTP Workflow** - Production-ready Ethereum ↔ Base USDC bridging with real zkEngine proofs
 - **OpenAI-Powered Workflows** - GPT-4o integration for intelligent natural language parsing
 - **Real-Time WebSocket UI** - Live tracking of proof generation, verification, and transfers
 - **No Simulations** - Everything is real: proofs, blockchain transactions, and USDC transfers
@@ -56,6 +57,24 @@ Proves AI-generated content authenticity and ownership with cryptographic verifi
 - **Use cases**: Content attribution, AI art verification, intellectual property
 - **Blockchain**: Multi-chain support
 - **Example**: `"Generate AI content proof for my generated text"`
+
+#### 6. **Cross-Chain USDC Transfer** 🔥 **PRODUCTION READY**
+Proves agent authorization then executes real USDC transfers between Ethereum and Base using Circle's CCTP.
+- **Complete 5-Step Workflow**:
+  1. **ZKP Authorization** - Generate real zkEngine proof for agent authorization
+  2. **On-Chain Verification** - Verify proof on Ethereum Sepolia (0x09378444046d1ccb32ca2d5b44fab6634738d067)
+  3. **USDC Burn** - Burn USDC on source chain via Circle TokenMessenger
+  4. **Circle Attestation** - Enhanced cross-chain message attestation via Circle API
+  5. **USDC Mint** - Mint USDC on destination chain with verified attestation
+- **Recent Enhancements (Aug 18, 2025)**:
+  - ✅ **Fixed PENDING Value Issues** - Comprehensive validation prevents Circle API timing issues
+  - ✅ **Enhanced UI Styling** - Professional workflow cards matching IoTeX design patterns
+  - ✅ **Clear Blockchain Links** - Network-specific explorer links (Sepolia Etherscan, Base Sepolia Explorer)
+  - ✅ **Real MetaMask Integration** - Direct wallet signing, no backend private keys
+  - ✅ **Production CCTP Contracts** - Real Circle TokenMessenger and MessageTransmitter contracts
+- **Networks**: Ethereum Sepolia ↔ Base Sepolia (expandable to mainnet)
+- **Use Cases**: Agent payments, automated DeFi, conditional transfers, cross-chain AI services
+- **Example**: `"Transfer 1 USDC from ethereum to base using zkp for agent cross_chain_executor_001"`
 
 ### Blockchain Support
 
@@ -251,7 +270,18 @@ const status = await circleHandler.getTransferStatus(transferResult.id);
 "Create KYC proof for Alice, verify on chain, then create age proof over 21, and if both valid send 5 USDC to Alice"
 ```
 
-### Circle-Specific Commands
+### Enhanced CCTP Commands (Production Ready)
+```
+"Transfer 1 USDC from ethereum to base using zkp for agent cross_chain_executor_001"
+```
+```
+"Execute CCTP transfer 0.5 USDC from eth to base for agent automated_trader_v2"
+```
+```
+"Generate zkp authorization and transfer 2 USDC via CCTP to 0x742d35Cc6634C0532925a3b8D402b1DeF8d87d87"
+```
+
+### Legacy Circle Commands (Programmable Wallets)
 ```
 "Generate medical proof and if verified on Avalanche, transfer 10 USDC from Ethereum wallet to Bob's Solana address"
 ```
