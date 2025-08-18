@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCTP Fixed Test</title>
+    
+    <!-- INLINE EMERGENCY PATCH -->
+    <script>
+        console.log('🚑 EMERGENCY PATCH LOADING - NEW FILE...');
+        
+        // Immediately patch ethers when it loads
+        function patchEthers() {
+            if (window.ethers && window.ethers.utils && window.ethers.utils.arrayify) {
+                const originalArrayify = window.ethers.utils.arrayify;
+                window.ethers.utils.arrayify = function(value, options) {
+                    console.log('🚑 INTERCEPTED ARRAYIFY:', typeof value, value);
+                    
+                    if (value === 'PENDING' || (typeof value === 'string' && value.includes('PENDING'))) {
+                        console.error('🚨 BLOCKED PENDING VALUE:', value);
+                        alert('EMERGENCY PATCH: Blocked PENDING value!');
+                        throw new Error('EMERGENCY PATCH: PENDING value blocked');
+                    }
+                    
+                    return originalArrayify.call(this, value, options);
+                };
+                console.log('✅ Ethers.js arrayify patched successfully');
+                return true;
+            }
+            return false;
+        }
+        
+        // Try to patch immediately and on load
+        setTimeout(patchEthers, 100);
+        setTimeout(patchEthers, 500);
+        setTimeout(patchEthers, 1000);
+        setTimeout(patchEthers, 2000);
+        
+        window.addEventListener('load', patchEthers);
+    </script>
+</head>
+<body>
+    <h1>CCTP Emergency Fix Test</h1>
+    <p>This is a completely new file to bypass all caching issues.</p>
+    <button onclick="testCCTPCommand()">Test CCTP Command</button>
+    
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    
+    <script>
+        function testCCTPCommand() {
+            console.log('🧪 Testing CCTP command simulation...');
+            
+            // Simulate the exact call that's failing
+            try {
+                if (window.ethers && window.ethers.utils) {
+                    console.log('Testing ethers.utils.arrayify with PENDING...');
+                    window.ethers.utils.arrayify('PENDING');
+                } else {
+                    alert('Ethers.js not loaded');
+                }
+            } catch (error) {
+                console.log('✅ Caught error:', error.message);
+                alert('Caught error: ' + error.message);
+            }
+        }
+        
+        // Auto-test when ethers loads
+        setTimeout(() => {
+            if (window.ethers) {
+                console.log('✅ Ethers.js loaded, running auto-test...');
+                testCCTPCommand();
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
