@@ -8,11 +8,11 @@ import { ProofManager } from './ui/proof-manager.js?v=20250120-1';
 import { WorkflowManager } from './ui/workflow-manager.js?v=20250816-8';
 import { TransferManager } from './ui/transfer-manager.js?v=20250120-1';
 import { BlockchainVerifier } from './blockchain/blockchain-verifier.js?v=20250120-1';
-import { CCTPWorkflowManager } from './ui/cctp-workflow-manager.js?v=20250818-1755510720';
+import { CCTPWorkflowManager } from './ui/cctp-workflow-manager.js?v=20250818-gray-pending-v8';
 import { debugLog } from './core/utils.js?v=20250120-1';
 
 // Import MetaMask CCTP handler
-import('./ui/metamask-cctp-handler.js?v=20250818-debug-v4');
+import('./ui/metamask-cctp-handler.js?v=20250818-gas-cap-v6');
 
 // Load zkEngine for real proof generation
 import('./zkengine/agent-authorization-prover.js?v=20250818-pending-fix-v3');
@@ -1936,13 +1936,13 @@ async function executeRealCCTPTransfer(parsedCommand) {
             zkEngine: true
         });
         
-        // Step 2: On-chain verification (using real Base verifier)
-        updateCCTPStep(workflowId, 'onchain_verification', 'in_progress', 'Verifying proof on Base Sepolia... Check MetaMask!');
+        // Step 2: On-chain verification (using working Ethereum verifier)
+        updateCCTPStep(workflowId, 'onchain_verification', 'in_progress', 'Verifying proof on Ethereum Sepolia... Check MetaMask!');
         
         try {
             const verificationResult = await metamaskHandler.verifyProofOnChain(
                 zkpProof,
-                'base-sepolia', // Use Base network for verification
+                'ethereum-sepolia', // Use Ethereum network with working verifier
                 parsedCommand.agent
             );
             

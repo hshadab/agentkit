@@ -417,14 +417,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     gap: 0;
     padding: 12px 16px;
     padding-bottom: 16px;
-    background: linear-gradient(135deg, rgba(12, 12, 16, 0.9) 0%, rgba(16, 16, 20, 0.85) 100%);
-    border: 1px solid rgba(107, 124, 255, 0.06);
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.8) 100%) !important;
+    border: 1px solid rgba(107, 124, 255, 0.08);
     border-radius: 6px;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: none;
     margin-bottom: 16px;
     position: relative;
     z-index: 2;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     min-height: auto;
     backdrop-filter: blur(10px);
     overflow: visible;
@@ -455,9 +455,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 }
 
 .workflow-step:hover {
-    transform: translateX(4px);
-    box-shadow: 0 8px 24px rgba(107, 124, 255, 0.4), 0 0 32px rgba(107, 124, 255, 0.15);
-    border-color: rgba(107, 124, 255, 0.5);
+    /* No hover effects */
 }
 
 /* Minimalist connector system */
@@ -506,10 +504,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 }
 
 .workflow-step.pending {
-    opacity: 0.7;
-    background: linear-gradient(135deg, rgba(30, 30, 30, 0.7) 0%, rgba(40, 40, 40, 0.6) 100%);
-    border-style: dashed;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    opacity: 0.8;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(20, 20, 20, 0.7) 100%) !important;
+    border-style: solid;
+    border-color: rgba(156, 163, 175, 0.4);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .workflow-step.executing { 
@@ -541,11 +540,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 }
 
 .workflow-step.completed { 
-    background: rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.7) 100%) !important;
     border-color: #10b981;
     border-style: solid;
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2), 
-                0 4px 16px rgba(16, 185, 129, 0.3),
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3), 
+                0 4px 16px rgba(16, 185, 129, 0.4),
                 inset 0 0 20px rgba(16, 185, 129, 0.08);
     min-height: auto;
 }
@@ -619,21 +618,21 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     color: #666;
     transition: all 0.3s ease;
     padding: 6px 14px;
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.3) 100%);
+    background: transparent !important;
     border-radius: 24px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    border: 1px solid rgba(107, 124, 255, 0.08);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    border: none !important;
+    box-shadow: none !important;
 }
 
 .workflow-step.executing .step-status { 
     color: #fbbf24; 
-    background: linear-gradient(135deg, rgba(251, 191, 36, 0.3) 0%, rgba(251, 191, 36, 0.2) 100%);
-    border-color: rgba(251, 191, 36, 0.4);
+    background: transparent !important;
+    border: none !important;
     animation: pulseText 1.5s ease-in-out infinite;
-    box-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
+    box-shadow: none !important;
     position: relative;
     padding-right: 20px;
 }
@@ -659,27 +658,27 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 
 .workflow-step.completed .step-status { 
     color: #10b981; 
-    background: rgba(0, 0, 0, 0.4);
-    border-color: rgba(16, 185, 129, 0.4);
-    box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 .workflow-step.failed .step-status { 
     color: #ef4444; 
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(239, 68, 68, 0.2) 100%);
-    border-color: rgba(239, 68, 68, 0.4);
-    box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 .workflow-step.failed-non-critical .step-status { 
     color: #fbbf24; 
-    background: linear-gradient(135deg, rgba(251, 191, 36, 0.3) 0%, rgba(251, 191, 36, 0.2) 100%);
-    border-color: rgba(251, 191, 36, 0.4);
-    box-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 .workflow-step.skipped .step-status { 
     color: #9ca3af; 
-    background: linear-gradient(135deg, rgba(156, 163, 175, 0.3) 0%, rgba(156, 163, 175, 0.2) 100%);
-    border-color: rgba(156, 163, 175, 0.4);
-    box-shadow: none;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 /* Step timing info */
@@ -720,7 +719,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .transfer-id {
     font-family: monospace;
     color: #8B9AFF;
-    background: rgba(107, 124, 255, 0.08);
+    background: transparent !important;
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 12px;
@@ -730,7 +729,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     margin-top: 8px;
     margin-bottom: 4px;
     padding: 12px 16px;
-    background: rgba(0, 0, 0, 0.4);
+    background: transparent !important;
     border-radius: 6px;
     transition: all 0.3s ease;
     min-height: auto;
@@ -785,22 +784,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 
 .blockchain-status.pending {
     border-left: 4px solid #fbbf24;
-    background: linear-gradient(90deg, rgba(251, 191, 36, 0.08) 0%, rgba(0, 0, 0, 0.4) 100%);
+    background: transparent !important;
 }
 
 .blockchain-status.confirmed {
     border-left: 4px solid #10b981;
-    background: linear-gradient(90deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.4) 100%);
+    background: transparent !important;
 }
 
 .blockchain-status.warning {
     border-left: 4px solid #fbbf24;
-    background: linear-gradient(90deg, rgba(251, 191, 36, 0.08) 0%, rgba(0, 0, 0, 0.4) 100%);
+    background: transparent !important;
 }
 
 .blockchain-status.success {
     border-left: 4px solid #10b981;
-    background: linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0%, rgba(0, 0, 0, 0.4) 100%);
+    background: transparent !important;
     margin-bottom: 0;
 }
 

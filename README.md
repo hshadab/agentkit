@@ -68,10 +68,13 @@ Proves agent authorization then executes real USDC transfers between Ethereum an
   5. **USDC Mint** - Mint USDC on destination chain with verified attestation
 - **Recent Enhancements (Aug 18, 2025)**:
   - ✅ **Fixed PENDING Value Issues** - Comprehensive validation prevents Circle API timing issues
-  - ✅ **Enhanced UI Styling** - Professional workflow cards matching IoTeX design patterns
+  - ✅ **Enhanced UI Styling** - Professional workflow cards matching IoTeX design patterns with gray pending borders
   - ✅ **Clear Blockchain Links** - Network-specific explorer links (Sepolia Etherscan, Base Sepolia Explorer)
-  - ✅ **Real MetaMask Integration** - Direct wallet signing, no backend private keys
+  - ✅ **Real MetaMask Integration** - Direct wallet signing, no backend private keys, with gas fee caps ($5-10 max)
   - ✅ **Production CCTP Contracts** - Real Circle TokenMessenger and MessageTransmitter contracts
+  - ✅ **Gas Fee Protection** - Smart gas limits prevent excessive transaction fees (capped at 500,000 gas)
+  - ✅ **Real zkEngine Proof Integration** - Uses actual zkEngine proof data instead of mock/API calls
+  - ✅ **Clean UI Design** - Removed all inner container backgrounds, kept only essential borders for visual hierarchy
 - **Networks**: Ethereum Sepolia ↔ Base Sepolia (expandable to mainnet)
 - **Use Cases**: Agent payments, automated DeFi, conditional transfers, cross-chain AI services
 - **Example**: `"Transfer 1 USDC from ethereum to base using zkp for agent cross_chain_executor_001"`

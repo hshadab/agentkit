@@ -234,18 +234,33 @@ export class CCTPWorkflowManager {
             const result = data.result;
             let contentHtml = '';
             
-            // Add transaction links with clear labels
-            if (result.transactionHash && result.transactionHash !== 'verification_failed') {
+            // Add transaction links with clear labels - show success OR failure, not both
+            if (result.transactionHash && result.transactionHash !== 'verification_failed' && result.verified !== false) {
+                // SUCCESS CASE - verification actually succeeded
                 const network = this.getNetworkFromStepId(data.step_id);
                 const explorerName = this.getExplorerName(network);
-                const explorerUrl = this.getExplorerUrl(network, result.transactionHash);
+                const explorerUrl = result.explorerUrl || this.getExplorerUrl(network, result.transactionHash);
+                
+                // Customize message based on step type
+                let transactionType = 'Transaction Confirmed';
+                let icon = '✅';
+                if (data.step_id === 'onchain_verification') {
+                    transactionType = 'Proof Verified On-Chain';
+                    icon = '🔗';
+                } else if (data.step_id === 'usdc_burn') {
+                    transactionType = 'USDC Burn Confirmed';
+                    icon = '🔥';
+                } else if (data.step_id === 'usdc_mint') {
+                    transactionType = 'USDC Mint Confirmed';
+                    icon = '🪙';
+                }
                 
                 contentHtml += `
-                    <div class="blockchain-status confirmed" style="margin-top: 12px; padding: 8px 12px; background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%); border-left: 4px solid #10b981; border-radius: 4px;">
+                    <div class="blockchain-status confirmed" style="margin-top: 12px; padding: 8px 12px; border-left: 4px solid #10b981; border-radius: 4px;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
                                 <div style="font-size: 12px; color: #10b981; font-weight: 600; margin-bottom: 2px;">
-                                    ✅ Transaction Confirmed
+                                    ${icon} ${transactionType}
                                 </div>
                                 <div style="font-size: 11px; color: #9ca3af;">
                                     ${result.transactionHash.substring(0, 20)}...${result.transactionHash.slice(-8)}
@@ -253,48 +268,76 @@ export class CCTPWorkflowManager {
                             </div>
                             <a href="${explorerUrl}" target="_blank" class="blockchain-link" 
                                style="color: #8b9aff; text-decoration: none; font-size: 11px; font-weight: 600; 
-                                      padding: 4px 8px; background: rgba(139, 154, 255, 0.1); border-radius: 3px;
+                                      padding: 4px 8px; border-radius: 3px;
                                       border: 1px solid rgba(139, 154, 255, 0.2); transition: all 0.2s ease;">
                                 📄 View on ${explorerName}
                             </a>
                         </div>
                     </div>
                 `;
+            } else if (data.step_id === 'onchain_verification' && (result.transactionHash === 'verification_failed' || result.verified === false)) {
+                // Show blockchain explorer link even for failed verification
+                const network = this.getNetworkFromStepId(data.step_id);
+                const explorerName = this.getExplorerName(network);
+                const verifierAddress = network === 'ethereum-sepolia' ? '0x09378444046d1ccb32ca2d5b44fab6634738d067' : '0x74D68B2481d298F337e62efc50724CbBA68dCF8f';
+                const baseUrl = network === 'ethereum-sepolia' ? 'https://sepolia.etherscan.io' : 'https://sepolia.basescan.org';
+                const contractUrl = `${baseUrl}/address/${verifierAddress}`;
+                
+                contentHtml += `
+                    <div class="blockchain-status warning" style="margin-top: 12px; padding: 8px 12px; border-left: 4px solid #fbbf24; border-radius: 4px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-size: 12px; color: #fbbf24; font-weight: 600; margin-bottom: 2px;">
+                                    ⚠️ Verification Failed
+                                </div>
+                                <div style="font-size: 11px; color: #9ca3af;">
+                                    On-chain proof verification could not complete
+                                </div>
+                            </div>
+                            <a href="${contractUrl}" target="_blank" class="blockchain-link" 
+                               style="color: #8b9aff; text-decoration: none; font-size: 11px; font-weight: 600; 
+                                      padding: 4px 8px; border-radius: 3px;
+                                      border: 1px solid rgba(139, 154, 255, 0.2); transition: all 0.2s ease;">
+                                📄 View Contract on ${explorerName}
+                            </a>
+                        </div>
+                    </div>
+                `;
             }
             
-            // Add specific step result content
+            // Add specific step result content with dark backgrounds
             if (result.proofId) {
                 contentHtml += `
-                    <div style="margin-top: 8px; font-size: 12px;">
-                        <span style="color: #8b9aff;">✅ Proof generated:</span> 
-                        <span style="color: #10b981; font-weight: 500;">${result.proofId}</span>
+                    <div class="blockchain-status success" style="margin-top: 8px; padding: 6px 10px; border-left: 3px solid #10b981; border-radius: 3px;">
+                        <div style="font-size: 12px;">
+                            <span style="color: #8b9aff;">✅ Proof generated:</span> 
+                            <span style="color: #10b981; font-weight: 500;">${result.proofId}</span>
+                        </div>
                     </div>
                 `;
             }
             
             if (result.burnedAmount) {
                 contentHtml += `
-                    <div style="margin-top: 4px; font-size: 12px;">
-                        <span style="color: #8b9aff;">🔥 Burned:</span> 
-                        <span style="color: #fbbf24; font-weight: 500;">${result.burnedAmount} USDC</span>
+                    <div class="blockchain-status warning" style="margin-top: 6px; padding: 6px 10px; border-left: 3px solid #fbbf24; border-radius: 3px;">
+                        <div style="font-size: 12px;">
+                            <span style="color: #8b9aff;">🔥 Burned:</span> 
+                            <span style="color: #fbbf24; font-weight: 500;">${result.burnedAmount} USDC</span>
+                        </div>
                     </div>
                 `;
             }
             
-            if (result.verified && data.step_id === 'onchain_verification') {
-                contentHtml += `
-                    <div style="margin-top: 4px; font-size: 12px;">
-                        <span style="color: #8b9aff;">🔗 Verified:</span> 
-                        <span style="color: #10b981; font-weight: 500;">On-chain proof confirmed</span>
-                    </div>
-                `;
-            }
+            // Note: verification details are already shown in the main transaction section above
+            // This avoids duplicate display of verification information
             
             if (result.received && data.step_id === 'circle_attestation') {
                 contentHtml += `
-                    <div style="margin-top: 4px; font-size: 12px;">
-                        <span style="color: #8b9aff;">📡 Attestation:</span> 
-                        <span style="color: #10b981; font-weight: 500;">Circle CCTP confirmed</span>
+                    <div class="blockchain-status success" style="margin-top: 6px; padding: 6px 10px; border-left: 3px solid #10b981; border-radius: 3px;">
+                        <div style="font-size: 12px;">
+                            <span style="color: #8b9aff;">📡 Attestation:</span> 
+                            <span style="color: #10b981; font-weight: 500;">Circle CCTP confirmed</span>
+                        </div>
                     </div>
                 `;
             }
@@ -490,11 +533,9 @@ export class CCTPWorkflowManager {
 export const cctpWorkflowStyles = `
 .cctp-workflow {
     border-left: 4px solid #0052FF;
-    background: linear-gradient(135deg, rgba(0, 82, 255, 0.05) 0%, rgba(0, 82, 255, 0.02) 100%);
 }
 
 .cctp-header {
-    background: rgba(0, 82, 255, 0.1);
 }
 
 .cctp-route {
@@ -507,7 +548,6 @@ export const cctpWorkflowStyles = `
 .cctp-details {
     margin-bottom: 16px;
     padding: 12px;
-    background: rgba(0, 82, 255, 0.05);
     border-radius: 6px;
 }
 
@@ -545,13 +585,12 @@ export const cctpWorkflowStyles = `
 
 .cctp-step.pending {
     opacity: 0.7;
-    background: linear-gradient(135deg, rgba(30, 30, 30, 0.7) 0%, rgba(40, 40, 40, 0.6) 100%);
-    border-style: dashed;
+    border-style: solid;
+    border-color: rgba(156, 163, 175, 0.4);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .cctp-step.in_progress {
-    background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(251, 191, 36, 0.15) 100%);
     border-color: #fbbf24;
     border-style: solid;
     animation: pulseGlow 2s ease-in-out infinite;
@@ -561,7 +600,6 @@ export const cctpWorkflowStyles = `
 }
 
 .cctp-step.completed {
-    background: rgba(0, 0, 0, 0.3);
     border-color: #10b981;
     border-style: solid;
     box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2), 
@@ -570,7 +608,6 @@ export const cctpWorkflowStyles = `
 }
 
 .cctp-step.failed {
-    background: rgba(239, 68, 68, 0.1);
     border-left: 3px solid #ef4444;
 }
 
@@ -622,7 +659,6 @@ export const cctpWorkflowStyles = `
 .step-details {
     font-size: 0.85em;
     padding: 8px 12px;
-    background: rgba(255, 255, 255, 0.5);
     border-radius: 4px;
     margin-top: 8px;
 }
@@ -697,12 +733,10 @@ export const cctpWorkflowStyles = `
     margin-left: 8px;
     padding: 2px 6px;
     border-radius: 3px;
-    background: rgba(107, 124, 153, 0.1);
     transition: all 0.2s ease;
 }
 
 .contract-link:hover {
-    background: rgba(107, 124, 153, 0.2);
     color: #0052FF;
 }
 `;

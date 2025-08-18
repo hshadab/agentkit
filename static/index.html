@@ -6,9 +6,10 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <!-- Force cache invalidation timestamp: 2025-08-18-18:21 -->
     <title>Verifiable Agent Kit</title>
     <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="stylesheet" href="css/main.css?v=20250816-1">
+    <link rel="stylesheet" href="css/main.css?v=20250818-gray-pending">
 </head>
 <body>
     <div class="sidebar">
@@ -96,37 +97,7 @@
     <!-- SES Compatibility for snarkjs -->
     <script src="./js/core/ses-compatibility.js"></script>
     
-    <!-- EMERGENCY CCTP PATCH - Inline to bypass all caching -->
-    <script>
-        console.log('🚑 Loading INLINE emergency CCTP patch...');
-        
-        // Override ethers.js arrayify function to prevent PENDING errors
-        window.addEventListener('load', function() {
-            if (window.ethers && window.ethers.utils && window.ethers.utils.arrayify) {
-                const originalArrayify = window.ethers.utils.arrayify;
-                window.ethers.utils.arrayify = function(value, options) {
-                    console.log('🚑 Arrayify intercepted, value:', typeof value, value);
-                    
-                    if (typeof value === 'string' && value === 'PENDING') {
-                        console.error('🚨 BLOCKED: Attempting to arrayify PENDING value!');
-                        throw new Error('EMERGENCY PATCH: Blocked PENDING value from reaching ethers.js arrayify');
-                    }
-                    
-                    if (typeof value === 'string' && value.includes('PENDING')) {
-                        console.error('🚨 BLOCKED: String contains PENDING:', value);
-                        throw new Error('EMERGENCY PATCH: Blocked string containing PENDING from reaching ethers.js');
-                    }
-                    
-                    return originalArrayify.call(this, value, options);
-                };
-                console.log('🚑 Ethers.js arrayify function patched successfully');
-            } else {
-                console.log('⚠️ Ethers.js not yet available for patching');
-            }
-        });
-        
-        console.log('🚑 Inline emergency patch loaded');
-    </script>
+    <!-- Emergency patches removed - fixes integrated into source code -->
     
     <!-- External dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
@@ -170,7 +141,7 @@
     </script>
     
     <!-- Main application module - must be loaded as module since it uses ES6 imports -->
-    <script type="module" src="./js/main.js?v=1734510000000"></script>
+    <script type="module" src="./js/main.js?v=1735400000000"></script>
     
     <!-- CCTP fixes now integrated directly into main.js source code -->
     <!-- Wrapper to expose modules to window -->
