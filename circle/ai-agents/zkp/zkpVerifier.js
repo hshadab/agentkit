@@ -71,14 +71,30 @@ export default class AIAgentZKPVerifier {
         
         if (activeProof) {
           console.log(`✅ zkEngine completed proof: ${proofId}`);
-          activeProof.resolve({
-            verified: true,
-            proof: message.proof || `proof_${proofId}`,
-            publicSignals: message.public_signals || message.public_inputs || [],
-            proofId: proofId,
-            zkEngine: true,
-            metrics: message.metrics
-          });
+          
+          // Ensure proof data is complete before resolving
+          const proofData = message.proof || `proof_${proofId}`;
+          const publicSignals = message.public_signals || message.public_inputs || [];
+          
+          // Validate that we don't have PENDING values
+          if (proofData === 'PENDING' || JSON.stringify(publicSignals).includes('PENDING')) {
+            console.warn(`⚠️ Proof ${proofId} contains PENDING values, marking as failed`);
+            activeProof.resolve({
+              verified: false,
+              error: 'Proof contains PENDING values - incomplete generation',
+              proofId: proofId,
+              zkEngine: true
+            });
+          } else {
+            activeProof.resolve({
+              verified: true,
+              proof: proofData,
+              publicSignals: publicSignals,
+              proofId: proofId,
+              zkEngine: true,
+              metrics: message.metrics
+            });
+          }
           this.activeProofs.delete(proofId);
         }
       } else if (message.type === 'proof_error' || (message.type === 'error' && message.proof_id)) {

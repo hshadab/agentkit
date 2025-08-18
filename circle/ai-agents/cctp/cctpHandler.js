@@ -390,6 +390,16 @@ export default class CCTPHandler {
     console.log(`   Proof ID: ${zkpProof.proofId}`);
     console.log(`   Agent: ${agentId}`);
 
+    // Validate proof before attempting on-chain verification
+    if (!zkpProof || !zkpProof.verified) {
+      throw new Error('Cannot verify invalid or unverified proof on-chain');
+    }
+
+    // Check for PENDING values
+    if (zkpProof.proof === 'PENDING' || JSON.stringify(zkpProof).includes('PENDING')) {
+      throw new Error('Proof is not ready - contains PENDING values. Please wait for proof generation to complete.');
+    }
+
     // Map CCTP network names to chain verification names
     const networkMap = {
       'ethereum-sepolia': 'ethereum',

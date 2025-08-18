@@ -184,9 +184,19 @@ export class MetaMaskCCTPHandler {
                 purpose
             );
             
+            // CRITICAL: Validate proof is complete before returning
+            if (!proof || proof.proof === 'PENDING' || JSON.stringify(proof).includes('PENDING')) {
+                throw new Error('Proof generation incomplete - contains PENDING values');
+            }
+            
+            if (!proof.verified) {
+                throw new Error('Proof verification failed - cannot use unverified proof');
+            }
+            
             console.log(`✅ Real ZKP proof generated: ${proof.proofId}`);
             console.log(`   zkEngine: ${proof.zkEngine ? 'Real' : 'Mock'}`);
             console.log(`   Circuit: ${proof.metadata?.circuitType || 'unknown'}`);
+            console.log(`   Verified: ${proof.verified}`);
             
             return proof;
             
@@ -199,31 +209,46 @@ export class MetaMaskCCTPHandler {
         }
     }
 
-    // Fallback mock proof method
+    // Fallback mock proof method with deterministic values
     generateMockProof(agentId, amount, purpose) {
+        const seedValue = this.hashToNumber(agentId + amount.toString() + purpose);
+        
         const proof = {
             proofId: `mock_auth_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             verified: true,
             zkEngine: false, // Mark as mock
             publicSignals: [
-                ethers.BigNumber.from(ethers.utils.keccak256(ethers.utils.toUtf8Bytes(agentId))).mod(ethers.BigNumber.from(2).pow(32)).toString(),
+                seedValue.toString(),
                 Math.floor(amount * 1000000).toString(),
                 Math.floor(Date.now() / 1000).toString()
             ],
             proof: JSON.stringify({
-                pi_a: ["0x1", "0x2"],
-                pi_b: [["0x3", "0x4"], ["0x5", "0x6"]], 
-                pi_c: ["0x7", "0x8"]
+                pi_a: [seedValue, seedValue + 1],
+                pi_b: [[seedValue + 2, seedValue + 3], [seedValue + 4, seedValue + 5]], 
+                pi_c: [seedValue + 6, seedValue + 7]
             }),
             metadata: {
                 agentId: agentId,
                 purpose: purpose,
-                circuitType: 'mock_agent_authorization'
+                circuitType: 'mock_agent_authorization',
+                deterministic: true
             }
         };
         
-        console.log(`⚠️ Mock ZKP proof generated: ${proof.proofId}`);
+        console.log(`⚠️ Deterministic mock ZKP proof generated: ${proof.proofId}`);
+        console.log(`   Seed value: ${seedValue}`);
         return proof;
+    }
+
+    // Helper method to create deterministic values from strings
+    hashToNumber(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // Convert to 32-bit integer
+        }
+        return Math.abs(hash) % 1000000; // Keep it reasonable for contract calls
     }
 
     async verifyProofOnChain(proof, networkKey, agentId) {
