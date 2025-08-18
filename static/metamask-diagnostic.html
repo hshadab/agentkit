@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MetaMask Diagnostic</title>
+</head>
+<body>
+    <h1>MetaMask PENDING Diagnostic</h1>
+    <button onclick="testMetaMask()">Test MetaMask Interactions</button>
+    <button onclick="testContractCall()">Test Contract Call</button>
+    
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    
+    <script>
+        async function testMetaMask() {
+            console.log('🔍 Testing MetaMask responses for PENDING values...');
+            
+            if (!window.ethereum) {
+                alert('MetaMask not detected');
+                return;
+            }
+            
+            try {
+                // Test basic MetaMask calls
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                console.log('✅ Accounts:', accounts);
+                
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                console.log('✅ Chain ID:', chainId);
+                
+                const balance = await window.ethereum.request({ 
+                    method: 'eth_getBalance', 
+                    params: [accounts[0], 'latest'] 
+                });
+                console.log('✅ Balance:', balance);
+                
+                // Check if any responses contain PENDING
+                const responses = [accounts, chainId, balance];
+                const hasPending = responses.some(resp => 
+                    JSON.stringify(resp).includes('PENDING')
+                );
+                
+                console.log('🔍 Any PENDING in MetaMask responses?', hasPending);
+                
+            } catch (error) {
+                console.error('❌ MetaMask test error:', error);
+                console.log('🔍 Error contains PENDING?', JSON.stringify(error).includes('PENDING'));
+            }
+        }
+        
+        async function testContractCall() {
+            console.log('🔍 Testing contract call that might trigger PENDING...');
+            
+            if (!window.ethereum || !window.ethers) {
+                alert('MetaMask or Ethers not available');
+                return;
+            }
+            
+            try {
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const signer = provider.getSigner();
+                
+                // Test contract address (Base Sepolia verifier from error logs)
+                const contractAddress = '0x74D68B2481d298F337e62efc50724CbBA68dCF8f';
+                
+                // Simple ABI for testing
+                const abi = ['function verifyProof(uint[2] memory _pA, uint[2][2] memory _pB, uint[2] memory _pC, uint[] memory _pubSignals) public view returns (bool)'];
+                
+                const contract = new ethers.Contract(contractAddress, abi, signer);
+                
+                console.log('📡 Testing contract call with safe parameters...');
+                
+                // Use the exact same parameters but with safe values
+                const safeParams = {
+                    pA: [1, 2],
+                    pB: [[3, 4], [5, 6]], 
+                    pC: [7, 8],
+                    publicSignals: [1, 2, 3]
+                };
+                
+                console.log('🔍 Safe parameters:', safeParams);
+                
+                // This should work without PENDING issues
+                const result = await contract.verifyProof(
+                    safeParams.pA,
+                    safeParams.pB, 
+                    safeParams.pC,
+                    safeParams.publicSignals
+                );
+                
+                console.log('✅ Contract call successful:', result);
+                
+            } catch (error) {
+                console.error('❌ Contract call error:', error);
+                console.log('🔍 Error message:', error.message);
+                console.log('🔍 Contains PENDING?', error.message.includes('PENDING'));
+                
+                if (error.transaction) {
+                    console.log('🔍 Transaction data:', error.transaction);
+                    console.log('🔍 Transaction contains PENDING?', JSON.stringify(error.transaction).includes('PENDING'));
+                }
+            }
+        }
+    </script>
+</body>
+</html>
