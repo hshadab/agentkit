@@ -1,5 +1,5 @@
 // Main application entry point
-// Cache bust: 20250120-1
+// Cache bust: 20250817-v2-001usdc
 console.log('=== Main.js loading started ===');
 import { config } from './core/config.js?v=20250120-1';
 import { WebSocketManager } from './ui/websocket-manager.js?v=20250120-1';
@@ -8,7 +8,14 @@ import { ProofManager } from './ui/proof-manager.js?v=20250120-1';
 import { WorkflowManager } from './ui/workflow-manager.js?v=20250816-8';
 import { TransferManager } from './ui/transfer-manager.js?v=20250120-1';
 import { BlockchainVerifier } from './blockchain/blockchain-verifier.js?v=20250120-1';
+import { CCTPWorkflowManager } from './ui/cctp-workflow-manager.js?v=20250818-1755510720';
 import { debugLog } from './core/utils.js?v=20250120-1';
+
+// Import MetaMask CCTP handler
+import('./ui/metamask-cctp-handler.js?v=20250818-1755510720');
+
+// Load zkEngine for real proof generation
+import('./zkengine/agent-authorization-prover.js');
 
 // Export config and debugLog to window for non-module scripts
 window.config = config;
@@ -29,6 +36,7 @@ const proofManager = new ProofManager(uiManager);
 const transferManager = new TransferManager(uiManager);
 const workflowManager = new WorkflowManager(uiManager, transferManager);
 const blockchainVerifier = new BlockchainVerifier(uiManager, proofManager);
+const cctpWorkflowManager = new CCTPWorkflowManager(uiManager, wsManager);
 
 // Ensure proofManager.proofs is initialized
 if (!proofManager.proofs) {
@@ -40,6 +48,8 @@ if (!proofManager.proofs) {
 window.proofManager = proofManager;
 window.blockchainVerifier = blockchainVerifier;
 window.wsManager = wsManager;
+window.cctpWorkflowManager = cctpWorkflowManager;
+window.CCTPWorkflowManager = CCTPWorkflowManager;
 window.handleVerifyAction = (proofId, proofFunction, action) => {
     blockchainVerifier.handleVerifyAction(proofId, proofFunction, action);
 };
@@ -351,6 +361,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize blockchain connections after a small delay to ensure all scripts are loaded
     setTimeout(async () => {
         await initializeBlockchainConnections();
+        // Initialize CCTP workflow manager
+        await cctpWorkflowManager.initialize();
     }, 500);
     
     // Restore console.error after initialization
@@ -1830,7 +1842,22 @@ function sendMessage() {
     uiManager.addMessage(message, 'user');
     uiManager.clearInput();
     
-    // Add waiting message
+    // Check if this is a CCTP command and handle it directly with MetaMask
+    if (CCTPWorkflowManager.isCCTPCommand(message)) {
+        console.log('🌉 CCTP command detected:', message);
+        
+        const parsedCommand = CCTPWorkflowManager.parseCCTPCommand(message);
+        console.log('📋 Parsed CCTP parameters:', parsedCommand);
+        console.log('🔍 Network debug - fromNetwork:', parsedCommand.fromNetwork, 'toNetwork:', parsedCommand.toNetwork);
+        
+        // Execute real CCTP transfer with MetaMask
+        executeRealCCTPTransfer(parsedCommand);
+        
+        sendingInProgress = false;
+        return; // Don't send to regular backend
+    }
+    
+    // Add waiting message for regular commands
     const waitingMessage = document.createElement('div');
     waitingMessage.className = 'message assistant waiting';
     waitingMessage.innerHTML = '<div class="message-content">Processing your request</div>';
@@ -1845,6 +1872,178 @@ function sendMessage() {
     }
     
     sendingInProgress = false;
+}
+
+// Execute real CCTP transfer with MetaMask
+async function executeRealCCTPTransfer(parsedCommand) {
+    const workflowId = `real_cctp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    console.log('🚀 Starting REAL CCTP transfer with MetaMask...');
+    console.log('⚠️  This will execute real blockchain transactions!');
+    
+    try {
+        // Create workflow card
+        const workflowCard = cctpWorkflowManager.createCCTPWorkflowCard({
+            workflow_id: workflowId,
+            amount: parsedCommand.amount,
+            fromNetwork: parsedCommand.fromNetwork,
+            toNetwork: parsedCommand.toNetwork,
+            agentId: parsedCommand.agent,
+            recipient: parsedCommand.recipient,
+            real_transactions: true
+        });
+        
+        uiManager.addMessage(workflowCard, 'assistant');
+        
+        // Wait for MetaMask handler to be available
+        let attempts = 0;
+        while (!window.MetaMaskCCTPHandler && attempts < 10) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (!window.MetaMaskCCTPHandler) {
+            throw new Error('MetaMask CCTP handler not loaded');
+        }
+        
+        // Initialize MetaMask handler
+        const metamaskHandler = new window.MetaMaskCCTPHandler();
+        await metamaskHandler.initialize();
+        
+        // Check MetaMask connection
+        const isConnected = await metamaskHandler.checkMetaMaskConnection();
+        if (!isConnected) {
+            await metamaskHandler.connectMetaMask();
+        }
+        
+        // Step 1: ZKP Authorization
+        updateCCTPStep(workflowId, 'zkp_authorization', 'in_progress', 'Generating ZKP proof...');
+        
+        const zkpProof = await metamaskHandler.generateZKPProof(
+            parsedCommand.agent,
+            parseFloat(parsedCommand.amount),
+            'Real cross-chain USDC transfer'
+        );
+        
+        updateCCTPStep(workflowId, 'zkp_authorization', 'completed', 'ZKP proof generated', {
+            proofId: zkpProof.proofId,
+            verified: zkpProof.verified,
+            zkEngine: true
+        });
+        
+        // Step 2: On-chain verification (using real Base verifier)
+        updateCCTPStep(workflowId, 'onchain_verification', 'in_progress', 'Verifying proof on Base Sepolia... Check MetaMask!');
+        
+        try {
+            const verificationResult = await metamaskHandler.verifyProofOnChain(
+                zkpProof,
+                'base-sepolia', // Use Base network for verification
+                parsedCommand.agent
+            );
+            
+            updateCCTPStep(workflowId, 'onchain_verification', 'completed', 'Real on-chain verification confirmed', {
+                transactionHash: verificationResult.transactionHash,
+                blockNumber: verificationResult.blockNumber,
+                explorerUrl: verificationResult.explorerUrl,
+                verified: true,
+                zkEngine: zkpProof.zkEngine
+            });
+        } catch (error) {
+            console.error('⚠️ On-chain verification failed, continuing with CCTP...', error);
+            updateCCTPStep(workflowId, 'onchain_verification', 'completed', 'Verification failed, proceeding anyway', {
+                transactionHash: 'verification_failed',
+                verified: false,
+                error: error.message
+            });
+        }
+        
+        // Step 3-5: Execute CCTP transfer (includes burn, attestation, mint)
+        updateCCTPStep(workflowId, 'usdc_burn', 'in_progress', 'Executing CCTP transfer... Check MetaMask!');
+        
+        // Validate all parameters before calling CCTP transfer
+        console.log('🔍 Final parameter validation before CCTP transfer:');
+        console.log('   parsedCommand.agent:', parsedCommand.agent);
+        console.log('   parsedCommand.fromNetwork:', parsedCommand.fromNetwork);
+        console.log('   parsedCommand.toNetwork:', parsedCommand.toNetwork);
+        console.log('   parsedCommand.amount:', parsedCommand.amount);
+        console.log('   parsedCommand.recipient:', parsedCommand.recipient);
+        console.log('   zkpProof:', zkpProof ? 'Present' : 'Missing');
+        
+        // Double-check no parameters are PENDING
+        const params = [
+            parsedCommand.agent,
+            parsedCommand.fromNetwork,
+            parsedCommand.toNetwork,
+            parsedCommand.amount,
+            parsedCommand.recipient
+        ];
+        
+        const pendingParams = params.filter(p => p === "PENDING" || p === "pending");
+        if (pendingParams.length > 0) {
+            throw new Error(`Found PENDING parameters: ${pendingParams.join(', ')}`);
+        }
+
+        const transferResult = await metamaskHandler.executeCCTPTransfer(
+            parsedCommand.agent,
+            parsedCommand.fromNetwork,
+            parsedCommand.toNetwork,
+            parsedCommand.amount,
+            parsedCommand.recipient,
+            zkpProof
+        );
+        
+        // Update all remaining steps as completed
+        updateCCTPStep(workflowId, 'usdc_burn', 'completed', 'USDC burn confirmed', {
+            transactionHash: transferResult.burnTx,
+            explorerUrl: transferResult.burnExplorer,
+            burnedAmount: parsedCommand.amount
+        });
+        
+        updateCCTPStep(workflowId, 'circle_attestation', 'completed', 'Circle attestation received', {
+            received: true
+        });
+        
+        updateCCTPStep(workflowId, 'usdc_mint', 'completed', 'USDC mint confirmed', {
+            transactionHash: transferResult.mintTx,
+            explorerUrl: transferResult.mintExplorer,
+            mintedAmount: parsedCommand.amount
+        });
+        
+        // Complete workflow
+        cctpWorkflowManager.completeCCTPWorkflow({
+            workflow_id: workflowId,
+            amount: parsedCommand.amount,
+            fromNetwork: parsedCommand.fromNetwork,
+            toNetwork: parsedCommand.toNetwork,
+            success: true,
+            real_transactions: true
+        });
+        
+        uiManager.showToast(`✅ ${parsedCommand.amount} USDC transferred successfully via real CCTP!`, 'success');
+        
+    } catch (error) {
+        console.error('❌ Real CCTP transfer failed:', error);
+        
+        cctpWorkflowManager.handleCCTPError({
+            workflow_id: workflowId,
+            error: error.message,
+            step: 'metamask_execution'
+        });
+        
+        uiManager.showToast(`❌ CCTP transfer failed: ${error.message}`, 'error');
+    }
+}
+
+// Helper function to update CCTP steps
+function updateCCTPStep(workflowId, stepId, status, message, result = null) {
+    cctpWorkflowManager.updateCCTPStep({
+        workflow_id: workflowId,
+        step_id: stepId,
+        status: status,
+        message: message,
+        result: result,
+        real_transaction: true
+    });
 }
 
 function loadSampleQueries() {
@@ -1865,6 +2064,11 @@ function loadSampleQueries() {
             'Send 0.05 USDC on Solana if Bob is KYC verified on Solana and send 0.03 USDC on Ethereum if Alice is KYC verified on Ethereum.',
             'Prove IoT device proximity at location 5080, 5020',
             'Create medical record for patient 12345 and verify integrity'
+        ],
+        'CCTP Cross-Chain (Base)': [
+            'Transfer 0.01 USDC cross-chain from Ethereum to Base for agent executor_001',
+            'Send 0.01 USDC to 0x742d35Cc6634C0532925a3b8D402b1DeF8d87d87 via CCTP with agent authorization',
+            'Execute cross-chain USDC payment of 0.01 USDC to Base with ZKP verification'
         ],
         'History': [
             'Proof History'

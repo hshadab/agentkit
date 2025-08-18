@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Verifiable Agent Kit</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="css/main.css?v=20250816-1">
@@ -100,6 +103,9 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="./js/core/ethers-fallback.js"></script>
     
+    <!-- zkEngine Interface -->
+    <script src="./js/zkengine/zkengine-interface.js"></script>
+    
     <!-- Blockchain verifiers (these need to be updated to work with the modular system) -->
     <script src="./ethereum-verifier.js?v=20250711-1945"></script>
     <script src="./solana-verifier.js"></script>
@@ -122,7 +128,7 @@
     <script src="./js/ui/ai-prediction-handler-real.js?v=20250121-1"></script>
     
     <!-- Main application module - must be loaded as module since it uses ES6 imports -->
-    <script type="module" src="./js/main.js?v=20250817-rewardfix"></script>
+    <script type="module" src="./js/main.js?v=20250818-1755510716"></script>
     <!-- Wrapper to expose modules to window -->
     <script type="module" src="./js/blockchain/blockchain-verifier-wrapper.js?v=20250120-1"></script>
     <script type="module" src="./js/blockchain/avalanche-medical-wrapper.js?v=20250129-1"></script>

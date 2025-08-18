@@ -42,6 +42,8 @@ load_env_from_multiple_locations()
 
 import subprocess
 import json
+import base64
+import tempfile
 import asyncio
 from datetime import datetime
 from fastapi import FastAPI, HTTPException
@@ -850,6 +852,175 @@ async def poll_transfer(request: dict):
             "success": False,
             "status": "pending",
             "error": str(e)
+        }
+
+# zkEngine API endpoints for CCTP integration
+@app.get("/zkengine/status")
+async def zkengine_status():
+    """Get zkEngine status and available circuits"""
+    try:
+        zkengine_binary = os.getenv('ZKENGINE_BINARY', './zkengine_binary/zkEngine')
+        wasm_dir = os.getenv('WASM_DIR', './zkengine_binary')
+        
+        # Check if zkEngine binary exists
+        if not os.path.exists(zkengine_binary):
+            return {
+                "status": "unavailable",
+                "error": f"zkEngine binary not found at {zkengine_binary}",
+                "circuits": []
+            }
+        
+        # List available WASM files as circuits
+        circuits = []
+        if os.path.exists(wasm_dir):
+            for file in os.listdir(wasm_dir):
+                if file.endswith('.wasm') or file.endswith('.wat'):
+                    circuit_name = file.replace('.wasm', '').replace('.wat', '')
+                    circuits.append(circuit_name)
+        
+        # Add known circuit functions
+        known_circuits = [
+            'prove_kyc',
+            'prove_ai_prediction_commitment',
+            'prove_age_verification',
+            'agent_authorization'
+        ]
+        
+        for circuit in known_circuits:
+            if circuit not in circuits:
+                circuits.append(circuit)
+        
+        return {
+            "status": "available",
+            "zkengine_binary": zkengine_binary,
+            "wasm_dir": wasm_dir,
+            "circuits": circuits
+        }
+        
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "circuits": []
+        }
+
+@app.post("/zkengine/prove")
+async def zkengine_prove(request: dict):
+    """Generate proof using real zkEngine"""
+    try:
+        function = request.get("function")
+        arguments = request.get("arguments", [])
+        
+        if not function:
+            raise HTTPException(status_code=400, detail="Missing 'function' parameter")
+        
+        zkengine_binary = os.getenv('ZKENGINE_BINARY', './zkengine_binary/zkEngine')
+        
+        # Map function to actual WASM files and prepare proper zkEngine command
+        wasm_mapping = {
+            'agent_authorization': 'kyc_compliance_real.wasm',  # Use KYC for agent auth
+            'prove_kyc': 'kyc_compliance_real.wasm',
+            'prove_ai_prediction_commitment': 'ai_prediction_commitment.wasm',
+            'prove_age_verification': 'kyc_compliance_real.wasm',
+            'medical_integrity': 'medical_integrity.wasm',
+            'device_proximity': 'device_proximity.wasm'
+        }
+        
+        # Get WASM file for this function
+        wasm_file = wasm_mapping.get(function, 'kyc_compliance_real.wasm')
+        wasm_path = f'./zkengine_binary/{wasm_file}'
+        
+        # Create temp output directory  
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Prepare proper zkEngine command format
+            cmd = [
+                zkengine_binary, 'prove',
+                '--wasm', wasm_path,
+                '--step', '10',
+                '--out-dir', temp_dir
+            ] + [str(arg) for arg in arguments]
+        
+            print(f"🔐 Starting zkEngine proof generation...")
+            print(f"   Function: {function}")
+            print(f"   Arguments: {arguments}")
+            print(f"   WASM: {wasm_file}")
+            print(f"   Command: {' '.join(cmd)}")
+            
+            # Execute zkEngine with timeout
+            start_time = datetime.now()
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=120,  # 2 minute timeout
+                cwd=os.path.expanduser("~/agentkit")
+            )
+            
+            duration = (datetime.now() - start_time).total_seconds()
+            
+            if result.returncode == 0:
+                # Parse output
+                output = result.stdout.strip()
+                print(f"✅ zkEngine completed in {duration:.2f}s")
+                print(f"   Output: {output}")
+                
+                # Read proof files from temp directory
+                proof_path = os.path.join(temp_dir, 'proof.bin')
+                public_path = os.path.join(temp_dir, 'public.json')
+                
+                proof_data = None
+                public_signals = []
+                
+                # Read proof file as base64
+                if os.path.exists(proof_path):
+                    with open(proof_path, 'rb') as f:
+                        proof_bytes = f.read()
+                        proof_data = base64.b64encode(proof_bytes).decode('utf-8')
+                
+                # Read public signals
+                if os.path.exists(public_path):
+                    with open(public_path, 'r') as f:
+                        public_data = json.load(f)
+                        public_signals = public_data if isinstance(public_data, list) else [public_data]
+                
+                print(f"✅ zkEngine proof generated in {duration:.1f}s")
+                print(f"   Proof file: {len(proof_bytes) if proof_data else 0} bytes")
+                print(f"   Public signals: {len(public_signals)} values")
+                
+                return {
+                    "success": True,
+                    "proof": proof_data,
+                    "public_signals": public_signals,
+                    "duration_seconds": duration,
+                    "function": function,
+                    "zkEngine": True
+                }
+            else:
+                error_msg = result.stderr.strip() or result.stdout.strip()
+                print(f"❌ zkEngine failed: {error_msg}")
+                
+                return {
+                    "success": False,
+                    "error": error_msg,
+                    "duration_seconds": duration,
+                    "function": function,
+                    "zkEngine": False
+                }
+            
+    except subprocess.TimeoutExpired:
+        return {
+            "success": False,
+            "error": "zkEngine proof generation timed out (120s)",
+            "function": function,
+            "zkEngine": False
+        }
+    except Exception as e:
+        print(f"❌ zkEngine error: {str(e)}")
+        return {
+            "success": False,
+            "error": str(e),
+            "function": function,
+            "zkEngine": False
         }
 
 if __name__ == "__main__":

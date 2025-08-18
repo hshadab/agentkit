@@ -1,4 +1,4 @@
-/* --- ENHANCED CSS WITH NEW WORKFLOW STYLES --- */
+/* --- ENHANCED CSS WITH NEW WORKFLOW STYLES AND CCTP --- */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #000000; color: #ffffff; height: 100vh; display: flex; overflow: hidden; }
 .sidebar { width: 280px; background: #111111; padding: 24px; overflow-y: auto; border-right: 1px solid rgba(107, 124, 255, 0.3); }
@@ -1320,6 +1320,44 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     font-size: 14px;
 }
 
+/* CCTP Workflow Specific Styles */
+.cctp-workflow {
+    border-left: 4px solid #0052FF;
+}
+
+.cctp-workflow .workflow-title {
+    color: #0052FF;
+}
+
+.cctp-workflow .workflow-subtitle {
+    color: #6B9AFF;
+    font-size: 0.9em;
+    margin-left: 8px;
+}
+
+.transfer-details {
+    display: flex;
+    gap: 16px;
+    margin: 12px 0;
+    padding: 8px 12px;
+    background: rgba(0, 82, 255, 0.05);
+    border-radius: 4px;
+    border: 1px solid rgba(0, 82, 255, 0.1);
+}
+
+.transfer-amount {
+    font-weight: 700;
+    color: #0052FF;
+    font-size: 1.1em;
+}
+
+.transfer-agent,
+.transfer-recipient {
+    font-size: 0.9em;
+    color: #888;
+}
+
 /* Cache bust: 1752945481 */
 /* Cache bust update: 1752971016 */
 /* IoTeX integration: 1753493200 */
+/* CCTP integration: 1755432400 */
