@@ -4,7 +4,7 @@
 
 This implementation represents the **next evolution of Circle's AI agent vision** - solving the critical trust and verification challenges that emerge when AI agents handle real financial transactions. By integrating zero-knowledge proofs with CCTP, we've created the first production-ready system for **cryptographically verifiable AI agent authorization** with real cross-chain USDC transfers.
 
-**Key Innovation**: While Circle's Programmable Wallets enable AI agents to transact, our ZKP integration ensures they can **prove authorization to transact** without exposing sensitive logic or compromising security.
+**Key Innovation**: While Circle's Programmable Wallets enable AI agents to transact, our ZKP integration creates **cryptographically-triggered CCTP transfers** - where zero-knowledge proof verification directly triggers cross-chain USDC transfers without human intervention. **CCTP only executes after mathematical proof of authorization.**
 
 ## The Problem Circle's AI Agent Ecosystem Faces
 
@@ -30,9 +30,14 @@ From Circle's blog on "Enabling AI Agents with Blockchain," we see the vision of
 ### Architecture Overview
 
 ```
-Circle's Vision:          AI Agent → Programmable Wallet → USDC Transfer
-Our Enhancement:    AI Agent → ZK Proof → Blockchain Verification → CCTP → USDC Transfer
+Circle's Vision:     AI Agent → Programmable Wallet → USDC Transfer
+Our Enhancement:     AI Agent → ZK Proof → Blockchain Verification → [PROOF VERIFIED] → CCTP Triggered → USDC Transfer
+                                                                           ↑
+                                                              CRITICAL: CCTP only executes 
+                                                              after proof verification succeeds
 ```
+
+**The key difference**: CCTP transfers are **conditionally triggered** by successful ZKP verification. No proof verification = no transfer.
 
 ### Technical Integration Points
 
@@ -82,19 +87,29 @@ if (verificationResult.success) {
 - ✅ **Composability** - other contracts can check authorization status
 - ✅ **Global state** - authorization works across all networks
 
-#### 3. **CCTP Integration (After Verification)**
+#### 3. **CCTP Triggered by Verification (Critical Flow)**
 ```javascript
-// Only execute CCTP transfer after ZKP verification
-if (authProof.verified && onChainVerification.success) {
+// 🚨 CRITICAL: CCTP transfer ONLY executes after ZKP verification succeeds
+const verificationResult = await verifyProofOnChain(authProof);
+
+if (verificationResult.success) {
+    console.log('✅ ZKP verified - triggering CCTP transfer');
+    
+    // CCTP is conditionally triggered by proof verification
     const cctpTransfer = await circleSDK.burnAndTransfer({
         sourceChain: 'ethereum-sepolia',
         destinationChain: 'base-sepolia', 
         amount: authProof.authorizedAmount,
         recipientAddress: resolveRecipient(authProof.purpose),
-        // Include proof ID for full traceability
-        memo: `zkp_verified:${authProof.proofId}`
+        // Link transfer to specific proof verification
+        memo: `zkp_verified:${authProof.proofId}:${verificationResult.txHash}`
     });
+} else {
+    console.log('❌ ZKP verification failed - CCTP transfer blocked');
+    throw new Error('Transfer rejected: Authorization proof invalid');
 }
+
+// Result: Mathematical proof directly controls financial transfer
 ```
 
 ## Advanced Use Cases Enabled
@@ -117,9 +132,14 @@ const researchProof = await zkEngine.generateProof('research_integrity', {
     peerReviewHash: hashReviews(agentResult.reviews)
 });
 
-// Only pay if research meets cryptographically verified standards
-if (await verifyOnChain(researchProof)) {
+// 🔑 KEY POINT: CCTP payment is triggered by proof verification
+const verificationResult = await verifyOnChain(researchProof);
+if (verificationResult.success) {
+    // Proof verified ✅ → CCTP payment triggered automatically
     await cctpTransfer(agentAddress, calculateReward(researchProof));
+} else {
+    // Proof failed ❌ → No payment, funds remain secure
+    console.log('Research quality insufficient - payment blocked');
 }
 ```
 
@@ -188,6 +208,33 @@ await cctpTransfer({
 - **Risk management**: ZKP proves opportunity without revealing strategy
 - **Cross-chain native**: Uses CCTP for seamless value transfer
 - **Scalable**: Can handle thousands of opportunities without human oversight
+
+## The Core Innovation: Proof-Triggered CCTP
+
+**This is the breakthrough**: Zero-knowledge proof verification directly triggers CCTP transfers. Here's the exact flow:
+
+```javascript
+// Step 1: Generate authorization proof
+const zkProof = await generateAgentAuthProof(agent, amount, purpose);
+
+// Step 2: Verify proof on blockchain  
+const verification = await verifyOnChain(zkProof);
+
+// Step 3: CCTP triggered conditionally by verification result
+if (verification.success) {
+    // ✅ Proof verified → CCTP executes automatically
+    await executeCCTPTransfer(amount, destination);
+} else {
+    // ❌ Proof failed → CCTP blocked, funds safe
+    throw new Error('Transfer blocked: Invalid authorization');
+}
+```
+
+**Why this matters for Circle:**
+- **Conditional Execution**: CCTP only runs when cryptographically authorized
+- **Automatic Triggering**: No human intervention needed after proof verification
+- **Fail-Safe Design**: Invalid proofs cannot trigger transfers
+- **Audit Trail**: Every transfer linked to specific proof verification transaction
 
 ## Technical Deep Dive: Integration Architecture
 
