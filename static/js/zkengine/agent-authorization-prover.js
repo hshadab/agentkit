@@ -122,6 +122,12 @@ export class AgentAuthorizationProver {
         // Generate proof with real zkEngine
         const result = await window.zkEngine.generateProof(workingCircuit, adaptedInputs);
         
+        // CRITICAL: Validate no PENDING values before returning
+        if (!result || result.proof === 'PENDING' || JSON.stringify(result).includes('PENDING')) {
+            console.warn('⚠️ zkEngine returned PENDING values, using fallback');
+            throw new Error('zkEngine returned incomplete proof with PENDING values');
+        }
+        
         return {
             proofId: `auth_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             proof: result.proof,

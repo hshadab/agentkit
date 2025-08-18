@@ -317,31 +317,29 @@ export class MetaMaskCCTPHandler {
     }
 
     async executeCCTPTransfer(agentId, fromNetwork, toNetwork, amount, recipient, zkpProof) {
-        // FORCE CACHE REFRESH TEST
-        alert('NEW VERSION LOADED! CCTP Handler with debugging active');
-        
-        console.log(`🌉 CRITICAL DEBUG: Executing real CCTP transfer: ${amount} USDC`);
+        console.log(`🌉 Executing CCTP transfer: ${amount} USDC`);
         console.log(`   Route: ${fromNetwork} → ${toNetwork}`);
         console.log(`   Agent: ${agentId}`);
         
-        // EMERGENCY DEBUG - Log ALL parameters with types
-        console.log('🚨 EMERGENCY DEBUG - All function parameters:');
-        console.log('   agentId:', typeof agentId, JSON.stringify(agentId));
-        console.log('   fromNetwork:', typeof fromNetwork, JSON.stringify(fromNetwork));
-        console.log('   toNetwork:', typeof toNetwork, JSON.stringify(toNetwork));
-        console.log('   amount:', typeof amount, JSON.stringify(amount));
-        console.log('   recipient:', typeof recipient, JSON.stringify(recipient));
-        console.log('   zkpProof:', typeof zkpProof, zkpProof ? 'Present' : 'Missing');
-        
-        // Check for PENDING in any parameter
+        // Comprehensive PENDING validation for all parameters including zkpProof
         const allParams = [agentId, fromNetwork, toNetwork, amount, recipient];
         const hasPending = allParams.some(p => String(p).includes('PENDING'));
-        console.log('🔍 Any parameter contains PENDING?', hasPending);
+        
+        // Also check zkpProof for PENDING values
+        const zkpProofStr = JSON.stringify(zkpProof);
+        const zkpHasPending = zkpProofStr.includes('PENDING');
+        
+        console.log('🔍 Parameter validation:');
+        console.log('   Basic params PENDING?', hasPending);
+        console.log('   zkpProof PENDING?', zkpHasPending);
         
         if (hasPending) {
             const pendingParams = allParams.filter(p => String(p).includes('PENDING'));
-            alert(`FOUND PENDING VALUES: ${pendingParams.join(', ')}`);
-            throw new Error(`PENDING values found: ${pendingParams.join(', ')}`);
+            throw new Error(`PENDING values found in parameters: ${pendingParams.join(', ')}`);
+        }
+        
+        if (zkpHasPending) {
+            throw new Error(`PENDING values found in zkpProof: cannot proceed with contract calls`);
         }
         
         // Validate and fix recipient BEFORE any processing
