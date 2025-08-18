@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minimal CCTP Test</title>
+</head>
+<body>
+    <h1>Minimal CCTP Test</h1>
+    <button onclick="testCCTP()">Test CCTP with Debug</button>
+    
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    
+    <script>
+        // Minimal CCTP test with inline validation
+        async function testCCTP() {
+            console.log('🔍 Testing CCTP with PENDING validation...');
+            
+            // Simulate the exact parameters that would cause the issue
+            const testProof = {
+                proofId: 'test_123',
+                verified: true,
+                publicSignals: ["PENDING", "123", "456"] // This should be caught
+            };
+            
+            // Test validation
+            const zkpProofStr = JSON.stringify(testProof);
+            const zkpHasPending = zkpProofStr.includes('PENDING');
+            
+            alert(`PENDING validation test: ${zkpHasPending ? 'FOUND PENDING!' : 'No PENDING found'}`);
+            
+            if (zkpHasPending) {
+                console.error('❌ PENDING found in test proof:', testProof);
+                return;
+            }
+            
+            console.log('✅ Would proceed with contract call');
+        }
+        
+        // Test if we can detect PENDING in different scenarios
+        function runValidationTests() {
+            console.log('🧪 Running validation tests...');
+            
+            const tests = [
+                { name: 'Normal proof', proof: { publicSignals: ['1', '2', '3'] } },
+                { name: 'PENDING in signals', proof: { publicSignals: ['PENDING', '2', '3'] } },
+                { name: 'PENDING in proof', proof: { proof: 'PENDING' } },
+                { name: 'No signals', proof: { publicSignals: [] } }
+            ];
+            
+            tests.forEach(test => {
+                const hasPending = JSON.stringify(test.proof).includes('PENDING');
+                console.log(`Test "${test.name}": ${hasPending ? '❌ PENDING' : '✅ Clean'}`);
+            });
+        }
+        
+        // Auto-run tests when page loads
+        setTimeout(runValidationTests, 1000);
+    </script>
+</body>
+</html>
