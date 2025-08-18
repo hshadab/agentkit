@@ -341,6 +341,9 @@ export class MetaMaskCCTPHandler {
         console.log(`   Route: ${fromNetwork} → ${toNetwork}`);
         console.log(`   Agent: ${agentId}`);
         
+        // CRITICAL: Force alert to confirm latest code is loaded
+        alert('LATEST CODE LOADED - PENDING validation active!');
+        
         // Comprehensive PENDING validation for all parameters including zkpProof
         const allParams = [agentId, fromNetwork, toNetwork, amount, recipient];
         const hasPending = allParams.some(p => String(p).includes('PENDING'));
@@ -349,16 +352,19 @@ export class MetaMaskCCTPHandler {
         const zkpProofStr = JSON.stringify(zkpProof);
         const zkpHasPending = zkpProofStr.includes('PENDING');
         
-        console.log('🔍 Parameter validation:');
+        console.log('🔍 CRITICAL PARAMETER VALIDATION:');
         console.log('   Basic params PENDING?', hasPending);
         console.log('   zkpProof PENDING?', zkpHasPending);
+        console.log('   zkpProof full content:', zkpProof);
         
         if (hasPending) {
             const pendingParams = allParams.filter(p => String(p).includes('PENDING'));
+            alert(`FOUND PENDING IN BASIC PARAMS: ${pendingParams.join(', ')}`);
             throw new Error(`PENDING values found in parameters: ${pendingParams.join(', ')}`);
         }
         
         if (zkpHasPending) {
+            alert('FOUND PENDING IN ZKPPROOF!');
             throw new Error(`PENDING values found in zkpProof: cannot proceed with contract calls`);
         }
         
