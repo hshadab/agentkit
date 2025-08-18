@@ -12,10 +12,10 @@ import { CCTPWorkflowManager } from './ui/cctp-workflow-manager.js?v=20250818-17
 import { debugLog } from './core/utils.js?v=20250120-1';
 
 // Import MetaMask CCTP handler
-import('./ui/metamask-cctp-handler.js?v=20250818-1755510720');
+import('./ui/metamask-cctp-handler.js?v=20250818-pending-fix-v3');
 
 // Load zkEngine for real proof generation
-import('./zkengine/agent-authorization-prover.js');
+import('./zkengine/agent-authorization-prover.js?v=20250818-pending-fix-v3');
 
 // Export config and debugLog to window for non-module scripts
 window.config = config;

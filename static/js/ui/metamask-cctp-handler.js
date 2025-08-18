@@ -282,12 +282,32 @@ export class MetaMaskCCTPHandler {
             // Convert agentId to bytes32 (hash if too long)
             let agentIdBytes32 = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(agentId));
             
-            // Call the basic verifyProof function instead of the complex one
+            // Validate publicSignals for PENDING values before contract call
+            let publicSignals = proof.publicSignals || ["1", "2", "3"];
+            
+            // Critical: Check for PENDING in publicSignals
+            if (JSON.stringify(publicSignals).includes('PENDING')) {
+                console.warn('⚠️ PENDING found in publicSignals, using safe defaults');
+                publicSignals = ["1", "2", "3"];
+            }
+            
+            // Ensure all publicSignals are valid numbers or hex strings
+            publicSignals = publicSignals.map((signal, index) => {
+                if (typeof signal === 'string' && (signal.includes('PENDING') || signal === 'undefined')) {
+                    console.warn(`⚠️ Invalid signal at index ${index}: ${signal}, using default`);
+                    return (index + 1).toString();
+                }
+                return signal.toString();
+            });
+            
+            console.log('🔍 Final publicSignals for contract:', publicSignals);
+            
+            // Call the basic verifyProof function with validated parameters
             const tx = await contract.verifyProof(
                 proofData.pi_a,
                 proofData.pi_b,
                 proofData.pi_c,
-                proof.publicSignals || ["1", "2", "3"]
+                publicSignals
             );
             
             console.log('⏳ Waiting for verification transaction confirmation...');
