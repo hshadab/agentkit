@@ -1,7 +1,8 @@
 import ethers from 'ethers';
 import { GATEWAY_CONTRACTS, GATEWAY_CONFIG, getNetworkConfig } from './config.js';
+import GatewayAPI from './gatewayAPI.js';
 
-// Minimal ABI for USDC and Gateway contracts
+// Real Circle Gateway contract ABIs
 const USDC_ABI = [
   'function balanceOf(address owner) view returns (uint256)',
   'function approve(address spender, uint256 amount) returns (bool)',
@@ -9,10 +10,19 @@ const USDC_ABI = [
   'function allowance(address owner, address spender) view returns (uint256)'
 ];
 
-const GATEWAY_ABI = [
-  'function deposit(uint256 amount) payable',
-  'function transfer(uint32 destinationDomain, bytes32 recipient, uint256 amount) payable',
-  'function balanceOf(address account) view returns (uint256)'
+// Gateway Wallet ABI (for deposits)
+const GATEWAY_WALLET_ABI = [
+  'function deposit(address token, uint256 amount)',
+  'function balanceOf(address account, address token) view returns (uint256)',
+  'function withdraw(address token, uint256 amount)',
+  'event Deposit(address indexed user, address indexed token, uint256 amount)'
+];
+
+// Gateway Minter ABI (for minting on destination)
+const GATEWAY_MINTER_ABI = [
+  'function mint(bytes calldata attestation, address recipient, uint256 amount)',
+  'function mintWithAttestation(bytes calldata attestationData)',
+  'event Mint(address indexed recipient, uint256 amount, bytes32 indexed attestationHash)'
 ];
 
 export default class GatewayHandler {
@@ -20,6 +30,7 @@ export default class GatewayHandler {
     this.providers = {};
     this.signers = {};
     this.contracts = {};
+    this.gatewayAPI = new GatewayAPI();
     this.initialized = false;
   }
 
@@ -37,10 +48,11 @@ export default class GatewayHandler {
           this.providers[networkKey] = new ethers.providers.JsonRpcProvider(config.rpcUrl);
           this.signers[networkKey] = new ethers.Wallet(GATEWAY_CONFIG.privateKey, this.providers[networkKey]);
           
-          // Initialize USDC contract
+          // Initialize contracts with real Gateway addresses
           this.contracts[networkKey] = {
             usdc: new ethers.Contract(config.usdc, USDC_ABI, this.signers[networkKey]),
-            gateway: config.gatewayWallet ? new ethers.Contract(config.gatewayWallet, GATEWAY_ABI, this.signers[networkKey]) : null
+            gatewayWallet: new ethers.Contract(config.gatewayWallet, GATEWAY_WALLET_ABI, this.signers[networkKey]),
+            gatewayMinter: new ethers.Contract(config.gatewayMinter, GATEWAY_MINTER_ABI, this.signers[networkKey])
           };
 
           console.log(`✅ Initialized ${networkKey} provider`);
@@ -80,21 +92,24 @@ export default class GatewayHandler {
     };
   }
 
+  // Gateway deposit using real Gateway Wallet contract
   async deposit(network, amount) {
     if (!this.initialized) await this.initialize();
 
     const networkKey = network.toUpperCase().replace('-', '_');
     const signer = this.signers[networkKey];
     const contracts = this.contracts[networkKey];
+    const config = GATEWAY_CONTRACTS[networkKey];
 
-    if (!signer || !contracts?.usdc || !contracts?.gateway) {
+    if (!signer || !contracts?.usdc || !contracts?.gatewayWallet) {
       throw new Error(`Network ${network} not supported or gateway not deployed`);
     }
 
     const amountWei = ethers.utils.parseUnits(amount.toString(), 6);
     const signerAddress = await signer.getAddress();
 
-    console.log(`💰 Depositing ${amount} USDC to Gateway on ${network}`);
+    console.log(`💰 Depositing ${amount} USDC to Gateway Wallet on ${network}`);
+    console.log(`   Gateway Wallet: ${config.gatewayWallet}`);
 
     // Check balance
     const balance = await this.getBalance(network);
@@ -102,79 +117,96 @@ export default class GatewayHandler {
       throw new Error(`Insufficient USDC balance. Have: ${balance.balance}, Need: ${amount}`);
     }
 
-    // Check allowance
-    const allowance = await contracts.usdc.allowance(signerAddress, contracts.gateway.target);
-    if (allowance < amountWei) {
-      console.log(`📝 Approving Gateway to spend ${amount} USDC`);
-      const approveTx = await contracts.usdc.approve(contracts.gateway.target, amountWei);
+    // Check allowance for Gateway Wallet
+    const allowance = await contracts.usdc.allowance(signerAddress, config.gatewayWallet);
+    if (allowance.lt(amountWei)) {
+      console.log(`📝 Approving Gateway Wallet to spend ${amount} USDC`);
+      const approveTx = await contracts.usdc.approve(config.gatewayWallet, amountWei);
       await approveTx.wait();
       console.log(`✅ Approval confirmed: ${approveTx.hash}`);
     }
 
-    // Execute deposit
-    console.log(`🏦 Executing deposit...`);
-    const depositTx = await contracts.gateway.deposit(amountWei);
+    // Execute Gateway deposit
+    console.log(`🏦 Executing Gateway Wallet deposit...`);
+    const depositTx = await contracts.gatewayWallet.deposit(config.usdc, amountWei);
     const receipt = await depositTx.wait();
 
-    console.log(`✅ Deposit successful: ${depositTx.hash}`);
+    console.log(`✅ Gateway deposit successful: ${depositTx.hash}`);
+    
+    // Get updated Gateway balance
+    const gatewayBalance = await this.getGatewayBalance(network, signerAddress);
+    
     return {
       network,
       amount,
       transactionHash: depositTx.hash,
-      blockNumber: receipt.blockNumber
+      blockNumber: receipt.blockNumber,
+      gatewayBalance: gatewayBalance.balance,
+      type: 'gateway_deposit'
     };
   }
 
-  async transfer(fromNetwork, toNetwork, amount, recipient) {
+  // Gateway cross-chain transfer using burn intent and attestation
+  async transfer(fromNetwork, toNetwork, amount, recipient, zkpProofId = null) {
     if (!this.initialized) await this.initialize();
 
     const fromNetworkKey = fromNetwork.toUpperCase().replace('-', '_');
     const toNetworkKey = toNetwork.toUpperCase().replace('-', '_');
     
-    const fromContracts = this.contracts[fromNetworkKey];
+    const fromConfig = GATEWAY_CONTRACTS[fromNetworkKey];
     const toConfig = GATEWAY_CONTRACTS[toNetworkKey];
+    const fromSigner = this.signers[fromNetworkKey];
 
-    if (!fromContracts?.gateway || !toConfig) {
+    if (!fromConfig || !toConfig || !fromSigner) {
       throw new Error(`Cross-chain transfer not supported between ${fromNetwork} and ${toNetwork}`);
     }
 
     const amountWei = ethers.utils.parseUnits(amount.toString(), 6);
-    
-    // Convert recipient address to bytes32 (simplified)
-    const recipientBytes32 = ethers.utils.hexZeroPad(recipient, 32);
-    
-    // Domain mapping (simplified - would need actual Circle domains)
-    const domainMap = {
-      'ETH_SEPOLIA': 1,
-      'BASE_SEPOLIA': 2,
-      'AVALANCHE_FUJI': 3
-    };
+    const signerAddress = await fromSigner.getAddress();
 
-    const destinationDomain = domainMap[toNetworkKey];
-    if (!destinationDomain) {
-      throw new Error(`Unknown destination domain for ${toNetwork}`);
+    console.log(`🌉 Gateway cross-chain transfer: ${amount} USDC`);
+    console.log(`   From: ${fromNetwork} (domain ${fromConfig.domain})`);
+    console.log(`   To: ${toNetwork} (domain ${toConfig.domain})`);
+    console.log(`   Recipient: ${recipient}`);
+    if (zkpProofId) console.log(`   ZKP Proof: ${zkpProofId}`);
+
+    // Step 1: Execute Gateway API workflow (burn intent + attestation)
+    const gatewayResult = await this.gatewayAPI.executeGatewayTransfer({
+      sourceWallet: signerAddress,
+      amount: amountWei.toString(),
+      burnToken: fromConfig.usdc,
+      mintRecipient: recipient,
+      destinationDomain: toConfig.domain,
+      chainId: fromConfig.chainId,
+      zkpProofId
+    });
+
+    if (!gatewayResult.success) {
+      throw new Error(`Gateway transfer failed: ${gatewayResult.error}`);
     }
 
-    console.log(`🌉 Transferring ${amount} USDC from ${fromNetwork} to ${toNetwork}`);
-    
-    const transferTx = await fromContracts.gateway.transfer(
-      destinationDomain,
-      recipientBytes32,
-      amountWei
+    // Step 2: Submit attestation to Gateway Minter on destination
+    const mintResult = await this.submitAttestationToMinter(
+      toNetwork, 
+      gatewayResult.attestation,
+      recipient,
+      amount
     );
-    
-    const receipt = await transferTx.wait();
 
-    console.log(`✅ Cross-chain transfer initiated: ${transferTx.hash}`);
+    console.log(`✅ Gateway cross-chain transfer completed`);
     
     return {
       fromNetwork,
       toNetwork,
       amount,
       recipient,
-      transactionHash: transferTx.hash,
-      blockNumber: receipt.blockNumber,
-      estimatedFinalization: Date.now() + GATEWAY_CONFIG.finalizationTimeouts[fromNetworkKey]
+      zkpProofId,
+      burnIntent: gatewayResult.burnIntent,
+      attestationHash: gatewayResult.attestationHash,
+      mintTransaction: mintResult.transactionHash,
+      mintBlockNumber: mintResult.blockNumber,
+      type: 'gateway_transfer',
+      estimatedFinalization: Date.now() + 30000 // Gateway is ~30 seconds
     };
   }
 
@@ -186,6 +218,97 @@ export default class GatewayHandler {
     }));
   }
 
+  // Get Gateway balance for a specific user and token
+  async getGatewayBalance(network, userAddress) {
+    if (!this.initialized) await this.initialize();
+
+    const networkKey = network.toUpperCase().replace('-', '_');
+    const contracts = this.contracts[networkKey];
+    const config = GATEWAY_CONTRACTS[networkKey];
+
+    if (!contracts?.gatewayWallet) {
+      throw new Error(`Gateway not available on ${network}`);
+    }
+
+    try {
+      const balance = await contracts.gatewayWallet.balanceOf(userAddress, config.usdc);
+      return {
+        network,
+        userAddress,
+        balance: ethers.utils.formatUnits(balance, 6),
+        balanceWei: balance.toString(),
+        token: 'USDC'
+      };
+    } catch (error) {
+      console.error(`❌ Failed to get Gateway balance on ${network}:`, error.message);
+      return { network, userAddress, balance: '0', balanceWei: '0', error: error.message };
+    }
+  }
+
+  // Submit attestation to Gateway Minter on destination chain
+  async submitAttestationToMinter(network, attestation, recipient, amount) {
+    const networkKey = network.toUpperCase().replace('-', '_');
+    const contracts = this.contracts[networkKey];
+
+    if (!contracts?.gatewayMinter) {
+      throw new Error(`Gateway Minter not available on ${network}`);
+    }
+
+    console.log(`🪙 Submitting attestation to Gateway Minter on ${network}`);
+
+    try {
+      const mintTx = await contracts.gatewayMinter.mintWithAttestation(attestation);
+      const receipt = await mintTx.wait();
+
+      console.log(`✅ Gateway mint successful: ${mintTx.hash}`);
+
+      return {
+        network,
+        recipient,
+        amount,
+        transactionHash: mintTx.hash,
+        blockNumber: receipt.blockNumber
+      };
+    } catch (error) {
+      console.error(`❌ Gateway mint failed on ${network}:`, error.message);
+      throw error;
+    }
+  }
+
+  // Get unified Gateway balance across all networks
+  async getUnifiedBalance() {
+    if (!this.initialized) await this.initialize();
+
+    const unifiedBalance = {
+      totalBalance: '0',
+      networks: {}
+    };
+
+    let totalWei = ethers.BigNumber.from('0');
+
+    for (const [networkKey, signer] of Object.entries(this.signers)) {
+      try {
+        const network = networkKey.toLowerCase().replace('_', '-');
+        const address = await signer.getAddress();
+        const gatewayBalance = await this.getGatewayBalance(network, address);
+        
+        unifiedBalance.networks[network] = {
+          balance: gatewayBalance.balance,
+          balanceWei: gatewayBalance.balanceWei
+        };
+
+        totalWei = totalWei.add(ethers.BigNumber.from(gatewayBalance.balanceWei));
+      } catch (error) {
+        unifiedBalance.networks[networkKey] = { error: error.message };
+      }
+    }
+
+    unifiedBalance.totalBalance = ethers.utils.formatUnits(totalWei, 6);
+    unifiedBalance.totalBalanceWei = totalWei.toString();
+
+    return unifiedBalance;
+  }
+
   async getWalletInfo() {
     if (!this.initialized) await this.initialize();
 
@@ -194,12 +317,16 @@ export default class GatewayHandler {
     for (const [networkKey, signer] of Object.entries(this.signers)) {
       try {
         const address = await signer.getAddress();
-        const balance = await this.getBalance(networkKey.toLowerCase().replace('_', '-'));
+        const network = networkKey.toLowerCase().replace('_', '-');
+        const balance = await this.getBalance(network);
+        const gatewayBalance = await this.getGatewayBalance(network, address);
         
         walletInfo[networkKey] = {
           address,
+          network,
           usdcBalance: balance.balance,
-          network: networkKey.toLowerCase().replace('_', '-')
+          gatewayBalance: gatewayBalance.balance,
+          totalBalance: (parseFloat(balance.balance) + parseFloat(gatewayBalance.balance)).toFixed(6)
         };
       } catch (error) {
         walletInfo[networkKey] = { error: error.message };
@@ -207,5 +334,10 @@ export default class GatewayHandler {
     }
 
     return walletInfo;
+  }
+
+  // Test Gateway API connection
+  async testGatewayConnection() {
+    return await this.gatewayAPI.testConnection();
   }
 }

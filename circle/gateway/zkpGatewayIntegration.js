@@ -143,37 +143,40 @@ export default class ZKPGatewayIntegration {
     };
   }
 
+  // ZKP verified Gateway cross-chain transfer (similar to CCTP workflow)
   async verifyAndTransfer(options) {
     const { proofType, proofData, fromNetwork, toNetwork, amount, recipient } = options;
     
     if (!this.initialized) await this.initialize();
 
-    console.log(`🔐 Starting ZKP verified cross-chain transfer`);
-    console.log(`   ${amount} USDC from ${fromNetwork} to ${toNetwork}`);
+    console.log(`🔐 Starting ZKP verified Gateway cross-chain transfer`);
+    console.log(`   ${amount} USDC from ${fromNetwork} to ${toNetwork} via Gateway`);
+    console.log(`   ZKP Type: ${proofType}`);
 
-    // Step 1: Generate ZKP if required
+    // Step 1: Generate ZKP (similar to CCTP workflow)
     let proofResult = { verified: true };
     
     if (proofType && proofData) {
-      console.log(`🧮 Generating ${proofType} proof...`);
+      console.log(`🧮 Generating ${proofType} proof for Gateway authorization...`);
       proofResult = await this.generateProof(proofType, proofData);
       
       if (!proofResult.verified) {
         throw new Error(`ZKP verification failed: ${proofResult.reason}`);
       }
-      console.log('✅ ZKP verification successful');
+      console.log('✅ ZKP verification successful - Gateway transfer authorized');
     }
 
-    // Step 2: Execute cross-chain transfer
-    console.log(`🌉 Executing cross-chain transfer...`);
+    // Step 2: Execute Gateway cross-chain transfer (replaces CCTP burn-mint)
+    console.log(`🌉 Executing Gateway transfer (burn intent → attestation → mint)...`);
     const transferResult = await this.gatewayHandler.transfer(
       fromNetwork, 
       toNetwork, 
       amount, 
-      recipient
+      recipient,
+      proofResult.proofId // Link ZKP to Gateway transfer
     );
 
-    // Step 3: Store proof metadata
+    // Step 3: Store proof metadata with Gateway specifics
     if (proofResult.proofId) {
       await this.storeProofMetadata({
         proofId: proofResult.proofId,
@@ -182,7 +185,10 @@ export default class ZKPGatewayIntegration {
         toNetwork,
         amount,
         recipient,
-        transactionHash: transferResult.transactionHash,
+        transferType: 'gateway',
+        burnIntentHash: transferResult.burnIntent,
+        attestationHash: transferResult.attestationHash,
+        mintTransaction: transferResult.mintTransaction,
         timestamp: Date.now()
       });
     }
@@ -190,6 +196,10 @@ export default class ZKPGatewayIntegration {
     return {
       zkpVerified: proofResult.verified,
       proofId: proofResult.proofId,
+      transferType: 'gateway',
+      burnIntent: transferResult.burnIntent,
+      attestation: transferResult.attestationHash,
+      mintTransaction: transferResult.mintTransaction,
       transfer: transferResult
     };
   }

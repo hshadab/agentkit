@@ -1023,6 +1023,27 @@ async def zkengine_prove(request: dict):
             "zkEngine": False
         }
 
+@app.get("/health-check")
+async def health_check():
+    """Health check endpoint with cache buster info"""
+    import time
+    
+    # Read current cache buster if available
+    cache_buster = "unknown"
+    cache_buster_file = Path("static/.cache-buster")
+    if cache_buster_file.exists():
+        try:
+            cache_buster = cache_buster_file.read_text().strip()
+        except:
+            pass
+    
+    return {
+        "status": "healthy",
+        "timestamp": int(time.time()),
+        "cache_buster": cache_buster,
+        "message": f"Server running - cache_buster: {cache_buster}"
+    }
+
 if __name__ == "__main__":
     print("🚀 Starting Verifiable Agent Kit v4.1 - REAL zkEngine ONLY")
     print("📋 Configuration:")
@@ -1032,5 +1053,6 @@ if __name__ == "__main__":
     print("   • Multi-step Workflows → Real zkEngine execution") 
     print("   • Natural Language → OpenAI API")
     print("🔗 Listening on http://localhost:8002")
-    
+
+if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8002, log_level="info")
