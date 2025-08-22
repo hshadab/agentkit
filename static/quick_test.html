@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Gateway Test</title>
+    <style>body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #fff; }</style>
+</head>
+<body>
+    <h2>🔍 Gateway Workflow Detection Test</h2>
+    <div id="results"></div>
+    
+    <script>
+    console.log('🧪 Testing Gateway workflow detection...');
+    
+    // Test the command that should trigger Gateway workflow
+    const testCommand = "Authorize financial_executor_007 agent for multi-chain Gateway payments";
+    console.log('Test command:', testCommand);
+    
+    // Try to fetch and test the Gateway workflow manager
+    fetch('./js/ui/gateway-workflow-manager-v2.js')
+        .then(response => response.text())
+        .then(code => {
+            console.log('✅ Gateway workflow manager code loaded');
+            
+            // Execute the code to define the class
+            eval(code);
+            
+            // Test command detection
+            const isGateway = GatewayWorkflowManager.isGatewayCommand(testCommand);
+            console.log('Gateway detection result:', isGateway);
+            
+            document.getElementById('results').innerHTML = `
+                <div style="background: #2a2a2a; padding: 15px; border-radius: 4px; margin: 10px 0;">
+                    <strong>Test Command:</strong><br>
+                    "${testCommand}"<br><br>
+                    <strong>Detection Result:</strong> ${isGateway ? '✅ Gateway Workflow' : '❌ Not Gateway'}<br><br>
+                    <strong>Status:</strong> ${isGateway ? 'PASS - Command correctly detected' : 'FAIL - Command not detected'}
+                </div>
+            `;
+            
+            if (isGateway) {
+                console.log('✅ SUCCESS: Gateway workflow detection is working correctly!');
+            } else {
+                console.log('❌ FAILURE: Gateway workflow detection is not working!');
+            }
+        })
+        .catch(error => {
+            console.error('❌ Error loading Gateway workflow manager:', error);
+            document.getElementById('results').innerHTML = `
+                <div style="background: #4a1a1a; padding: 15px; border-radius: 4px; margin: 10px 0; border-left: 4px solid #ef4444;">
+                    <strong>Error:</strong> Could not load Gateway workflow manager<br>
+                    ${error.message}
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>

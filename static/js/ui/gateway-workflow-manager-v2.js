@@ -313,9 +313,9 @@ export class GatewayWorkflowManager {
                     <div style="font-size: 12px; color: #10b981; font-weight: 600;" id="gateway-header-balance-${data.workflow_id}">💰 Unified Gateway Balance: ${data.unifiedBalance || 'Loading real balance...'}</div>
                     <div style="font-size: 10px; color: #9ca3af; white-space: pre-line; margin-top: 4px;" id="gateway-balance-breakdown-${data.workflow_id}">${data.balanceBreakdown || 'Fetching live chain breakdown from Circle API...'}</div>
                     <div style="margin-top: 8px;">
-                        <a href="https://gateway-api-testnet.circle.com/v1/balances" target="_blank" class="gateway-verification-link" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; text-decoration: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;">
-                            💰 View Gateway Balance
-                        </a>
+                        <button onclick="gatewayWorkflowManager.checkGatewayBalanceManually()" class="gateway-verification-link" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer;">
+                            💰 Check Gateway Balance
+                        </button>
                     </div>
                 </div>
                 <div>
@@ -502,25 +502,7 @@ export class GatewayWorkflowManager {
             console.log(`   Micro-USDC value: ${Math.floor(deploymentAmountPerChain * 1000000)} (should be 10000 for 0.01 USDC)`);
             
             // Get BEFORE balance for verification links
-            console.log('📡 Fetching BEFORE balance for verification...');
-            const beforeBalanceData = await this.getRealGatewayBalanceWithBreakdown();
-            console.log(`💰 BEFORE Gateway balance: ${beforeBalanceData.total} USDC`);
-            
-            // Agent spends from Gateway wallet on each chain after ZKP authorization  
-            // For 0.01 USDC per chain on 2 chains = 0.02 USDC total spent by agent
-            const totalAgentSpending = deploymentAmountPerChain * chains.length;
-            
-            if (beforeBalanceData.total < totalAgentSpending) {
-                throw new Error(`Insufficient Gateway balance: ${beforeBalanceData.total} USDC < ${totalAgentSpending} USDC needed for agent spending across ${chains.length} chains`);
-            }
-
-            // Gateway balance verification link (BEFORE)
-            const gatewayBalanceUrl = `https://gateway-api-testnet.circle.com/v1/balances`;
-            console.log(`🔗 Gateway Balance API (BEFORE): ${gatewayBalanceUrl}`);
-            
-            console.log('🚀 Starting multi-chain deployment across 3 testnet chains...');
-            
-            // Deploy to all 3 chains as specified in workflow: Ethereum, Base, Avalanche
+            // Deploy to all chains as specified in workflow: Ethereum, Base, Avalanche
             const chains = [
                 {
                     name: 'Base Sepolia', 
@@ -538,9 +520,27 @@ export class GatewayWorkflowManager {
                     operation: 'Gaming Deposit',
                     explorer: 'https://testnet.snowtrace.io',
                     usdc: '0x5425890298aed601595a70AB815c96711a31Bc65',
-                    gatewayMinter: '0x0022222ABE238Cc2C7Bb1f21003F0a260052475B' // Use same minter, Circle will route correctly
+                    gatewayMinter: '0x0022222ABE238Cc2C7Bb1f21003F0a260052475B'
                 }
             ];
+            
+            console.log('📡 Fetching BEFORE balance for verification...');
+            const beforeBalanceData = await this.getRealGatewayBalanceWithBreakdown();
+            console.log(`💰 BEFORE Gateway balance: ${beforeBalanceData.total} USDC`);
+            
+            // Agent spends from Gateway wallet on each chain after ZKP authorization  
+            // For 0.01 USDC per chain on 2 chains = 0.02 USDC total spent by agent
+            const totalAgentSpending = deploymentAmountPerChain * chains.length;
+            
+            if (beforeBalanceData.total < totalAgentSpending) {
+                throw new Error(`Insufficient Gateway balance: ${beforeBalanceData.total} USDC < ${totalAgentSpending} USDC needed for agent spending across ${chains.length} chains`);
+            }
+
+            // Gateway balance verification link (BEFORE)
+            const gatewayBalanceUrl = `https://gateway-api-testnet.circle.com/v1/balances`;
+            console.log(`🔗 Gateway Balance API (BEFORE): ${gatewayBalanceUrl}`);
+            
+            console.log('🚀 Starting multi-chain deployment across 3 testnet chains...');
             
             console.log(`🔄 Deploying to ${chains.length} chains: ${chains.map(c => c.name).join(', ')}`);
             
@@ -1448,6 +1448,31 @@ export class GatewayWorkflowManager {
         // Show error message to user
         if (this.uiManager && this.uiManager.showToast) {
             this.uiManager.showToast(`Gateway workflow failed: ${data.error}`, 'error');
+        }
+    }
+
+    async checkGatewayBalanceManually() {
+        try {
+            console.log('🔍 Manual Gateway balance check requested...');
+            
+            // Show loading state
+            this.uiManager.showToast('Checking Gateway balance...', 'info');
+            
+            // Get fresh balance data
+            const balanceData = await this.getRealGatewayBalanceWithBreakdown();
+            
+            // Update all balance displays
+            await this.updateAllGatewayBalances(balanceData.total);
+            
+            // Show result
+            const message = `💰 Gateway Balance: ${balanceData.total.toFixed(2)} USDC\n${balanceData.breakdown}`;
+            this.uiManager.showToast(message, 'success');
+            
+            console.log('✅ Manual balance check completed:', balanceData);
+            
+        } catch (error) {
+            console.error('❌ Manual balance check failed:', error);
+            this.uiManager.showToast(`Balance check failed: ${error.message}`, 'error');
         }
     }
 }

@@ -19,6 +19,11 @@ class EnhancedOpenAIWorkflowParser:
         
 Your task is to parse natural language commands into structured workflow steps.
 
+IMPORTANT GATEWAY DETECTION:
+- If command contains "Gateway" AND ("payments" OR "agent" OR "authorize"), use gateway_workflow step type
+- Example: "Authorize financial_executor_007 agent for multi-chain Gateway payments" = gateway_workflow step
+- Do NOT use generate_proof for Gateway commands
+
 Available step types:
 1. generate_proof: Generate a zero-knowledge proof (kyc, location, ai_content, device_proximity, medical_integrity)
 2. verify_proof: Verify a previously generated proof locally
@@ -28,13 +33,14 @@ Available step types:
 6. verify_on_avalanche: Verify a proof on Avalanche blockchain
 7. verify_on_base: Verify a proof on Base blockchain
 8. transfer: Send USDC to a recipient on Ethereum or Solana
-9. list_proofs: List existing proofs or verifications
-10. process_with_ai: Handle any additional AI request (explain, humor, translate, analyze, etc.)
-11. register_device: Register an IoT device for proximity verification
-12. claim_rewards: Claim rewards for a verified IoT device
-13. create_medical_record: Create a new medical record entry locally
-14. commit_to_avalanche: Record medical record hash on Avalanche blockchain
-15. verify_medical_integrity: Verify medical record hasn't been tampered with
+9. gateway_workflow: Execute Circle Gateway multi-chain USDC deployment with ZKP authorization
+10. list_proofs: List existing proofs or verifications
+11. process_with_ai: Handle any additional AI request (explain, humor, translate, analyze, etc.)
+12. register_device: Register an IoT device for proximity verification
+13. claim_rewards: Claim rewards for a verified IoT device
+14. create_medical_record: Create a new medical record entry locally
+15. commit_to_avalanche: Record medical record hash on Avalanche blockchain
+16. verify_medical_integrity: Verify medical record hasn't been tampered with
 
 Rules:
 - Parse ALL commands as workflows, even simple ones like "generate KYC proof"
@@ -49,6 +55,14 @@ Rules:
 - Each person mentioned needs their own proof generation and verification
 - Default blockchain for transfers is Ethereum unless specified
 - For "list proofs" or "show proofs" commands, use the list_proofs step type
+- CRITICAL: For Gateway workflows, ALWAYS use gateway_workflow step type (not generate_proof). Gateway commands include:
+  * "Authorize [agent_name] agent for multi-chain Gateway payments" → Use gateway_workflow step
+  * "Transfer [amount] USDC via Gateway" → Use gateway_workflow step
+  * "Execute multi-chain Gateway deployment" → Use gateway_workflow step
+  * ANY command with "Gateway" + "payments" → Use gateway_workflow step
+  * ANY command with "authorize" + "agent" + "Gateway" → Use gateway_workflow step
+- Gateway workflows automatically include ZKP authorization, verification, and multi-chain deployment
+- NEVER use generate_proof for Gateway commands - use gateway_workflow instead
 - IMPORTANT: For IoT device registration with proximity proof, ALWAYS include ALL 4 steps: register_device, generate_proof (device_proximity), verify_on_iotex, claim_rewards
 - IMPORTANT: For medical records integrity, the flow is: create_medical_record (prepare record), commit_to_avalanche (record hash on Avalanche), generate_proof (medical_integrity), verify_on_avalanche (verify integrity proof)
 - Medical integrity proofs should use patient_id, record_hash, and timestamps as parameters
@@ -88,6 +102,13 @@ Output format as JSON:
       "blockchain": "SOL",
       "condition": "kyc_verified",
       "description": "Transfer 0.05 USDC to alice on Solana if KYC verified"
+    },
+    {
+      "type": "gateway_workflow",
+      "agent_id": "financial_executor_007",
+      "amount": "0.01",
+      "chains": ["ethereum", "base", "avalanche"],
+      "description": "Execute Circle Gateway multi-chain USDC deployment with ZKP authorization"
     },
     {
       "type": "process_with_ai",

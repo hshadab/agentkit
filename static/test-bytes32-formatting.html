@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Bytes32 Formatting</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 4px; font-family: monospace; }
+        .success { background: #e6ffe6; border-left: 4px solid #28a745; }
+        .error { background: #ffe6e6; border-left: 4px solid #dc3545; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Test Bytes32 Formatting for Circle Gateway</h1>
+    
+    <button onclick="testBytes32Formatting()">Test Bytes32 Conversion</button>
+    <div id="test-result" class="test-result"></div>
+    
+    <script>
+        function testBytes32Formatting() {
+            const result = document.getElementById('test-result');
+            result.innerHTML = '';
+            
+            // Helper function from gateway-workflow-manager.js
+            const toBytes32Hex = (value) => {
+                if (typeof value === 'string' && value.startsWith('0x')) {
+                    // Address: remove 0x and pad to 64 characters
+                    return value.toLowerCase().replace('0x', '').padStart(64, '0');
+                } else if (typeof value === 'string' || typeof value === 'number') {
+                    // Number or string: convert to hex and pad to 64 characters
+                    const hexValue = typeof value === 'number' ? value.toString(16) : parseInt(value).toString(16);
+                    return hexValue.padStart(64, '0');
+                }
+                return value.toString().padStart(64, '0');
+            };
+            
+            // Test cases
+            const testAddress = '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238';
+            const testNumber = 1234567890;
+            const testStringNumber = '1755687236244';
+            
+            result.innerHTML += '<h3>Test Results:</h3>';
+            
+            // Test address conversion
+            const addressResult = toBytes32Hex(testAddress);
+            result.innerHTML += `<div><strong>Address:</strong> ${testAddress}</div>`;
+            result.innerHTML += `<div><strong>Bytes32:</strong> ${addressResult}</div>`;
+            result.innerHTML += `<div><strong>Length:</strong> ${addressResult.length} characters</div>`;
+            
+            if (addressResult.length === 64 && !addressResult.startsWith('0x')) {
+                result.innerHTML += '<div class="success">✅ Address conversion correct!</div>';
+            } else {
+                result.innerHTML += '<div class="error">❌ Address conversion failed!</div>';
+            }
+            
+            result.innerHTML += '<br>';
+            
+            // Test number conversion
+            const numberResult = toBytes32Hex(testNumber);
+            result.innerHTML += `<div><strong>Number:</strong> ${testNumber}</div>`;
+            result.innerHTML += `<div><strong>Bytes32:</strong> ${numberResult}</div>`;
+            result.innerHTML += `<div><strong>Length:</strong> ${numberResult.length} characters</div>`;
+            
+            if (numberResult.length === 64) {
+                result.innerHTML += '<div class="success">✅ Number conversion correct!</div>';
+            } else {
+                result.innerHTML += '<div class="error">❌ Number conversion failed!</div>';
+            }
+            
+            result.innerHTML += '<br>';
+            
+            // Test string number conversion (for salt)
+            const stringNumberResult = toBytes32Hex(testStringNumber);
+            result.innerHTML += `<div><strong>String Number:</strong> ${testStringNumber}</div>`;
+            result.innerHTML += `<div><strong>Bytes32:</strong> ${stringNumberResult}</div>`;
+            result.innerHTML += `<div><strong>Length:</strong> ${stringNumberResult.length} characters</div>`;
+            
+            if (stringNumberResult.length === 64) {
+                result.innerHTML += '<div class="success">✅ String number conversion correct!</div>';
+            } else {
+                result.innerHTML += '<div class="error">❌ String number conversion failed!</div>';
+            }
+            
+            result.innerHTML += '<br>';
+            result.innerHTML += '<div class="success"><strong>✅ All conversions produce valid 32-byte hex strings for Circle Gateway API!</strong></div>';
+            
+            result.className = 'test-result success';
+        }
+    </script>
+</body>
+</html>

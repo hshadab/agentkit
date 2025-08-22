@@ -567,6 +567,10 @@ class WorkflowExecutor {
             case 'list_proofs':
                 return await this.listProofs(step.list_type || 'proofs');
                 
+            case 'gateway_workflow':
+                console.log('🌐 Gateway workflow step:', JSON.stringify(step, null, 2));
+                return await this.executeGatewayWorkflow(step);
+                
             case 'process_with_ai':
                 // AI processing will be handled by the system after workflow completion
                 return {
@@ -1608,6 +1612,51 @@ class WorkflowExecutor {
             
             this.wsClient.send(JSON.stringify(listRequest));
         });
+    }
+
+    async executeGatewayWorkflow(step) {
+        console.log('🌐 Executing Gateway workflow with ZKP authorization...');
+        
+        try {
+            const agentId = step.agent_id || 'financial_executor_007';
+            const amount = step.amount || '0.01';
+            const chains = step.chains || ['ethereum', 'base', 'avalanche'];
+            
+            console.log(`🎯 Gateway Parameters:`);
+            console.log(`   Agent ID: ${agentId}`);
+            console.log(`   Amount per chain: ${amount} USDC`);
+            console.log(`   Chains: ${chains.join(', ')}`);
+            
+            // Send Gateway workflow request to frontend
+            const gatewayRequest = {
+                type: 'gateway_workflow_execution',
+                agentId: agentId,
+                amount: amount,
+                chains: chains,
+                workflowId: this.workflowId,
+                command: `Authorize ${agentId} agent for multi-chain Gateway payments`
+            };
+            
+            console.log('📤 Sending Gateway workflow request to frontend...');
+            this.wsClient.send(JSON.stringify(gatewayRequest));
+            
+            // For now, return success (the frontend will handle the actual Gateway workflow)
+            return {
+                success: true,
+                gatewayWorkflow: true,
+                agentId: agentId,
+                amount: amount,
+                chains: chains,
+                note: 'Gateway workflow initiated - processing in frontend'
+            };
+            
+        } catch (error) {
+            console.error('❌ Gateway workflow error:', error);
+            return {
+                success: false,
+                error: `Gateway workflow failed: ${error.message}`
+            };
+        }
     }
 
     getTransferIds() {

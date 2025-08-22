@@ -371,15 +371,23 @@ class EthereumVerifier {
                 console.log('Estimated gas:', gasEstimate);
             } catch (gasError) {
                 console.error('Gas estimation failed:', gasError);
-                // Use a default gas limit if estimation fails
-                gasEstimate = 300000;
-                console.log('Using default gas:', gasEstimate);
+                // Use a higher default gas limit for complex contract calls
+                gasEstimate = 500000; // Increased from 300000 to handle complex verifier operations
+                console.log('Using default gas (increased for verifier):', gasEstimate);
+            }
+            
+            // Ensure minimum gas for complex contract calls
+            const minGasForVerification = 250000; // Minimum gas for proof verification
+            if (gasEstimate < minGasForVerification) {
+                console.log(`Gas estimate ${gasEstimate} too low, using minimum ${minGasForVerification}`);
+                gasEstimate = minGasForVerification;
             }
             
             // Send transaction for real cryptographic verification
             console.log('Sending transaction with params:');
             console.log('From:', this.account);
-            console.log('Gas:', Math.floor(Number(gasEstimate) * 1.2));
+            const finalGasLimit = Math.floor(Number(gasEstimate) * 1.5); // Increased buffer from 1.2 to 1.5
+            console.log('Gas:', finalGasLimit);
             console.log('Contract address:', this.contract.options.address);
             
             // Standard Web3.js method
@@ -395,7 +403,7 @@ class EthereumVerifier {
                     )
                     .send({ 
                         from: this.account,
-                        gas: Math.floor(Number(gasEstimate) * 1.2) // Add 20% buffer
+                        gas: finalGasLimit // Use properly calculated gas limit with 50% buffer
                     });
             
             transactionPromise

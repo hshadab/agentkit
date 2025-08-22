@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Gateway Cache</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #fff; }
+        button { padding: 10px 20px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .success { color: #10b981; }
+        .warning { color: #fbbf24; }
+    </style>
+</head>
+<body>
+    <h1>🧹 Clear Gateway Cache</h1>
+    <p>This will completely clear all Gateway-related cached data.</p>
+    
+    <button onclick="clearAllGatewayCache()">Clear All Gateway Cache</button>
+    <button onclick="clearAllStorage()">Nuclear Option: Clear ALL Storage</button>
+    
+    <div id="output"></div>
+    
+    <script>
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            document.getElementById('output').appendChild(div);
+        }
+        
+        function clearAllGatewayCache() {
+            log('🧹 Clearing all Gateway-related cache...', 'warning');
+            
+            // Clear localStorage Gateway keys
+            const gatewayKeys = [
+                'gateway_balance_tracking', 
+                'gateway_unified_balance', 
+                'gateway_breakdown',
+                'gateway_workflow_data', 
+                'gateway_test_data', 
+                'gateway_6_usdc_cache',
+                'gateway_balance_cache',
+                'gateway_api_cache',
+                'circle_gateway_balance',
+                'unified_balance_cache'
+            ];
+            
+            let clearedCount = 0;
+            gatewayKeys.forEach(key => {
+                if (localStorage.getItem(key) !== null) {
+                    localStorage.removeItem(key);
+                    log(`  ✅ Removed localStorage: ${key}`);
+                    clearedCount++;
+                }
+                if (sessionStorage.getItem(key) !== null) {
+                    sessionStorage.removeItem(key);
+                    log(`  ✅ Removed sessionStorage: ${key}`);
+                    clearedCount++;
+                }
+            });
+            
+            log(`🎯 Cleared ${clearedCount} Gateway cache entries`, 'success');
+            log('🔄 Refresh the page and test Gateway workflow again', 'success');
+        }
+        
+        function clearAllStorage() {
+            log('💥 Nuclear option: Clearing ALL storage...', 'warning');
+            
+            const localCount = localStorage.length;
+            const sessionCount = sessionStorage.length;
+            
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            log(`🧨 Cleared ${localCount} localStorage + ${sessionCount} sessionStorage items`, 'success');
+            log('🔄 Refresh the page - everything will be fresh', 'success');
+        }
+    </script>
+</body>
+</html>
