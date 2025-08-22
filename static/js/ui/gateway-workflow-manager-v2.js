@@ -1,6 +1,6 @@
 // Gateway Workflow Manager - Circle Gateway Multi-Chain AI Agent Payments
 // Integrates with existing UI following CCTP workflow patterns
-// CACHE BUST: 2025-08-20-16:50-wallet-lookup-with-debug
+// CACHE BUST: 2025-08-22-22:40-syntax-fix-export-restored
 
 export class GatewayWorkflowManager {
     constructor(uiManager, wsManager) {
@@ -585,129 +585,17 @@ export class GatewayWorkflowManager {
                 transfers.push({ chain, burnIntent });
             }
             
-            console.log(`📝 Created ${transfers.length} separate Gateway transfers`);
+            console.log('📝 Burn intent created:', burnIntent);
+            console.log('🔍 DEBUG: Original values before conversion:', {
+                sourceContract: burnIntent.spec.sourceContract,
+                destinationContract: burnIntent.spec.destinationContract,
+                salt: burnIntent.spec.salt,
+                userAddress: userAddress,
+                recipientAddress: recipientAddress
+            });
             
-            // Process each transfer separately 
-            const results = [];
-            for (let i = 0; i < transfers.length; i++) {
-                const { chain, burnIntent } = transfers[i];
-                console.log(`\n🎯 Processing transfer ${i + 1}/${transfers.length}: Sepolia → ${chain.name}`);
-                
-                try {
-                    const result = await this.processSingleGatewayTransfer(burnIntent, chain, userAddress);
-                    results.push({ chain, success: true, ...result });
-                } catch (error) {
-                    console.error(`❌ Transfer to ${chain.name} failed:`, error);
-                    results.push({ chain, success: false, error: error.message });
-                }
-            }
-            
-            return { success: results.some(r => r.success), results };
-        } catch (error) {
-            console.error('❌ Gateway transfer failed:', error);
-            throw error;
-        }
-    }
-
-    async processSingleGatewayTransfer(burnIntent, chain, userAddress) {
-        console.log(`🔐 Creating EIP-712 signature for ${chain.name}...`);
-        
-        // STEP 1: EIP-712 signing
-        const eip712Domain = {
-            name: "GatewayWallet",
-            version: "1"
-        };
-        
-        const eip712Types = {
-            EIP712Domain: [
-                { name: "name", type: "string" },
-                { name: "version", type: "string" }
-            ],
-            TransferSpec: [
-                { name: "version", type: "uint32" },
-                { name: "sourceDomain", type: "uint32" },
-                { name: "destinationDomain", type: "uint32" },
-                { name: "sourceContract", type: "bytes32" },
-                { name: "destinationContract", type: "bytes32" },
-                { name: "sourceToken", type: "bytes32" },
-                { name: "destinationToken", type: "bytes32" },
-                { name: "sourceDepositor", type: "bytes32" },
-                { name: "destinationRecipient", type: "bytes32" },
-                { name: "sourceSigner", type: "bytes32" },
-                { name: "destinationCaller", type: "bytes32" },
-                { name: "value", type: "uint256" },
-                { name: "salt", type: "bytes32" },
-                { name: "hookData", type: "bytes" }
-            ],
-            BurnIntent: [
-                { name: "maxBlockHeight", type: "uint256" },
-                { name: "maxFee", type: "uint256" },
-                { name: "spec", type: "TransferSpec" }
-            ]
-        };
-
-        const typedData = {
-            domain: eip712Domain,
-            types: eip712Types,
-            primaryType: 'BurnIntent',
-            message: burnIntent
-        };
-
-        console.log(`📝 Signing burn intent for ${chain.name}:`, JSON.stringify(burnIntent, null, 2));
-
-        // Sign with MetaMask
-        const signature = await ethereum.request({
-            method: 'eth_signTypedData_v4',
-            params: [userAddress, JSON.stringify(typedData)]
-        });
-
-        console.log(`✅ Signature created for ${chain.name}:`, signature);
-
-        // STEP 2: Request attestation from Circle Gateway API
-        console.log(`📡 Requesting attestation for ${chain.name}...`);
-        
-        const transferResponse = await fetch(`${this.gatewayConfig.testnet.api}/transfer`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.getCircleAPIKey()}`
-            },
-            body: JSON.stringify({
-                burnIntent,
-                signature
-            })
-        });
-
-        if (!transferResponse.ok) {
-            const errorText = await transferResponse.text();
-            throw new Error(`Gateway transfer API failed: ${transferResponse.status} - ${errorText}`);
-        }
-
-        const transferData = await transferResponse.json();
-        console.log(`🎫 Received attestation for ${chain.name}:`, transferData);
-
-        // STEP 3: Call gatewayMint on destination chain
-        console.log(`⛏️ Calling gatewayMint on ${chain.name}...`);
-        
-        const mintTxHash = await this.callGatewayMint(transferData.attestation, transferData.signature, chain);
-        
-        console.log(`✅ ${chain.name} transfer complete! TX: ${mintTxHash}`);
-        
-        return {
-            attestation: transferData.attestation,
-            signature: transferData.signature,
-            mintTxHash,
-            explorer: `${chain.explorer}/tx/${mintTxHash}`,
-            amount: burnIntent.spec.value
-        };
-    }
-
-    async callGatewayMint(attestation, signature, chain) {
-        // This would need Web3 provider for the destination chain
-        // For now, return a placeholder
-        console.log(`🚧 gatewayMint call for ${chain.name} - implementation needed`);
-        return "0x" + Math.random().toString(16).substring(2, 66); // Fake TX hash
-    }
+            // STEP 1: Create EIP-712 TypedData for Circle Gateway burn intent (official format)
+            console.log('🔐 Creating official Circle Gateway EIP-712 TypedData...');
             
             // Official Circle Gateway domain parameters
             const eip712Domain = {

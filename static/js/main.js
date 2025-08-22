@@ -1,23 +1,23 @@
 // Main application entry point  
-// Cache bust: 20250821-103714
+// Cache bust: 20250822-224000
 console.log('=== Main.js loading started ===');
-import { config } from './core/config.js?v=20250821-103714';
-import { WebSocketManager } from './ui/websocket-manager.js?v=20250821-103714';
-import { UIManager } from './ui/ui-manager.js?v=20250821-103714';
-import { ProofManager } from './ui/proof-manager.js?v=20250821-103714';
-import { WorkflowManager } from './ui/workflow-manager.js?v=20250821-103714';
-import { TransferManager } from './ui/transfer-manager.js?v=20250821-103714';
-import { BlockchainVerifier } from './blockchain/blockchain-verifier.js?v=20250821-103714';
-import { CCTPWorkflowManager } from './ui/cctp-workflow-manager.js?v=20250821-103714';
-import { GatewayWorkflowManager } from './ui/gateway-workflow-manager-v2.js?v=20250821-103714';
+import { config } from './core/config.js?v=20250822-224000';
+import { WebSocketManager } from './ui/websocket-manager.js?v=20250822-224000';
+import { UIManager } from './ui/ui-manager.js?v=20250822-224000';
+import { ProofManager } from './ui/proof-manager.js?v=20250822-224000';
+import { WorkflowManager } from './ui/workflow-manager.js?v=20250822-224000';
+import { TransferManager } from './ui/transfer-manager.js?v=20250822-224000';
+import { BlockchainVerifier } from './blockchain/blockchain-verifier.js?v=20250822-224000';
+import { CCTPWorkflowManager } from './ui/cctp-workflow-manager.js?v=20250822-224000';
+import { GatewayWorkflowManager } from './ui/gateway-workflow-manager-v2.js?v=20250822-224000';
 import { CleanupManager } from './core/cleanup-manager.js';
-import { debugLog } from './core/utils.js?v=20250821-103714';
+import { debugLog } from './core/utils.js?v=20250822-224000';
 
 // Import MetaMask CCTP handler
-import('./ui/metamask-cctp-handler.js?v=20250821-103714');
+import('./ui/metamask-cctp-handler.js?v=20250822-224000');
 
 // Load zkEngine for real proof generation
-import('./zkengine/agent-authorization-prover.js?v=20250821-103714');
+import('./zkengine/agent-authorization-prover.js?v=20250822-224000');
 
 // Export config and debugLog to window for non-module scripts
 window.config = config;
@@ -2330,7 +2330,7 @@ window.addEventListener('beforeunload', () => {
     workflowManager.stopAllPolling();
     transferManager.stopAllPolling();
     wsManager.disconnect();
-});// Cache bust: 20250821-103714
+});// Cache bust: 20250822-224000
 
 // Show Gateway balance only (no workflow execution)
 async function showGatewayBalanceOnly() {
