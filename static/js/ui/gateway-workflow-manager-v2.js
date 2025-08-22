@@ -12,10 +12,13 @@ export class GatewayWorkflowManager {
         this.web3Provider = null;
         this.userAccount = null;
         
-        // Gateway configuration
+        // Gateway configuration - OFFICIAL TESTNET ADDRESSES
         this.gatewayConfig = {
             testnet: {
                 api: 'https://gateway-api-testnet.circle.com/v1',
+                // Gateway constants (same across all testnets)
+                gatewayWallet: '0x0077777d7EBA4688BDeF3E311b846F25870A19B9',
+                gatewayMinter: '0x0022222ABE238Cc2C7Bb1f21003F0a260052475B',
                 networks: {
                     0: { 
                         name: 'Ethereum Sepolia', 
@@ -33,10 +36,9 @@ export class GatewayWorkflowManager {
                         name: 'Avalanche Fuji', 
                         explorer: 'https://testnet.snowtrace.io', 
                         icon: '🔺',
-                        usdc: '0x5425890298aed601595a70AB815c96711a31Bc65' // Avalanche USDC
+                        usdc: '0x5425890298aed601595a70AB815c96711a31Bc65'
                     }
-                },
-                gatewayWallet: '0x0077777d7EBA4688BDeF3E311b846F25870A19B9'
+                }
             },
             mainnet: {
                 api: 'https://gateway-api.circle.com/v1',
@@ -546,39 +548,42 @@ export class GatewayWorkflowManager {
             
             console.log(`🔥 Creating Gateway deployment operations for ${chains.length} chains...`);
             
-            // Use official Circle Gateway contract addresses for testnet  
-            const sourceContract = "0x0077777d7EBA4688BDeF3E311b846F25870A19B9"; // Circle Gateway Wallet (testnet)
-            const destinationContract = "0x0022222ABE238Cc2C7Bb1f21003F0a260052475B"; // Gateway Minter for Base Sepolia (testnet)
+            // Gateway flow: separate transfer per destination chain
+            const config = this.gatewayConfig.testnet;
+            const transfers = [];
             
-            console.log('🏦 Using Circle Gateway contracts:');
-            console.log('   Source Wallet (Ethereum):', sourceContract);
-            console.log('   Destination Minter (Base):', destinationContract);
-            
-            // Helper function to convert 20-byte address to 32-byte hex (with 0x prefix for MetaMask)
+            // Helper function to convert address to 32-byte hex
             const addressTo32Bytes = (address) => {
                 return '0x' + address.toLowerCase().replace('0x', '').padStart(64, '0');
             };
             
-            const burnIntent = {
-                maxBlockHeight: "115792089237316195423570985008687907853269984665640564039457584007913129639935", // maxUint256
-                maxFee: "2010000", // 2.01 USDC max fee in micro units (recommended by Circle)
-                spec: {
-                    version: 1,
-                    sourceDomain: 0, // Ethereum Sepolia
-                    destinationDomain: 6, // Base Sepolia  
-                    sourceContract: addressTo32Bytes(sourceContract), // Convert to 32-byte hex
-                    destinationContract: addressTo32Bytes(destinationContract), // Convert to 32-byte hex
-                    sourceToken: addressTo32Bytes("0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"), // USDC Sepolia
-                    destinationToken: addressTo32Bytes("0x036CbD53842c5426634e7929541eC2318f3dCF7e"), // USDC Base
-                    sourceDepositor: addressTo32Bytes(userAddress), // Convert to 32-byte hex
-                    destinationRecipient: addressTo32Bytes(recipientAddress), // Convert to 32-byte hex
-                    sourceSigner: addressTo32Bytes(userAddress), // Convert to 32-byte hex
-                    destinationCaller: addressTo32Bytes(recipientAddress), // Convert to 32-byte hex
-                    value: Math.floor(deploymentAmountPerChain * 1000000).toString(), // Convert to micro-USDC
-                    salt: '0x' + Date.now().toString(16).padStart(64, '0'), // Convert to 32-byte hex
-                    hookData: "0x"
-                }
-            };
+            // Create separate transfer for each destination chain
+            for (const chain of chains) {
+                console.log(`🎯 Creating transfer: Sepolia → ${chain.name}`);
+                
+                const burnIntent = {
+                    maxBlockHeight: "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+                    maxFee: "2010000", // 2.01 USDC max fee
+                    spec: {
+                        version: 1,
+                        sourceDomain: 0, // Always Sepolia (source)
+                        destinationDomain: chain.domain, // Target chain
+                        sourceContract: addressTo32Bytes(config.gatewayWallet),
+                        destinationContract: addressTo32Bytes(config.gatewayMinter), 
+                        sourceToken: addressTo32Bytes(config.networks[0].usdc), // Sepolia USDC
+                        destinationToken: addressTo32Bytes(chain.usdc), // Destination USDC
+                        sourceDepositor: addressTo32Bytes(userAddress),
+                        destinationRecipient: addressTo32Bytes(recipientAddress),
+                        sourceSigner: addressTo32Bytes(userAddress),
+                        destinationCaller: "0x0000000000000000000000000000000000000000000000000000000000000000", // Zero address
+                        value: Math.floor(deploymentAmountPerChain * 1000000).toString(),
+                        salt: '0x' + (Date.now() + Math.random()).toString(16).padStart(64, '0'),
+                        hookData: "0x"
+                    }
+                };
+                
+                transfers.push({ chain, burnIntent });
+            }
             
             console.log('📝 Burn intent created:', burnIntent);
             console.log('🔍 DEBUG: Original values before conversion:', {

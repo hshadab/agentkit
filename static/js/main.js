@@ -2538,14 +2538,14 @@ async function executeAutomatedGatewaySteps(workflowId, parsedCommand, gatewayWo
                     throw new Error('MetaMask CCTP handler not loaded');
                 }
                 
-                // Initialize MetaMask handler (same as CCTP)
+                // Gateway uses direct on-chain verification, not CCTP
                 const metamaskHandler = new window.MetaMaskCCTPHandler();
                 await metamaskHandler.initialize();
                 
-                // Use the EXACT SAME on-chain verification as CCTP
-                const verificationResult = await metamaskHandler.verifyProofOnChain(
+                // Simple on-chain verification for Gateway (no CCTP proof needed)
+                const verificationResult = await metamaskHandler.verifyZKPOnly(
                     zkpProof,
-                    'ethereum-sepolia', // Use Ethereum network with working verifier
+                    'ethereum-sepolia',
                     agentId
                 );
                 
