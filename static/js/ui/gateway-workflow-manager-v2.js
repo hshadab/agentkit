@@ -1210,11 +1210,106 @@ export class GatewayWorkflowManager {
             this.updateHeaderBalance(workflowId, balanceData.total);
             this.updateBalanceBreakdown(workflowId, balanceData.breakdown);
             
+            // Check for locked funds issue
+            await this.checkForLockedFunds(workflowId, balanceData);
+            
             console.log('✅ Real-time Gateway balance updated');
         } catch (error) {
             console.warn('⚠️ Failed to update Gateway balance:', error.message);
             this.updateBalanceBreakdown(workflowId, 'API Error - Check Circle Keys');
         }
+    }
+
+    async checkForLockedFunds(workflowId, balanceData) {
+        // Check if we have deposited funds but none available
+        const userAddress = this.userAccount || '0xE616B2eC620621797030E0AB1BA38DA68D78351C';
+        
+        try {
+            const response = await fetch(`https://gateway-api-testnet.circle.com/v1/balances?t=${Date.now()}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.getCircleAPIKey()}`
+                },
+                body: JSON.stringify({
+                    token: "USDC",
+                    sources: [
+                        { domain: 0, depositor: userAddress },
+                        { domain: 1, depositor: userAddress },
+                        { domain: 6, depositor: userAddress }
+                    ]
+                })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                let totalDeposited = 0;
+                let totalAvailable = 0;
+                
+                data.balances?.forEach(balance => {
+                    totalDeposited += parseFloat(balance.balance || 0);
+                    totalAvailable += parseFloat(balance.available || 0);
+                });
+                
+                // If funds are deposited but not available, show fix instructions
+                if (totalDeposited > 0 && totalAvailable === 0) {
+                    this.showLockedFundsFix(workflowId, totalDeposited, userAddress);
+                }
+            }
+        } catch (error) {
+            console.warn('⚠️ Could not check for locked funds:', error.message);
+        }
+    }
+
+    showLockedFundsFix(workflowId, lockedAmount, userAddress) {
+        const workflowCard = document.querySelector(`[data-workflow-id="${workflowId}"]`);
+        if (!workflowCard) return;
+        
+        // Check if fix message already exists
+        if (workflowCard.querySelector('.locked-funds-fix')) return;
+        
+        const fixElement = document.createElement('div');
+        fixElement.className = 'locked-funds-fix';
+        fixElement.innerHTML = `
+            <div style="background: linear-gradient(135deg, #fef3c7, #fbbf24); border: 2px solid #f59e0b; border-radius: 8px; padding: 16px; margin: 12px 0; color: #92400e;">
+                <h4 style="margin: 0 0 8px 0; color: #dc2626;">🚨 Funds Locked - Transfers Blocked</h4>
+                <p style="margin: 8px 0; font-weight: 600;">Issue: ${lockedAmount.toFixed(2)} USDC deposited but 0.00 USDC available</p>
+                <p style="margin: 8px 0; font-style: italic;">Circle Gateway requires "available" balance for transfers.</p>
+                
+                <div style="background: rgba(255,255,255,0.7); border-radius: 6px; padding: 12px; margin: 12px 0;">
+                    <strong>✅ Quick Fix:</strong>
+                    <ol style="margin: 8px 0; padding-left: 20px;">
+                        <li>Go to <a href="https://faucet.circle.com/" target="_blank" style="color: #059669; font-weight: 600;">Circle Faucet</a></li>
+                        <li>Enter wallet: <code style="background: #e5e7eb; padding: 2px 4px; border-radius: 3px; font-size: 11px;">${userAddress}</code></li>
+                        <li>Select "Sepolia" network</li>
+                        <li>Request fresh testnet USDC</li>
+                        <li>Wait for "available" balance to appear</li>
+                    </ol>
+                </div>
+                
+                <div style="display: flex; gap: 8px; margin-top: 12px;">
+                    <button onclick="window.open('https://faucet.circle.com/', '_blank')" 
+                            style="background: #059669; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-weight: 600; cursor: pointer;">
+                        🚰 Open Faucet
+                    </button>
+                    <button onclick="this.parentElement.parentElement.remove()" 
+                            style="background: #6b7280; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">
+                        Dismiss
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // Insert after the balance breakdown
+        const balanceSection = workflowCard.querySelector('.gateway-unified-balance');
+        if (balanceSection) {
+            balanceSection.parentNode.insertBefore(fixElement, balanceSection.nextSibling);
+        } else {
+            workflowCard.appendChild(fixElement);
+        }
+        
+        console.log('🚨 Displayed locked funds fix instructions');
     }
 
     // Check if a message is a Gateway workflow command
