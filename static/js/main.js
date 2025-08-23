@@ -1,23 +1,23 @@
 // Main application entry point  
-// Cache bust: 20250822-194000
+// Cache bust: 20250823-041546
 console.log('=== Main.js loading started ===');
-import { config } from './core/config.js?v=20250822-194000';
-import { WebSocketManager } from './ui/websocket-manager.js?v=20250822-194000';
-import { UIManager } from './ui/ui-manager.js?v=20250822-194000';
-import { ProofManager } from './ui/proof-manager.js?v=20250822-194000';
-import { WorkflowManager } from './ui/workflow-manager.js?v=20250822-194000';
-import { TransferManager } from './ui/transfer-manager.js?v=20250822-194000';
-import { BlockchainVerifier } from './blockchain/blockchain-verifier.js?v=20250822-194000';
-import { CCTPWorkflowManager } from './ui/cctp-workflow-manager.js?v=20250822-194000';
-import { GatewayWorkflowManager } from './ui/gateway-workflow-manager-v2.js?v=20250822-194000';
+import { config } from './core/config.js?v=20250823-041546';
+import { WebSocketManager } from './ui/websocket-manager.js?v=20250823-041546';
+import { UIManager } from './ui/ui-manager.js?v=20250823-041546';
+import { ProofManager } from './ui/proof-manager.js?v=20250823-041546';
+import { WorkflowManager } from './ui/workflow-manager.js?v=20250823-041546';
+import { TransferManager } from './ui/transfer-manager.js?v=20250823-041546';
+import { BlockchainVerifier } from './blockchain/blockchain-verifier.js?v=20250823-041546';
+import { CCTPWorkflowManager } from './ui/cctp-workflow-manager.js?v=20250823-041546';
+import { GatewayWorkflowManager } from './ui/gateway-workflow-manager-v2.js?v=20250823-041546';
 import { CleanupManager } from './core/cleanup-manager.js';
-import { debugLog } from './core/utils.js?v=20250822-194000';
+import { debugLog } from './core/utils.js?v=20250823-041546';
 
 // Import MetaMask CCTP handler
-import('./ui/metamask-cctp-handler.js?v=20250822-194000');
+import('./ui/metamask-cctp-handler.js?v=20250823-041546');
 
 // Load zkEngine for real proof generation
-import('./zkengine/agent-authorization-prover.js?v=20250822-194000');
+import('./zkengine/agent-authorization-prover.js?v=20250823-041546');
 
 // Export config and debugLog to window for non-module scripts
 window.config = config;
@@ -509,9 +509,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load sample queries
     loadSampleQueries();
     
-    // Auto-connect wallets if previously connected
-    // Disabled - BlockchainVerifier handles auto-connect in its constructor
-    // autoConnectWallets();
+    // Auto-connect wallets on page load
+    await autoConnectWallets();
 });
 
 function setupMessageHandlers() {
@@ -2316,13 +2315,50 @@ function createVerificationCard(data) {
     return card;
 }
 
-// Auto-connect wallets if previously connected
+// Auto-connect wallets on page load
 async function autoConnectWallets() {
-    // Re-enabled auto-connection as requested by user
-    // This will now use the blockchain verifier's autoConnect method
+    debugLog('🚀 Auto-connecting to all supported wallets...', 'info');
+    
+    // Auto-connect MetaMask for all EVM chains
+    if (window.ethereum) {
+        try {
+            debugLog('🦊 Auto-connecting to MetaMask...', 'info');
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            if (accounts.length > 0) {
+                debugLog(`✅ MetaMask connected: ${accounts[0]}`, 'success');
+                
+                // Update connection status for all EVM chains
+                updateConnectionStatus('ethereum', true);
+                updateConnectionStatus('base', true);  
+                updateConnectionStatus('avalanche', true);
+                updateConnectionStatus('iotex', true);
+            }
+        } catch (error) {
+            debugLog(`❌ MetaMask auto-connect failed: ${error.message}`, 'warning');
+        }
+    }
+    
+    // Auto-connect Solana wallet
+    if (window.solflare || window.solana) {
+        try {
+            debugLog('🌟 Auto-connecting to Solana wallet...', 'info');
+            const solanaWallet = window.solflare || window.solana;
+            if (solanaWallet) {
+                await solanaWallet.connect({ onlyIfTrusted: true });
+                debugLog('✅ Solana wallet connected', 'success');
+                updateConnectionStatus('solana', true);
+            }
+        } catch (error) {
+            debugLog(`❌ Solana auto-connect failed: ${error.message}`, 'warning');
+        }
+    }
+    
+    // Use blockchain verifier's autoConnect as fallback
     if (blockchainVerifier) {
         await blockchainVerifier.autoConnect();
     }
+    
+    debugLog('🎯 Auto-connect completed', 'success');
 }
 
 // Clean up on page unload
@@ -2330,7 +2366,7 @@ window.addEventListener('beforeunload', () => {
     workflowManager.stopAllPolling();
     transferManager.stopAllPolling();
     wsManager.disconnect();
-});// Cache bust: 20250822-194000
+});// Cache bust: 20250823-041546
 
 // Show Gateway balance only (no workflow execution)
 async function showGatewayBalanceOnly() {

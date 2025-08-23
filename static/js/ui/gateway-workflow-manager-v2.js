@@ -32,6 +32,92 @@ export function typedDataToV4JSON(typed) {
 // Use this EVERY time you need to JSON.stringify anything that MAY contain BigInt
 export const safeStringify = (x) => JSON.stringify(x, (_k, v) => (typeof v === 'bigint' ? v.toString() : v));
 
+// Bytes32 padding helpers
+export function toBytes32(hex) {
+  if (!isHex(hex)) throw new Error(`toBytes32: not hex: ${hex}`);
+  const raw = hex.slice(2);
+  if (raw.length > 64) throw new Error(`toBytes32: too long (${raw.length} nibbles): ${hex}`);
+  return '0x' + raw.padStart(64, '0');
+}
+
+export function toBytes32Address(addr) {
+  // normalize address length (20 bytes) and pad left to 32 bytes
+  if (!/^0x[0-9a-fA-F]{40}$/.test(addr)) throw new Error(`Bad address: ${addr}`);
+  return toBytes32(addr.toLowerCase());
+}
+
+// Number/BigInt -> uint256 bytes32
+export function toBytes32Uint(n) {
+  const bn = typeof n === 'bigint' ? n : BigInt(n);
+  if (bn < 0n) throw new Error(`toBytes32Uint: negative not allowed: ${n}`);
+  return '0x' + bn.toString(16).padStart(64, '0');
+}
+
+// Random 32-byte salt (best option)
+export function random32() {
+  const b = crypto.getRandomValues(new Uint8Array(32));
+  return '0x' + Array.from(b).map(x => x.toString(16).padStart(2,'0')).join('');
+}
+
+// Gateway Minting Helpers
+const GATEWAY_MINTER = '0x0022222ABE238Cc2C7Bb1f21003F0a260052475B';
+
+const CHAIN_BY_DOMAIN = {
+  0: 11155111,   // Ethereum Sepolia
+  6: 84532,      // Base Sepolia  
+  1: 43113,      // Avalanche Fuji
+};
+
+const EXPLORER = {
+  11155111: 'https://sepolia.etherscan.io/tx/',
+  84532:    'https://sepolia.basescan.org/tx/',
+  43113:    'https://testnet.snowtrace.io/tx/',
+};
+
+const MINTER_ABI = [
+  'function gatewayMint(bytes attestation, bytes signature) external returns (bool)',
+];
+
+async function ensureChain(chainId) {
+  const hex = '0x' + chainId.toString(16);
+  try {
+    await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: hex }] });
+  } catch (e) {
+    if (e?.code === 4902) {
+      console.log(`Adding chain ${chainId} to MetaMask...`);
+      // Chain not in MetaMask, but we'll let it fail gracefully for now
+      throw new Error(`Chain ${chainId} not available in MetaMask`);
+    } else { 
+      throw e; 
+    }
+  }
+}
+
+async function mintPerDestination(attestationData) {
+  // attestationData: { destinationDomain, attestation, signature }
+  const chainId = CHAIN_BY_DOMAIN[attestationData.destinationDomain];
+  if (!chainId) throw new Error(`Unknown destinationDomain ${attestationData.destinationDomain}`);
+
+  console.log(`🔨 Minting on chain ${chainId} (domain ${attestationData.destinationDomain})...`);
+  
+  await ensureChain(chainId);
+
+  // Use ethers to call gatewayMint
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const signer = await provider.getSigner();
+
+  const minter = new ethers.Contract(GATEWAY_MINTER, MINTER_ABI, signer);
+  const tx = await minter.gatewayMint(attestationData.attestation, attestationData.signature);
+  const receipt = await tx.wait();
+
+  return { 
+    chainId, 
+    hash: tx.hash, 
+    status: receipt.status === 1 ? 'success' : 'reverted',
+    explorer: EXPLORER[chainId] + tx.hash
+  };
+}
+
 export class GatewayWorkflowManager {
     constructor(uiManager, wsManager) {
         console.log('🚨🚨🚨 NEW GATEWAY-WORKFLOW-MANAGER-V2.JS LOADED - MULTI-CHAIN + REAL BALANCE VERSION 🚨🚨🚨');
@@ -593,7 +679,7 @@ export class GatewayWorkflowManager {
                 
                 const burnIntent = {
                     maxBlockHeight: "115792089237316195423570985008687907853269984665640564039457584007913129639935",
-                    maxFee: "2010000", // 2.01 USDC max fee
+                    maxFee: "10000", // 0.01 USDC max fee (reasonable for testnet)
                     spec: {
                         version: 1,
                         sourceDomain: 0, // Always Sepolia (source)
@@ -741,7 +827,7 @@ export class GatewayWorkflowManager {
             
             const eip712Message = {
                 maxBlockHeight: BigInt("115792089237316195423570985008687907853269984665640564039457584007913129639935"), // uint256 max value
-                maxFee: BigInt("2010000"), // 2.01 USDC in microUSDC (uint256)
+                maxFee: BigInt("10000"), // 0.01 USDC in microUSDC (uint256)
                 spec: transferSpec // Properly validated bytes32/uint256 fields
             };
             
@@ -848,14 +934,14 @@ export class GatewayWorkflowManager {
             console.log('🔍 Checking current Gateway balance before transfer...');
             try {
                 const currentBalance = await this.getRealGatewayBalance();
-                const requiredAmount = (parseFloat(amount) + 2.000001); // transfer + fee
+                const totalRequired = parseFloat(amount) * chains.length + 0.01; // Total across all chains + small buffer
                 
                 console.log(`💰 Current balance: ${currentBalance} USDC`);
-                console.log(`💸 Required amount: ${requiredAmount} USDC (${amount} transfer + 2.000001 fee)`);
+                console.log(`💸 Total required: ${totalRequired} USDC (${amount} × ${chains.length} chains + 0.01 buffer)`);
                 
-                if (currentBalance < requiredAmount) {
-                    const shortfall = requiredAmount - currentBalance;
-                    throw new Error(`Insufficient balance: have ${currentBalance} USDC, need ${requiredAmount} USDC (shortfall: ${shortfall.toFixed(6)} USDC)`);
+                if (currentBalance < totalRequired) {
+                    const shortfall = totalRequired - currentBalance;
+                    throw new Error(`Insufficient balance: have ${currentBalance} USDC, need ${totalRequired} USDC (shortfall: ${shortfall.toFixed(6)} USDC)`);
                 }
                 
                 console.log('✅ Balance validation passed');
@@ -899,21 +985,21 @@ export class GatewayWorkflowManager {
                 // Create unique burn intent for this specific chain
                 const chainBurnIntent = {
                     maxBlockHeight: "115792089237316195423570985008687907853269984665640564039457584007913129639935",
-                    maxFee: "2000001", // 2.000001 USDC as required by Circle Gateway API (must be > 2.0)
+                    maxFee: "10000", // 0.01 USDC max fee (reasonable for testnet)
                     spec: {
                         version: 1,
                         sourceDomain: 0, // Ethereum Sepolia (where funds are currently)
                         destinationDomain: chain.domain, // Specific destination chain
-                        sourceContract: sourceContract,
-                        destinationContract: destinationContract, // Use Base minter for all (let API route correctly)
+                        sourceContract: "0x0077777d7EBA4688BDeF3E311b846F25870A19B9", // Gateway Wallet (testnet)
+                        destinationContract: "0x0022222ABE238Cc2C7Bb1f21003F0a260052475B", // Gateway Minter (testnet)
                         sourceToken: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238", // USDC Sepolia
                         destinationToken: chain.usdc, // Chain-specific USDC
                         sourceDepositor: userAddress,
                         destinationRecipient: recipientAddress,
                         sourceSigner: userAddress,
-                        destinationCaller: recipientAddress,
+                        destinationCaller: userAddress, // Must match the address calling gatewayMint()
                         value: Math.floor(deploymentAmountPerChain * 1000000).toString(),
-                        salt: Date.now().toString() + chain.domain.toString(), // Unique salt per chain
+                        salt: random32(), // Cryptographically secure random salt
                         hookData: "0x"
                     }
                 };
@@ -923,14 +1009,14 @@ export class GatewayWorkflowManager {
                     version: chainBurnIntent.spec.version,
                     sourceDomain: chainBurnIntent.spec.sourceDomain,
                     destinationDomain: chainBurnIntent.spec.destinationDomain,
-                    sourceContract: toBytes32(chainBurnIntent.spec.sourceContract),
-                    destinationContract: toBytes32(chainBurnIntent.spec.destinationContract),
-                    sourceToken: toBytes32(chainBurnIntent.spec.sourceToken),
-                    destinationToken: toBytes32(chainBurnIntent.spec.destinationToken),
-                    sourceDepositor: toBytes32(chainBurnIntent.spec.sourceDepositor),
-                    destinationRecipient: toBytes32(chainBurnIntent.spec.destinationRecipient),
-                    sourceSigner: toBytes32(chainBurnIntent.spec.sourceSigner),
-                    destinationCaller: toBytes32(chainBurnIntent.spec.destinationCaller),
+                    sourceContract: toBytes32Address(chainBurnIntent.spec.sourceContract),
+                    destinationContract: toBytes32Address(chainBurnIntent.spec.destinationContract),
+                    sourceToken: toBytes32Address(chainBurnIntent.spec.sourceToken),
+                    destinationToken: toBytes32Address(chainBurnIntent.spec.destinationToken),
+                    sourceDepositor: toBytes32Address(chainBurnIntent.spec.sourceDepositor),
+                    destinationRecipient: toBytes32Address(chainBurnIntent.spec.destinationRecipient),
+                    sourceSigner: toBytes32Address(chainBurnIntent.spec.sourceSigner),
+                    destinationCaller: toBytes32Address(chainBurnIntent.spec.destinationCaller),
                     value: chainBurnIntent.spec.value,
                     salt: toBytes32(chainBurnIntent.spec.salt),
                     hookData: chainBurnIntent.spec.hookData
@@ -1001,8 +1087,47 @@ export class GatewayWorkflowManager {
                     
                     if (response.ok) {
                         const result = JSON.parse(responseText);
-                        apiResults.push({ chain: chain.name, success: true, result });
-                        console.log(`✅ ${chain.name} transfer successful:`, result);
+                        console.log(`✅ ${chain.name} Gateway API successful:`, result);
+                        
+                        // Extract attestation from Gateway API response
+                        const attestation = result.attestation;
+                        const signature = result.signature;
+                        
+                        if (attestation && signature) {
+                            console.log(`🎫 ${chain.name} attestation received, calling gatewayMint()...`);
+                            
+                            try {
+                                // Call gatewayMint on destination chain
+                                const mintResult = await mintPerDestination({
+                                    destinationDomain: chain.domain,
+                                    attestation: attestation,
+                                    signature: signature
+                                });
+                                
+                                apiResults.push({ 
+                                    chain: chain.name, 
+                                    success: true, 
+                                    result: result,
+                                    mintTx: mintResult.hash,
+                                    mintStatus: mintResult.status,
+                                    explorer: mintResult.explorer
+                                });
+                                console.log(`✅ ${chain.name} gatewayMint successful:`, mintResult);
+                                
+                            } catch (mintError) {
+                                console.error(`❌ ${chain.name} gatewayMint failed:`, mintError);
+                                apiResults.push({ 
+                                    chain: chain.name, 
+                                    success: false, 
+                                    result: result,
+                                    error: `Mint failed: ${mintError.message}`,
+                                    attestation: attestation
+                                });
+                            }
+                        } else {
+                            console.warn(`⚠️ ${chain.name} API response missing attestation/signature`);
+                            apiResults.push({ chain: chain.name, success: true, result, error: 'Missing attestation' });
+                        }
                     } else {
                         apiResults.push({ chain: chain.name, success: false, error: responseText, status: response.status });
                         console.error(`❌ ${chain.name} transfer failed: ${response.status} - ${responseText}`);
@@ -1023,16 +1148,15 @@ export class GatewayWorkflowManager {
                 const chain = chains[index];
                 let deploymentResult;
                 
-                if (apiResult.success) {
-                    // Successful API call
-                    const txHash = apiResult.result[0]?.transactionHash || 'pending';
+                if (apiResult.success && apiResult.mintTx) {
+                    // Successful API call with successful gatewayMint
+                    const txHash = apiResult.mintTx;
+                    const isRealTx = apiResult.mintStatus === 'success';
                     
-                    // DEBUG: Check if transaction hash is real or simulated
-                    const isRealTx = txHash && txHash !== 'pending' && !txHash.includes('simulated') && !txHash.includes('fake');
-                    console.log(`🔍 Transaction hash analysis for ${chain.name}:`);
-                    console.log(`   TX Hash: ${txHash}`);
-                    console.log(`   Is Real: ${isRealTx}`);
-                    console.log(`   API Result:`, safeStringify(apiResult));
+                    console.log(`🔍 Gateway mint analysis for ${chain.name}:`);
+                    console.log(`   Mint TX Hash: ${txHash}`);
+                    console.log(`   Mint Status: ${apiResult.mintStatus}`);
+                    console.log(`   Explorer: ${apiResult.explorer}`);
                     
                     deploymentResult = {
                         chain: chain.name,
@@ -1041,13 +1165,33 @@ export class GatewayWorkflowManager {
                         operation: chain.operation,
                         amount: deploymentAmountPerChain,
                         transactionHash: txHash,
-                        explorerUrl: `${chain.explorer}/tx/${txHash}`,
+                        explorerUrl: apiResult.explorer,
                         status: 'completed',
                         timestamp: new Date().toLocaleTimeString(),
-                        real: isRealTx // Mark as real only if transaction hash looks legitimate
+                        real: isRealTx
                     };
-                    totalDeployed += deploymentAmountPerChain;
+                    
+                    if (isRealTx) {
+                        totalDeployed += deploymentAmountPerChain;
+                    }
+                    
                     console.log(`✅ ${chain.icon} ${chain.name}: ${deploymentAmountPerChain.toFixed(2)} USDC deployed for ${chain.operation} - TX: ${txHash}`);
+                } else if (apiResult.success && !apiResult.mintTx) {
+                    // API successful but mint failed
+                    deploymentResult = {
+                        chain: chain.name,
+                        chainIcon: chain.icon,
+                        domain: chain.domain,
+                        operation: chain.operation,
+                        amount: deploymentAmountPerChain,
+                        transactionHash: 'No mint tx',
+                        explorerUrl: '#',
+                        status: 'mint_failed',
+                        timestamp: new Date().toLocaleTimeString(),
+                        real: false,
+                        error: apiResult.error || 'Attestation received but mint failed'
+                    };
+                    console.log(`⚠️ ${chain.icon} ${chain.name}: Attestation received but mint failed - ${apiResult.error}`);
                 } else {
                     // Failed API call
                     deploymentResult = {
