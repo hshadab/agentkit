@@ -650,32 +650,50 @@ export class GatewayWorkflowManager {
                 }
             ];
             
-            // Validate current spendable balance is sufficient for 3-chain transfers
+            // Check both unified balance and on-chain balance for comparison
             const currentBalance = await this.getRealGatewayBalance();
+            
+            // Also get detailed breakdown to see if funds are locked
+            let balanceBreakdown = '';
+            try {
+                const detailedBalance = await this.getRealGatewayBalanceWithBreakdown();
+                balanceBreakdown = detailedBalance.breakdown;
+                console.log(`📊 Gateway Balance Breakdown:\n${balanceBreakdown}`);
+            } catch (e) {
+                console.warn('Could not get balance breakdown:', e.message);
+            }
+            
             const maxFeePerTransfer = 2.1; // 2.1 USDC max fee per transfer
             const totalRequiredPerChain = deploymentAmountPerChain + maxFeePerTransfer;
             const totalRequired = totalRequiredPerChain * chains.length;
             
-            console.log(`💰 Current spendable balance: ${currentBalance.toFixed(2)} USDC`);
+            console.log(`💰 Unified spendable balance: ${currentBalance.toFixed(2)} USDC`);
             console.log(`💸 Required per chain: ${totalRequiredPerChain.toFixed(2)} USDC (${deploymentAmountPerChain} + ${maxFeePerTransfer} fee)`);
             console.log(`💸 Total required for ${chains.length} chains: ${totalRequired.toFixed(2)} USDC`);
+            console.log(`🔗 Verify on-chain balance: https://sepolia.etherscan.io/token/0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238?a=0x0077777d7EBA4688BDeF3E311b846F25870A19B9`);
             
             if (currentBalance < totalRequired) {
                 const shortfall = totalRequired - currentBalance;
                 throw new Error(`
-🚨 Insufficient Gateway Balance for 3-Chain Transfer
+🚨 Insufficient Unified Spendable Balance for 3-Chain Transfer
 
-Current Balance: ${currentBalance.toFixed(2)} USDC
-Required for 3 Chains: ${totalRequired.toFixed(2)} USDC
+Unified Spendable: ${currentBalance.toFixed(2)} USDC
+Required for 3 Chains: ${totalRequired.toFixed(2)} USDC  
 Shortfall: ${shortfall.toFixed(2)} USDC
 
-💡 Add ${Math.ceil(shortfall + 0.5)} USDC to Gateway Wallet:
+🔍 Debug Steps:
+1. Check on-chain balance: https://sepolia.etherscan.io/token/0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238?a=0x0077777d7EBA4688BDeF3E311b846F25870A19B9
+2. If on-chain > ${totalRequired.toFixed(2)} USDC: Funds may be locked/reserved
+3. Wait 10-30 minutes for Circle Gateway sync
+4. Or check for unminted attestations blocking balance
+
+💡 If on-chain balance is insufficient, add more USDC:
    🔗 Circle Faucet: https://faucet.circle.com
    📍 Network: Sepolia  
    💳 Address: ${this.userAccount || '0xe616b2ec620621797030e0ab1ba38da68d78351c'}
-   ⏱️ Wait: 2-3 minutes for balance update
    
-🎯 Once you have ${totalRequired.toFixed(2)} USDC, all 3 chains will work!`);
+Balance Breakdown:
+${balanceBreakdown || 'Could not fetch breakdown'}`);
             }
             
             console.log('🚀 Starting multi-chain deployment across 3 testnet chains...');
