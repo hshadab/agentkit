@@ -1245,7 +1245,7 @@ Shortfall: ${shortfall.toFixed(2)} USDC
             
             // Calculate actual amount spent from successful deployments
             const actualAmountSpent = successfulDeployments.length * deploymentAmountPerChain;
-            const totalDeployed = actualAmountSpent;
+            totalDeployed = actualAmountSpent;
             
             this.updateGatewayBalance(currentSpendableBalance);
             
