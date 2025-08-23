@@ -1437,7 +1437,7 @@ Shortfall: ${shortfall.toFixed(2)} USDC
         const headerBalanceElement = document.getElementById(`gateway-header-balance-${workflowId}`);
         if (headerBalanceElement) {
             const balance = typeof newBalance === 'number' ? newBalance : parseFloat(newBalance) || 0;
-            headerBalanceElement.textContent = `💰 Unified Gateway Balance: ${balance.toFixed(2)} USDC`;
+            headerBalanceElement.textContent = `💰 Unified Gateway Balance: ${Math.ceil(balance * 100) / 100} USDC`;
             console.log(`🔄 Updated header balance to: ${balance.toFixed(2)} USDC`);
         }
     }
@@ -1642,7 +1642,7 @@ Shortfall: ${shortfall.toFixed(2)} USDC
         try {
             console.log('📡 Fetching FRESH Gateway unified balance from Circle API...');
             const balanceData = await this.getRealGatewayBalanceWithBreakdown();
-            realUnifiedBalance = `${balanceData.total.toFixed(2)} USDC`;
+            realUnifiedBalance = `${Math.ceil(balanceData.total * 100) / 100} USDC`;
             balanceBreakdown = balanceData.breakdown;
             console.log('✅ FRESH Gateway balance loaded (no cache):', realUnifiedBalance);
             console.log('🔍 Balance breakdown received:', balanceBreakdown);
