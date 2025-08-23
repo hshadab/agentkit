@@ -619,7 +619,7 @@ export class GatewayWorkflowManager {
             console.log(`   Parsed amount: ${deploymentAmountPerChain} (type: ${typeof deploymentAmountPerChain})`);
             console.log(`   Micro-USDC value: ${Math.floor(deploymentAmountPerChain * 1000000)} (should be 10000 for 0.01 USDC)`);
             
-            // Deploy to all chains as specified in workflow: Ethereum, Base, Avalanche
+            // Deploy to all 3 chains as specified in workflow: Ethereum, Base, Avalanche
             const chains = [
                 {
                     name: 'Ethereum Sepolia', 
@@ -650,7 +650,7 @@ export class GatewayWorkflowManager {
                 }
             ];
             
-            // Validate current spendable balance is sufficient
+            // Validate current spendable balance is sufficient for 3-chain transfers
             const currentBalance = await this.getRealGatewayBalance();
             const maxFeePerTransfer = 2.1; // 2.1 USDC max fee per transfer
             const totalRequiredPerChain = deploymentAmountPerChain + maxFeePerTransfer;
@@ -663,17 +663,19 @@ export class GatewayWorkflowManager {
             if (currentBalance < totalRequired) {
                 const shortfall = totalRequired - currentBalance;
                 throw new Error(`
-🚨 Insufficient Gateway Balance for Multi-Chain Transfer
+🚨 Insufficient Gateway Balance for 3-Chain Transfer
 
-Available: ${currentBalance.toFixed(2)} USDC
-Required: ${totalRequired.toFixed(2)} USDC (${deploymentAmountPerChain} × ${chains.length} + fees)
+Current Balance: ${currentBalance.toFixed(2)} USDC
+Required for 3 Chains: ${totalRequired.toFixed(2)} USDC
 Shortfall: ${shortfall.toFixed(2)} USDC
 
-💡 Solution: Deposit more USDC to Gateway wallet on Sepolia:
-   • Visit Circle Faucet: https://faucet.circle.com
-   • Select "Sepolia" network  
-   • Deposit ${Math.ceil(shortfall + 0.5)} USDC to address: ${this.userAccount}
-   • Wait 2-3 minutes for balance update`);
+💡 Add ${Math.ceil(shortfall + 0.5)} USDC to Gateway Wallet:
+   🔗 Circle Faucet: https://faucet.circle.com
+   📍 Network: Sepolia  
+   💳 Address: ${this.userAccount || '0xe616b2ec620621797030e0ab1ba38da68d78351c'}
+   ⏱️ Wait: 2-3 minutes for balance update
+   
+🎯 Once you have ${totalRequired.toFixed(2)} USDC, all 3 chains will work!`);
             }
             
             console.log('🚀 Starting multi-chain deployment across 3 testnet chains...');
