@@ -298,6 +298,10 @@
                 <button onclick="forceUnlockFunds()" class="warning-button">
                     🔓 Force Unlock All Funds
                 </button>
+                
+                <button onclick="simpleUnlock()" class="success-button">
+                    🔧 Simple Deposit Fix
+                </button>
             </div>
         </div>
         
@@ -674,7 +678,72 @@
             }
         }
         
+        async function simpleUnlock() {
+            console.log('🔧 Simple unlock clicked');
+            
+            if (!userAccount || !provider) {
+                alert('Please connect your wallet first');
+                return;
+            }
+            
+            if (!confirm('This will make a small 0.001 USDC deposit using the correct Gateway method to unlock your funds. Continue?')) {
+                return;
+            }
+            
+            try {
+                await ensureSepoliaNetwork();
+                const signer = provider.getSigner();
+                
+                // Simple deposit using GatewayWallet.deposit()
+                const gatewayContract = new ethers.Contract(
+                    GATEWAY_WALLET,
+                    ['function deposit(uint256 amount, address token, uint32 destinationDomain, address destinationReceiver) payable'],
+                    signer
+                );
+                
+                const usdcContract = new ethers.Contract(USDC_SEPOLIA, [
+                    'function approve(address spender, uint256 amount) returns (bool)',
+                    'function balanceOf(address) view returns (uint256)'
+                ], signer);
+                
+                const amount = ethers.utils.parseUnits('0.001', 6); // 0.001 USDC
+                
+                // Check balance
+                const balance = await usdcContract.balanceOf(userAccount);
+                if (balance.lt(amount)) {
+                    alert('You need at least 0.001 USDC in your wallet for this fix');
+                    return;
+                }
+                
+                // Approve
+                alert('Step 1: Approving USDC...');
+                const approveTx = await usdcContract.approve(GATEWAY_WALLET, amount);
+                await approveTx.wait();
+                
+                // Deposit
+                alert('Step 2: Making Gateway deposit...');
+                const depositTx = await gatewayContract.deposit(
+                    amount,
+                    USDC_SEPOLIA,
+                    0, // Sepolia domain
+                    userAccount
+                );
+                
+                alert(`Deposit submitted! TX: ${depositTx.hash}\nWait for confirmation...`);
+                await depositTx.wait();
+                
+                alert('✅ Deposit successful! Wait 2-3 minutes then refresh balances. This should unlock your 1,099+ USDC!');
+                
+            } catch (error) {
+                console.error('Simple unlock failed:', error);
+                alert('Simple unlock failed: ' + error.message);
+            }
+        }
+        
         async function forceUnlockFunds() {
+            console.log('🔓 Force unlock button clicked');
+            alert('Force unlock starting...'); // Debug alert
+            
             if (!confirm('This will attempt multiple strategies to unlock your 1,099+ USDC reserved funds. This may create small transactions. Continue?')) {
                 return;
             }
