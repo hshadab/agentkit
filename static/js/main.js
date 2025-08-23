@@ -1,23 +1,23 @@
 // Main application entry point  
-// Cache bust: 20250823-041546
+// Cache bust: 20250823-042901
 console.log('=== Main.js loading started ===');
-import { config } from './core/config.js?v=20250823-041546';
-import { WebSocketManager } from './ui/websocket-manager.js?v=20250823-041546';
-import { UIManager } from './ui/ui-manager.js?v=20250823-041546';
-import { ProofManager } from './ui/proof-manager.js?v=20250823-041546';
-import { WorkflowManager } from './ui/workflow-manager.js?v=20250823-041546';
-import { TransferManager } from './ui/transfer-manager.js?v=20250823-041546';
-import { BlockchainVerifier } from './blockchain/blockchain-verifier.js?v=20250823-041546';
-import { CCTPWorkflowManager } from './ui/cctp-workflow-manager.js?v=20250823-041546';
-import { GatewayWorkflowManager } from './ui/gateway-workflow-manager-v2.js?v=20250823-041546';
+import { config } from './core/config.js?v=20250823-042901';
+import { WebSocketManager } from './ui/websocket-manager.js?v=20250823-042901';
+import { UIManager } from './ui/ui-manager.js?v=20250823-042901';
+import { ProofManager } from './ui/proof-manager.js?v=20250823-042901';
+import { WorkflowManager } from './ui/workflow-manager.js?v=20250823-042901';
+import { TransferManager } from './ui/transfer-manager.js?v=20250823-042901';
+import { BlockchainVerifier } from './blockchain/blockchain-verifier.js?v=20250823-042901';
+import { CCTPWorkflowManager } from './ui/cctp-workflow-manager.js?v=20250823-042901';
+import { GatewayWorkflowManager } from './ui/gateway-workflow-manager-v2.js?v=20250823-042901';
 import { CleanupManager } from './core/cleanup-manager.js';
-import { debugLog } from './core/utils.js?v=20250823-041546';
+import { debugLog } from './core/utils.js?v=20250823-042901';
 
 // Import MetaMask CCTP handler
-import('./ui/metamask-cctp-handler.js?v=20250823-041546');
+import('./ui/metamask-cctp-handler.js?v=20250823-042901');
 
 // Load zkEngine for real proof generation
-import('./zkengine/agent-authorization-prover.js?v=20250823-041546');
+import('./zkengine/agent-authorization-prover.js?v=20250823-042901');
 
 // Export config and debugLog to window for non-module scripts
 window.config = config;
@@ -2322,16 +2322,20 @@ async function autoConnectWallets() {
     // Auto-connect MetaMask for all EVM chains
     if (window.ethereum) {
         try {
-            debugLog('🦊 Auto-connecting to MetaMask...', 'info');
-            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            debugLog('🦊 Checking if MetaMask is already connected...', 'info');
+            // First check if already connected without popup
+            let accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            
             if (accounts.length > 0) {
-                debugLog(`✅ MetaMask connected: ${accounts[0]}`, 'success');
+                debugLog(`✅ MetaMask already connected: ${accounts[0]}`, 'success');
                 
                 // Update connection status for all EVM chains
                 updateConnectionStatus('ethereum', true);
                 updateConnectionStatus('base', true);  
                 updateConnectionStatus('avalanche', true);
                 updateConnectionStatus('iotex', true);
+            } else {
+                debugLog('MetaMask not connected, skipping auto-connect to avoid popup', 'info');
             }
         } catch (error) {
             debugLog(`❌ MetaMask auto-connect failed: ${error.message}`, 'warning');
@@ -2366,7 +2370,7 @@ window.addEventListener('beforeunload', () => {
     workflowManager.stopAllPolling();
     transferManager.stopAllPolling();
     wsManager.disconnect();
-});// Cache bust: 20250823-041546
+});// Cache bust: 20250823-042901
 
 // Show Gateway balance only (no workflow execution)
 async function showGatewayBalanceOnly() {
