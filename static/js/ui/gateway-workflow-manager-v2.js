@@ -434,9 +434,9 @@ export class GatewayWorkflowManager {
                         <a href="https://sepolia.etherscan.io/token/0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238?a=0x0077777d7EBA4688BDeF3E311b846F25870A19B9" target="_blank" class="gateway-verification-link" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer; text-decoration: none; display: inline-block; margin-right: 8px;">
                             🔗 Verify Gateway Balance
                         </a>
-                        <button onclick="gatewayWorkflowManager.depositUSDCToGateway()" class="gateway-verification-link" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: #3b82f6; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer;">
-                            💳 Deposit USDC to Gateway
-                        </button>
+                        <a href="/gateway-manager.html" target="_blank" class="gateway-verification-link" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: #3b82f6; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer; text-decoration: none; display: inline-block;">
+                            🔧 Gateway Manager
+                        </a>
                     </div>
                 </div>
                 <div>
@@ -1748,111 +1748,4 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
         }
     }
 
-    async depositUSDCToGateway() {
-        try {
-            console.log('💳 Initiating USDC deposit to Gateway...');
-            
-            // Show loading state
-            this.uiManager.showToast('Preparing USDC deposit...', 'info');
-            
-            // Ensure MetaMask is connected
-            if (!this.userAccount) {
-                await this.connectWallet();
-            }
-            
-            // Switch to Sepolia network
-            await this.ensureSepoliaNetwork();
-            
-            // Get user's current USDC balance
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            const signer = await provider.getSigner();
-            
-            // USDC contract on Sepolia
-            const usdcContract = new ethers.Contract(
-                '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
-                ['function balanceOf(address) view returns (uint256)', 
-                 'function transfer(address to, uint256 amount) returns (bool)',
-                 'function decimals() view returns (uint8)'],
-                signer
-            );
-            
-            const userBalance = await usdcContract.balanceOf(this.userAccount);
-            const userBalanceFormatted = ethers.utils.formatUnits(userBalance, 6);
-            
-            console.log(`👤 User USDC balance: ${userBalanceFormatted} USDC`);
-            
-            if (parseFloat(userBalanceFormatted) < 1) {
-                throw new Error(`Insufficient USDC in your wallet: ${userBalanceFormatted} USDC. Get testnet USDC from Circle Faucet first.`);
-            }
-            
-            // Calculate amount to deposit (leave 0.1 USDC for gas)
-            const maxDeposit = Math.max(0, parseFloat(userBalanceFormatted) - 0.1);
-            const depositAmount = prompt(`Enter USDC amount to deposit to Gateway (max: ${maxDeposit.toFixed(2)}):`, maxDeposit.toString());
-            
-            if (!depositAmount || parseFloat(depositAmount) <= 0) {
-                console.log('❌ Deposit cancelled by user');
-                return;
-            }
-            
-            const depositAmountUnits = ethers.utils.parseUnits(depositAmount, 6);
-            const gatewayWalletAddress = '0x0077777d7EBA4688BDeF3E311b846F25870A19B9';
-            
-            console.log(`💸 Depositing ${depositAmount} USDC to Gateway wallet...`);
-            this.uiManager.showToast(`Depositing ${depositAmount} USDC...`, 'info');
-            
-            // Execute transfer
-            const tx = await usdcContract.transfer(gatewayWalletAddress, depositAmountUnits);
-            console.log(`📤 Deposit transaction: ${tx.hash}`);
-            this.uiManager.showToast(`Deposit submitted: ${tx.hash}`, 'info');
-            
-            // Wait for confirmation
-            const receipt = await tx.wait();
-            
-            if (receipt.status === 1) {
-                console.log(`✅ Deposit successful! ${depositAmount} USDC transferred to Gateway`);
-                this.uiManager.showToast(`✅ Deposited ${depositAmount} USDC to Gateway!\nWait 2-3 minutes for balance sync.`, 'success');
-                
-                // Refresh balance after a short delay
-                setTimeout(async () => {
-                    try {
-                        await this.checkGatewayBalanceManually();
-                    } catch (e) {
-                        console.warn('Could not refresh balance:', e.message);
-                    }
-                }, 5000);
-                
-            } else {
-                throw new Error('Transaction failed');
-            }
-            
-        } catch (error) {
-            console.error('❌ USDC deposit failed:', error);
-            this.uiManager.showToast(`Deposit failed: ${error.message}`, 'error');
-        }
-    }
-
-    async ensureSepoliaNetwork() {
-        try {
-            await window.ethereum.request({
-                method: 'wallet_switchEthereumChain',
-                params: [{ chainId: '0xaa36a7' }], // Sepolia chain ID
-            });
-        } catch (switchError) {
-            if (switchError.code === 4902) {
-                // Network not added, add it
-                await window.ethereum.request({
-                    method: 'wallet_addEthereumChain',
-                    params: [{
-                        chainId: '0xaa36a7',
-                        chainName: 'Sepolia Testnet',
-                        rpcUrls: ['https://sepolia.infura.io/v3/'],
-                        nativeCurrency: { name: 'Sepolia ETH', symbol: 'ETH', decimals: 18 },
-                        blockExplorerUrls: ['https://sepolia.etherscan.io/']
-                    }]
-                });
-            } else {
-                throw switchError;
-            }
-        }
-    }
 }
