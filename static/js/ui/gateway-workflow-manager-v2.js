@@ -1,6 +1,36 @@
 // Gateway Workflow Manager - Circle Gateway Multi-Chain AI Agent Payments
 // Integrates with existing UI following CCTP workflow patterns
-// CACHE BUST: 2025-08-22-23:35-proper-eip712-implementation
+// CACHE BUST: 2025-08-22-23:50-comprehensive-bigint-fix
+
+// BigInt JSON serialization helpers
+const isHex = (h) => typeof h === 'string' && /^0x[0-9a-fA-F]*$/.test(h) && (h.length % 2 === 0);
+const isBytes32 = (h) => typeof h === 'string' && /^0x[0-9a-fA-F]{64}$/.test(h);
+
+// Deep-convert BigInt -> decimal string everywhere (safe for eth_signTypedData_v4)
+export function typedDataToV4JSON(typed) {
+  const convert = (x) => {
+    if (typeof x === 'bigint') return x.toString();
+    if (Array.isArray(x)) return x.map(convert);
+    if (x && typeof x === 'object') {
+      const out = {};
+      for (const [k, v] of Object.entries(x)) {
+        const vv = convert(v);
+        if ([
+          'sourceContract','destinationContract','sourceToken','destinationToken',
+          'sourceDepositor','destinationRecipient','sourceSigner','destinationCaller','salt'
+        ].includes(k)) { if (!isBytes32(vv)) throw new Error(`Not bytes32: ${k}=${vv}`); }
+        if (k === 'hookData' && !isHex(vv)) throw new Error('hookData must be 0x-hex');
+        out[k] = vv;
+      }
+      return out;
+    }
+    return x;
+  };
+  return JSON.stringify(convert(typed));
+}
+
+// Use this EVERY time you need to JSON.stringify anything that MAY contain BigInt
+export const safeStringify = (x) => JSON.stringify(x, (_k, v) => (typeof v === 'bigint' ? v.toString() : v));
 
 export class GatewayWorkflowManager {
     constructor(uiManager, wsManager) {
@@ -722,12 +752,45 @@ export class GatewayWorkflowManager {
                 message: eip712Message
             };
             
-            // BigInt JSON serialization for MetaMask (Circle Gateway spec)
-            const bigIntReplacer = (key, value) => {
-                return typeof value === 'bigint' ? value.toString() : value;
+            // Deep BigInt conversion and validation for MetaMask eth_signTypedData_v4
+            const isHex = (h) => typeof h === 'string' && /^0x[0-9a-fA-F]*$/.test(h) && (h.length % 2 === 0);
+            const isBytes32 = (h) => typeof h === 'string' && /^0x[0-9a-fA-F]{64}$/.test(h);
+            
+            // Convert BigInt to string and validate all bytes fields
+            function toV4Json(typed) {
+                const convert = (x, key = "") => {
+                    if (typeof x === 'bigint') return x.toString(); // Fix BigInt serialization
+                    if (Array.isArray(x)) return x.map(v => convert(v, key));
+                    if (x && typeof x === 'object') {
+                        const out = {};
+                        for (const [k, v] of Object.entries(x)) {
+                            const vv = convert(v, k);
+                            // Validate bytes32 fields by name
+                            if (['sourceContract', 'destinationContract', 'sourceToken', 'destinationToken',
+                                 'sourceDepositor', 'destinationRecipient', 'sourceSigner', 'destinationCaller', 'salt']
+                                .includes(k)) {
+                                if (!isBytes32(vv)) throw new Error(`Not bytes32: ${k}=${vv}`);
+                            }
+                            if (k === 'hookData' && !isHex(vv)) throw new Error(`hookData must be 0x-hex`);
+                            out[k] = vv;
+                        }
+                        return out;
+                    }
+                    return x;
+                };
+                return JSON.stringify(convert(typed));
+            }
+            
+            // Sanity check: ensure no BigInt values remain
+            const findBigInt = (x, path = 'root') => {
+                if (typeof x === 'bigint') throw new Error(`BigInt left at ${path}`);
+                if (Array.isArray(x)) x.forEach((v, i) => findBigInt(v, `${path}[${i}]`));
+                else if (x && typeof x === 'object') {
+                    for (const [k, v] of Object.entries(x)) findBigInt(v, `${path}.${k}`);
+                }
             };
             
-            console.log('📋 EIP-712 TypedData prepared:', JSON.stringify(typedData, bigIntReplacer, 2));
+            console.log('📋 EIP-712 TypedData prepared (with BigInt validation)');
             
             // STEP 2: Request MetaMask signature using eth_signTypedData_v4
             console.log('🖊️ Requesting EIP-712 signature from MetaMask...');
@@ -738,9 +801,13 @@ export class GatewayWorkflowManager {
             
             let signature;
             try {
+                // Convert to JSON-safe format with BigInt → string conversion  
+                const payload = typedDataToV4JSON(typedData);
+                console.log('✅ Converted payload for MetaMask (BigInt → string)');
+                
                 signature = await window.ethereum.request({
                     method: 'eth_signTypedData_v4',
-                    params: [userAddress, JSON.stringify(typedData, bigIntReplacer)]
+                    params: [userAddress, payload]
                 });
                 
                 console.log('✅ EIP-712 signature received:', signature);
@@ -753,7 +820,7 @@ export class GatewayWorkflowManager {
                 console.log('   Match Check:', transferSpec.sourceSigner === addressTo32Bytes(userAddress));
                 
                 // Log the complete typed data being signed
-                console.log('📋 Complete TypedData being signed:', JSON.stringify(typedData, null, 2));
+                console.log('📋 Complete TypedData being signed:', safeStringify(typedData));
                 
             } catch (signError) {
                 console.error('❌ EIP-712 signing failed:', signError);
@@ -808,7 +875,7 @@ export class GatewayWorkflowManager {
                     'Accept': 'application/json',
                     'Authorization': `Bearer ${this.getCircleAPIKey()}`
                 },
-                body: JSON.stringify([signedBurnIntent]) // Send as array as required by API
+                body: safeStringify([signedBurnIntent]) // Send as array as required by API
             });
             
             const responseText = await response.text();
@@ -887,7 +954,7 @@ export class GatewayWorkflowManager {
                 try {
                     const chainSignature = await window.ethereum.request({
                         method: 'eth_signTypedData_v4',
-                        params: [userAddress, JSON.stringify(chainTypedData)]
+                        params: [userAddress, typedDataToV4JSON(chainTypedData)]
                     });
                     
                     const chainSignedBurnIntent = {
@@ -926,7 +993,7 @@ export class GatewayWorkflowManager {
                             'Accept': 'application/json',
                             'Authorization': `Bearer ${this.getCircleAPIKey()}`
                         },
-                        body: JSON.stringify([signedIntent]) // Single burn intent per call
+                        body: safeStringify([signedIntent]) // Single burn intent per call
                     });
                     
                     const responseText = await response.text();
@@ -965,7 +1032,7 @@ export class GatewayWorkflowManager {
                     console.log(`🔍 Transaction hash analysis for ${chain.name}:`);
                     console.log(`   TX Hash: ${txHash}`);
                     console.log(`   Is Real: ${isRealTx}`);
-                    console.log(`   API Result:`, JSON.stringify(apiResult, null, 2));
+                    console.log(`   API Result:`, safeStringify(apiResult));
                     
                     deploymentResult = {
                         chain: chain.name,
@@ -1087,7 +1154,7 @@ export class GatewayWorkflowManager {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${this.getCircleAPIKey()}`
                 },
-                body: JSON.stringify({
+                body: safeStringify({
                     token: "USDC",
                     sources: [
                         { domain: 0, depositor: userAddress }, // Ethereum
@@ -1102,7 +1169,7 @@ export class GatewayWorkflowManager {
             }
             
             const data = await response.json();
-            console.log('🌐 Gateway balance API response:', JSON.stringify(data, null, 2));
+            console.log('🌐 Gateway balance API response:', safeStringify(data));
             
             // Gateway unified balance is the total across all domains
             const unifiedBalance = data.balances?.reduce((total, balance) => {
@@ -1133,7 +1200,7 @@ export class GatewayWorkflowManager {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${this.getCircleAPIKey()}`
                 },
-                body: JSON.stringify({
+                body: safeStringify({
                     token: "USDC",
                     sources: [
                         { domain: 0, depositor: userAddress }, // Ethereum Sepolia
@@ -1149,7 +1216,7 @@ export class GatewayWorkflowManager {
             }
             
             const data = await response.json();
-            console.log('🌐 Real Gateway API response:', JSON.stringify(data, null, 2));
+            console.log('🌐 Real Gateway API response:', safeStringify(data));
             
             // Map domain IDs to network names
             const domainNames = {
@@ -1276,7 +1343,7 @@ export class GatewayWorkflowManager {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${this.getCircleAPIKey()}`
                 },
-                body: JSON.stringify({
+                body: safeStringify({
                     token: "USDC",
                     sources: [
                         { domain: 0, depositor: userAddress },
