@@ -1,6 +1,6 @@
 // Gateway Workflow Manager - Circle Gateway Multi-Chain AI Agent Payments
 // Integrates with existing UI following CCTP workflow patterns
-// CACHE BUST: 2025-08-22-22:40-syntax-fix-export-restored
+// CACHE BUST: 2025-08-22-23:35-proper-eip712-implementation
 
 export class GatewayWorkflowManager {
     constructor(uiManager, wsManager) {
@@ -577,7 +577,7 @@ export class GatewayWorkflowManager {
                         sourceSigner: addressTo32Bytes(userAddress),
                         destinationCaller: "0x0000000000000000000000000000000000000000000000000000000000000000", // Zero address
                         value: Math.floor(deploymentAmountPerChain * 1000000).toString(),
-                        salt: '0x' + (Date.now() + Math.random()).toString(16).padStart(64, '0'),
+                        salt: '0x' + Math.floor(Date.now() + Math.random() * 1000000).toString(16).padStart(64, '0'),
                         hookData: "0x"
                     }
                 };
@@ -585,14 +585,20 @@ export class GatewayWorkflowManager {
                 transfers.push({ chain, burnIntent });
             }
             
-            console.log('📝 Burn intent created:', burnIntent);
-            console.log('🔍 DEBUG: Original values before conversion:', {
-                sourceContract: burnIntent.spec.sourceContract,
-                destinationContract: burnIntent.spec.destinationContract,
-                salt: burnIntent.spec.salt,
+            console.log('📝 Created transfers for chains:', transfers.map(t => t.chain.name));
+            console.log('🔍 DEBUG: Transfer details:', {
+                totalTransfers: transfers.length,
+                chains: transfers.map(t => t.chain.name),
                 userAddress: userAddress,
                 recipientAddress: recipientAddress
             });
+            
+            // For now, process the first transfer (can be extended to handle multiple)
+            const firstTransfer = transfers[0];
+            const burnIntent = firstTransfer.burnIntent;
+            const targetChain = firstTransfer.chain;
+            
+            console.log(`🎯 Processing transfer to: ${targetChain.name}`);
             
             // STEP 1: Create EIP-712 TypedData for Circle Gateway burn intent (official format)
             console.log('🔐 Creating official Circle Gateway EIP-712 TypedData...');
@@ -632,52 +638,81 @@ export class GatewayWorkflowManager {
                 ]
             };
             
-            // Helper function to convert to bytes32 (matching Circle Gateway official format)
-            const toBytes32 = (value) => {
-                console.log(`🔍 Converting to bytes32: "${value}" (type: ${typeof value})`);
-                if (typeof value === 'string' && value.startsWith('0x')) {
-                    // Address: keep as-is for 20-byte addresses, pad to 32 bytes
-                    if (value.length === 42) { // Standard address length (0x + 40 hex chars)
-                        // Pad left with zeros to make 32 bytes (64 hex chars + 0x)
-                        const result = '0x' + '000000000000000000000000' + value.slice(2).toLowerCase();
-                        console.log(`   → Address result: "${result}" (length: ${result.length})`);
-                        return result;
-                    }
-                    return value.toLowerCase();
-                } else if (typeof value === 'string' || typeof value === 'number') {
-                    // Number or string: convert to hex and pad to 32 bytes
-                    const hexValue = typeof value === 'number' ? value.toString(16) : parseInt(value).toString(16);
-                    const result = '0x' + hexValue.padStart(64, '0');
-                    console.log(`   → Number result: "${result}" (length: ${result.length})`);
-                    return result;
+            // Proper bytes32 conversion following Circle Gateway specification
+            // ALL address fields must be exactly 32 bytes (64 hex chars + 0x prefix)
+            const addressToBytes32 = (address) => {
+                if (!address || typeof address !== 'string' || !address.startsWith('0x')) {
+                    throw new Error(`Invalid address for bytes32 conversion: ${address}`);
                 }
-                const result = '0x' + value.toString().padStart(64, '0');
-                console.log(`   → Default result: "${result}" (length: ${result.length})`);
+                // Pad 20-byte address to 32 bytes (left-pad with zeros)
+                const result = '0x' + address.slice(2).toLowerCase().padStart(64, '0');
+                console.log(`🔍 Address → bytes32: "${address}" → "${result}"`);
                 return result;
             };
             
-            // Use SAME 32-byte format for BOTH signing and API (as per Circle spec)
-            const transferSpec = {
-                version: burnIntent.spec.version,
-                sourceDomain: burnIntent.spec.sourceDomain,
-                destinationDomain: burnIntent.spec.destinationDomain,
-                sourceContract: burnIntent.spec.sourceContract, // 32-byte format
-                destinationContract: burnIntent.spec.destinationContract, // 32-byte format
-                sourceToken: burnIntent.spec.sourceToken, // 32-byte format
-                destinationToken: burnIntent.spec.destinationToken, // 32-byte format
-                sourceDepositor: burnIntent.spec.sourceDepositor, // 32-byte format
-                destinationRecipient: burnIntent.spec.destinationRecipient, // 32-byte format
-                sourceSigner: burnIntent.spec.sourceSigner, // 32-byte format - MUST match signer
-                destinationCaller: burnIntent.spec.destinationCaller, // 32-byte format
-                value: burnIntent.spec.value,
-                salt: burnIntent.spec.salt, // 32-byte format
-                hookData: burnIntent.spec.hookData
+            // Generate cryptographically secure random salt as bytes32
+            const generateSalt = () => {
+                const randomValues = new Uint8Array(32);
+                crypto.getRandomValues(randomValues);
+                const result = '0x' + Array.from(randomValues).map(b => b.toString(16).padStart(2, '0')).join('');
+                console.log(`🎲 Generated salt: "${result}"`);
+                return result;
             };
             
+            // Validation helper to catch malformed hex before MetaMask
+            const validateBytes32 = (value, fieldName) => {
+                const bytes32Regex = /^0x[0-9a-fA-F]{64}$/;
+                if (!bytes32Regex.test(value)) {
+                    throw new Error(`Invalid bytes32 for ${fieldName}: ${value} (must be exactly 64 hex chars after 0x)`);
+                }
+            };
+            
+            const validateHex = (value, fieldName) => {
+                const hexRegex = /^0x[0-9a-fA-F]*$/;
+                if (!hexRegex.test(value) || value.length % 2 !== 0) {
+                    throw new Error(`Invalid hex for ${fieldName}: ${value} (must be even-length hex)`);
+                }
+            };
+            
+            // Create properly formatted transferSpec following Circle Gateway specification
+            // Convert USDC amount to microUSDC (6 decimals) as BigInt
+            const microUSDCAmount = BigInt(Math.floor(deploymentAmountPerChain * 1000000));
+            
+            const transferSpec = {
+                version: 1, // uint32
+                sourceDomain: 0, // Ethereum Sepolia 
+                destinationDomain: targetChain.domain, // uint32
+                sourceContract: addressToBytes32(config.gatewayWallet), // bytes32
+                destinationContract: addressToBytes32(config.gatewayMinter), // bytes32
+                sourceToken: addressToBytes32(config.networks[0].usdc), // bytes32 - Sepolia USDC
+                destinationToken: addressToBytes32(targetChain.usdc), // bytes32 - Target chain USDC
+                sourceDepositor: addressToBytes32(userAddress), // bytes32
+                destinationRecipient: addressToBytes32(recipientAddress), // bytes32
+                sourceSigner: addressToBytes32(userAddress), // bytes32
+                destinationCaller: addressToBytes32('0x0000000000000000000000000000000000000000'), // bytes32 - zero address
+                value: microUSDCAmount, // uint256 as BigInt (NOT hex string)
+                salt: generateSalt(), // bytes32 - cryptographically secure
+                hookData: '0x' // bytes - empty but valid hex
+            };
+            
+            // Validate all bytes32 fields before signing
+            console.log('🔍 Validating EIP-712 fields...');
+            validateBytes32(transferSpec.sourceContract, 'sourceContract');
+            validateBytes32(transferSpec.destinationContract, 'destinationContract');
+            validateBytes32(transferSpec.sourceToken, 'sourceToken');
+            validateBytes32(transferSpec.destinationToken, 'destinationToken');
+            validateBytes32(transferSpec.sourceDepositor, 'sourceDepositor');
+            validateBytes32(transferSpec.destinationRecipient, 'destinationRecipient');
+            validateBytes32(transferSpec.sourceSigner, 'sourceSigner');
+            validateBytes32(transferSpec.destinationCaller, 'destinationCaller');
+            validateBytes32(transferSpec.salt, 'salt');
+            validateHex(transferSpec.hookData, 'hookData');
+            console.log('✅ All EIP-712 fields validated');
+            
             const eip712Message = {
-                maxBlockHeight: burnIntent.maxBlockHeight,
-                maxFee: burnIntent.maxFee,
-                spec: transferSpec // Use 32-byte format for EIP-712 signing (Circle spec)
+                maxBlockHeight: BigInt("115792089237316195423570985008687907853269984665640564039457584007913129639935"), // uint256 max value
+                maxFee: BigInt("2010000"), // 2.01 USDC in microUSDC (uint256)
+                spec: transferSpec // Properly validated bytes32/uint256 fields
             };
             
             const typedData = {
@@ -687,7 +722,12 @@ export class GatewayWorkflowManager {
                 message: eip712Message
             };
             
-            console.log('📋 EIP-712 TypedData prepared:', typedData);
+            // BigInt JSON serialization for MetaMask (Circle Gateway spec)
+            const bigIntReplacer = (key, value) => {
+                return typeof value === 'bigint' ? value.toString() : value;
+            };
+            
+            console.log('📋 EIP-712 TypedData prepared:', JSON.stringify(typedData, bigIntReplacer, 2));
             
             // STEP 2: Request MetaMask signature using eth_signTypedData_v4
             console.log('🖊️ Requesting EIP-712 signature from MetaMask...');
@@ -700,7 +740,7 @@ export class GatewayWorkflowManager {
             try {
                 signature = await window.ethereum.request({
                     method: 'eth_signTypedData_v4',
-                    params: [userAddress, JSON.stringify(typedData)]
+                    params: [userAddress, JSON.stringify(typedData, bigIntReplacer)]
                 });
                 
                 console.log('✅ EIP-712 signature received:', signature);
@@ -1466,8 +1506,8 @@ export class GatewayWorkflowManager {
             // Get fresh balance data
             const balanceData = await this.getRealGatewayBalanceWithBreakdown();
             
-            // Update all balance displays
-            await this.updateAllGatewayBalances(balanceData.total);
+            // Log balance update (simplified - no UI updates for now)
+            console.log(`💰 Gateway balance updated: ${balanceData.total.toFixed(2)} USDC`);
             
             // Show result
             const message = `💰 Gateway Balance: ${balanceData.total.toFixed(2)} USDC\n${balanceData.breakdown}`;
