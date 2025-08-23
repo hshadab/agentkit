@@ -652,13 +652,29 @@ export class GatewayWorkflowManager {
             
             // Validate current spendable balance is sufficient
             const currentBalance = await this.getRealGatewayBalance();
-            const totalAgentSpending = deploymentAmountPerChain * chains.length;
-            
-            if (currentBalance < totalAgentSpending) {
-                throw new Error(`Insufficient Gateway balance: ${currentBalance.toFixed(2)} USDC < ${totalAgentSpending.toFixed(2)} USDC needed for agent spending across ${chains.length} chains`);
-            }
+            const maxFeePerTransfer = 2.1; // 2.1 USDC max fee per transfer
+            const totalRequiredPerChain = deploymentAmountPerChain + maxFeePerTransfer;
+            const totalRequired = totalRequiredPerChain * chains.length;
             
             console.log(`💰 Current spendable balance: ${currentBalance.toFixed(2)} USDC`);
+            console.log(`💸 Required per chain: ${totalRequiredPerChain.toFixed(2)} USDC (${deploymentAmountPerChain} + ${maxFeePerTransfer} fee)`);
+            console.log(`💸 Total required for ${chains.length} chains: ${totalRequired.toFixed(2)} USDC`);
+            
+            if (currentBalance < totalRequired) {
+                const shortfall = totalRequired - currentBalance;
+                throw new Error(`
+🚨 Insufficient Gateway Balance for Multi-Chain Transfer
+
+Available: ${currentBalance.toFixed(2)} USDC
+Required: ${totalRequired.toFixed(2)} USDC (${deploymentAmountPerChain} × ${chains.length} + fees)
+Shortfall: ${shortfall.toFixed(2)} USDC
+
+💡 Solution: Deposit more USDC to Gateway wallet on Sepolia:
+   • Visit Circle Faucet: https://faucet.circle.com
+   • Select "Sepolia" network  
+   • Deposit ${Math.ceil(shortfall + 0.5)} USDC to address: ${this.userAccount}
+   • Wait 2-3 minutes for balance update`);
+            }
             
             console.log('🚀 Starting multi-chain deployment across 3 testnet chains...');
             
@@ -1227,6 +1243,10 @@ export class GatewayWorkflowManager {
             const successfulDeployments = deploymentResults.filter(d => d.status === 'completed' && d.real);
             console.log(`✅ Successful transfers: ${successfulDeployments.length}/${chains.length} chains`);
             
+            // Calculate actual amount spent from successful deployments
+            const actualAmountSpent = successfulDeployments.length * deploymentAmountPerChain;
+            const totalDeployed = actualAmountSpent;
+            
             this.updateGatewayBalance(currentSpendableBalance);
             
             return {
@@ -1245,9 +1265,8 @@ export class GatewayWorkflowManager {
                 instant: true,
                 real: true,
                 gatewayApi: true,
-                spendableBalance: afterBalanceData.total.toFixed(2),
+                spendableBalance: currentSpendableBalance.toFixed(2),
                 actualSpent: actualAmountSpent.toFixed(2),
-                gatewayBalanceUrl: gatewayBalanceUrl,
                 note: `ZKP-authorized agent spent ${totalDeployed.toFixed(2)} USDC across ${chains.length} chains instantly`
             };
             
