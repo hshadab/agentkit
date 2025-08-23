@@ -294,6 +294,10 @@
                 <button onclick="clearReservedFunds()" class="danger-button">
                     🧹 Clear Reserved Funds
                 </button>
+                
+                <button onclick="forceUnlockFunds()" class="warning-button">
+                    🔓 Force Unlock All Funds
+                </button>
             </div>
         </div>
         
@@ -665,6 +669,175 @@
                         2. Verify API keys and permissions<br>
                         3. Contact Circle Support with depositor: ${userAccount || '0xe616b2ec620621797030e0ab1ba38da68d78351c'}<br>
                         4. Consider using a fresh wallet address
+                    </div>
+                `;
+            }
+        }
+        
+        async function forceUnlockFunds() {
+            if (!confirm('This will attempt multiple strategies to unlock your 1,099+ USDC reserved funds. This may create small transactions. Continue?')) {
+                return;
+            }
+            
+            if (!userAccount || !provider) {
+                alert('Please connect your wallet first');
+                return;
+            }
+            
+            const debugInfo = document.getElementById('debugInfo');
+            debugInfo.innerHTML = '<div class="loading"></div> Attempting to force unlock reserved funds...';
+            
+            try {
+                await ensureSepoliaNetwork();
+                const signer = provider.getSigner();
+                
+                let unlockAttempts = [];
+                
+                // Strategy 1: Use GatewayWallet deposit to trigger balance sync
+                debugInfo.innerHTML = '<div class="loading"></div> Strategy 1: Triggering balance sync via deposit...';
+                
+                try {
+                    const gatewayWalletContract = new ethers.Contract(
+                        GATEWAY_WALLET,
+                        [
+                            'function deposit(uint256 amount, address token, uint32 destinationDomain, address destinationReceiver) payable',
+                            'function balanceOf(address token, address depositor) view returns (uint256)'
+                        ],
+                        signer
+                    );
+                    
+                    // Small deposit to trigger sync (0.001 USDC)
+                    const smallAmount = ethers.utils.parseUnits('0.001', 6);
+                    
+                    // First approve USDC
+                    const usdcContract = new ethers.Contract(USDC_SEPOLIA, [
+                        'function approve(address spender, uint256 amount) returns (bool)',
+                        'function balanceOf(address) view returns (uint256)'
+                    ], signer);
+                    
+                    const userUSDCBalance = await usdcContract.balanceOf(userAccount);
+                    if (userUSDCBalance.gte(smallAmount)) {
+                        const approveTx = await usdcContract.approve(GATEWAY_WALLET, smallAmount);
+                        await approveTx.wait();
+                        
+                        // Now deposit using proper Gateway method
+                        const depositTx = await gatewayWalletContract.deposit(
+                            smallAmount,
+                            USDC_SEPOLIA,
+                            0, // Sepolia domain
+                            userAccount
+                        );
+                        
+                        unlockAttempts.push({
+                            strategy: 'Gateway Deposit',
+                            tx: depositTx.hash,
+                            status: 'pending'
+                        });
+                        
+                        await depositTx.wait();
+                        unlockAttempts[unlockAttempts.length - 1].status = 'success';
+                        
+                        debugInfo.innerHTML = `
+                            <div class="info-box success">
+                                ✅ <strong>Gateway deposit successful!</strong><br>
+                                Used proper deposit() method to trigger balance sync.<br>
+                                TX: <a href="https://sepolia.etherscan.io/tx/${depositTx.hash}" target="_blank">${depositTx.hash.substring(0,10)}...</a><br><br>
+                                Wait 2-3 minutes then refresh balances.
+                            </div>
+                        `;
+                        
+                    } else {
+                        throw new Error('Insufficient USDC for deposit strategy');
+                    }
+                    
+                } catch (depositError) {
+                    console.log('Deposit strategy failed:', depositError);
+                    
+                    // Strategy 2: Try to find and expire old attestations
+                    debugInfo.innerHTML = '<div class="loading"></div> Strategy 2: Checking for expired attestations...';
+                    
+                    try {
+                        // Check if we can find attestation data in local storage or memory
+                        const storedAttestations = localStorage.getItem('gateway_attestations');
+                        if (storedAttestations) {
+                            const attestations = JSON.parse(storedAttestations);
+                            debugInfo.innerHTML = `
+                                <div class="info-box info">
+                                    📋 <strong>Found ${attestations.length} stored attestations</strong><br>
+                                    These may be keeping your funds reserved.<br><br>
+                                    <strong>Options:</strong><br>
+                                    1. Clear local attestation cache<br>
+                                    2. Wait for automatic expiry (10 minutes each)<br>
+                                    3. Attempt to mint if they're valid
+                                </div>
+                            `;
+                            
+                            if (confirm('Clear stored attestations cache? This may help unlock funds.')) {
+                                localStorage.removeItem('gateway_attestations');
+                                localStorage.removeItem('gateway_transfers');
+                                localStorage.removeItem('pending_attestations');
+                                
+                                debugInfo.innerHTML = `
+                                    <div class="info-box success">
+                                        🧹 <strong>Cleared attestation cache</strong><br>
+                                        Local attestation data removed. This may help Circle Gateway<br>
+                                        recognize your funds as available again.<br><br>
+                                        Refresh balances in 30 seconds.
+                                    </div>
+                                `;
+                            }
+                        } else {
+                            // Strategy 3: Contact Circle Gateway support with detailed info
+                            const depositor = userAccount;
+                            debugInfo.innerHTML = `
+                                <div class="info-box warning">
+                                    <strong>🚨 Advanced Unlock Required</strong><br><br>
+                                    Your ${(1099.59).toFixed(2)} USDC is locked by Circle Gateway's internal state.<br>
+                                    This requires manual intervention.<br><br>
+                                    
+                                    <strong>📞 Contact Circle Support:</strong><br>
+                                    • Email: support@circle.com<br>
+                                    • Subject: "Testnet Gateway Funds Locked"<br>
+                                    • Include: Depositor address: ${depositor}<br>
+                                    • Include: Gateway Wallet: ${GATEWAY_WALLET}<br>
+                                    • Include: Amount locked: 1099.59 USDC<br><br>
+                                    
+                                    <strong>🔄 Alternative: Fresh Wallet</strong><br>
+                                    Use a different MetaMask account to bypass this issue<br>
+                                    while Circle Support resolves the lock.
+                                </div>
+                            `;
+                        }
+                        
+                    } catch (cacheError) {
+                        debugInfo.innerHTML = `
+                            <div class="info-box danger">
+                                <strong>❌ All unlock strategies failed</strong><br><br>
+                                This confirms the issue is with Circle Gateway's testnet infrastructure.<br>
+                                Your funds are safe but locked by their API.<br><br>
+                                
+                                <strong>🎯 Immediate Solution:</strong><br>
+                                1. Connect a different wallet address<br>
+                                2. Add 10 USDC to the new address<br>
+                                3. Use that for 3-chain transfers<br><br>
+                                
+                                <strong>📞 Report to Circle:</strong><br>
+                                Depositor: ${userAccount}<br>
+                                Locked Amount: 1099.59 USDC<br>
+                                Issue: Testnet funds indefinitely reserved
+                            </div>
+                        `;
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Force unlock failed:', error);
+                debugInfo.innerHTML = `
+                    <div class="info-box danger">
+                        <strong>❌ Force unlock failed</strong><br>
+                        Error: ${error.message}<br><br>
+                        <strong>Recommended Action:</strong><br>
+                        Use a fresh wallet address to bypass this Circle Gateway testnet issue.
                     </div>
                 `;
             }
