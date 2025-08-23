@@ -431,9 +431,9 @@ export class GatewayWorkflowManager {
                     <div style="font-size: 12px; color: #10b981; font-weight: 600;" id="gateway-header-balance-${data.workflow_id}">💰 Unified Gateway Balance: ${data.unifiedBalance || 'Loading real balance...'}</div>
                     <div style="font-size: 10px; color: #9ca3af; white-space: pre-line; margin-top: 4px;" id="gateway-balance-breakdown-${data.workflow_id}">${data.balanceBreakdown || 'Fetching live chain breakdown from Circle API...'}</div>
                     <div style="margin-top: 8px;">
-                        <button onclick="gatewayWorkflowManager.checkGatewayBalanceManually()" class="gateway-verification-link" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer;">
-                            💰 Check Gateway Balance
-                        </button>
+                        <a href="https://sepolia.etherscan.io/token/0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238?a=0x0077777d7EBA4688BDeF3E311b846F25870A19B9" target="_blank" class="gateway-verification-link" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer; text-decoration: none; display: inline-block;">
+                            🔗 Verify Gateway Balance
+                        </a>
                     </div>
                 </div>
                 <div>
