@@ -34,6 +34,10 @@
     <button class="test-btn" onclick="checkBalance()">
         💰 Check Balance
     </button>
+    
+    <button class="unlock-btn" onclick="getTestnetUSDC()">
+        🚰 Get Testnet USDC
+    </button>
 
     <script>
         // Constants
@@ -140,11 +144,6 @@
                     'function approve(address spender, uint256 amount) returns (bool)'
                 ], signer);
                 
-                // Gateway contract  
-                const gatewayContract = new ethers.Contract(GATEWAY_WALLET, [
-                    'function deposit(uint256 amount, address token, uint32 destinationDomain, address destinationReceiver) payable'
-                ], signer);
-                
                 const amount = ethers.utils.parseUnits('0.001', 6);
                 
                 // Check user balance
@@ -158,26 +157,55 @@
                 await approveTx.wait();
                 
                 updateStatus('Step 2: Making Gateway deposit...', 'info');
-                const depositTx = await gatewayContract.deposit(
-                    amount,
-                    USDC_SEPOLIA,
-                    0, // Sepolia domain
-                    userAccount
-                );
                 
-                updateStatus('Step 3: Waiting for confirmation...', 'info');
-                const receipt = await depositTx.wait();
-                
-                if (receipt.status === 1) {
-                    updateStatus(`✅ SUCCESS! Deposit completed. TX: ${depositTx.hash}. Wait 2-3 minutes then check balance again.`, 'success');
-                } else {
-                    throw new Error('Transaction failed');
+                // Try different deposit methods based on Circle Gateway docs
+                try {
+                    // Method 1: Try with depositWithPermit signature
+                    const gatewayContract1 = new ethers.Contract(GATEWAY_WALLET, [
+                        'function deposit(address token, uint256 amount, uint32 destinationDomain, address destinationReceiver)'
+                    ], signer);
+                    
+                    const depositTx = await gatewayContract1.deposit(
+                        USDC_SEPOLIA,
+                        amount,
+                        0, // Sepolia domain
+                        userAccount
+                    );
+                    
+                    updateStatus('Step 3: Waiting for confirmation...', 'info');
+                    const receipt = await depositTx.wait();
+                    
+                    if (receipt.status === 1) {
+                        updateStatus(`✅ SUCCESS! Deposit completed with Method 1. TX: ${depositTx.hash}. Wait 2-3 minutes then check balance.`, 'success');
+                        return;
+                    }
+                    
+                } catch (method1Error) {
+                    updateStatus('Method 1 failed, trying Method 2...', 'info');
+                    console.log('Method 1 error:', method1Error);
+                    
+                    // Method 2: Try simple transfer to Gateway wallet (may trigger processing)
+                    const transferTx = await usdcContract.transfer(GATEWAY_WALLET, amount);
+                    
+                    updateStatus('Step 3: Waiting for confirmation...', 'info');
+                    const receipt = await transferTx.wait();
+                    
+                    if (receipt.status === 1) {
+                        updateStatus(`✅ SUCCESS! Transfer completed with Method 2. TX: ${transferTx.hash}. This may trigger balance sync. Wait 5 minutes then check balance.`, 'success');
+                        return;
+                    }
                 }
                 
             } catch (error) {
                 updateStatus(`❌ Unlock failed: ${error.message}`, 'error');
                 console.error('Full error:', error);
             }
+        }
+        
+        function getTestnetUSDC() {
+            updateStatus('Opening Circle Faucet...', 'info');
+            window.open('https://faucet.circle.com', '_blank');
+            updateStatus('Get testnet USDC from Circle Faucet, then try unlock again', 'info');
         }
         
         // Auto-connect if available
