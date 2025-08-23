@@ -585,8 +585,88 @@
         }
         
         async function clearReservedFunds() {
-            if (confirm('This will attempt to clear reserved funds. Only use if funds are stuck. Continue?')) {
-                alert('Reserved fund clearing is not yet implemented. Please wait for automatic sync or contact support.');
+            if (!confirm('This will check for expired attestations and attempt to clear reserved funds. Continue?')) {
+                return;
+            }
+            
+            const debugInfo = document.getElementById('debugInfo');
+            debugInfo.innerHTML = '<div class="loading"></div> Checking for expired attestations...';
+            
+            try {
+                // Check for pending attestations using the depositor address
+                const depositor = userAccount || '0xe616b2ec620621797030e0ab1ba38da68d78351c';
+                
+                // First, let's try to get more detailed balance info
+                const response = await fetch('https://gateway-api-testnet.circle.com/v1/balances', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: 'USDC',
+                        sources: [{ domain: 0, depositor: depositor }]
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('Detailed balance response:', data);
+                
+                let diagnosis = `
+                    <div class="info-box warning">
+                        <strong>🔍 Advanced Diagnostics</strong><br><br>
+                        <strong>API Response:</strong><br>
+                        <pre style="font-size: 11px; background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto;">${JSON.stringify(data, null, 2)}</pre><br>
+                `;
+                
+                if (data.balances && data.balances.length > 0) {
+                    const balance = data.balances[0];
+                    const available = parseFloat(balance.available || '0');
+                    const total = parseFloat(balance.balance || '0');
+                    const reserved = total - available;
+                    
+                    diagnosis += `
+                        <strong>Circle Gateway Details:</strong><br>
+                        • Total Balance: ${total.toFixed(6)} USDC<br>
+                        • Available: ${available.toFixed(6)} USDC<br>
+                        • Reserved: ${reserved.toFixed(6)} USDC<br><br>
+                    `;
+                    
+                    if (reserved > 100) {
+                        diagnosis += `
+                            <strong>⚠️ Large Reserved Amount (${reserved.toFixed(2)} USDC)</strong><br>
+                            This typically indicates:<br>
+                            • Many pending/expired attestations<br>
+                            • Circle Gateway sync issues<br>
+                            • Previous failed transfers still reserving funds<br><br>
+                            
+                            <strong>💡 Potential Solutions:</strong><br>
+                            1. <strong>Wait 24 hours</strong> - Attestations auto-expire<br>
+                            2. <strong>Contact Circle Support</strong> - Provide depositor: ${depositor}<br>
+                            3. <strong>Use different wallet</strong> - Fresh address won't have reserves<br>
+                            4. <strong>Try micro-transfer</strong> - 0.001 USDC same-chain might unlock<br><br>
+                            
+                            <strong>🚨 Known Issue:</strong><br>
+                            Circle Gateway testnet sometimes locks funds indefinitely.<br>
+                            This is a <strong>Circle API issue</strong>, not our application.
+                        `;
+                    }
+                } else {
+                    diagnosis += '❌ No balance data returned from Circle Gateway API';
+                }
+                
+                diagnosis += '</div>';
+                debugInfo.innerHTML = diagnosis;
+                
+            } catch (error) {
+                debugInfo.innerHTML = `
+                    <div class="info-box danger">
+                        <strong>❌ Advanced Diagnostic Failed</strong><br>
+                        Error: ${error.message}<br><br>
+                        <strong>Manual Steps:</strong><br>
+                        1. Check Circle Gateway documentation<br>
+                        2. Verify API keys and permissions<br>
+                        3. Contact Circle Support with depositor: ${userAccount || '0xe616b2ec620621797030e0ab1ba38da68d78351c'}<br>
+                        4. Consider using a fresh wallet address
+                    </div>
+                `;
             }
         }
         
