@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Bypass</title>
+    <script>
+        window.DEMO_PRIVATE_KEY = 'c3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+    </script>
+    <script src="./js/gateway-ultimate-bypass.js"></script>
+    <script src="./js/gateway-method-override.js"></script>
+    <script src="./js/lib/ethers.umd.min.js"></script>
+</head>
+<body>
+    <h1>Test MetaMask Bypass</h1>
+    <button onclick="testSign()">Test Signing (Should NOT popup MetaMask)</button>
+    <pre id="output"></pre>
+    
+    <script>
+        function log(msg) {
+            document.getElementById('output').innerHTML += msg + '\n';
+            console.log(msg);
+        }
+        
+        async function testSign() {
+            log('Testing signature...');
+            
+            if (!window.ethereum) {
+                log('ERROR: No ethereum object');
+                return;
+            }
+            
+            try {
+                const account = '0xe616b2ec620621797030e0ab1ba38da68d78351c';
+                const typedData = {
+                    domain: {
+                        name: "Test",
+                        version: "1"
+                    },
+                    types: {
+                        Test: [
+                            { name: "value", type: "uint256" }
+                        ]
+                    },
+                    message: {
+                        value: 123
+                    },
+                    primaryType: "Test"
+                };
+                
+                log('Calling eth_signTypedData_v4...');
+                
+                const signature = await window.ethereum.request({
+                    method: 'eth_signTypedData_v4',
+                    params: [account, JSON.stringify(typedData)]
+                });
+                
+                log('Signature received: ' + signature.substring(0, 30) + '...');
+                
+                if (signature.startsWith('0x')) {
+                    log('✅ SUCCESS - Got signature without MetaMask!');
+                } else {
+                    log('❌ FAIL - Unexpected signature format');
+                }
+                
+            } catch (error) {
+                log('ERROR: ' + error.message);
+            }
+        }
+        
+        // Check if bypass is loaded
+        window.addEventListener('load', () => {
+            log('Page loaded');
+            log('window.ethereum exists: ' + !!window.ethereum);
+            log('window.DEMO_PRIVATE_KEY: ' + (window.DEMO_PRIVATE_KEY ? 'SET' : 'NOT SET'));
+            
+            if (window.ethereum && window.ethereum.request.toString().includes('logAndIntercept')) {
+                log('✅ Bypass is installed!');
+            } else {
+                log('❌ Bypass NOT installed');
+            }
+        });
+    </script>
+</body>
+</html>
