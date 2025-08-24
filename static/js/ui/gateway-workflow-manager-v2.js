@@ -1130,10 +1130,18 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
                 };
                 
                 // Sign based on the method that was used to determine userAddress
-                const privateKey = this.privateKey || window.DEMO_PRIVATE_KEY;
+                console.log('🔍 DEBUG: Checking signing method...');
+                console.log('   this.privateKey:', this.privateKey ? 'SET' : 'NOT SET');
+                console.log('   window.DEMO_PRIVATE_KEY:', window.DEMO_PRIVATE_KEY ? 'SET' : 'NOT SET');
                 
-                if (privateKey && privateKey !== 'undefined') {
-                    console.log('🔑 DEBUG: Using programmatic signing');
+                const privateKey = this.privateKey || window.DEMO_PRIVATE_KEY;
+                console.log('   privateKey after merge:', privateKey ? 'SET' : 'NOT SET');
+                console.log('   privateKey type:', typeof privateKey);
+                console.log('   privateKey value:', privateKey);
+                
+                // Fixed condition: Check for valid private key more carefully
+                if (privateKey && typeof privateKey === 'string' && privateKey.length > 0 && privateKey !== 'undefined') {
+                    console.log('🔑 ✅ Using PROGRAMMATIC SIGNING (no MetaMask popup)');
                     console.log('   Private key (first 10):', privateKey.substring(0, 10));
                     console.log('   Private key (full):', privateKey);
                     
@@ -1379,11 +1387,16 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
                 
                 // Request signature for this specific chain
                 console.log(`🖊️ Signing burn intent for ${chain.name}...`);
+                console.log('   Checking for programmatic signing...');
+                console.log('   this.privateKey:', this.privateKey ? 'SET' : 'NOT SET');
+                console.log('   window.DEMO_PRIVATE_KEY:', window.DEMO_PRIVATE_KEY ? 'SET' : 'NOT SET');
+                
                 try {
                     let chainSignature;
                     const privateKey = this.privateKey || window.DEMO_PRIVATE_KEY;
                     
-                    if (privateKey && privateKey !== 'undefined') {
+                    // Fixed condition: Better check for valid private key
+                    if (privateKey && typeof privateKey === 'string' && privateKey.length > 0 && privateKey !== 'undefined') {
                         // Use ethers to sign with private key directly
                         console.log(`🔑 Using programmatic signing for ${chain.name}`);
                         const wallet = new ethers.Wallet(privateKey);
