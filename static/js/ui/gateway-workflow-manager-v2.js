@@ -129,6 +129,9 @@ export class GatewayWorkflowManager {
         this.userAccount = null;
         this.privateKey = null; // Will be set for programmatic signing
         
+        // Auto-detect and enable programmatic signing if available
+        this.checkAndEnableProgrammaticSigning();
+        
         // Gateway configuration - OFFICIAL TESTNET ADDRESSES
         this.gatewayConfig = {
             testnet: {
@@ -171,6 +174,46 @@ export class GatewayWorkflowManager {
                 gatewayWallet: '0x77777777Dcc4d5A8B6E418Fd04D8997ef11000eE'
             }
         };
+    }
+
+    checkAndEnableProgrammaticSigning() {
+        // Check if programmatic signing is available and valid
+        if (window.DEMO_PRIVATE_KEY && 
+            typeof window.DEMO_PRIVATE_KEY === 'string' && 
+            window.DEMO_PRIVATE_KEY.length > 0 && 
+            window.DEMO_PRIVATE_KEY !== 'undefined') {
+            
+            try {
+                // Verify the private key is valid and matches expected address
+                const formattedKey = window.DEMO_PRIVATE_KEY.startsWith('0x') ? 
+                    window.DEMO_PRIVATE_KEY : '0x' + window.DEMO_PRIVATE_KEY;
+                
+                if (window.ethers) {
+                    const wallet = new ethers.Wallet(formattedKey);
+                    const expectedAddress = '0xe616b2ec620621797030e0ab1ba38da68d78351c';
+                    
+                    if (wallet.address.toLowerCase() === expectedAddress) {
+                        this.privateKey = window.DEMO_PRIVATE_KEY;
+                        console.log('🤖 AUTO-SIGNING ENABLED: Gateway will sign automatically');
+                        console.log('   Wallet address:', wallet.address);
+                        console.log('   No MetaMask popups will appear for Gateway transfers');
+                        
+                        // Set a flag for UI indication
+                        window.GATEWAY_AUTO_SIGNING_ENABLED = true;
+                    } else {
+                        console.warn('⚠️ Private key does not match expected address');
+                    }
+                } else {
+                    // Ethers might not be loaded yet, just save the key
+                    this.privateKey = window.DEMO_PRIVATE_KEY;
+                    console.log('🔑 Private key saved for later use');
+                }
+            } catch (error) {
+                console.error('❌ Error validating private key:', error);
+            }
+        } else {
+            console.log('ℹ️ No private key configured - will use MetaMask for signing');
+        }
     }
 
     async initialize() {
