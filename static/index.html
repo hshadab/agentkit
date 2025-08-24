@@ -20,7 +20,7 @@
     <div class="main-container">
         <div class="header">
             <h1>
-                <img src="https://cdn.prod.website-files.com/65d52b07d5bc41614daa723f/665df12739c532f45b665fe7_logo-novanet.svg" alt="Novanet" style="height: 32px; margin-right: 12px; vertical-align: middle;">
+                <img src="./img/logo-novanet.svg" alt="Novanet" style="height: 32px; margin-right: 12px; vertical-align: middle;">
                 <span>Verifiable Agent Kit</span>
             </h1>
             <div style="display: flex; align-items: center; gap: 16px;">
@@ -91,22 +91,29 @@
         <button onclick="window.blockchainVerifier.connectIoTeX()">Connect MetaMask</button>
     </div>
 
-    <!-- Emergency stop refresh loop -->
-    <script src="./stop-refresh.js"></script>
+    <!-- Cache management disabled - manual refresh only -->
+    <script>
+        // Set version for tracking but don't auto-reload
+        const APP_VERSION = '20250824-1030';
+        localStorage.setItem('app_version', APP_VERSION);
+        console.log('App version:', APP_VERSION);
+    </script>
     
-    <!-- Auto Cache Buster -->
-    <script type="module" src="./js/core/auto-cache-buster.js"></script>
+    <!-- Auto Cache Buster - DISABLED to prevent reload loops -->
+    <!-- <script type="module" src="./js/core/auto-cache-buster.js"></script> -->
     
     <!-- SES Compatibility for snarkjs -->
     <script src="./js/core/ses-compatibility.js"></script>
     
     <!-- Emergency patches removed - fixes integrated into source code -->
     
-    <!-- External dependencies -->
-    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/iden3/snarkjs/build/snarkjs.min.js"></script>
-    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <!-- External dependencies - Using local copies -->
+    <script src="./js/lib/web3.min.js"></script>
+    <script src="./js/lib/snarkjs.min.js"></script>
+    <!-- Fixed Solana Web3.js - local copy -->
+    <script src="./js/lib/solana-web3.min.js"></script>
+    <script src="./js/core/solana-fallback.js"></script>
+    <script src="./js/lib/ethers.umd.min.js"></script>
     <script src="./js/core/ethers-fallback.js"></script>
     
     <!-- zkEngine Interface -->
@@ -144,9 +151,9 @@
     </script>
     
     <!-- Main application module - must be loaded as module since it uses ES6 imports -->
-    <script type="module" src="./js/main.js?v=20250823-050000"></script>
+    <script type="module" src="./js/main.js?v=20250824-150000"></script>
     
-    <!-- CCTP fixes now integrated directly into main.js source code -->
+    <!-- Module wrappers for blockchain functionality -->
     <!-- Wrapper to expose modules to window -->
     <script type="module" src="./js/blockchain/blockchain-verifier-wrapper.js?v=20250823-042901"></script>
     <script type="module" src="./js/blockchain/avalanche-medical-wrapper.js?v=20250823-042901"></script>
@@ -190,5 +197,7 @@
     <script src="./js/debug/coordinate-injection-final.js"></script>
     <!-- Proof analysis -->
     <script src="./js/debug/proof-analysis.js"></script>
+    <!-- Demo signing config for programmatic signatures -->
+    <script src="./js/demo-signing-config.js"></script>
 </body>
 </html>

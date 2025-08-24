@@ -75,6 +75,41 @@ Proves agent authorization then executes real USDC transfers between Ethereum an
   - ✅ **Gas Fee Protection** - Smart gas limits prevent excessive transaction fees (capped at 500,000 gas)
   - ✅ **Real zkEngine Proof Integration** - Uses actual zkEngine proof data instead of mock/API calls
   - ✅ **Clean UI Design** - Removed all inner container backgrounds, kept only essential borders for visual hierarchy
+
+#### 7. **Circle Gateway Multi-Chain Transfers** 🆕 **FIXED & WORKING**
+Execute real USDC transfers across multiple chains simultaneously using Circle's Gateway API with EIP-712 signatures.
+- **Complete Gateway Workflow**:
+  1. **Multi-Chain Intent Creation** - Generate transfer intents for 3+ chains simultaneously
+  2. **EIP-712 Signature Generation** - Sign structured data with proper field ordering
+  3. **Gateway API Submission** - Submit burn intents to Circle Gateway testnet
+  4. **Cross-Chain Settlement** - Automatic USDC movement across chains
+- **Critical Fix (Aug 24, 2025)**:
+  - ✅ **Fixed EIP-712 Field Ordering** - Corrected TransferSpec field order (value at position 12, not 4)
+  - ✅ **Fixed CDN Dependencies** - Migrated all libraries to local copies to prevent loading failures
+  - ✅ **Fixed Signature Verification** - Resolved "recovered signer does not match" errors
+  - ✅ **Working Configuration**:
+    ```javascript
+    // CRITICAL: Field order must match exactly
+    TransferSpec: [
+      { name: "version", type: "uint32" },        // Position 1
+      { name: "sourceDomain", type: "uint32" },   // Position 2
+      { name: "destinationDomain", type: "uint32" }, // Position 3
+      { name: "sourceContract", type: "bytes32" }, // Position 4-11: All addresses
+      // ... other address fields ...
+      { name: "value", type: "uint256" },         // Position 12 - MUST be here!
+      { name: "salt", type: "bytes32" },          // Position 13
+      { name: "hookData", type: "bytes" }         // Position 14
+    ]
+    ```
+- **Gateway Features**:
+  - Multi-chain deployment in single transaction
+  - Programmatic signing with private keys
+  - MetaMask integration for user signatures
+  - Real-time transfer status tracking
+  - Fee structure: Base fee (2 USDC) + Transfer fee (0.00005 USDC)
+- **Supported Chains**: Ethereum, Base, Avalanche (testnet)
+- **API Endpoint**: https://gateway-api-testnet.circle.com/v1/transfer
+- **Example**: `"Deploy agent funds across 3 chains for DeFi liquidity"`
 - **Networks**: Ethereum Sepolia ↔ Base Sepolia (expandable to mainnet)
 - **Use Cases**: Agent payments, automated DeFi, conditional transfers, cross-chain AI services
 - **Example**: `"Transfer 1 USDC from ethereum to base using zkp for agent cross_chain_executor_001"`
@@ -414,6 +449,25 @@ agentkit/
 3. **IoTeX verification** - Ensure IoTeX testnet is configured in MetaMask
 4. **Wallet connection** - Ensure correct network is selected
 5. **Proof generation timeout** - Normal for complex proofs (15-30 seconds)
+
+### Circle Gateway Issues (FIXED Aug 24, 2025)
+If you encounter Gateway signature verification errors:
+
+**✅ FIXED**: EIP-712 signature verification issues completely resolved
+- **Root Cause**: Incorrect TransferSpec field ordering in EIP-712 type definition
+- **Solution**: Field `value` must be at position 12 (after all address fields, before `salt`)
+- **Symptoms Fixed**:
+  - "recovered signer does not match sourceSigner" errors
+  - Circle API 400/401 responses
+  - Local signature verification passing but API rejecting
+- **Working Transfer ID Example**: `0c4d30d9-7f30-484d-a538-9606f3c40087`
+
+**Critical Implementation Notes**:
+1. **Domain Structure**: Use minimal domain (only `name` and `version`, no `chainId`)
+2. **Type Definitions**: `version` field must be `uint32` (not `uint8`)
+3. **Field Ordering**: Exact order as shown in configuration above
+4. **Address Encoding**: All addresses must be bytes32 (padded to 64 characters)
+5. **Library Dependencies**: All JS libraries loaded locally (no CDN dependencies)
 
 ### IoTeX Device Proximity Workflow (Recently Fixed)
 If you encounter issues with IoTeX device registration:

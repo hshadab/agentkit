@@ -127,6 +127,7 @@ export class GatewayWorkflowManager {
         this.initialized = false;
         this.web3Provider = null;
         this.userAccount = null;
+        this.privateKey = null; // Will be set for programmatic signing
         
         // Gateway configuration - OFFICIAL TESTNET ADDRESSES
         this.gatewayConfig = {
@@ -175,6 +176,30 @@ export class GatewayWorkflowManager {
     async initialize() {
         if (this.initialized) return;
         
+        // Try to use demo private key for programmatic signing
+        // FIXED: Check for actual string value, not just 'undefined' string
+        if (window.DEMO_PRIVATE_KEY && typeof window.DEMO_PRIVATE_KEY === 'string' && window.DEMO_PRIVATE_KEY.length > 0 && window.DEMO_PRIVATE_KEY !== 'undefined') {
+            this.privateKey = window.DEMO_PRIVATE_KEY;
+            console.log('🔑 Demo private key loaded - MetaMask confirmations will be bypassed!');
+            console.log('🔑 Private key from window.DEMO_PRIVATE_KEY:', window.DEMO_PRIVATE_KEY);
+            
+            // Verify the private key produces the expected address
+            try {
+                const testWallet = new ethers.Wallet(window.DEMO_PRIVATE_KEY.startsWith('0x') ? window.DEMO_PRIVATE_KEY : '0x' + window.DEMO_PRIVATE_KEY);
+                console.log('🔑 Test wallet address from private key:', testWallet.address);
+                if (testWallet.address.toLowerCase() !== '0xe616b2ec620621797030e0ab1ba38da68d78351c') {
+                    console.error('❌ WARNING: Private key does not produce expected address!');
+                    console.error('   Expected: 0xe616b2ec620621797030e0ab1ba38da68d78351c');
+                    console.error('   Got:', testWallet.address.toLowerCase());
+                }
+            } catch (error) {
+                console.error('❌ Error testing private key:', error);
+            }
+        } else {
+            this.privateKey = null; // Ensure it's null, not undefined
+            console.log('⚠️ Demo private key not available, will use MetaMask for confirmations');
+        }
+        
         this.setupMessageHandlers();
         this.injectStyles();
         await this.initializeMetaMask();
@@ -221,6 +246,12 @@ export class GatewayWorkflowManager {
                 method: 'eth_requestAccounts' 
             });
             this.userAccount = accounts[0];
+            console.log('🔍 connectMetaMask called, got account:', this.userAccount);
+            if (this.userAccount && this.userAccount.toLowerCase() === '0xe616b2ec620621797030e0ab1ba38da68d78351c') {
+                console.error('❌ IMPORTANT: Your MetaMask account IS 0xe616b2ec620621797030e0ab1ba38da68d78351c');
+                console.error('   This is not a bug - this is your actual wallet address!');
+                console.error('   The signature verification is failing for a different reason.');
+            }
             console.log('🦊 MetaMask connected:', this.userAccount);
             return this.userAccount;
         } catch (error) {
@@ -263,18 +294,9 @@ export class GatewayWorkflowManager {
                 border-radius: 12px 12px 0 0;
             }
 
+            /* Removed 60x faster badge */
             .gateway-advantage-badge {
-                position: absolute;
-                top: 12px;
-                right: 12px;
-                background: linear-gradient(45deg, #10b981, #06b6d4);
-                color: white;
-                padding: 4px 8px;
-                border-radius: 6px;
-                font-size: 10px;
-                font-weight: 700;
-                letter-spacing: 0.05em;
-                text-transform: uppercase;
+                display: none;
             }
 
             .gateway-unified-balance {
@@ -416,7 +438,6 @@ export class GatewayWorkflowManager {
         const steps = this.getGatewaySteps(data, isTestnet);
         
         card.innerHTML = `
-            <div class="gateway-advantage-badge">60x Faster</div>
             <div class="card-header">
                 <div class="card-header-row">
                     <div class="card-title">CIRCLE GATEWAY</div>
@@ -428,14 +449,11 @@ export class GatewayWorkflowManager {
             
             <div class="gateway-unified-balance">
                 <div>
-                    <div style="font-size: 12px; color: #10b981; font-weight: 600;" id="gateway-header-balance-${data.workflow_id}">💰 Unified Gateway Balance: ${data.unifiedBalance || 'Loading real balance...'}</div>
+                    <div style="font-size: 12px; color: #10b981; font-weight: 600;" id="gateway-header-balance-${data.workflow_id}">💰 Spendable Balance: ${data.unifiedBalance || 'Loading real balance...'}</div>
                     <div style="font-size: 10px; color: #9ca3af; white-space: pre-line; margin-top: 4px;" id="gateway-balance-breakdown-${data.workflow_id}">${data.balanceBreakdown || 'Fetching live chain breakdown from Circle API...'}</div>
                     <div style="margin-top: 8px;">
-                        <a href="https://sepolia.etherscan.io/token/0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238?a=0x0077777d7EBA4688BDeF3E311b846F25870A19B9" target="_blank" class="gateway-verification-link" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer; text-decoration: none; display: inline-block; margin-right: 8px;">
+                        <a href="https://sepolia.etherscan.io/address/0x0077777d7EBA4688BDeF3E311b846F25870A19B9#tokentxns" target="_blank" class="gateway-verification-link" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer; text-decoration: none; display: inline-block; margin-right: 8px;">
                             🔗 Verify Gateway Balance
-                        </a>
-                        <a href="/gateway-manager.html" target="_blank" class="gateway-verification-link" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: #3b82f6; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer; text-decoration: none; display: inline-block;">
-                            🔧 Gateway Manager
                         </a>
                     </div>
                 </div>
@@ -451,14 +469,7 @@ export class GatewayWorkflowManager {
                 <div class="transfer-environment" style="color: ${isTestnet ? '#fbbf24' : '#10b981'};">${isTestnet ? 'Testnet' : 'Mainnet'}</div>
             </div>
 
-            <div class="gateway-networks">
-                ${networks.map(network => `
-                    <div class="gateway-network">
-                        <span>${network.icon}</span>
-                        <span>${network.name}</span>
-                    </div>
-                `).join('')}
-            </div>
+            <!-- Gateway networks removed - duplicated in step 3 -->
 
             <div class="workflow-steps-container">
                 ${steps.map((step, index) => this.createGatewayStepHTML(step, index, isTestnet)).join('')}
@@ -608,13 +619,61 @@ export class GatewayWorkflowManager {
     }
 
     async executeRealGatewayTransfer(amount, recipient, agentId, isTestnet) {
-        console.log('🌐 Executing REAL Gateway multi-chain deployment...');
+        console.log('🌐 Executing REAL Gateway multi-chain deployment... (VERSION 2024-08-24-11:52)');
         console.log('🔍 DEBUG: Function entry - parameters:', { amount, recipient, agentId, isTestnet });
+        console.log('🚨 CODE VERSION CHECK: If you do not see VERSION 2024-08-24-11:52 above, the browser is using cached code!');
         
         try {
             const deploymentAmountPerChain = parseFloat(amount);
-            const userAddress = this.userAccount || '0xE616B2eC620621797030E0AB1BA38DA68D78351C';
-            const recipientAddress = recipient || '0x742d35Cc6634C0532925a3b8D402b1DeF8d87d87';
+            
+            // Determine the actual signer address FIRST - MUST match what we'll use for signing
+            console.log('🔍 DEBUG: Determining signer address...');
+            console.log('   this.userAccount (stored):', this.userAccount);
+            console.log('   this.privateKey:', this.privateKey ? 'SET' : 'NOT SET');
+            console.log('   window.DEMO_PRIVATE_KEY:', window.DEMO_PRIVATE_KEY ? 'SET' : 'NOT SET');
+            console.log('   window.ethereum:', window.ethereum ? 'AVAILABLE' : 'NOT AVAILABLE');
+            
+            // Note: 0xe616b2ec620621797030e0ab1ba38da68d78351c is the actual user's MetaMask account
+            
+            let userAddress;
+            const privateKey = this.privateKey || window.DEMO_PRIVATE_KEY;
+            
+            if (privateKey && typeof privateKey === 'string' && privateKey.length > 0 && privateKey !== 'undefined') {
+                // Programmatic signing with private key
+                console.log('🔑 Found private key, creating wallet...');
+                console.log('🔑 Private key value:', privateKey);
+                console.log('🔑 Private key length:', privateKey.length);
+                console.log('🔑 Private key starts with 0x?', privateKey.startsWith('0x'));
+                
+                // Ensure private key has 0x prefix for ethers
+                const formattedKey = privateKey.startsWith('0x') ? privateKey : '0x' + privateKey;
+                const wallet = new ethers.Wallet(formattedKey);
+                userAddress = wallet.address.toLowerCase();
+                console.log('🔑 Created wallet address:', wallet.address);
+                console.log('🔑 Will use programmatic signing with address:', userAddress);
+                console.log('🔑 Private key first 10 chars:', privateKey.substring(0, 10));
+            } else if (window.ethereum) {
+                // MetaMask signing - ALWAYS get fresh account, don't use stored value
+                console.log('🦊 Requesting MetaMask accounts...');
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if (!accounts || accounts.length === 0) {
+                    throw new Error('No MetaMask accounts available. Please connect your wallet.');
+                }
+                userAddress = accounts[0].toLowerCase();
+                console.log('🦊 Will use MetaMask signing with address:', userAddress);
+                console.log('   All MetaMask accounts:', accounts);
+                // Update stored value for consistency
+                this.userAccount = userAddress;
+            } else {
+                // No valid signing method available
+                throw new Error('No signing method available. Please connect MetaMask or provide a private key.');
+            }
+            
+            console.log('✅ FINAL userAddress determined:', userAddress);
+            console.log('✅ this.userAccount updated to:', this.userAccount);
+            
+            
+            const recipientAddress = recipient || userAddress;
             
             // DEBUG: Check amount conversion for decimal issue
             console.log('🔍 AMOUNT CONVERSION DEBUG:');
@@ -622,8 +681,8 @@ export class GatewayWorkflowManager {
             console.log(`   Parsed amount: ${deploymentAmountPerChain} (type: ${typeof deploymentAmountPerChain})`);
             console.log(`   Micro-USDC value: ${Math.floor(deploymentAmountPerChain * 1000000)} (should be 10000 for 0.01 USDC)`);
             
-            // Deploy to all 3 chains as specified in workflow: Ethereum, Base, Avalanche
-            const chains = [
+            // Deploy to chains, but skip Avalanche if insufficient balance
+            const allChains = [
                 {
                     name: 'Ethereum Sepolia', 
                     domain: 0,
@@ -652,6 +711,12 @@ export class GatewayWorkflowManager {
                     gatewayMinter: '0x0022222ABE238Cc2C7Bb1f21003F0a260052475B'
                 }
             ];
+            
+            // Filter chains based on available balance
+            const chains = allChains.filter(chain => {
+                // No need to skip Avalanche - it has 177.91 USDC which is plenty
+                return true;
+            });
             
             // Check both unified balance and on-chain balance for comparison
             const currentBalance = await this.getRealGatewayBalance();
@@ -693,7 +758,7 @@ Shortfall: ${shortfall.toFixed(2)} USDC
 💡 If on-chain balance is insufficient, add more USDC:
    🔗 Circle Faucet: https://faucet.circle.com
    📍 Network: Sepolia  
-   💳 Address: ${this.userAccount || '0xe616b2ec620621797030e0ab1ba38da68d78351c'}
+   💳 Address: ${this.userAccount || 'NOT CONNECTED'}
    
 Balance Breakdown:
 ${balanceBreakdown || 'Could not fetch breakdown'}`);
@@ -709,36 +774,43 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
             const config = this.gatewayConfig.testnet;
             const transfers = [];
             
-            // Helper function to convert address to 32-byte hex
-            const addressTo32Bytes = (address) => {
-                return '0x' + address.toLowerCase().replace('0x', '').padStart(64, '0');
+            // Helper function to convert address to 32-byte hex (local version for legacy code)
+            const addressTo32BytesLegacy = (address) => {
+                console.log(`🔍 DEBUG addressTo32BytesLegacy input: ${address}`);
+                const result = '0x' + address.toLowerCase().replace('0x', '').padStart(64, '0');
+                console.log(`   Output bytes32: ${result}`);
+                return result;
             };
             
             // Create separate transfer for each destination chain
             for (const chain of chains) {
                 console.log(`🎯 Creating transfer: Sepolia → ${chain.name}`);
+                console.log(`🔍 DEBUG: Creating burn intent with userAddress: ${userAddress}`);
                 
                 const burnIntent = {
                     maxBlockHeight: "115792089237316195423570985008687907853269984665640564039457584007913129639935",
                     maxFee: "2100000", // 2.1 USDC max fee (Circle Gateway minimum + buffer)
                     spec: {
+                        // CRITICAL: Fields MUST be in this exact order for Circle API
                         version: 1,
                         sourceDomain: 0, // Always Sepolia (source)
                         destinationDomain: chain.domain, // Target chain
-                        sourceContract: addressTo32Bytes(config.gatewayWallet),
-                        destinationContract: addressTo32Bytes(config.gatewayMinter), 
-                        sourceToken: addressTo32Bytes(config.networks[0].usdc), // Sepolia USDC
-                        destinationToken: addressTo32Bytes(chain.usdc), // Destination USDC
-                        sourceDepositor: addressTo32Bytes(userAddress),
-                        destinationRecipient: addressTo32Bytes(recipientAddress),
-                        sourceSigner: addressTo32Bytes(userAddress),
+                        value: Math.floor(deploymentAmountPerChain * 1000000).toString(), // MOVED HERE
+                        sourceContract: addressTo32BytesLegacy(config.gatewayWallet),
+                        destinationContract: addressTo32BytesLegacy(config.gatewayMinter), 
+                        sourceToken: addressTo32BytesLegacy(config.networks[0].usdc), // Sepolia USDC
+                        destinationToken: addressTo32BytesLegacy(chain.usdc), // Destination USDC
+                        sourceDepositor: addressTo32BytesLegacy(userAddress),
+                        destinationRecipient: addressTo32BytesLegacy(recipientAddress),
+                        sourceSigner: addressTo32BytesLegacy(userAddress),
                         destinationCaller: "0x0000000000000000000000000000000000000000000000000000000000000000", // Zero address
-                        value: Math.floor(deploymentAmountPerChain * 1000000).toString(),
                         salt: '0x' + Math.floor(Date.now() + Math.random() * 1000000).toString(16).padStart(64, '0'),
                         hookData: "0x"
                     }
                 };
                 
+                console.log(`🔍 DEBUG: Burn intent sourceSigner (bytes32): ${burnIntent.spec.sourceSigner}`);
+                console.log(`🔍 DEBUG: Burn intent sourceSigner (decoded): ${'0x' + burnIntent.spec.sourceSigner.slice(26)}`);
                 transfers.push({ chain, burnIntent });
             }
             
@@ -760,10 +832,11 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
             // STEP 1: Create EIP-712 TypedData for Circle Gateway burn intent (official format)
             console.log('🔐 Creating official Circle Gateway EIP-712 TypedData...');
             
-            // Official Circle Gateway domain parameters
+            // MetaMask requires chainId, but we'll use minimal domain for verification
             const eip712Domain = {
                 name: "GatewayWallet",
                 version: "1"
+                // Minimal domain - Circle's API expects exactly this, no chainId or verifyingContract
             };
             
             // Official Circle Gateway TypedData structure
@@ -771,9 +844,10 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
                 EIP712Domain: [
                     { name: "name", type: "string" },
                     { name: "version", type: "string" }
+                    // No chainId or verifyingContract - Circle uses minimal domain
                 ],
                 TransferSpec: [
-                    { name: "version", type: "uint32" },
+                    { name: "version", type: "uint32" }, // Must be uint32, not uint8!
                     { name: "sourceDomain", type: "uint32" },
                     { name: "destinationDomain", type: "uint32" },
                     { name: "sourceContract", type: "bytes32" },
@@ -798,11 +872,20 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
             // Proper bytes32 conversion following Circle Gateway specification
             // ALL address fields must be exactly 32 bytes (64 hex chars + 0x prefix)
             const addressToBytes32 = (address) => {
-                if (!address || typeof address !== 'string' || !address.startsWith('0x')) {
+                if (!address || typeof address !== 'string') {
                     throw new Error(`Invalid address for bytes32 conversion: ${address}`);
                 }
+                // Normalize the address (handle checksums and ensure it starts with 0x)
+                let normalizedAddress = address.toLowerCase();
+                if (!normalizedAddress.startsWith('0x')) {
+                    normalizedAddress = '0x' + normalizedAddress;
+                }
+                // Validate it's a valid address length (42 chars including 0x)
+                if (normalizedAddress.length !== 42) {
+                    throw new Error(`Invalid address length for bytes32 conversion: ${address}`);
+                }
                 // Pad 20-byte address to 32 bytes (left-pad with zeros)
-                const result = '0x' + address.slice(2).toLowerCase().padStart(64, '0');
+                const result = '0x' + normalizedAddress.slice(2).padStart(64, '0');
                 console.log(`🔍 Address → bytes32: "${address}" → "${result}"`);
                 return result;
             };
@@ -831,26 +914,28 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
                 }
             };
             
-            // Create properly formatted transferSpec following Circle Gateway specification
-            // Convert USDC amount to microUSDC (6 decimals) as BigInt
-            const microUSDCAmount = BigInt(Math.floor(deploymentAmountPerChain * 1000000));
+            // Use the transferSpec from the burnIntent we already created with correct addresses
+            // Just need to convert some fields to the right format for EIP-712
+            const transferSpec = burnIntent.spec;
             
-            const transferSpec = {
-                version: 1, // uint32
-                sourceDomain: 0, // Ethereum Sepolia 
-                destinationDomain: targetChain.domain, // uint32
-                sourceContract: addressToBytes32(config.gatewayWallet), // bytes32
-                destinationContract: addressToBytes32(config.gatewayMinter), // bytes32
-                sourceToken: addressToBytes32(config.networks[0].usdc), // bytes32 - Sepolia USDC
-                destinationToken: addressToBytes32(targetChain.usdc), // bytes32 - Target chain USDC
-                sourceDepositor: addressToBytes32(userAddress), // bytes32
-                destinationRecipient: addressToBytes32(recipientAddress), // bytes32
-                sourceSigner: addressToBytes32(userAddress), // bytes32
-                destinationCaller: addressToBytes32('0x0000000000000000000000000000000000000000'), // bytes32 - zero address
-                value: microUSDCAmount, // uint256 as BigInt (NOT hex string)
-                salt: generateSalt(), // bytes32 - cryptographically secure
-                hookData: '0x' // bytes - empty but valid hex
-            };
+            // DEFENSIVE CHECK: Log the spec before any modifications
+            console.log('🔍 DEFENSIVE CHECK - transferSpec before modifications:');
+            console.log('   sourceSigner:', transferSpec.sourceSigner);
+            console.log('   sourceDepositor:', transferSpec.sourceDepositor);
+            console.log('   value (before BigInt):', transferSpec.value);
+            
+            // Convert string values to proper types for EIP-712
+            transferSpec.value = BigInt(transferSpec.value); // Convert string to BigInt
+            
+            // DEFENSIVE CHECK: Log after BigInt conversion
+            console.log('🔍 DEFENSIVE CHECK - after BigInt conversion:');
+            console.log('   sourceSigner:', transferSpec.sourceSigner);
+            console.log('   value (after BigInt):', transferSpec.value);
+            
+            // Regenerate salt as proper bytes32 if needed
+            if (!transferSpec.salt || transferSpec.salt.length !== 66) {
+                transferSpec.salt = generateSalt();
+            }
             
             // Validate all bytes32 fields before signing
             console.log('🔍 Validating EIP-712 fields...');
@@ -919,35 +1004,190 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
             
             console.log('📋 EIP-712 TypedData prepared (with BigInt validation)');
             
-            // STEP 2: Request MetaMask signature using eth_signTypedData_v4
-            console.log('🖊️ Requesting EIP-712 signature from MetaMask...');
+            // STEP 2: Sign with proper sourceSigner matching
+            console.log('🖊️ Signing EIP-712 data with sourceSigner fix...');
             
-            if (!window.ethereum) {
-                throw new Error('MetaMask not available for EIP-712 signing');
-            }
+            // Helper to convert from bytes32 back to address for debugging
+            const fromBytes32Address = (b32) => {
+                console.log('🔍 DEBUG fromBytes32Address input:', b32);
+                if (!b32 || b32 === '0x' || b32.length !== 66) {
+                    console.log('   Invalid bytes32:', b32);
+                    return 'INVALID_BYTES32: ' + b32;
+                }
+                const result = '0x' + b32.slice(26).toLowerCase();
+                console.log('   Extracted address:', result);
+                return result;
+            };
             
             let signature;
+            // Extract the signer address from the transferSpec that was already created
+            // The sourceSigner in transferSpec is in bytes32 format, so decode it
+            console.log('🔍 DEBUG: Extracting actualSigner from transferSpec.sourceSigner');
+            console.log('   transferSpec.sourceSigner:', transferSpec.sourceSigner);
+            const actualSigner = fromBytes32Address(transferSpec.sourceSigner);
+            console.log('   actualSigner extracted:', actualSigner);
+            
+            console.log('🔍 DEBUG: At signing point...');
+            console.log('   transferSpec.sourceSigner (bytes32):', transferSpec.sourceSigner);
+            console.log('   actualSigner (decoded from spec):', actualSigner);
+            console.log('   transferSpec.sourceDepositor (bytes32):', transferSpec.sourceDepositor);
+            console.log('   sourceDepositor (decoded):', fromBytes32Address(transferSpec.sourceDepositor));
+            
             try {
-                // Convert to JSON-safe format with BigInt → string conversion  
-                const payload = typedDataToV4JSON(typedData);
-                console.log('✅ Converted payload for MetaMask (BigInt → string)');
+                // Just log what we're using - no need to determine again
+                console.log('📝 Using pre-determined signer address:', actualSigner);
                 
-                signature = await window.ethereum.request({
-                    method: 'eth_signTypedData_v4',
-                    params: [userAddress, payload]
+                // The transferSpec already has the correct addresses from burnIntent.spec
+                // which was created with the correct userAddress
+                console.log('🔍 Verifying addresses in transferSpec:');
+                console.log('   sourceSigner (bytes32):', transferSpec.sourceSigner);
+                console.log('   sourceSigner (decoded):', '0x' + transferSpec.sourceSigner.slice(26));
+                console.log('   actualSigner:', actualSigner);
+                
+                // No need to update - they should already match!
+                // But let's ensure typedData has the same values
+                typedData.message.spec.sourceSigner = transferSpec.sourceSigner;
+                typedData.message.spec.sourceDepositor = transferSpec.sourceDepositor;
+                
+                // Sanity check all bytes32 fields
+                const bytes32Fields = [
+                    'sourceContract', 'destinationContract', 'sourceToken', 'destinationToken',
+                    'sourceDepositor', 'destinationRecipient', 'sourceSigner', 'destinationCaller', 'salt'
+                ];
+                bytes32Fields.forEach(k => {
+                    const value = typedData.message.spec[k];
+                    if (!/^0x[0-9a-fA-F]{64}$/.test(value)) {
+                        throw new Error(`Not bytes32: ${k}=${value}`);
+                    }
                 });
                 
-                console.log('✅ EIP-712 signature received:', signature);
+                // Complete type definitions
+                const types = {
+                    BurnIntent: [
+                        { name: "maxBlockHeight", type: "uint256" },
+                        { name: "maxFee", type: "uint256" },
+                        { name: "spec", type: "TransferSpec" }
+                    ],
+                    TransferSpec: [
+                        { name: "version", type: "uint32" },  // Must be uint32, not uint8
+                        { name: "sourceDomain", type: "uint32" },
+                        { name: "destinationDomain", type: "uint32" },
+                        { name: "sourceContract", type: "bytes32" },
+                        { name: "destinationContract", type: "bytes32" },
+                        { name: "sourceToken", type: "bytes32" },
+                        { name: "destinationToken", type: "bytes32" },
+                        { name: "sourceDepositor", type: "bytes32" },
+                        { name: "destinationRecipient", type: "bytes32" },
+                        { name: "sourceSigner", type: "bytes32" },
+                        { name: "destinationCaller", type: "bytes32" },
+                        { name: "value", type: "uint256" },  // Back to original position - was working here
+                        { name: "salt", type: "bytes32" },
+                        { name: "hookData", type: "bytes" }
+                    ]
+                };
                 
-                // CRITICAL DEBUG: Verify signature matches sourceSigner (Circle's recommended check)
-                console.log('🔍 SIGNATURE VERIFICATION DEBUG:');
-                console.log('   Signer Address (MetaMask):', userAddress);
-                console.log('   sourceSigner (32-byte):', transferSpec.sourceSigner);
-                console.log('   sourceSigner (original):', userAddress);
-                console.log('   Match Check:', transferSpec.sourceSigner === addressTo32Bytes(userAddress));
+                // Sign based on the method that was used to determine userAddress
+                const privateKey = this.privateKey || window.DEMO_PRIVATE_KEY;
                 
-                // Log the complete typed data being signed
-                console.log('📋 Complete TypedData being signed:', safeStringify(typedData));
+                if (privateKey && privateKey !== 'undefined') {
+                    console.log('🔑 DEBUG: Using programmatic signing');
+                    console.log('   Private key (first 10):', privateKey.substring(0, 10));
+                    console.log('   Private key (full):', privateKey);
+                    
+                    const wallet = new ethers.Wallet(privateKey.startsWith('0x') ? privateKey : '0x' + privateKey);
+                    console.log('   Wallet address:', wallet.address);
+                    console.log('   Expected signer:', actualSigner);
+                    console.log('   transferSpec.sourceSigner:', transferSpec.sourceSigner);
+                    
+                    // DEFENSIVE CHECK: Test sign and recover immediately
+                    const testDomain = { name: "test", version: "1", chainId: 1 };
+                    const testTypes = { Test: [{ name: "value", type: "uint256" }] };
+                    const testMessage = { value: 123 };
+                    const testSig = await wallet._signTypedData(testDomain, testTypes, testMessage);
+                    const testRecovered = ethers.utils.verifyTypedData(testDomain, testTypes, testMessage, testSig);
+                    console.log('🔍 DEFENSIVE CHECK - Test signature:');
+                    console.log('   Test recovered:', testRecovered);
+                    console.log('   Test matches wallet:', testRecovered.toLowerCase() === wallet.address.toLowerCase());
+                    
+                    // Verify this wallet matches our expected signer
+                    if (wallet.address.toLowerCase() !== actualSigner) {
+                        throw new Error(`Wallet address mismatch: ${wallet.address.toLowerCase()} !== ${actualSigner}`);
+                    }
+                    
+                    console.log('🔍 DEFENSIVE CHECK - Before signing actual message:');
+                    console.log('   Message to sign:', JSON.stringify(typedData.message, (key, value) => 
+                        typeof value === 'bigint' ? value.toString() : value
+                    ));
+                    
+                    signature = await wallet._signTypedData(
+                        typedData.domain,
+                        types,
+                        typedData.message
+                    );
+                    
+                    console.log('🔍 DEFENSIVE CHECK - After signing:');
+                    console.log('   Signature created:', signature.substring(0, 20) + '...');
+                } else {
+                    // MetaMask signing - use the actualSigner address
+                    console.log('🦊 Requesting MetaMask signature...');
+                    console.log('   Account to sign with:', actualSigner);
+                    console.log('   Domain:', typedData.domain);
+                    
+                    const payload = toV4Json(typedData);
+                    signature = await window.ethereum.request({
+                        method: 'eth_signTypedData_v4',
+                        params: [actualSigner, payload]
+                    });
+                    console.log('   Signature received:', signature.substring(0, 20) + '...');
+                }
+                
+                console.log('✅ Signature created');
+                
+                // Local verification - MUST pass or API will reject
+                console.log('🔍 Verifying signature...');
+                console.log('   Using domain:', JSON.stringify(typedData.domain));
+                console.log('   Message spec sourceSigner:', typedData.message.spec.sourceSigner);
+                
+                // DEFENSIVE CHECK: Log the exact data being verified
+                console.log('🔍 DEFENSIVE CHECK - About to verify signature:');
+                console.log('   typedData.message.spec.sourceSigner:', typedData.message.spec.sourceSigner);
+                console.log('   typedData.message.spec.sourceDepositor:', typedData.message.spec.sourceDepositor);
+                console.log('   Signature:', signature.substring(0, 20) + '...');
+                
+                const recoveredAddress = ethers.utils.verifyTypedData(
+                    typedData.domain,
+                    types,
+                    typedData.message,
+                    signature
+                ).toLowerCase();
+                
+                // DEFENSIVE CHECK: If recovered is the mystery address, log everything
+                if (recoveredAddress === '0x094879fca5db8f27e2afb53d1e7df5118bc6eb92') {
+                    console.error('🚨 MYSTERY ADDRESS DETECTED! Full diagnostic:');
+                    console.error('   Domain:', JSON.stringify(typedData.domain));
+                    console.error('   Message:', JSON.stringify(typedData.message, (key, value) => 
+                        typeof value === 'bigint' ? value.toString() : value
+                    ));
+                    console.error('   Signature:', signature);
+                }
+                
+                console.log('   Recovered address:', recoveredAddress);
+                
+                // Ensure actualSigner is also lowercase for comparison
+                const normalizedActualSigner = actualSigner.toLowerCase();
+                
+                console.table({
+                    'Actual Signer': normalizedActualSigner,
+                    'Message sourceSigner': fromBytes32Address(typedData.message.spec.sourceSigner),
+                    'Recovered from Sig': recoveredAddress,
+                    'Match': recoveredAddress === normalizedActualSigner
+                });
+                
+                if (recoveredAddress !== normalizedActualSigner) {
+                    throw new Error(`Local verify failed: recovered ${recoveredAddress} !== signer ${normalizedActualSigner}`);
+                }
+                
+                console.log('✅ Local signature verification passed!');
                 
             } catch (signError) {
                 console.error('❌ EIP-712 signing failed:', signError);
@@ -955,21 +1195,26 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
             }
             
             // STEP 3: Create SignedBurnIntent using official Circle Gateway format
+            // CRITICAL: Use the UPDATED transferSpec that has the correct sourceSigner
             const signedBurnIntent = {
                 burnIntent: {
                     maxBlockHeight: burnIntent.maxBlockHeight,
                     maxFee: burnIntent.maxFee,
-                    spec: transferSpec // Use same 32-byte format for API submission
+                    spec: transferSpec // This MUST have the updated sourceSigner from signing step
                 },
                 signature: signature
             };
             
             console.log('📝 SignedBurnIntent prepared for Gateway API:', signedBurnIntent);
-            console.log('🔍 DEBUG: API spec format check:', {
-                sourceContract: `"${signedBurnIntent.burnIntent.spec.sourceContract}" (length: ${signedBurnIntent.burnIntent.spec.sourceContract?.length})`,
-                destinationContract: `"${signedBurnIntent.burnIntent.spec.destinationContract}" (length: ${signedBurnIntent.burnIntent.spec.destinationContract?.length})`,
-                salt: `"${signedBurnIntent.burnIntent.spec.salt}" (length: ${signedBurnIntent.burnIntent.spec.salt?.length})`
-            });
+            
+            // CRITICAL DEBUG: Log exactly what we're sending
+            console.log('🔍 CRITICAL DEBUG - What we are sending to Circle API:');
+            console.log('   sourceSigner in API payload:', signedBurnIntent.burnIntent.spec.sourceSigner);
+            console.log('   sourceSigner decoded:', fromBytes32Address(signedBurnIntent.burnIntent.spec.sourceSigner));
+            console.log('   sourceDepositor in API payload:', signedBurnIntent.burnIntent.spec.sourceDepositor);
+            console.log('   sourceDepositor decoded:', fromBytes32Address(signedBurnIntent.burnIntent.spec.sourceDepositor));
+            console.log('   Actual signer (should match above):', actualSigner || 'NOT SET');
+            console.log('   Signature:', signature?.substring(0, 20) + '...');
             
             // STEP 3.5: Validate current balance before transfer
             console.log('🔍 Checking current Gateway balance before transfer...');
@@ -995,6 +1240,19 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
             console.log('📤 Submitting SignedBurnIntent to Gateway API...');
             console.log('   API Key available:', !!this.getCircleAPIKey());
             
+            // Log the exact payload being sent
+            const apiPayload = [signedBurnIntent];
+            console.log('🔍 EXACT API PAYLOAD:');
+            console.log(JSON.stringify(apiPayload, (key, value) => 
+                typeof value === 'bigint' ? value.toString() : value, 2
+            ));
+            
+            // Double-check the signature format
+            console.log('🔍 Signature format check:');
+            console.log('   Signature length:', signature.length);
+            console.log('   Starts with 0x:', signature.startsWith('0x'));
+            console.log('   Is hex:', /^0x[0-9a-fA-F]+$/.test(signature));
+            
             const response = await fetch('https://gateway-api-testnet.circle.com/v1/transfer', {
                 method: 'POST',
                 headers: {
@@ -1002,7 +1260,7 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
                     'Accept': 'application/json',
                     'Authorization': `Bearer ${this.getCircleAPIKey()}`
                 },
-                body: safeStringify([signedBurnIntent]) // Send as array as required by API
+                body: safeStringify(apiPayload) // Send as array as required by API
             });
             
             const responseText = await response.text();
@@ -1077,12 +1335,65 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
                 };
                 
                 // Request signature for this specific chain
-                console.log(`🖊️ Requesting signature for ${chain.name}...`);
+                console.log(`🖊️ Signing burn intent for ${chain.name}...`);
                 try {
-                    const chainSignature = await window.ethereum.request({
-                        method: 'eth_signTypedData_v4',
-                        params: [userAddress, typedDataToV4JSON(chainTypedData)]
-                    });
+                    let chainSignature;
+                    const privateKey = this.privateKey || window.DEMO_PRIVATE_KEY;
+                    
+                    if (privateKey && privateKey !== 'undefined') {
+                        // Use ethers to sign with private key directly
+                        console.log(`🔑 Using programmatic signing for ${chain.name}`);
+                        const wallet = new ethers.Wallet(privateKey);
+                        
+                        // Always use the wallet's address for programmatic signing
+                        const signerAddress = wallet.address;
+                        chainTransferSpec.sourceSigner = addressToBytes32(signerAddress);
+                        chainTransferSpec.sourceDepositor = addressToBytes32(signerAddress);
+                        chainEip712Message.spec.sourceSigner = addressToBytes32(signerAddress);
+                        chainEip712Message.spec.sourceDepositor = addressToBytes32(signerAddress);
+                        
+                        console.log(`   Updated sourceSigner for ${chain.name}: ${chainTransferSpec.sourceSigner}`);
+                        
+                        // Complete type definitions for ethers.js
+                        const types = {
+                            BurnIntent: [
+                                { name: "maxBlockHeight", type: "uint256" },
+                                { name: "maxFee", type: "uint256" },
+                                { name: "spec", type: "TransferSpec" }
+                            ],
+                            TransferSpec: [
+                                { name: "version", type: "uint32" },  // Must be uint32, not uint8
+                                { name: "sourceDomain", type: "uint32" },
+                                { name: "destinationDomain", type: "uint32" },
+                                { name: "sourceContract", type: "bytes32" },
+                                { name: "destinationContract", type: "bytes32" },
+                                { name: "sourceToken", type: "bytes32" },
+                                { name: "destinationToken", type: "bytes32" },
+                                { name: "sourceDepositor", type: "bytes32" },
+                                { name: "destinationRecipient", type: "bytes32" },
+                                { name: "sourceSigner", type: "bytes32" },
+                                { name: "destinationCaller", type: "bytes32" },
+                                { name: "value", type: "uint256" },  // Back to original position - was working here
+                                { name: "salt", type: "bytes32" },
+                                { name: "hookData", type: "bytes" }
+                            ]
+                        };
+                        
+                        chainSignature = await wallet._signTypedData(
+                            chainTypedData.domain,
+                            types,
+                            chainTypedData.message
+                        );
+                    } else if (window.ethereum) {
+                        // Fallback to MetaMask
+                        console.log(`🦊 Using MetaMask for ${chain.name} signature`);
+                        chainSignature = await window.ethereum.request({
+                            method: 'eth_signTypedData_v4',
+                            params: [userAddress, typedDataToV4JSON(chainTypedData)]
+                        });
+                    } else {
+                        throw new Error('No signing method available');
+                    }
                     
                     const chainSignedBurnIntent = {
                         burnIntent: {
@@ -1304,8 +1615,11 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
         try {
             console.log('📡 Checking real Gateway unified balance...');
             
-            // Get user's wallet address
-            const userAddress = this.userAccount || '0xE616B2eC620621797030E0AB1BA38DA68D78351C';
+            // Get user's wallet address - this is what's spendable
+            const userAddress = this.userAccount || null;
+            if (!userAddress) {
+                throw new Error('No wallet connected. Please connect MetaMask first.');
+            }
             
             // Call real Circle Gateway API with correct format
             const response = await fetch(`https://gateway-api-testnet.circle.com/v1/balances?t=${Date.now()}`, {
@@ -1352,7 +1666,10 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
         try {
             console.log('📡 Fetching REAL Gateway balance with chain breakdown...');
             
-            const userAddress = this.userAccount || '0xE616B2eC620621797030E0AB1BA38DA68D78351C';
+            const userAddress = this.userAccount || null;
+            if (!userAddress) {
+                throw new Error('No wallet connected. Please connect MetaMask first.');
+            }
             
             const response = await fetch(`https://gateway-api-testnet.circle.com/v1/balances?t=${Date.now()}`, {
                 method: 'POST',
@@ -1395,7 +1712,8 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
                     
                     totalBalance += chainBalance;
                     const network = domainNames[balance.domain];
-                    if (network && chainBalance > 0) {
+                    // Skip Ethereum Sepolia in the breakdown display (domain 0)
+                    if (network && chainBalance > 0 && balance.domain !== 0) {
                         breakdown += `${network.icon} ${network.name}: ${chainBalance.toFixed(2)} USDC\n`;
                         console.log(`   ${network.name}: ${chainBalance.toFixed(2)} USDC`);
                     }
@@ -1460,7 +1778,7 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
         const headerBalanceElement = document.getElementById(`gateway-header-balance-${workflowId}`);
         if (headerBalanceElement) {
             const balance = typeof newBalance === 'number' ? newBalance : parseFloat(newBalance) || 0;
-            headerBalanceElement.textContent = `💰 Unified Gateway Balance: ${Math.ceil(balance * 100) / 100} USDC`;
+            headerBalanceElement.textContent = `💰 Spendable Balance: ${Math.ceil(balance * 100) / 100} USDC`;
             console.log(`🔄 Updated header balance to: ${balance.toFixed(2)} USDC`);
         }
     }
@@ -1494,7 +1812,11 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
 
     async checkForLockedFunds(workflowId, balanceData) {
         // Check if we have deposited funds but none available
-        const userAddress = this.userAccount || '0xE616B2eC620621797030E0AB1BA38DA68D78351C';
+        const userAddress = this.userAccount || null;
+        if (!userAddress) {
+            console.log('No user address available for checking locked funds');
+            return;
+        }
         
         try {
             const response = await fetch(`https://gateway-api-testnet.circle.com/v1/balances?t=${Date.now()}`, {
