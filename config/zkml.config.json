@@ -1,0 +1,58 @@
+{
+  "zkml": {
+    "framework": "JOLT-Atlas",
+    "version": "0.1.0",
+    "services": {
+      "verifier": {
+        "port": 3456,
+        "host": "localhost",
+        "endpoints": {
+          "generateProof": "/api/zkml/generate-agent-proof",
+          "checkStatus": "/api/zkml/proof-status",
+          "verifyProof": "/api/zkml/verify-proof",
+          "health": "/health"
+        }
+      }
+    },
+    "models": {
+      "sentiment": {
+        "name": "sentiment-14-embeddings",
+        "embeddings": 14,
+        "traceLength": 11,
+        "matrixDimensions": {
+          "rows": 1024,
+          "cols": 1024
+        },
+        "expectedProofTime": 10,
+        "description": "Sentiment analysis model for risk assessment"
+      },
+      "tinyMlp": {
+        "name": "tiny-mlp",
+        "parameters": 30,
+        "layers": [4, 4, 2],
+        "expectedProofTime": 5,
+        "description": "Minimal MLP for fast proof generation (experimental)"
+      }
+    },
+    "joltAtlas": {
+      "binaryPath": "/home/hshadab/agentkit/jolt-atlas/zkml-jolt-core/target/release/zkml-jolt-core",
+      "sourcePath": "/home/hshadab/agentkit/jolt-atlas/zkml-jolt-core",
+      "buildCommand": "cargo build --release --bin zkml-jolt-core",
+      "runCommand": "cargo run --release --bin zkml-jolt-core -- profile --name"
+    },
+    "gateway": {
+      "integration": true,
+      "requireProof": true,
+      "proofExpiry": 3600,
+      "maxAmount": 0.01,
+      "allowedChains": ["ethereum", "base", "avalanche"]
+    },
+    "performance": {
+      "proofGenerationTimeout": 30000,
+      "verificationTimeout": 5000,
+      "maxConcurrentProofs": 5,
+      "cacheProofs": true,
+      "cacheDuration": 300
+    }
+  }
+}

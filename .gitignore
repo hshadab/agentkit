@@ -275,3 +275,4 @@ solana/*
 solana-programs/*
 !solana-programs/proof_verifier.rs
 backup-before-cleanup-*.tar.gz
+jolt-atlas/

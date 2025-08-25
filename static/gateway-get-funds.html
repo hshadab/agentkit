@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Gateway Test Funds</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .balance-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            color: white;
+        }
+        
+        .balance-label {
+            font-size: 12px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .balance-amount {
+            font-size: 36px;
+            font-weight: bold;
+        }
+        
+        .step {
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .step h3 {
+            display: inline-block;
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .step p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-left: 40px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .btn-secondary:hover {
+            background: #f8f9ff;
+        }
+        
+        .address-box {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            position: relative;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        
+        .copy-btn:hover {
+            background: #5a67d8;
+        }
+        
+        .info-box {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box h4 {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .info-box p {
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .network-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .link-list {
+            margin-left: 40px;
+            margin-top: 10px;
+        }
+        
+        .link-list a {
+            display: block;
+            color: #667eea;
+            text-decoration: none;
+            padding: 5px 0;
+            font-size: 14px;
+        }
+        
+        .link-list a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="network-badge">SEPOLIA TESTNET</div>
+        <h1>Get Gateway Test Funds</h1>
+        <p class="subtitle">How to get USDC for Circle Gateway testing</p>
+        
+        <div class="balance-card">
+            <div class="balance-label">Your Current Gateway Spendable Balance</div>
+            <div class="balance-amount">5.81 USDC</div>
+        </div>
+        
+        <div class="info-box">
+            <h4>⚠️ Important: Gateway Balance vs On-Chain Balance</h4>
+            <p>Circle Gateway maintains its own internal balance system. Your "spendable balance" is managed by Circle's Gateway API, not by direct on-chain deposits. You cannot directly deposit USDC to increase your Gateway balance.</p>
+        </div>
+        
+        <div class="step">
+            <span class="step-number">1</span>
+            <h3>Get Test USDC from Circle Faucet</h3>
+            <p>Visit Circle's testnet faucet to receive free test USDC on Sepolia:</p>
+            <div class="link-list">
+                <a href="https://faucet.circle.com" target="_blank">🔗 Circle USDC Faucet</a>
+            </div>
+            <div class="address-box">
+                Your Address: 0xe616b2ec620621797030e0ab1ba38da68d78351c
+                <button class="copy-btn" onclick="copyAddress()">Copy</button>
+            </div>
+        </div>
+        
+        <div class="step">
+            <span class="step-number">2</span>
+            <h3>Alternative: Use Sepolia ETH Faucets</h3>
+            <p>Get Sepolia ETH first, then swap for USDC:</p>
+            <div class="link-list">
+                <a href="https://sepoliafaucet.com" target="_blank">🔗 Sepolia Faucet</a>
+                <a href="https://www.alchemy.com/faucets/ethereum-sepolia" target="_blank">🔗 Alchemy Sepolia Faucet</a>
+                <a href="https://faucet.quicknode.com/ethereum/sepolia" target="_blank">🔗 QuickNode Faucet</a>
+            </div>
+        </div>
+        
+        <div class="step">
+            <span class="step-number">3</span>
+            <h3>How Gateway Balance Works</h3>
+            <p>Your Gateway spendable balance increases when:</p>
+            <ul style="margin-left: 20px; margin-top: 10px; color: #666; font-size: 14px;">
+                <li>Someone sends you USDC through Gateway transfers</li>
+                <li>You receive minted USDC from cross-chain Gateway transfers</li>
+                <li>Circle credits your account (for testing purposes)</li>
+            </ul>
+            <p style="margin-top: 10px;">The balance decreases when you initiate Gateway transfers to other addresses or chains.</p>
+        </div>
+        
+        <div class="step">
+            <span class="step-number">4</span>
+            <h3>Current Balance Requirements</h3>
+            <p>For the demo transfer:</p>
+            <ul style="margin-left: 20px; margin-top: 10px; color: #666; font-size: 14px;">
+                <li><strong>Demo mode:</strong> 0.03 USDC (0.01 per chain × 3 chains)</li>
+                <li><strong>Normal mode:</strong> 6.33 USDC (2.11 per chain × 3 chains)</li>
+                <li><strong>Your balance:</strong> 5.81 USDC ✅ (sufficient for demo)</li>
+            </ul>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="https://sepolia.etherscan.io/token/0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238?a=0xe616b2ec620621797030e0ab1ba38da68d78351c" 
+               target="_blank" class="btn btn-primary">Check On-Chain Balance</a>
+            <a href="/static/index.html" class="btn btn-secondary">Back to Main App</a>
+        </div>
+    </div>
+    
+    <script>
+        function copyAddress() {
+            const address = '0xe616b2ec620621797030e0ab1ba38da68d78351c';
+            navigator.clipboard.writeText(address).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

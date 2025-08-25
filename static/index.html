@@ -11,15 +11,8 @@
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="css/main.css?v=20250823-050000">
     
-    <!-- CRITICAL: Load bypass scripts FIRST before any other JavaScript -->
-    <script>
-        // Set private key immediately
-        window.DEMO_PRIVATE_KEY = 'c3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
-        console.log('🔑 Private key set globally at page start');
-    </script>
-    <script src="./js/gateway-ultimate-bypass.js"></script>
-    <script src="./js/gateway-method-override.js"></script>
-    <script src="./js/gateway-reduce-amount.js"></script>
+    <!-- Back to REAL MODE - no demo -->
+    <script src="./js/lib/ethers.umd.min.js?v=20250824-230000"></script>
 </head>
 <body>
     <div class="sidebar">
@@ -123,7 +116,7 @@
     <!-- Fixed Solana Web3.js - local copy -->
     <script src="./js/lib/solana-web3.min.js"></script>
     <script src="./js/core/solana-fallback.js"></script>
-    <script src="./js/lib/ethers.umd.min.js"></script>
+    <!-- ethers.umd.min.js already loaded at the top -->
     <script src="./js/core/ethers-fallback.js"></script>
     
     <!-- zkEngine Interface -->
@@ -161,7 +154,7 @@
     </script>
     
     <!-- Main application module - must be loaded as module since it uses ES6 imports -->
-    <script type="module" src="./js/main.js?v=20250824-150000"></script>
+    <script type="module" src="./js/main.js?v=20250824-222000"></script>
     
     <!-- Module wrappers for blockchain functionality -->
     <!-- Wrapper to expose modules to window -->
@@ -207,17 +200,6 @@
     <script src="./js/debug/coordinate-injection-final.js"></script>
     <!-- Proof analysis -->
     <script src="./js/debug/proof-analysis.js"></script>
-    <!-- EARLY: Force bypass MetaMask for Gateway -->
-    <script src="./js/gateway-bypass-metamask.js"></script>
-    <!-- Demo signing config for programmatic signatures -->
-    <script src="./js/demo-signing-config.js"></script>
-    <!-- Gateway auto-signer for avoiding MetaMask confirmations -->
-    <script src="./js/gateway-auto-signer.js"></script>
-    <!-- Debug script to fix auto-signing -->
-    <script src="./js/gateway-debug-auto-sign.js"></script>
-    <!-- Fix to ensure auto-signing works -->
-    <script src="./js/gateway-auto-sign-fix.js"></script>
-    <!-- FORCE auto-signing to prevent MetaMask popups -->
-    <script src="./js/gateway-force-auto-sign.js"></script>
+    <!-- Gateway signing overrides are loaded at the top of the page -->
 </body>
 </html>

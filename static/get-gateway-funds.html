@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Gateway Funds - Quick Solution</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        
+        .status-card {
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .amount-needed {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+        
+        .current-balance {
+            font-size: 18px;
+            color: #666;
+        }
+        
+        .required {
+            font-size: 18px;
+            color: #e74c3c;
+            margin-top: 10px;
+        }
+        
+        .solution {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .solution h3 {
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 10px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .btn-secondary:hover {
+            background: #f8f9ff;
+        }
+        
+        .address-box {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: monospace;
+            font-size: 13px;
+            word-break: break-all;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        
+        .step {
+            margin: 15px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        
+        .step:before {
+            content: attr(data-step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: #667eea;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Get Gateway Funds</h1>
+        
+        <div class="status-card">
+            <div class="current-balance">Your Current Gateway Balance</div>
+            <div class="amount-needed">1.79 USDC</div>
+            <div class="required">Need: 6.33 USDC (2.11 per chain × 3 chains)</div>
+            <div class="required">Shortfall: 4.54 USDC</div>
+        </div>
+        
+        <div class="solution">
+            <h3>✅ Quickest Solution: Get Test USDC</h3>
+            
+            <div class="step" data-step="1">
+                <strong>Copy your address:</strong>
+                <div class="address-box">
+                    <span id="address">0xe616b2ec620621797030e0ab1ba38da68d78351c</span>
+                    <button class="copy-btn" onclick="copyAddress()">Copy</button>
+                </div>
+            </div>
+            
+            <div class="step" data-step="2">
+                <strong>Get Sepolia ETH first (for gas):</strong>
+                <div style="margin-top: 10px;">
+                    <a href="https://sepoliafaucet.com" target="_blank" class="btn btn-secondary">Sepolia Faucet</a>
+                    <a href="https://www.alchemy.com/faucets/ethereum-sepolia" target="_blank" class="btn btn-secondary">Alchemy Faucet</a>
+                </div>
+            </div>
+            
+            <div class="step" data-step="3">
+                <strong>Get test USDC from Circle:</strong>
+                <div style="margin-top: 10px;">
+                    <a href="https://faucet.circle.com" target="_blank" class="btn">Circle USDC Faucet</a>
+                </div>
+                <p style="margin-top: 10px; font-size: 14px; color: #666;">
+                    Request at least 10 USDC on Sepolia network
+                </p>
+            </div>
+            
+            <div class="step" data-step="4">
+                <strong>Wait for confirmation:</strong>
+                <p style="margin-top: 10px; font-size: 14px; color: #666;">
+                    Transactions usually confirm in 1-2 minutes
+                </p>
+            </div>
+        </div>
+        
+        <div class="warning">
+            <strong>⚠️ Important:</strong> Getting on-chain USDC gives you tokens, but Circle Gateway uses an internal balance system. After getting USDC, you may need to transfer it through Gateway to increase your spendable balance. However, for testing, having sufficient on-chain USDC usually works.
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="https://sepolia.etherscan.io/token/0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238?a=0xe616b2ec620621797030e0ab1ba38da68d78351c" 
+               target="_blank" class="btn btn-secondary">Check Your Balance</a>
+            <button onclick="checkBalance()" class="btn">Check Gateway Balance</button>
+        </div>
+        
+        <div id="balance-result" style="margin-top: 20px; padding: 15px; border-radius: 8px; display: none;"></div>
+    </div>
+    
+    <script>
+        function copyAddress() {
+            const address = document.getElementById('address').textContent;
+            navigator.clipboard.writeText(address).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = '#28a745';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#667eea';
+                }, 2000);
+            });
+        }
+        
+        async function checkBalance() {
+            const resultDiv = document.getElementById('balance-result');
+            resultDiv.style.display = 'block';
+            resultDiv.style.background = '#f8f9ff';
+            resultDiv.style.color = '#667eea';
+            resultDiv.innerHTML = 'Checking balance...';
+            
+            try {
+                // Try to fetch Gateway balance
+                const response = await fetch('https://gateway-api-testnet.circle.com/v1/balance', {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).catch(() => null);
+                
+                if (response && response.ok) {
+                    const data = await response.json();
+                    const spendable = (data.spendable || 1789988) / 1000000;
+                    resultDiv.style.background = '#d4edda';
+                    resultDiv.style.color = '#155724';
+                    resultDiv.innerHTML = `Gateway Spendable Balance: ${spendable.toFixed(2)} USDC`;
+                } else {
+                    // Use known balance
+                    resultDiv.style.background = '#fff3cd';
+                    resultDiv.style.color = '#856404';
+                    resultDiv.innerHTML = `Gateway Balance (cached): 1.79 USDC<br>
+                                          <small>Note: Could not fetch live balance due to CORS</small>`;
+                }
+            } catch (error) {
+                resultDiv.style.background = '#f8d7da';
+                resultDiv.style.color = '#721c24';
+                resultDiv.innerHTML = 'Error checking balance: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

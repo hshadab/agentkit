@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test MetaMask Block</title>
+    <script>
+        window.DEMO_PRIVATE_KEY = 'c3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+        console.log('Private key set');
+    </script>
+    <script src="./js/gateway-block-metamask.js"></script>
+    <script src="./js/lib/ethers.umd.min.js"></script>
+</head>
+<body>
+    <h1>MetaMask Block Test</h1>
+    <button onclick="testBlock()">Test if MetaMask is Blocked</button>
+    <pre id="output"></pre>
+    
+    <script>
+        function log(msg) {
+            document.getElementById('output').innerHTML += msg + '\n';
+            console.log(msg);
+        }
+        
+        window.addEventListener('load', () => {
+            log('Page loaded');
+            log('window.ethereum exists: ' + !!window.ethereum);
+            
+            if (window.ethereum) {
+                log('ethereum.isMetaMask: ' + window.ethereum.isMetaMask);
+                log('ethereum.selectedAddress: ' + window.ethereum.selectedAddress);
+                
+                // Check if it's our fake
+                if (window.ethereum.selectedAddress === '0xe616b2ec620621797030e0ab1ba38da68d78351c') {
+                    log('✅ FAKE ETHEREUM INSTALLED - MetaMask is blocked!');
+                } else {
+                    log('❌ Real MetaMask still active');
+                }
+            }
+        });
+        
+        async function testBlock() {
+            log('\n--- Testing ethereum.request ---');
+            
+            try {
+                // Test account request
+                log('Requesting accounts...');
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts'
+                });
+                log('Accounts: ' + JSON.stringify(accounts));
+                
+                // Test signing
+                log('\nTesting signature...');
+                const typedData = {
+                    domain: { name: "Test", version: "1", chainId: 1 },
+                    types: { Test: [{ name: "value", type: "uint256" }] },
+                    message: { value: 123 },
+                    primaryType: "Test"
+                };
+                
+                const signature = await window.ethereum.request({
+                    method: 'eth_signTypedData_v4',
+                    params: ['0xe616b2ec620621797030e0ab1ba38da68d78351c', JSON.stringify(typedData)]
+                });
+                
+                log('Signature: ' + signature.substring(0, 30) + '...');
+                
+                if (signature.startsWith('0x')) {
+                    log('\n✅ SUCCESS - MetaMask is BLOCKED!');
+                    log('   Signature was created programmatically');
+                    log('   No MetaMask popup appeared');
+                } else {
+                    log('\n❌ FAIL - Unexpected signature');
+                }
+                
+            } catch (error) {
+                log('ERROR: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

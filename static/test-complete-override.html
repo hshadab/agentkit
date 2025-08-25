@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Complete Override</title>
+    <script>
+        window.DEMO_PRIVATE_KEY = 'c3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+    </script>
+    <script src="./js/gateway-complete-override.js"></script>
+    <script src="./js/lib/ethers.umd.min.js"></script>
+</head>
+<body>
+    <h1>Test Complete Override</h1>
+    <button onclick="testOverride()">Test Override (Should NOT popup MetaMask)</button>
+    <button onclick="testGatewayManager()">Test Gateway Manager</button>
+    <pre id="output"></pre>
+    
+    <script>
+        function log(msg) {
+            document.getElementById('output').innerHTML += msg + '\n';
+            console.log(msg);
+        }
+        
+        async function testOverride() {
+            log('Testing complete override...');
+            
+            if (!window.ethereum) {
+                log('ERROR: No ethereum object');
+                return;
+            }
+            
+            try {
+                // Test account request
+                log('\n1. Testing eth_requestAccounts...');
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts'
+                });
+                log('   Accounts: ' + JSON.stringify(accounts));
+                
+                // Test signing
+                log('\n2. Testing eth_signTypedData_v4...');
+                const account = '0xe616b2ec620621797030e0ab1ba38da68d78351c';
+                const typedData = {
+                    domain: {
+                        name: "Circle Gateway",
+                        version: "1",
+                        chainId: 1
+                    },
+                    types: {
+                        TransferSpec: [
+                            { name: "version", type: "uint32" },
+                            { name: "sourceDomain", type: "uint32" }
+                        ]
+                    },
+                    message: {
+                        version: 1,
+                        sourceDomain: 0
+                    },
+                    primaryType: "TransferSpec"
+                };
+                
+                const signature = await window.ethereum.request({
+                    method: 'eth_signTypedData_v4',
+                    params: [account, JSON.stringify(typedData)]
+                });
+                
+                log('   Signature: ' + signature.substring(0, 30) + '...');
+                
+                if (signature.startsWith('0x')) {
+                    log('\n✅ SUCCESS - Complete override working!');
+                } else {
+                    log('\n❌ FAIL - Unexpected signature format');
+                }
+                
+            } catch (error) {
+                log('ERROR: ' + error.message);
+            }
+        }
+        
+        async function testGatewayManager() {
+            log('\nTesting Gateway Manager override...');
+            
+            // Load the Gateway Manager script
+            const script = document.createElement('script');
+            script.src = './js/ui/gateway-workflow-manager-v2.js';
+            script.type = 'module';
+            document.head.appendChild(script);
+            
+            setTimeout(() => {
+                if (window.GatewayWorkflowManager) {
+                    log('GatewayWorkflowManager found');
+                    const manager = new window.GatewayWorkflowManager();
+                    log('Manager created');
+                    log('Manager.privateKey: ' + (manager.privateKey ? 'SET' : 'NOT SET'));
+                } else {
+                    log('GatewayWorkflowManager not found');
+                }
+            }, 1000);
+        }
+        
+        // Check on load
+        window.addEventListener('load', () => {
+            log('Page loaded');
+            log('window.ethereum exists: ' + !!window.ethereum);
+            log('window.DEMO_PRIVATE_KEY: ' + (window.DEMO_PRIVATE_KEY ? 'SET' : 'NOT SET'));
+            
+            if (window.ethereum && window.ethereum.request.toString().includes('INTERCEPTED')) {
+                log('✅ Complete override is installed!');
+            } else {
+                log('⚠️ Override may not be fully installed');
+            }
+        });
+    </script>
+</body>
+</html>

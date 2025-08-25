@@ -1,7 +1,7 @@
 {
   "name": "verifiable-agentkit",
-  "version": "5.0.0",
-  "description": "Production-ready framework for privacy-preserving AI agents with zero-knowledge proofs, multi-chain verification, and USDC transfers",
+  "version": "6.0.0",
+  "description": "Production-ready framework for privacy-preserving AI agents with zkML (JOLT-Atlas), zero-knowledge proofs, multi-chain verification, and USDC transfers",
   "type": "module",
   "scripts": {
     "build:circuits": "./scripts/build_real_circuit.sh",
@@ -9,7 +9,10 @@
     "deploy": "hardhat run scripts/deploy.js --network sepolia",
     "deploy:base": "hardhat run scripts/deploy-base.js --network baseSepolia",
     "rotate-logs": "node scripts/log-rotation.js",
-    "cleanup-proofs": "node scripts/cleanup-proofs.cjs"
+    "cleanup-proofs": "node scripts/cleanup-proofs.cjs",
+    "zkml:start": "node api/zkml-agent-verifier.js",
+    "zkml:test": "node test-zkml-gateway-complete.js",
+    "server": "python3 -m http.server 8080 --directory static"
   },
   "dependencies": {
     "@circle-fin/circle-sdk": "^2.9.0",
@@ -17,6 +20,7 @@
     "bs58": "^6.0.0",
     "circomlib": "^2.0.5",
     "circomlibjs": "^0.1.7",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
     "node-fetch": "^2.7.0",
     "snarkjs": "^0.7.5",

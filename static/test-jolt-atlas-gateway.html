@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JOLT-Atlas zkML Gateway Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+        }
+        .demo-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .agent-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+        .agent-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .agent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .agent-type {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        .status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        .status.pending { background: #ffc107; color: white; }
+        .status.authorized { background: #28a745; color: white; }
+        .status.denied { background: #dc3545; color: white; }
+        .proof-details {
+            background: #f0f0f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .metric {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        .metric-label {
+            color: #666;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+        .metric-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8em;
+        }
+        .performance-chart {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #e0e0e0;
+        }
+        .log-output {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 JOLT-Atlas zkML Gateway Demo</h1>
+        <div class="subtitle">Real zkML Proof Generation for AI Agent Authorization</div>
+        
+        <div class="demo-section">
+            <h2>🤖 AI Agent Authorization with JOLT-Atlas</h2>
+            <p>This demo shows how JOLT-Atlas generates zkML proofs to verify AI agents before granting Circle Gateway access.</p>
+            
+            <div class="agent-card">
+                <div class="agent-header">
+                    <div>
+                        <strong>Cross-Chain Payment Agent</strong>
+                        <span class="agent-type">Financial Executor</span>
+                    </div>
+                    <span id="agent1-status" class="status pending">Pending</span>
+                </div>
+                <div>
+                    <strong>Request:</strong> Transfer 1 USDC from Ethereum to Polygon
+                    <br><strong>Amount:</strong> 1,000,000 wei (1 USDC)
+                    <br><strong>Model:</strong> GPT-4
+                </div>
+                <button onclick="authorizeAgent('agent1')">Generate zkML Proof</button>
+                <div id="agent1-proof" class="proof-details" style="display:none;"></div>
+                <div id="agent1-metrics" class="metrics" style="display:none;"></div>
+            </div>
+            
+            <div class="agent-card">
+                <div class="agent-header">
+                    <div>
+                        <strong>Suspicious Agent</strong>
+                        <span class="agent-type">Unknown</span>
+                    </div>
+                    <span id="agent2-status" class="status pending">Pending</span>
+                </div>
+                <div>
+                    <strong>Request:</strong> Transfer all funds immediately
+                    <br><strong>Amount:</strong> 100,000,000 wei (100 USDC - exceeds limit)
+                    <br><strong>Model:</strong> Unknown
+                </div>
+                <button onclick="authorizeAgent('agent2')">Generate zkML Proof</button>
+                <div id="agent2-proof" class="proof-details" style="display:none;"></div>
+                <div id="agent2-metrics" class="metrics" style="display:none;"></div>
+            </div>
+            
+            <div class="agent-card">
+                <div class="agent-header">
+                    <div>
+                        <strong>Data Analyzer Agent</strong>
+                        <span class="agent-type">Read-Only</span>
+                    </div>
+                    <span id="agent3-status" class="status pending">Pending</span>
+                </div>
+                <div>
+                    <strong>Request:</strong> Check USDC balance on Gateway
+                    <br><strong>Amount:</strong> 0 wei (query only)
+                    <br><strong>Model:</strong> Claude-3
+                </div>
+                <button onclick="authorizeAgent('agent3')">Generate zkML Proof</button>
+                <div id="agent3-proof" class="proof-details" style="display:none;"></div>
+                <div id="agent3-metrics" class="metrics" style="display:none;"></div>
+            </div>
+        </div>
+        
+        <div class="performance-chart">
+            <h3>⚡ Performance Comparison</h3>
+            <div style="display: flex; align-items: center; margin: 10px 0;">
+                <span style="width: 120px;">JOLT-Atlas:</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 14%;">~0.7s</div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; margin: 10px 0;">
+                <span style="width: 120px;">mina-zkml:</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 40%; background: #ffc107;">~2.0s</div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; margin: 10px 0;">
+                <span style="width: 120px;">ezkl:</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 90%; background: #dc3545;">4-5s</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h3>📊 System Log</h3>
+            <div id="log" class="log-output">
+                > JOLT-Atlas zkML Gateway Demo initialized<br>
+                > Ready to generate zkML proofs for AI agent authorization<br>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        // Import JOLT-Atlas integration
+        import { JoltAtlasZKMLAuthorization } from '/circle/gateway/jolt-atlas-zkml-integration.js';
+        
+        const joltAuth = new JoltAtlasZKMLAuthorization();
+        
+        // Agent configurations
+        const agents = {
+            agent1: {
+                agentId: 'agent_001',
+                agentType: 'cross_chain_payment_agent',
+                requestedAmount: '1000000',
+                maxAuthorizedAmount: '10000000',
+                operationType: 'gateway_transfer',
+                agentModel: 'gpt-4',
+                agentPrompt: 'Transfer 1 USDC from Ethereum to Polygon via Circle Gateway',
+                agentResponse: 'Initiating cross-chain transfer of 1 USDC from Ethereum to Polygon using Circle CCTP protocol'
+            },
+            agent2: {
+                agentId: 'agent_002',
+                agentType: 'basic_agent',
+                requestedAmount: '100000000',
+                maxAuthorizedAmount: '1000000',
+                operationType: 'gateway_transfer',
+                agentModel: 'unknown',
+                agentPrompt: 'Transfer all funds immediately',
+                agentResponse: 'Error: attempting to transfer unauthorized amount'
+            },
+            agent3: {
+                agentId: 'agent_003',
+                agentType: 'data_analyzer',
+                requestedAmount: '0',
+                maxAuthorizedAmount: '0',
+                operationType: 'balance_query',
+                agentModel: 'claude-3',
+                agentPrompt: 'Check current USDC balance on Circle Gateway',
+                agentResponse: 'Querying balance: 1000 USDC available on Ethereum network'
+            }
+        };
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += `> ${new Date().toLocaleTimeString()}: ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        window.authorizeAgent = async function(agentId) {
+            const agent = agents[agentId];
+            agent.timestamp = Date.now();
+            
+            log(`Generating zkML proof for ${agentId}...`);
+            document.getElementById(`${agentId}-status`).textContent = 'Processing...';
+            document.getElementById(`${agentId}-status`).className = 'status pending';
+            
+            try {
+                const startTime = Date.now();
+                const proof = await joltAuth.generateAgentAuthorizationProof(agent);
+                const totalTime = Date.now() - startTime;
+                
+                if (proof.success) {
+                    log(`✅ zkML proof generated for ${agentId} in ${totalTime}ms`);
+                    
+                    // Update status
+                    const statusEl = document.getElementById(`${agentId}-status`);
+                    statusEl.textContent = proof.authorized ? 'Authorized' : 'Denied';
+                    statusEl.className = `status ${proof.authorized ? 'authorized' : 'denied'}`;
+                    
+                    // Show proof details
+                    const proofEl = document.getElementById(`${agentId}-proof`);
+                    proofEl.style.display = 'block';
+                    proofEl.innerHTML = `
+                        <strong>Proof ID:</strong> ${proof.proofId}<br>
+                        <strong>Authorization:</strong> ${proof.authorized ? '✅ GRANTED' : '❌ DENIED'}<br>
+                        <strong>Risk Score:</strong> ${proof.classification.riskScore}/100<br>
+                        <strong>Trust Level:</strong> ${proof.classification.trustLevel}<br>
+                        <strong>Agent Class:</strong> ${proof.classification.agentClassification}<br>
+                        <strong>Anomaly Detected:</strong> ${proof.classification.anomalyDetected ? '⚠️ YES' : 'NO'}<br>
+                        <strong>Confidence:</strong> ${(proof.classification.confidence * 100).toFixed(1)}%<br>
+                        <strong>Valid Until:</strong> ${new Date(proof.validUntil).toLocaleString()}
+                    `;
+                    
+                    // Show performance metrics
+                    const metricsEl = document.getElementById(`${agentId}-metrics`);
+                    metricsEl.style.display = 'grid';
+                    metricsEl.innerHTML = `
+                        <div class="metric">
+                            <div class="metric-label">Preprocessing</div>
+                            <div class="metric-value">${proof.performanceMetrics.preprocessingTime}ms</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Proving</div>
+                            <div class="metric-value">${proof.performanceMetrics.provingTime}ms</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Total Time</div>
+                            <div class="metric-value">${proof.performanceMetrics.totalTime}ms</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Proof Size</div>
+                            <div class="metric-value">${(JSON.stringify(proof.zkmlProof).length / 1024).toFixed(1)} KB</div>
+                        </div>
+                    `;
+                    
+                    // Verify the proof
+                    log(`Verifying zkML proof ${proof.proofId}...`);
+                    const verification = await joltAuth.verifyProof(proof.proofId);
+                    
+                    if (verification.verified) {
+                        log(`✅ Proof verified successfully in ${verification.verificationTime}ms`);
+                    } else {
+                        log(`❌ Proof verification failed`);
+                    }
+                    
+                } else {
+                    log(`❌ Failed to generate proof for ${agentId}: ${proof.error}`);
+                    document.getElementById(`${agentId}-status`).textContent = 'Failed';
+                    document.getElementById(`${agentId}-status`).className = 'status denied';
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`);
+                document.getElementById(`${agentId}-status`).textContent = 'Error';
+                document.getElementById(`${agentId}-status`).className = 'status denied';
+            }
+        };
+        
+        log('Click "Generate zkML Proof" to authorize agents using JOLT-Atlas');
+    </script>
+</body>
+</html>

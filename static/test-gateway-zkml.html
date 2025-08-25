@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gateway zkML Test - Real Proof Generation</title>
+    <script src="./js/lib/ethers.umd.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        #output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .proof-display {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧬 Gateway zkML Integration Test</h1>
+        <p class="subtitle">Test JOLT-Atlas proof generation with Circle Gateway transfers</p>
+        
+        <div class="test-section">
+            <h2>⚡ Quick Test</h2>
+            <p>Test zkML proof generation and Gateway transfer with automated signing</p>
+            
+            <div class="button-group">
+                <button onclick="testZkMLProof()">1. Generate zkML Proof</button>
+                <button onclick="checkBalance()">2. Check USDC Balance</button>
+                <button onclick="executeGatewayTransfer()">3. Execute Transfer</button>
+            </div>
+            
+            <div id="zkml-status"></div>
+            <div id="balance-status"></div>
+            <div id="transfer-status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Test Results</h2>
+            <div id="output">Ready for testing...</div>
+        </div>
+    </div>
+    
+    <!-- Load Gateway scripts in order -->
+    <script src="./js/ui/gateway-workflow-manager-v2.js" type="module"></script>
+    <script src="./js/gateway-reduce-amount.js"></script>
+    
+    <script>
+        const PRIVATE_KEY = 'c3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+        const USDC_ADDRESS = '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238'; // Sepolia USDC
+        
+        let wallet;
+        let provider;
+        
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = type;
+            entry.innerHTML = `[${timestamp}] ${message}`;
+            output.appendChild(entry);
+            output.scrollTop = output.scrollHeight;
+            console.log(message);
+        }
+        
+        async function initialize() {
+            try {
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                wallet = new ethers.Wallet(PRIVATE_KEY, provider);
+                window.DEMO_PRIVATE_KEY = PRIVATE_KEY;
+                
+                log(`✅ Wallet initialized: ${wallet.address}`, 'success');
+                
+                // Check if zkML server is running
+                try {
+                    const response = await fetch('http://localhost:8003/api/zkml/health');
+                    if (response.ok) {
+                        log('✅ zkML server is running', 'success');
+                    } else {
+                        log('⚠️ zkML server not responding, will use fallback', 'warning');
+                    }
+                } catch (e) {
+                    log('⚠️ zkML server not running. Start it with: node api/zkml-server.js', 'warning');
+                }
+                
+            } catch (error) {
+                log(`❌ Initialization error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testZkMLProof() {
+            const statusDiv = document.getElementById('zkml-status');
+            statusDiv.innerHTML = '<div class="info">⏳ Generating zkML proof...</div>';
+            
+            try {
+                log('🧬 Testing zkML proof generation...', 'info');
+                
+                // Try to call the zkML API
+                const response = await fetch('http://localhost:8003/api/zkml/generate-proof', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        agent_type: 3,  // Cross-chain agent
+                        amount: 1,      // 0.01 USDC in cents
+                        operation: 1,   // Gateway transfer
+                        risk: 10,       // Low risk
+                        use_minimal_model: true
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusDiv.innerHTML = `
+                        <div class="success">
+                            ✅ zkML Proof Generated!<br>
+                            Decision: ${result.decision ? 'ALLOW' : 'DENY'}<br>
+                            Time: ${result.proofTime}ms<br>
+                            Type: ${result.cryptographic ? 'REAL cryptographic' : 'Mock fallback'}
+                        </div>
+                        <div class="proof-display">
+                            Proof: [${result.proof.slice(0, 10).join(', ')}...]
+                        </div>
+                    `;
+                    log(`✅ zkML proof generated in ${result.proofTime}ms`, 'success');
+                } else {
+                    statusDiv.innerHTML = `
+                        <div class="warning">
+                            ⚠️ Using fallback proof<br>
+                            Reason: ${result.error || 'zkML server not available'}
+                        </div>
+                    `;
+                    log('⚠️ Using fallback proof', 'warning');
+                }
+                
+                window.lastZkMLProof = result;
+                return result;
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                log(`❌ zkML proof error: ${error.message}`, 'error');
+                
+                // Return mock proof
+                return {
+                    success: false,
+                    proof: [1, 3, 1, 1, 10],
+                    decision: true,
+                    proofTime: 5,
+                    cryptographic: false
+                };
+            }
+        }
+        
+        async function checkBalance() {
+            const statusDiv = document.getElementById('balance-status');
+            statusDiv.innerHTML = '<div class="info">⏳ Checking USDC balance...</div>';
+            
+            try {
+                const usdcABI = ['function balanceOf(address) view returns (uint256)'];
+                const usdc = new ethers.Contract(USDC_ADDRESS, usdcABI, provider);
+                const balance = await usdc.balanceOf(wallet.address);
+                const formatted = ethers.utils.formatUnits(balance, 6);
+                
+                statusDiv.innerHTML = `
+                    <div class="success">
+                        💰 USDC Balance: ${formatted} USDC<br>
+                        Address: ${wallet.address}
+                    </div>
+                `;
+                
+                log(`💰 USDC Balance: ${formatted} USDC`, 'success');
+                
+                if (balance.eq(0)) {
+                    statusDiv.innerHTML += `
+                        <div class="warning">
+                            ⚠️ No USDC balance!<br>
+                            Get testnet USDC from Circle faucet
+                        </div>
+                    `;
+                }
+                
+                return formatted;
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                log(`❌ Balance check error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function executeGatewayTransfer() {
+            const statusDiv = document.getElementById('transfer-status');
+            statusDiv.innerHTML = '<div class="info">⏳ Executing Gateway transfer...</div>';
+            
+            try {
+                // First generate zkML proof if not already done
+                if (!window.lastZkMLProof) {
+                    log('Generating zkML proof first...', 'info');
+                    await testZkMLProof();
+                }
+                
+                if (!window.lastZkMLProof || !window.lastZkMLProof.decision) {
+                    throw new Error('Agent not authorized by zkML proof');
+                }
+                
+                log('🚀 Executing Gateway transfer with auto-signing...', 'info');
+                
+                // Check if gateway manager is available
+                if (!window.gatewayWorkflowManager) {
+                    // Create instance if needed
+                    const { GatewayWorkflowManager } = await import('./js/ui/gateway-workflow-manager-v2.js');
+                    window.gatewayWorkflowManager = new GatewayWorkflowManager();
+                }
+                
+                // Execute transfer with reduced amount (0.01 USDC)
+                const result = await window.gatewayWorkflowManager.executeRealGatewayTransfer(
+                    '0.01',  // Amount per chain
+                    wallet.address,  // Recipient
+                    'test-agent-123',  // Agent ID
+                    true  // Testnet
+                );
+                
+                statusDiv.innerHTML = `
+                    <div class="success">
+                        ✅ Gateway Transfer Complete!<br>
+                        zkML Proof: ${window.lastZkMLProof.cryptographic ? 'REAL' : 'Mock'}<br>
+                        Amount: 0.03 USDC total (0.01 per chain)<br>
+                        Chains: Ethereum, Base, Avalanche
+                    </div>
+                `;
+                
+                log('✅ Gateway transfer successful!', 'success');
+                
+                return result;
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                log(`❌ Transfer error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', initialize);
+    </script>
+</body>
+</html>

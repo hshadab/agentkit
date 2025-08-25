@@ -1,13 +1,15 @@
 # Verifiable Agent Kit
 
-A production-ready framework for privacy-preserving AI agents with real zero-knowledge proofs using zkEngine Nova recursive proofs. Features multi-chain verification, automated USDC transfers, and complete IoTeX DePIN integration with real on-chain device registration, proximity verification, and reward distribution. Build trustless, verifiable compute applications using natural language commands.
+A production-ready framework for privacy-preserving AI agents with real zero-knowledge proofs using zkEngine Nova recursive proofs and **JOLT-Atlas zkML** for AI inference verification. Features multi-chain verification, automated USDC transfers, zkML-protected Circle Gateway access, and complete IoTeX DePIN integration with real on-chain device registration, proximity verification, and reward distribution. Build trustless, verifiable compute applications using natural language commands.
 
 ## 🚀 Key Features
 
 ### Core Capabilities
 - **Real Zero-Knowledge Proofs** - Generate cryptographic proofs using zkEngine (Nova → Groth16 SNARKs)
+- **zkML Integration** - JOLT-Atlas sentiment model (14 embeddings) for AI inference verification (~10s proof generation)
 - **5 Blockchain Networks** - Deploy and verify proofs on Ethereum, Solana, Base, Avalanche, and IoTeX
-- **5 Proof Types** - KYC, Device Proximity (IoT), AI Prediction, Medical Integrity, AI Content
+- **6 Proof Types** - KYC, Device Proximity (IoT), AI Prediction, Medical Integrity, AI Content, **zkML Inference**
+- **zkML-Protected Gateway** - AI agents must prove risk analysis via zkML before accessing Circle Gateway funds
 - **Cross-Chain USDC Transfers** - Real CCTP (Circle Cross-Chain Transfer Protocol) integration with MetaMask
 - **Enhanced CCTP Workflow** - Production-ready Ethereum ↔ Base USDC bridging with real zkEngine proofs
 - **OpenAI-Powered Workflows** - GPT-4o integration for intelligent natural language parsing
@@ -58,7 +60,26 @@ Proves AI-generated content authenticity and ownership with cryptographic verifi
 - **Blockchain**: Multi-chain support
 - **Example**: `"Generate AI content proof for my generated text"`
 
-#### 6. **Cross-Chain USDC Transfer** 🔥 **PRODUCTION READY**
+#### 6. **zkML Inference Proof** 🔥 **NEW - JOLT-Atlas Integration**
+Proves AI model inference without revealing model weights using JOLT-Atlas zkML framework.
+- **Complete Workflow**: 
+  1. Generate zkML proof with sentiment model (14 embeddings, ~10s)
+  2. Verify proof on-chain cryptographically
+  3. Authorize AI agent for Circle Gateway access
+- **Technical Details**:
+  - **Model**: Sentiment analysis with 14 embeddings
+  - **Proof Time**: ~10 seconds (real cryptographic proof)
+  - **Matrix Size**: 1024×1024 polynomials
+  - **Trace Length**: 11 operations
+- **Security Benefits**:
+  - Proves AI agents ran risk analysis before accessing funds
+  - Model weights remain private (zero-knowledge)
+  - On-chain verification prevents unauthorized access
+  - Time-limited permissions (1 hour expiry)
+- **Use cases**: AI agent authorization, model inference verification, financial risk analysis
+- **Example**: `"Generate zkML proof for AI agent to access Circle Gateway"`
+
+#### 7. **Cross-Chain USDC Transfer** 🔥 **PRODUCTION READY**
 Proves agent authorization then executes real USDC transfers between Ethereum and Base using Circle's CCTP.
 - **Complete 5-Step Workflow**:
   1. **ZKP Authorization** - Generate real zkEngine proof for agent authorization
