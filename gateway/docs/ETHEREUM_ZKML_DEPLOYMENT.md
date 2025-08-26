@@ -2,11 +2,11 @@
 
 ## Current Status
 
-The system is configured for Ethereum Sepolia verification but the contract deployment is pending wallet funding.
+The system is configured for Ethereum Sepolia verification. Contract deployment is pending wallet funding.
 
 ### Configuration Complete ✅
 - Backend configured for Ethereum Sepolia
-- Gateway defaults to Ethereum network
+- Gateway defaults to Ethereum network  
 - Simulated verification working
 - Deployment script ready
 
@@ -32,7 +32,7 @@ npx hardhat run scripts/deploy-zkml-real.js --network sepolia
 ```
 
 ### Step 3: Update Backend
-Edit `api/zkml-verifier-backend.js` and replace the Sepolia address with the deployed contract address.
+Edit `api/zkml-verifier-backend.js` and replace the placeholder address with the deployed contract address.
 
 ### Step 4: Test
 ```bash
@@ -74,40 +74,26 @@ Once deployed and backend updated:
 window.USE_REAL_CHAIN_VERIFICATION = true;
 ```
 
-## Alternative: Use IoTeX (Already Deployed)
-
-If you need real on-chain verification immediately, use the already deployed IoTeX contract:
-
-```javascript
-// In browser console
-window.VERIFICATION_NETWORK = 'iotex-testnet';
-window.USE_REAL_CHAIN_VERIFICATION = true;
-```
-
-**IoTeX Contract**: `0xD782e96B97153ebE3BfFB24085A022c2320B7613`
-- ✅ Already deployed and tested
-- ✅ Gas costs only ~$0.02
-- ✅ 5-second confirmations
-
 ## Verification Flow
 
 1. **Step 1**: zkML proof generation (JOLT-Atlas)
-2. **Step 2**: On-chain verification (Ethereum/IoTeX)
+2. **Step 2**: On-chain verification on Ethereum Sepolia
 3. **Step 3**: Circle Gateway USDC transfer
 
-## Gas Costs Comparison
+## Gas Costs
 
-| Network | Gas Used | Cost (USD) | Status |
-|---------|----------|------------|--------|
+| Network | Gas Used | Cost | Status |
+|---------|----------|------|--------|
 | Ethereum Mainnet | ~384k | $15-30 | Not deployed |
 | Ethereum Sepolia | ~384k | Free (testnet) | Pending funding |
-| IoTeX Testnet | ~384k | ~$0.02 | ✅ Deployed |
 
 ## Summary
 
-The system is fully configured for Ethereum Sepolia verification. To activate real on-chain verification:
+The system is configured exclusively for Ethereum Sepolia verification. To activate real on-chain verification:
 
-1. **Option A**: Fund wallet and deploy to Ethereum Sepolia
-2. **Option B**: Use existing IoTeX deployment (immediate availability)
+1. Fund wallet with 0.005 ETH
+2. Deploy contract using provided script
+3. Update backend with deployed address
+4. Use `?real=true` to enable real verification
 
-Both options provide real cryptographic proof verification on-chain, with the main difference being the network and gas costs.
+Until deployment, the system uses simulated verification that mimics real Ethereum verification behavior.

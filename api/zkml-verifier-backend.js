@@ -24,16 +24,6 @@ const NETWORKS = {
         rpc: 'https://ethereum-sepolia-rpc.publicnode.com',
         chainId: 11155111,
         verifierAddress: '0x9876543210987654321098765432109876543210' // To be deployed (needs funding)
-    },
-    'base-sepolia': {
-        rpc: 'https://base-sepolia.g.alchemy.com/v2/demo',
-        chainId: 84532,
-        verifierAddress: '0x2345678901234567890123456789012345678901'
-    },
-    'iotex-testnet': {
-        rpc: 'https://babel-api.testnet.iotex.io',
-        chainId: 4690,
-        verifierAddress: '0xD782e96B97153ebE3BfFB24085A022c2320B7613' // Deployed ZKMLNovaVerifier
     }
 };
 
