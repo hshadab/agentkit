@@ -97,17 +97,20 @@ Proves agent authorization then executes real USDC transfers between Ethereum an
   - ✅ **Real zkEngine Proof Integration** - Uses actual zkEngine proof data instead of mock/API calls
   - ✅ **Clean UI Design** - Removed all inner container backgrounds, kept only essential borders for visual hierarchy
 
-#### 7. **Circle Gateway Multi-Chain Transfers** 🆕 **FIXED & WORKING**
-Execute real USDC transfers across multiple chains simultaneously using Circle's Gateway API with EIP-712 signatures.
+#### 8. **Circle Gateway Multi-Chain Transfers** 🆕 **FULLY FIXED (Aug 25, 2025)**
+Execute real USDC transfers across multiple chains simultaneously using Circle's Gateway API with zkML authorization.
 - **Complete Gateway Workflow**:
-  1. **Multi-Chain Intent Creation** - Generate transfer intents for 3+ chains simultaneously
-  2. **EIP-712 Signature Generation** - Sign structured data with proper field ordering
+  1. **zkML Authorization** - AI agents must prove risk analysis via JOLT-Atlas before accessing funds
+  2. **Programmatic Signing** - Automatic EIP-712 signatures without MetaMask popups
   3. **Gateway API Submission** - Submit burn intents to Circle Gateway testnet
   4. **Cross-Chain Settlement** - Automatic USDC movement across chains
-- **Critical Fix (Aug 24, 2025)**:
-  - ✅ **Fixed EIP-712 Field Ordering** - Corrected TransferSpec field order (value at position 12, not 4)
-  - ✅ **Fixed CDN Dependencies** - Migrated all libraries to local copies to prevent loading failures
-  - ✅ **Fixed Signature Verification** - Resolved "recovered signer does not match" errors
+- **Critical Fixes (Aug 25, 2025)**:
+  - ✅ **Fixed Signature Format** - Using raw hex string instead of r,s,v components
+  - ✅ **Fixed Domain Structure** - Using minimal domain `{ name: "GatewayWallet", version: "1" }` without chainId
+  - ✅ **Fixed Type Definitions** - Added EIP712Domain to types object for ethers.js _signTypedData
+  - ✅ **Fixed Fee Amount** - Updated to minimum 2.000001 USDC required by Circle
+  - ✅ **Fixed Programmatic Signing** - Auto-signs without MetaMask popups using embedded private key
+  - ✅ **Fixed Gateway Deposit** - Created proper deposit page using GatewayWallet.deposit() function
   - ✅ **Working Configuration**:
     ```javascript
     // CRITICAL: Field order must match exactly

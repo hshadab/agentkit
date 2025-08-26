@@ -1,36 +1,89 @@
-// zkML Agent Verification Service
-// Integrates JOLT-Atlas sentiment model proof generation for AI agent authorization
-// This verifies agents ran risk analysis before accessing Circle Gateway
+// Unified Backend Service - Port 8002
+// Handles both zkEngine and zkML proof generation
 
 import express from 'express';
 import { spawn } from 'child_process';
 import { promises as fs } from 'fs';
-import path from 'path';
 import crypto from 'crypto';
+import cors from 'cors';
 
 const app = express();
-app.use(express.json());
+const PORT = 8002;
 
-// CORS for client-side access
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    if (req.method === 'OPTIONS') return res.sendStatus(200);
-    next();
+// Middleware
+app.use(express.json());
+app.use(cors());
+
+// Store active proof sessions
+const proofSessions = new Map();
+const zkEngineProofs = new Map();
+
+// ===========================================
+// zkEngine Endpoints (existing functionality)
+// ===========================================
+
+app.get('/zkengine/status', (req, res) => {
+    res.json({
+        status: 'ready',
+        binary: 'zkEngine',
+        version: '1.0.0',
+        supportedProofs: ['kyc', 'medical', 'iot', 'ai_prediction']
+    });
 });
 
-// Store active proof generation sessions
-const proofSessions = new Map();
+app.post('/zkengine/prove', async (req, res) => {
+    const { proofType, inputData } = req.body;
+    
+    console.log(`🔐 Generating zkEngine proof for type: ${proofType}`);
+    
+    // Simulate zkEngine proof generation
+    const proofId = crypto.randomBytes(16).toString('hex');
+    
+    // Store proof session
+    zkEngineProofs.set(proofId, {
+        type: proofType,
+        status: 'generating',
+        startTime: Date.now()
+    });
+    
+    // Simulate proof generation with delay
+    setTimeout(() => {
+        const session = zkEngineProofs.get(proofId);
+        session.status = 'completed';
+        session.proof = {
+            proofData: crypto.randomBytes(32).toString('hex'),
+            publicSignals: inputData,
+            verificationKey: crypto.randomBytes(32).toString('hex')
+        };
+        zkEngineProofs.set(proofId, session);
+    }, 3000);
+    
+    res.json({
+        proofId,
+        status: 'generating',
+        message: 'zkEngine proof generation started'
+    });
+});
+
+app.get('/zkengine/proof/:proofId', (req, res) => {
+    const { proofId } = req.params;
+    const session = zkEngineProofs.get(proofId);
+    
+    if (!session) {
+        return res.status(404).json({ error: 'Proof not found' });
+    }
+    
+    res.json(session);
+});
+
+// ===========================================
+// zkML Endpoints (JOLT-Atlas integration)
+// ===========================================
 
 // Path to JOLT-Atlas binary
-const JOLT_BINARY = '/home/hshadab/agentkit/jolt-atlas/zkml-jolt-core/target/release/zkml-jolt-core';
+const JOLT_BINARY = '/home/hshadab/agentkit/jolt-atlas/target/release/zkml-jolt-core';
 
-/**
- * Generate zkML proof for AI agent authorization
- * Uses JOLT-Atlas sentiment model to prove risk analysis was performed
- */
-app.post('/api/zkml/generate-agent-proof', async (req, res) => {
+app.post('/zkml/prove', async (req, res) => {
     const { agentId, agentType, amount, operation, riskScore } = req.body;
     
     if (!agentId) {
@@ -44,13 +97,10 @@ app.post('/api/zkml/generate-agent-proof', async (req, res) => {
     console.log(`   Type: ${agentType}, Amount: ${amount}, Operation: ${operation}`);
     
     try {
-        // Use the pre-built binary directly instead of cargo run
-        const binaryPath = '/home/hshadab/agentkit/jolt-atlas/target/release/zkml-jolt-core';
-        
+        // Use the pre-built binary directly
         console.log('🚀 Starting REAL JOLT-Atlas proof generation...');
-        console.log(`   Binary: ${binaryPath}`);
         
-        const proofProcess = spawn(binaryPath, ['profile', '--name', 'sentiment']);
+        const proofProcess = spawn(JOLT_BINARY, ['profile', '--name', 'sentiment']);
         
         let output = '';
         let errorOutput = '';
@@ -73,7 +123,7 @@ app.post('/api/zkml/generate-agent-proof', async (req, res) => {
             process: proofProcess
         });
         
-        // Set a timeout to kill the process if it hangs
+        // Set a timeout to handle hanging process
         const timeout = setTimeout(() => {
             console.log('⏱️ Proof generation taking too long, using fallback...');
             proofProcess.kill();
@@ -150,10 +200,7 @@ app.post('/api/zkml/generate-agent-proof', async (req, res) => {
     }
 });
 
-/**
- * Check status of zkML proof generation
- */
-app.get('/api/zkml/proof-status/:sessionId', (req, res) => {
+app.get('/zkml/status/:sessionId', (req, res) => {
     const { sessionId } = req.params;
     const session = proofSessions.get(sessionId);
     
@@ -179,10 +226,7 @@ app.get('/api/zkml/proof-status/:sessionId', (req, res) => {
     res.json(response);
 });
 
-/**
- * Verify zkML proof on-chain (mock for now, would interact with smart contract)
- */
-app.post('/api/zkml/verify-proof', async (req, res) => {
+app.post('/zkml/verify', async (req, res) => {
     const { sessionId, proof } = req.body;
     
     if (!sessionId || !proof) {
@@ -194,14 +238,10 @@ app.post('/api/zkml/verify-proof', async (req, res) => {
         return res.status(400).json({ error: 'Invalid or incomplete proof session' });
     }
     
-    // In production, this would:
-    // 1. Submit proof to on-chain verifier contract
-    // 2. Wait for transaction confirmation
-    // 3. Return verification result
-    
+    // In production, this would submit to on-chain verifier
     console.log(`🔍 Verifying zkML proof for agent ${session.agentId}`);
     
-    // Simulate verification (would be on-chain)
+    // Simulate verification
     setTimeout(() => {
         res.json({
             verified: true,
@@ -218,23 +258,30 @@ app.post('/api/zkml/verify-proof', async (req, res) => {
     }, 1000);
 });
 
-/**
- * Health check endpoint
- */
-app.get('/health', (req, res) => {
+// ===========================================
+// Health & Status
+// ===========================================
+
+app.get('/health', async (req, res) => {
     res.json({ 
         status: 'healthy',
-        service: 'zkML Agent Verifier',
-        joltAtlasAvailable: true, // Check would require fs import
-        activeSessions: proofSessions.size
+        services: {
+            zkEngine: 'available',
+            zkML: 'available',
+            joltAtlasAvailable: await fs.access(JOLT_BINARY).then(() => true).catch(() => false)
+        },
+        activeSessions: {
+            zkEngine: zkEngineProofs.size,
+            zkML: proofSessions.size
+        }
     });
 });
 
-const PORT = process.env.ZKML_PORT || 3456;
-
+// Start server
 app.listen(PORT, () => {
-    console.log(`🚀 zkML Agent Verifier running on port ${PORT}`);
+    console.log(`🚀 Unified Backend Server running on port ${PORT}`);
+    console.log(`   zkEngine endpoints: /zkengine/*`);
+    console.log(`   zkML endpoints: /zkml/*`);
     console.log(`   JOLT-Atlas binary: ${JOLT_BINARY}`);
-    console.log(`   Sentiment model: 14 embeddings, ~10s proof generation`);
-    console.log(`   Ready to authorize AI agents for Circle Gateway access`);
+    console.log(`   Ready to handle both zkEngine and zkML proofs!`);
 });

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Force Reload Test</title>
+    <script>
+        // Force reload with timestamp
+        const timestamp = Date.now();
+        const newUrl = `http://localhost:8080/index.html?cachebust=${timestamp}`;
+        
+        // Clear everything and redirect
+        if ('caches' in window) {
+            caches.keys().then(names => {
+                names.forEach(name => caches.delete(name));
+            });
+        }
+        
+        // Force reload
+        setTimeout(() => {
+            window.location.href = newUrl;
+        }, 100);
+    </script>
+</head>
+<body>
+    <h1>Forcing cache clear...</h1>
+</body>
+</html>

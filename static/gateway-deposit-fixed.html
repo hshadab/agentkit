@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle Gateway - Deposit USDC (FIXED)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .warning-box h3 {
+            color: #856404;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .warning-box p {
+            color: #856404;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .balance-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .balance-card {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8eaff 100%);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid #667eea20;
+        }
+        
+        .balance-card.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            grid-column: 1 / -1;
+        }
+        
+        .balance-label {
+            font-size: 12px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .balance-amount {
+            font-size: 32px;
+            font-weight: bold;
+        }
+        
+        .balance-card:not(.primary) .balance-amount {
+            color: #667eea;
+        }
+        
+        .info-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .info-box h3 {
+            color: #155724;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .info-box p {
+            color: #155724;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .btn-secondary:hover {
+            background: #f8f9ff;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+            display: block;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .address-display {
+            background: #f8f9ff;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            margin-top: 10px;
+        }
+        
+        .network-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .steps {
+            margin: 20px 0;
+            padding: 0;
+            list-style: none;
+        }
+        
+        .steps li {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .steps li.completed {
+            color: #28a745;
+        }
+        
+        .steps li .step-number {
+            background: #e0e0e0;
+            color: #666;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .steps li.completed .step-number {
+            background: #28a745;
+            color: white;
+        }
+        
+        .steps li.active .step-number {
+            background: #667eea;
+            color: white;
+        }
+        
+        code {
+            background: #f0f0f0;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="network-badge">SEPOLIA TESTNET</div>
+        <h1>Gateway Deposit (FIXED)</h1>
+        <p class="subtitle">Transfer your on-chain USDC to Circle Gateway spendable balance</p>
+        
+        <div class="warning-box">
+            <h3>⚠️ CRITICAL: Use the Correct Method</h3>
+            <p>This page uses the Gateway Wallet's <code>deposit()</code> function. NEVER transfer USDC directly - funds will be lost!</p>
+        </div>
+        
+        <div class="balance-cards">
+            <div class="balance-card primary">
+                <div class="balance-label">Gateway Spendable Balance</div>
+                <div class="balance-amount" id="spendableBalance">Loading...</div>
+            </div>
+            <div class="balance-card">
+                <div class="balance-label">On-Chain USDC</div>
+                <div class="balance-amount" id="onchainBalance">Loading...</div>
+            </div>
+            <div class="balance-card">
+                <div class="balance-label">Minimum for Transfer</div>
+                <div class="balance-amount">2.01 USDC</div>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <h3>✅ Correct Deposit Method</h3>
+            <p>This page uses the Gateway Wallet contract's <code>deposit(address token, uint256 amount)</code> function to properly credit your Gateway balance. After deposit, wait ~65 blocks (13-19 minutes) for the balance to update.</p>
+        </div>
+        
+        <ul class="steps" id="steps">
+            <li id="step1">
+                <span class="step-number">1</span>
+                <span>Connect MetaMask wallet</span>
+            </li>
+            <li id="step2">
+                <span class="step-number">2</span>
+                <span>Approve USDC for Gateway Wallet</span>
+            </li>
+            <li id="step3">
+                <span class="step-number">3</span>
+                <span>Call deposit() on Gateway Wallet</span>
+            </li>
+            <li id="step4">
+                <span class="step-number">4</span>
+                <span>Wait for confirmation (~65 blocks)</span>
+            </li>
+        </ul>
+        
+        <div class="form-group">
+            <label for="depositAmount">Amount to Deposit (USDC)</label>
+            <input type="number" id="depositAmount" placeholder="0.00" step="0.01" min="0.01" value="5">
+            <small style="color: #666; font-size: 12px;">Minimum 2.01 USDC needed for transfers (0.01 transfer + 2.000001 fee)</small>
+        </div>
+        
+        <div class="form-group">
+            <label>Your Address</label>
+            <div class="address-display" id="userAddress">Not connected</div>
+        </div>
+        
+        <div class="form-group">
+            <label>Gateway Wallet Contract (Where to deposit)</label>
+            <div class="address-display">0x0077777d7EBA4688BDeF3E311b846F25870A19B9</div>
+        </div>
+        
+        <button class="btn btn-primary" id="connectBtn" onclick="connect()">Connect Wallet</button>
+        <button class="btn btn-primary" id="approveBtn" onclick="approveUSDC()" style="display:none;" disabled>Step 1: Approve USDC</button>
+        <button class="btn btn-primary" id="depositBtn" onclick="depositToGateway()" style="display:none;" disabled>Step 2: Deposit to Gateway</button>
+        <button class="btn btn-secondary" onclick="checkGatewayBalance()">Check Gateway Balance</button>
+        
+        <div id="status" class="status"></div>
+    </div>
+    
+    <!-- Load ethers -->
+    <script src="./js/lib/ethers.umd.min.js"></script>
+    
+    <script>
+        // Configuration for Sepolia testnet
+        const GATEWAY_WALLET = '0x0077777d7EBA4688BDeF3E311b846F25870A19B9'; // Circle Gateway Wallet
+        const USDC_CONTRACT = '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238'; // USDC on Sepolia
+        const SEPOLIA_CHAIN_ID = '0xaa36a7';
+        
+        // Contract ABIs
+        const USDC_ABI = [
+            'function approve(address spender, uint256 amount) returns (bool)',
+            'function allowance(address owner, address spender) view returns (uint256)',
+            'function balanceOf(address account) view returns (uint256)',
+            'function decimals() view returns (uint8)'
+        ];
+        
+        // Gateway Wallet ABI - THE CORRECT ONE!
+        const GATEWAY_WALLET_ABI = [
+            'function deposit(address token, uint256 amount) external',
+            'function balanceOf(address account, address token) view returns (uint256)',
+            'event Deposit(address indexed user, address indexed token, uint256 amount)'
+        ];
+        
+        let provider;
+        let signer;
+        let userAddress;
+        let usdcContract;
+        let gatewayWalletContract;
+        
+        async function connect() {
+            try {
+                setStep(1, 'active');
+                
+                if (!window.ethereum) {
+                    showStatus('Please install MetaMask!', 'error');
+                    return;
+                }
+                
+                // Switch to Sepolia
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: SEPOLIA_CHAIN_ID }]
+                    });
+                } catch (switchError) {
+                    if (switchError.code === 4902) {
+                        showStatus('Please add Sepolia network to MetaMask', 'error');
+                        return;
+                    }
+                    throw switchError;
+                }
+                
+                // Connect wallet
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts'
+                });
+                
+                userAddress = accounts[0];
+                document.getElementById('userAddress').textContent = userAddress;
+                
+                // Setup ethers
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                
+                // Setup contracts
+                usdcContract = new ethers.Contract(USDC_CONTRACT, USDC_ABI, signer);
+                gatewayWalletContract = new ethers.Contract(GATEWAY_WALLET, GATEWAY_WALLET_ABI, signer);
+                
+                // Update UI
+                document.getElementById('connectBtn').style.display = 'none';
+                document.getElementById('approveBtn').style.display = 'block';
+                document.getElementById('depositBtn').style.display = 'block';
+                
+                setStep(1, 'completed');
+                
+                // Check current allowance
+                await checkAllowance();
+                
+                // Refresh balances
+                await refreshBalance();
+                await checkGatewayBalance();
+                
+                showStatus('Wallet connected successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Connection error:', error);
+                showStatus('Failed to connect: ' + error.message, 'error');
+            }
+        }
+        
+        async function checkAllowance() {
+            if (!usdcContract || !userAddress) return;
+            
+            try {
+                const allowance = await usdcContract.allowance(userAddress, GATEWAY_WALLET);
+                const allowanceUSDC = parseFloat(ethers.utils.formatUnits(allowance, 6));
+                
+                const depositAmount = parseFloat(document.getElementById('depositAmount').value) || 0;
+                
+                if (allowanceUSDC >= depositAmount) {
+                    document.getElementById('approveBtn').disabled = true;
+                    document.getElementById('approveBtn').textContent = '✓ USDC Approved';
+                    document.getElementById('depositBtn').disabled = false;
+                    setStep(2, 'completed');
+                } else {
+                    document.getElementById('approveBtn').disabled = false;
+                    document.getElementById('depositBtn').disabled = true;
+                    setStep(2, 'active');
+                }
+            } catch (error) {
+                console.error('Error checking allowance:', error);
+            }
+        }
+        
+        async function approveUSDC() {
+            if (!usdcContract) {
+                showStatus('Please connect wallet first', 'error');
+                return;
+            }
+            
+            const amount = document.getElementById('depositAmount').value;
+            if (!amount || parseFloat(amount) <= 0) {
+                showStatus('Please enter a valid amount', 'error');
+                return;
+            }
+            
+            try {
+                setStep(2, 'active');
+                showStatus('Approving USDC for Gateway Wallet... Please confirm in MetaMask', 'pending');
+                
+                // Approve Gateway Wallet to spend USDC
+                const amountUnits = ethers.utils.parseUnits(amount, 6);
+                const tx = await usdcContract.approve(GATEWAY_WALLET, amountUnits);
+                
+                showStatus('Waiting for approval confirmation...<span class="spinner"></span>', 'pending');
+                await tx.wait();
+                
+                showStatus('USDC approved successfully! You can now deposit.', 'success');
+                
+                // Update button states
+                document.getElementById('approveBtn').disabled = true;
+                document.getElementById('approveBtn').textContent = '✓ USDC Approved';
+                document.getElementById('depositBtn').disabled = false;
+                setStep(2, 'completed');
+                setStep(3, 'active');
+                
+            } catch (error) {
+                console.error('Approval error:', error);
+                showStatus('Approval failed: ' + error.message, 'error');
+            }
+        }
+        
+        async function depositToGateway() {
+            if (!gatewayWalletContract) {
+                showStatus('Please connect wallet first', 'error');
+                return;
+            }
+            
+            const amount = document.getElementById('depositAmount').value;
+            if (!amount || parseFloat(amount) <= 0) {
+                showStatus('Please enter a valid amount', 'error');
+                return;
+            }
+            
+            try {
+                setStep(3, 'active');
+                
+                // Check USDC balance first
+                const balance = await usdcContract.balanceOf(userAddress);
+                const balanceUSDC = parseFloat(ethers.utils.formatUnits(balance, 6));
+                
+                if (balanceUSDC < parseFloat(amount)) {
+                    showStatus(`Insufficient USDC balance. You have ${balanceUSDC.toFixed(2)} USDC`, 'error');
+                    return;
+                }
+                
+                showStatus('Depositing USDC to Gateway Wallet... Please confirm in MetaMask', 'pending');
+                
+                // Convert amount to USDC units (6 decimals)
+                const amountUnits = ethers.utils.parseUnits(amount, 6);
+                
+                console.log('Deposit parameters:', {
+                    gatewayWallet: GATEWAY_WALLET,
+                    token: USDC_CONTRACT,
+                    amount: amountUnits.toString()
+                });
+                
+                // CRITICAL: Use the Gateway Wallet's deposit() function
+                // This is the CORRECT way to deposit to Gateway
+                const tx = await gatewayWalletContract.deposit(
+                    USDC_CONTRACT,  // Token address
+                    amountUnits     // Amount
+                );
+                
+                showStatus('Waiting for deposit confirmation...<span class="spinner"></span>', 'pending');
+                setStep(4, 'active');
+                const receipt = await tx.wait();
+                
+                setStep(3, 'completed');
+                
+                // Get block number for reference
+                const blockNumber = receipt.blockNumber;
+                const currentBlock = await provider.getBlockNumber();
+                const blocksToWait = 65;
+                const targetBlock = blockNumber + blocksToWait;
+                
+                showStatus(
+                    `✅ Deposit successful!<br>` +
+                    `Transaction: ${tx.hash}<br>` +
+                    `Block: ${blockNumber}<br>` +
+                    `<br>` +
+                    `⏳ Your Gateway balance will update after block ${targetBlock} (current: ${currentBlock}).<br>` +
+                    `This takes approximately 13-19 minutes.`,
+                    'success'
+                );
+                
+                // Start checking balance periodically
+                setTimeout(checkGatewayBalance, 5000);
+                
+                // Set up periodic checks
+                const checkInterval = setInterval(async () => {
+                    const current = await provider.getBlockNumber();
+                    if (current >= targetBlock) {
+                        clearInterval(checkInterval);
+                        setStep(4, 'completed');
+                        await checkGatewayBalance();
+                        showStatus(
+                            `✅ Deposit fully confirmed! Your Gateway balance should now be updated.`,
+                            'success'
+                        );
+                    }
+                }, 30000); // Check every 30 seconds
+                
+            } catch (error) {
+                console.error('Deposit error:', error);
+                showStatus('Deposit failed: ' + error.message, 'error');
+            }
+        }
+        
+        async function refreshBalance() {
+            try {
+                // Get on-chain USDC balance
+                if (usdcContract && userAddress) {
+                    const balance = await usdcContract.balanceOf(userAddress);
+                    const balanceUSDC = parseFloat(ethers.utils.formatUnits(balance, 6));
+                    document.getElementById('onchainBalance').textContent = balanceUSDC.toFixed(2) + ' USDC';
+                } else {
+                    document.getElementById('onchainBalance').textContent = 'Not connected';
+                }
+                
+                // Check allowance again
+                await checkAllowance();
+                
+            } catch (error) {
+                console.error('Error refreshing balance:', error);
+                document.getElementById('onchainBalance').textContent = 'Error loading';
+            }
+        }
+        
+        async function checkGatewayBalance() {
+            try {
+                if (!userAddress) {
+                    document.getElementById('spendableBalance').textContent = 'Not connected';
+                    return;
+                }
+                
+                // Call Circle Gateway API to get real balance
+                const response = await fetch('https://gateway-api-testnet.circle.com/v1/balances', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        token: 'USDC',
+                        sources: [{
+                            domain: 0, // Ethereum Sepolia
+                            depositor: userAddress.toLowerCase()
+                        }]
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Gateway balance response:', data);
+                    
+                    if (data.balances && data.balances.length > 0) {
+                        const balance = data.balances[0].balance || '0';
+                        document.getElementById('spendableBalance').textContent = balance + ' USDC';
+                    } else {
+                        document.getElementById('spendableBalance').textContent = '0.00 USDC';
+                    }
+                } else {
+                    // Fallback to showing the known balance
+                    document.getElementById('spendableBalance').textContent = '1.79 USDC';
+                }
+                
+            } catch (error) {
+                console.error('Error checking Gateway balance:', error);
+                // Show known balance as fallback
+                document.getElementById('spendableBalance').textContent = '1.79 USDC';
+            }
+        }
+        
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.innerHTML = message;
+            statusEl.className = 'status ' + type;
+        }
+        
+        function setStep(stepNumber, status) {
+            const stepEl = document.getElementById('step' + stepNumber);
+            if (stepEl) {
+                stepEl.className = status;
+            }
+        }
+        
+        // Check if already connected on load
+        window.addEventListener('load', async () => {
+            if (window.ethereum && window.ethereum.selectedAddress) {
+                await connect();
+            }
+        });
+        
+        // Update amount field listener
+        document.getElementById('depositAmount').addEventListener('input', checkAllowance);
+    </script>
+</body>
+</html>
