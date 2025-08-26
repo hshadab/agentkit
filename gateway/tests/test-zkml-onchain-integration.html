@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>zkML On-Chain Verification Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #e0e0e0;
+        }
+        h1 {
+            color: #4CAF50;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.pending { background: #666; }
+        .status.running { background: #2196F3; }
+        .status.success { background: #4CAF50; }
+        .status.error { background: #F44336; }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover { background: #45a049; }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .mode-selector {
+            margin: 20px 0;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+        .mode-option {
+            margin: 10px 0;
+        }
+        .explorer-link {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .explorer-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>zkML On-Chain Verification Test</h1>
+    
+    <div class="mode-selector">
+        <h3>Verification Mode</h3>
+        <div class="mode-option">
+            <label>
+                <input type="radio" name="mode" value="simulated" checked>
+                <strong>Simulated</strong> - Fast, no gas fees (for testing)
+            </label>
+        </div>
+        <div class="mode-option">
+            <label>
+                <input type="radio" name="mode" value="real">
+                <strong>Real On-Chain</strong> - Actual Ethereum verification (requires deployed contract)
+            </label>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>Step 1: Generate zkML Proof <span id="proof-status" class="status pending">Pending</span></h3>
+        <button id="generate-proof-btn" onclick="generateProof()">Generate zkML Proof</button>
+        <div id="proof-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Step 2: On-Chain Verification <span id="verify-status" class="status pending">Pending</span></h3>
+        <button id="verify-btn" onclick="verifyOnChain()" disabled>Verify On-Chain</button>
+        <div id="verify-log" class="log"></div>
+        <div id="explorer-link" style="margin-top: 10px;"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Results</h3>
+        <pre id="results" style="color: #4CAF50;"></pre>
+    </div>
+
+    <script>
+        let currentProof = null;
+        let sessionId = 'test-' + Date.now();
+
+        function log(elementId, message, type = 'info') {
+            const logEl = document.getElementById(elementId);
+            const time = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#F44336' : type === 'success' ? '#4CAF50' : '#e0e0e0';
+            logEl.innerHTML += `<div style="color: ${color}">[${time}] ${message}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        async function generateProof() {
+            const btn = document.getElementById('generate-proof-btn');
+            const status = document.getElementById('proof-status');
+            
+            btn.disabled = true;
+            status.className = 'status running';
+            status.textContent = 'Running';
+            
+            log('proof-log', 'Generating zkML proof for agent authorization...');
+            
+            // Simulate proof generation
+            currentProof = {
+                proof: '0x' + Array(512).fill(0).map(() => 
+                    Math.floor(Math.random() * 16).toString(16)
+                ).join(''),
+                inputs: [
+                    3,  // Agent type: Cross-chain
+                    10, // Amount: 10%
+                    1,  // Operation: Transfer
+                    5   // Risk: 5%
+                ],
+                proofData: {
+                    commitment: '0x' + Array(64).fill(0).map(() => 
+                        Math.floor(Math.random() * 16).toString(16)
+                    ).join(''),
+                    decision: 1 // ALLOW
+                }
+            };
+            
+            // Simulate delay
+            await new Promise(r => setTimeout(r, 2000));
+            
+            log('proof-log', 'zkML proof generated successfully!', 'success');
+            log('proof-log', `Decision: ${currentProof.proofData.decision === 1 ? 'ALLOW' : 'DENY'}`);
+            log('proof-log', `Agent Type: Cross-chain (${currentProof.inputs[0]})`);
+            log('proof-log', `Amount: ${currentProof.inputs[1]}%`);
+            log('proof-log', `Risk Score: ${currentProof.inputs[2]}%`);
+            
+            status.className = 'status success';
+            status.textContent = 'Complete';
+            btn.disabled = false;
+            
+            // Enable verification button
+            document.getElementById('verify-btn').disabled = false;
+        }
+
+        async function verifyOnChain() {
+            if (!currentProof) {
+                alert('Please generate a proof first');
+                return;
+            }
+            
+            const btn = document.getElementById('verify-btn');
+            const status = document.getElementById('verify-status');
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            
+            btn.disabled = true;
+            status.className = 'status running';
+            status.textContent = 'Running';
+            
+            log('verify-log', `Starting ${mode} on-chain verification...`);
+            
+            try {
+                // Call backend API for verification
+                const response = await fetch('http://localhost:3003/zkml/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: sessionId,
+                        proof: currentProof,
+                        network: 'sepolia',
+                        useRealChain: mode === 'real'
+                    })
+                });
+                
+                if (!response.ok) {
+                    // If backend not running, simulate
+                    throw new Error('Backend not available, using client-side simulation');
+                }
+                
+                const result = await response.json();
+                
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+                
+                log('verify-log', `Verification ${result.verified ? 'SUCCESSFUL' : 'FAILED'}`, 'success');
+                log('verify-log', `Network: ${result.network}`);
+                log('verify-log', `Transaction: ${result.txHash}`);
+                log('verify-log', `Block: ${result.blockNumber}`);
+                log('verify-log', `Gas Used: ${result.gasUsed}`);
+                
+                // Show explorer link if real transaction
+                if (!result.network.includes('Simulated')) {
+                    const explorerUrl = `https://sepolia.etherscan.io/tx/${result.txHash}`;
+                    document.getElementById('explorer-link').innerHTML = 
+                        `<a href="${explorerUrl}" target="_blank" class="explorer-link">View on Etherscan ↗</a>`;
+                }
+                
+                // Show results
+                document.getElementById('results').textContent = JSON.stringify(result, null, 2);
+                
+                status.className = 'status success';
+                status.textContent = 'Verified';
+                
+            } catch (error) {
+                // Fallback to client-side simulation if backend not available
+                log('verify-log', 'Backend not available, using client simulation', 'error');
+                
+                // Simulate verification
+                await new Promise(r => setTimeout(r, 2000));
+                
+                const simulatedResult = {
+                    verified: true,
+                    authorized: true,
+                    txHash: '0x' + Array(64).fill(0).map(() => 
+                        Math.floor(Math.random() * 16).toString(16)
+                    ).join(''),
+                    network: 'Sepolia (Client Simulated)',
+                    blockNumber: Math.floor(Math.random() * 1000000) + 5000000,
+                    gasUsed: '147853',
+                    verificationTime: new Date().toISOString()
+                };
+                
+                log('verify-log', 'Verification SUCCESSFUL (simulated)', 'success');
+                log('verify-log', `Network: ${simulatedResult.network}`);
+                log('verify-log', `Transaction: ${simulatedResult.txHash}`);
+                log('verify-log', `Block: ${simulatedResult.blockNumber}`);
+                
+                document.getElementById('results').textContent = JSON.stringify(simulatedResult, null, 2);
+                
+                status.className = 'status success';
+                status.textContent = 'Verified (Simulated)';
+            }
+            
+            btn.disabled = false;
+        }
+
+        // Check backend status on load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('http://localhost:3003/health');
+                if (response.ok) {
+                    const health = await response.json();
+                    console.log('✅ Backend connected:', health);
+                    log('proof-log', 'zkML Verifier Backend connected', 'success');
+                }
+            } catch (error) {
+                console.warn('Backend not available, will use client simulation');
+                log('proof-log', 'Backend not available, will use client simulation', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

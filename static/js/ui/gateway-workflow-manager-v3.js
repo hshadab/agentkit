@@ -721,40 +721,59 @@ export class GatewayWorkflowManager {
                     // Update UI to show proof is completed
                     this.updateStepStatus('zkml_inference', 'completed');
                     
-                    // Verify the proof
+                    // Step 2: Verify the proof on-chain
+                    console.log('🔗 Step 2: On-chain verification...');
+                    this.updateStepStatus('onchain_verification', 'in_progress');
+                    
+                    // Determine if we should use real chain verification
+                    const useRealChain = window.location.search.includes('real=true') || 
+                                       window.USE_REAL_CHAIN_VERIFICATION;
+                    
                     const verifyResponse = await fetch(`${this.backendUrl}/zkml/verify`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             sessionId,
-                            proof: status.proof.proofData
+                            proof: status.proof.proofData,
+                            network: 'sepolia', // or detect from current network
+                            useRealChain: useRealChain,
+                            inputs: [3, 10, 1, 5] // Cross-chain agent example
                         })
                     });
                     
                     const verification = await verifyResponse.json();
-                    console.log('📋 Verification response:', verification);
+                    console.log('📋 On-chain verification response:', verification);
                     
                     if (verification.verified) {
-                        console.log('🔐 zkML proof verified successfully!');
-                        console.log(`   Transaction: ${verification.verificationTx}`);
+                        console.log('🔐 zkML proof verified on-chain!');
+                        console.log(`   Network: ${verification.network}`);
+                        console.log(`   Transaction: ${verification.txHash}`);
+                        console.log(`   Block: ${verification.blockNumber}`);
+                        console.log(`   Gas used: ${verification.gasUsed}`);
+                        
+                        // Show transaction link if real chain
+                        if (!verification.network.includes('Simulated')) {
+                            const explorerUrl = verification.network.includes('sepolia') ? 
+                                `https://sepolia.etherscan.io/tx/${verification.txHash}` :
+                                verification.network.includes('base') ?
+                                `https://sepolia.basescan.org/tx/${verification.txHash}` :
+                                `https://testnet.iotexscan.io/tx/${verification.txHash}`;
+                            
+                            console.log(`   View on explorer: ${explorerUrl}`);
+                        }
+                        
                         // Update Step 2 status
                         this.updateStepStatus('onchain_verification', 'completed');
                         return {
                             authorized: true,
                             proof: status.proof,
                             verification,
-                            message: 'Agent authorized via zkML proof'
+                            message: `Agent authorized via zkML proof (${verification.network})`
                         };
                     } else {
-                        console.warn('⚠️ Verification not confirmed, returning proof anyway for testing');
-                        // Still mark as completed for demo
-                        this.updateStepStatus('onchain_verification', 'completed');
-                        return {
-                            authorized: true,
-                            proof: status.proof,
-                            verification: verification || {},
-                            message: 'Agent authorized via zkML proof (verification pending)'
-                        };
+                        console.warn('⚠️ On-chain verification failed');
+                        this.updateStepStatus('onchain_verification', 'failed');
+                        throw new Error('On-chain verification failed');
                     }
                 } else if (status.status === 'failed') {
                     this.updateStepStatus('zkml_inference', 'failed');
