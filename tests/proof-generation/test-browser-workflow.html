@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Gateway Workflow</title>
+    <script src="./static/js/lib/ethers.umd.min.js"></script>
+</head>
+<body>
+    <h1>Testing Gateway Workflow</h1>
+    <button onclick="testWorkflow()">Test Gateway Workflow</button>
+    <div id="output" style="white-space: pre-wrap; font-family: monospace; margin-top: 20px;"></div>
+    
+    <script>
+        // Set the private key like main.js does
+        window.DEMO_PRIVATE_KEY = 'c3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+        console.log('🔑 Programmatic signing enabled for Gateway workflows');
+        
+        function log(msg) {
+            console.log(msg);
+            document.getElementById('output').innerHTML += msg + '\n';
+        }
+        
+        async function testWorkflow() {
+            log('Starting test...\n');
+            
+            // Simulate what the GatewayWorkflowManager does
+            log('🔍 Checking for programmatic signing...');
+            log('   window.DEMO_PRIVATE_KEY exists? ' + (!!window.DEMO_PRIVATE_KEY));
+            log('   Type: ' + typeof window.DEMO_PRIVATE_KEY);
+            log('   Length: ' + (window.DEMO_PRIVATE_KEY?.length));
+            
+            if (window.DEMO_PRIVATE_KEY && 
+                typeof window.DEMO_PRIVATE_KEY === 'string' && 
+                window.DEMO_PRIVATE_KEY.length > 0 && 
+                window.DEMO_PRIVATE_KEY !== 'undefined') {
+                
+                try {
+                    const formattedKey = window.DEMO_PRIVATE_KEY.startsWith('0x') ? 
+                        window.DEMO_PRIVATE_KEY : '0x' + window.DEMO_PRIVATE_KEY;
+                    
+                    if (window.ethers) {
+                        const wallet = new ethers.Wallet(formattedKey);
+                        const expectedAddress = '0xe616b2ec620621797030e0ab1ba38da68d78351c';
+                        
+                        log('\n🤖 AUTO-SIGNING CHECK:');
+                        log('   Wallet address: ' + wallet.address);
+                        log('   Expected: ' + expectedAddress);
+                        log('   Match? ' + (wallet.address.toLowerCase() === expectedAddress));
+                        
+                        // Now simulate the actual signing flow
+                        log('\n📝 Simulating executeRealGatewayTransfer...');
+                        
+                        const privateKey = window.DEMO_PRIVATE_KEY;
+                        let userAddress;
+                        
+                        if (privateKey && typeof privateKey === 'string' && privateKey.length > 0) {
+                            log('🔑 Found private key, creating wallet...');
+                            const wallet2 = new ethers.Wallet(formattedKey);
+                            userAddress = wallet2.address.toLowerCase();
+                            log('   Created wallet address: ' + wallet2.address);
+                            log('   userAddress set to: ' + userAddress);
+                            
+                            // This is what goes into sourceSigner
+                            const toBytes32 = (addr) => {
+                                return '0x' + addr.toLowerCase().replace('0x', '').padStart(64, '0');
+                            };
+                            
+                            const sourceSigner = toBytes32(userAddress);
+                            log('\n📋 Transfer spec would have:');
+                            log('   sourceSigner (bytes32): ' + sourceSigner);
+                            log('   sourceSigner (decoded): ' + '0x' + sourceSigner.slice(26));
+                            
+                            // Later when signing
+                            const actualSigner = '0x' + sourceSigner.slice(26);
+                            log('\n🚨 CRITICAL CHECK - At signing time:');
+                            log('   actualSigner (from spec): ' + actualSigner);
+                            log('   wallet.address.toLowerCase(): ' + wallet2.address.toLowerCase());
+                            log('   Match? ' + (wallet2.address.toLowerCase() === actualSigner));
+                            
+                            if (wallet2.address.toLowerCase() !== actualSigner) {
+                                log('❌ MISMATCH DETECTED!');
+                            } else {
+                                log('✅ Addresses match - signature should work!');
+                            }
+                        }
+                    }
+                } catch (error) {
+                    log('Error: ' + error.message);
+                }
+            }
+        }
+        
+        // Auto-run on load
+        window.addEventListener('load', () => {
+            setTimeout(testWorkflow, 100);
+        });
+    </script>
+</body>
+</html>
