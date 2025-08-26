@@ -14,10 +14,10 @@ async function main() {
     console.log("💰 Account balance:", hre.ethers.utils.formatEther(balance), "ETH");
     
     if (balance.eq(0)) {
-        console.error("❌ No balance! Get testnet ETH from:");
-        console.error("   Sepolia: https://sepoliafaucet.com");
-        console.error("   Base: https://faucet.quicknode.com/base/sepolia");
-        console.error("   IoTeX: https://faucet.testnet.iotex.io");
+        console.error("❌ No balance! Get Sepolia ETH from:");
+        console.error("   https://sepoliafaucet.com");
+        console.error("   https://faucet.quicknode.com/ethereum/sepolia");
+        console.error("   https://www.alchemy.com/faucets/ethereum-sepolia");
         process.exit(1);
     }
     
@@ -56,16 +56,10 @@ async function main() {
     console.log("   TX Hash:", deploymentInfo.transactionHash);
     
     // Explorer link
-    const explorerUrl = 
-        hre.network.name === "sepolia" ? `https://sepolia.etherscan.io/address/${verifier.address}` :
-        hre.network.name === "base-sepolia" ? `https://sepolia.basescan.org/address/${verifier.address}` :
-        hre.network.name === "iotex-testnet" ? `https://testnet.iotexscan.io/address/${verifier.address}` :
-        "";
+    const explorerUrl = `https://sepolia.etherscan.io/address/${verifier.address}`;
     
-    if (explorerUrl) {
-        console.log("\n🔗 View on Explorer:");
-        console.log("   " + explorerUrl);
-    }
+    console.log("\n🔗 View on Explorer:");
+    console.log("   " + explorerUrl);
     
     console.log("\n✅ Deployment complete! Saved to:", deploymentPath);
     console.log("\n📝 Next steps:");

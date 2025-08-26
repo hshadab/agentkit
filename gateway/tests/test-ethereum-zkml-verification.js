@@ -17,7 +17,7 @@ async function testEthereumVerification() {
         if (!health.ok) throw new Error('Backend not responding');
         const status = await health.json();
         console.log('✅ Backend is running');
-        console.log('   Networks:', status.networks.join(', '));
+        console.log('   Network: Ethereum Sepolia');
     } catch (error) {
         console.error('❌ Backend not running! Start with:');
         console.error('   node api/zkml-verifier-backend.js');
@@ -98,7 +98,7 @@ async function testEthereumVerification() {
     console.log('\n' + '=' .repeat(60));
     console.log('📝 Using Ethereum Verification in Gateway:');
     console.log('=' .repeat(60));
-    console.log('\n1. Gateway will default to Ethereum Sepolia');
+    console.log('\n1. Gateway defaults to Ethereum Sepolia');
     console.log('2. Add ?real=true to URL when contract is deployed');
     console.log('3. Or use window.USE_REAL_CHAIN_VERIFICATION = true');
     console.log('\n✅ Current Status:');
@@ -106,14 +106,6 @@ async function testEthereumVerification() {
     console.log('   - Gateway defaults to Ethereum ✅');
     console.log('   - Simulated verification working ✅');
     console.log('   - Real deployment pending funding ⏳');
-    
-    // Alternative: Show IoTeX deployment that's already live
-    console.log('\n💡 Alternative: IoTeX Testnet (Already Deployed)');
-    console.log('-'.repeat(60));
-    console.log('Contract is LIVE on IoTeX at: 0xD782e96B97153ebE3BfFB24085A022c2320B7613');
-    console.log('To use IoTeX instead:');
-    console.log('   window.VERIFICATION_NETWORK = "iotex-testnet"');
-    console.log('   Then use ?real=true for real verification');
 }
 
 testEthereumVerification().catch(console.error);
