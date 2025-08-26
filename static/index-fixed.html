@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <!-- Force cache invalidation timestamp: 20250823-050000 -->
+    <title>Verifiable Agent Kit</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="css/main.css?v=20250823-050000">
+    
+    <!-- Back to REAL MODE - no demo -->
+    <script src="./js/lib/ethers.umd.min.js?v=20250824-230000"></script>
+</head>
+<body>
+    <div class="sidebar">
+        <h3>Sample Queries</h3>
+        <!-- Sample queries will be populated by JavaScript -->
+    </div>
+
+    <div class="main-container">
+        <div class="header">
+            <h1>
+                <img src="./img/logo-novanet.svg" alt="Novanet" style="height: 32px; margin-right: 12px; vertical-align: middle;">
+                <span>Verifiable Agent Kit</span>
+            </h1>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div id="wallet-status" style="display: flex; gap: 8px; font-size: 13px;">
+                    <span id="ethereum-wallet-status" style="display: none; padding: 4px 12px; background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-radius: 4px; font-weight: 500;">ETH Connected</span>
+                    <span id="solana-wallet-status" style="display: none; padding: 4px 12px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-radius: 4px; font-weight: 500;">SOL Connected</span>
+                    <span id="base-wallet-status" style="display: none; padding: 4px 12px; background: rgba(0, 82, 255, 0.1); color: #0052FF; border-radius: 4px; font-weight: 500;">BASE Connected</span>
+                    <span id="avalanche-wallet-status" style="display: none; padding: 4px 12px; background: rgba(232, 65, 66, 0.1); color: #E84142; border-radius: 4px; font-weight: 500;">AVAX Connected</span>
+                    <span id="iotex-wallet-status" style="display: none; padding: 4px 12px; background: rgba(0, 212, 181, 0.1); color: #00D4B5; border-radius: 4px; font-weight: 500;">IoTeX Connected</span>
+                </div>
+                <div id="connection-status" class="status disconnected">
+                    <div class="status-dot"></div>
+                    <span class="status-text">Disconnected</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="messages-container">
+            <div id="messages"></div>
+        </div>
+
+        <div class="input-container">
+            <div class="input-wrapper">
+                <button id="upload-button" title="Upload file">📎</button>
+                <input type="text" id="user-input" placeholder="Type your message here..." autofocus>
+                <button id="paste-button" title="Paste from clipboard">📋</button>
+                <button id="send-button">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debug Console -->
+    <div id="debug-console" class="debug-console minimized">
+        <div class="debug-header">
+            <span>Debug Console</span>
+            <span style="cursor: pointer;">▭</span>
+        </div>
+        <div id="debug-messages" class="debug-messages"></div>
+    </div>
+
+    <!-- Ethereum Connect Banner -->
+    <div id="eth-connect-banner" class="eth-connect-banner" style="display: none;">
+        Connect your Ethereum wallet to verify proofs on-chain
+        <button onclick="window.blockchainVerifier.connectEthereum()">Connect MetaMask</button>
+    </div>
+
+    <!-- Solana Connect Banner -->
+    <div id="sol-connect-banner" class="sol-connect-banner" style="display: none;">
+        Connect your Solana wallet to verify proofs on-chain
+        <button onclick="window.blockchainVerifier.connectSolana()">Connect Solflare</button>
+    </div>
+
+    <!-- Base Connect Banner -->
+    <div id="base-connect-banner" class="base-connect-banner" style="display: none;">
+        Connect your wallet to verify proofs on Base
+        <button onclick="window.blockchainVerifier.connectBase()">Connect Wallet</button>
+    </div>
+
+    <!-- Avalanche Connect Banner -->
+    <div id="avalanche-connect-banner" class="avalanche-connect-banner" style="display: none;">
+        Connect your wallet to verify proofs on Avalanche
+        <button onclick="window.blockchainVerifier.connectAvalanche()">Connect MetaMask</button>
+    </div>
+
+    <!-- IoTeX Connect Banner -->
+    <div id="iotex-connect-banner" class="iotex-connect-banner" style="display: none;">
+        Connect your wallet to register IoT devices on IoTeX
+        <button onclick="window.blockchainVerifier.connectIoTeX()">Connect MetaMask</button>
+    </div>
+
+    <!-- Cache management disabled - manual refresh only -->
+    <script>
+        // Set version for tracking but don't auto-reload
+        const APP_VERSION = '20250824-1030';
+        localStorage.setItem('app_version', APP_VERSION);
+        console.log('App version:', APP_VERSION);
+    </script>
+    
+    <!-- Auto Cache Buster - DISABLED to prevent reload loops -->
+    <!-- <script type="module" src="./js/core/auto-cache-buster.js"></script> -->
+    
+    <!-- SES Compatibility for snarkjs -->
+    <script src="./js/core/ses-compatibility.js"></script>
+    
+    <!-- Emergency patches removed - fixes integrated into source code -->
+    
+    <!-- External dependencies - Using local copies -->
+    <script src="./js/lib/web3.min.js"></script>
+    <script src="./js/lib/snarkjs.min.js"></script>
+    <!-- Fixed Solana Web3.js - local copy -->
+    <script src="./js/lib/solana-web3.min.js"></script>
+    <script src="./js/core/solana-fallback.js"></script>
+    <!-- ethers.umd.min.js already loaded at the top -->
+    <script src="./js/core/ethers-fallback.js"></script>
+    
+    <!-- zkEngine Interface -->
+    <script src="./js/zkengine/zkengine-interface.js?v=20250823-042901"></script>
+    
+    <!-- Blockchain verifiers (these need to be updated to work with the modular system) -->
+    <script src="./ethereum-verifier.js?v=20250823-042901"></script>
+    <script src="./solana-verifier.js"></script>
+    <script src="./base-verifier.js"></script>
+    <script src="./avalanche-verifier.js"></script>
+    <script src="./parsers/nova/nova-proof-formatter.js"></script>
+    <script src="./parsers/nova/nova-proof-parser.js"></script>
+    <script src="./parsers/nova/zkengine-nova-parser.js"></script>
+    <script src="./parsers/nova/nova-proof-parser-v2.js"></script>
+    <script src="./parsers/nova/zkengine-calldata-parser.js"></script>
+    <script src="./parsers/nova/zkengine-binary-parser.js"></script>
+    <script src="./parsers/nova/zkengine-simple-parser.js"></script>
+    <script src="./js/blockchain/simple-nova-verifier.js"></script>
+    <script src="./js/ui/ioid-official-manager.js?v=20250823-042901"></script>
+    <script src="./js/utils/iotex-address-converter.js"></script>
+    <script src="./js/blockchain/iotex-device-verifier.js?v=20250823-042901"></script>
+    <script src="./js/blockchain/avalanche-medical-verifier.js"></script>
+    <script src="./js/ui/medical-record-handler.js"></script>
+    <script src="./js/ui/device-workflow-handler.js"></script>
+    <script src="./js/ui/ai-prediction-handler-real.js?v=20250823-042901"></script>
+    
+    <!-- FORCE CACHE CLEAR - Updated versions -->
+    <script>
+        console.log('🔄 CACHE CLEAR: Loading main.js with timestamp cache buster...');
+        // Force immediate cache clear notification
+        if (typeof window !== 'undefined') {
+            window.CACHE_BUSTER_ACTIVE = true;
+            console.log('🚨 FORCE REFRESH ACTIVE - All scripts will reload');
+        }
+    </script>
+    
+    <!-- Main application module - must be loaded as module since it uses ES6 imports -->
+    <!-- FORCE NEW FILE TO BYPASS CACHE -->
+    <script type="module" src="./js/main-fixed.js"></script>
+    
+    <!-- Module wrappers for blockchain functionality -->
+    <!-- Wrapper to expose modules to window -->
+    <script type="module" src="./js/blockchain/blockchain-verifier-wrapper.js?v=20250823-042901"></script>
+    <script type="module" src="./js/blockchain/avalanche-medical-wrapper.js?v=20250823-042901"></script>
+    <!-- Debug helper -->
+    <script src="./js/core/debug-helper.js"></script>
+    <!-- Device registration monitor -->
+    <script src="./js/debug/device-registration-monitor.js"></script>
+    <!-- Proof verification monitor -->
+    <script src="./js/debug/proof-verification-monitor.js"></script>
+    <!-- Proof generation monitor -->
+    <script src="./js/debug/proof-generation-monitor.js"></script>
+    <!-- Avalanche verify wrapper -->
+    <script src="./js/ui/avalanche-verify-wrapper.js"></script>
+    <!-- Base verify wrapper -->
+    <script src="./js/ui/base-verify-wrapper.js"></script>
+    <!-- Coordinate fix -->
+    <script src="./js/debug/coordinate-fix.js"></script>
+    <!-- Coordinate parser fix -->
+    <script src="./js/debug/coordinate-parser-fix.js"></script>
+    <!-- Metadata arguments fix -->
+    <script src="./js/debug/metadata-arguments-fix.js"></script>
+    <!-- Reward monitor -->
+    <script src="./js/debug/reward-monitor.js"></script>
+    <!-- Proof coordinate fix -->
+    <script src="./js/debug/proof-coordinate-fix.js"></script>
+    <!-- Public inputs fix -->
+    <script src="./js/debug/public-inputs-fix.js"></script>
+    <!-- Workflow coordinate trace -->
+    <script src="./js/debug/workflow-coordinate-trace.js"></script>
+    <!-- Workflow step fix -->
+    <script src="./js/debug/workflow-step-fix.js"></script>
+    <!-- Force coordinates fix -->
+    <script src="./js/debug/force-coordinates-fix.js"></script>
+    <!-- Backend step interceptor -->
+    <script src="./js/debug/backend-step-interceptor.js"></script>
+    <!-- LocalStorage coordinate override -->
+    <script src="./js/debug/localstorage-coordinate-override.js"></script>
+    <!-- Main coordinate override fixed -->
+    <script src="./js/debug/main-coordinate-override-fixed.js"></script>
+    <!-- Coordinate injection final -->
+    <script src="./js/debug/coordinate-injection-final.js"></script>
+    <!-- Proof analysis -->
+    <script src="./js/debug/proof-analysis.js"></script>
+    <!-- Gateway signing overrides are loaded at the top of the page -->
+</body>
+</html>
