@@ -1,0 +1,14 @@
+{
+  "network": "avalanche-fuji",
+  "chainId": 43113,
+  "contractAddress": "0x30e93E8B0804fD60b0d151F724c307c61Be37EE1",
+  "contractName": "Groth16Verifier (Real Proof of Proof)",
+  "contractType": "RealProofOfProofVerifier_New",
+  "deployer": "0xE616B2eC620621797030E0AB1BA38DA68D78351C",
+  "deploymentTime": "2025-07-26T02:44:14.678Z",
+  "explorerUrl": "https://testnet.snowtrace.io/address/0x30e93E8B0804fD60b0d151F724c307c61Be37EE1",
+  "verificationKeyInfo": {
+    "description": "Circuit-specific verification key for Nova proof-of-proof",
+    "publicSignalsCount": 6
+  }
+}

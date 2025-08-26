@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nova Proof Format Test</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script src="/static/js/core/config.js"></script>
+    <script src="/static/parsers/nova/nova-proof-parser.js"></script>
+    <script src="/static/parsers/nova/nova-proof-formatter.js"></script>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        button { margin: 10px; padding: 10px; }
+        #output { white-space: pre-wrap; background: #f0f0f0; padding: 10px; margin: 10px 0; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Nova Proof Format Test</h1>
+    
+    <button onclick="testRealProof()">Test Real Proof Format</button>
+    <button onclick="checkNovaDecider()">Check Nova Decider Contract</button>
+    <button onclick="simulateVerification()">Simulate Verification</button>
+    
+    <div id="output"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        async function testRealProof() {
+            output.innerHTML = '<h3>Testing Real Nova Proof Format...</h3>\n';
+            
+            try {
+                // Fetch a real proof from the backend
+                const response = await fetch('/api/proof/proof_device_proximity_1753716178252/iotex');
+                const proofData = await response.json();
+                
+                output.innerHTML += `Proof ID: ${proofData.proof_id}\n`;
+                output.innerHTML += `Device ID: ${proofData.device_id}\n`;
+                output.innerHTML += `Coordinates: (${proofData.coordinates.x}, ${proofData.coordinates.y})\n\n`;
+                
+                if (proofData.proof_data) {
+                    output.innerHTML += `Proof binary size: ${proofData.proof_data.length} chars (base64)\n`;
+                    output.innerHTML += `Decoded size: ~${Math.floor(proofData.proof_data.length * 0.75)} bytes\n\n`;
+                    
+                    // Parse the proof
+                    const parser = new NovaProofParser();
+                    const formatter = new NovaProofFormatter();
+                    
+                    // Test parsing
+                    const parsedComponents = parser.parseNovaBinary(proofData.proof_data);
+                    if (parsedComponents) {
+                        output.innerHTML += '<span class="success">✓ Successfully parsed Nova proof binary</span>\n';
+                        
+                        // Check if we got structured components
+                        if (parsedComponents.U_i_cmW) {
+                            output.innerHTML += '✓ Found structured Nova components\n';
+                            output.innerHTML += `  - U_i_cmW: ${parsedComponents.U_i_cmW.length} elements\n`;
+                            output.innerHTML += `  - U_i_cmE: ${parsedComponents.U_i_cmE.length} elements\n`;
+                            output.innerHTML += `  - u_i_cmW: ${parsedComponents.u_i_cmW.length} elements\n`;
+                            output.innerHTML += `  - cmT: ${parsedComponents.cmT.length} elements\n`;
+                            output.innerHTML += `  - r: ${parsedComponents.r ? 'present' : 'missing'}\n`;
+                            output.innerHTML += `  - pA: ${parsedComponents.pA.length} elements\n`;
+                            output.innerHTML += `  - pB: ${parsedComponents.pB.length}x${parsedComponents.pB[0]?.length} matrix\n`;
+                            output.innerHTML += `  - pC: ${parsedComponents.pC.length} elements\n`;
+                            output.innerHTML += `  - challenges: ${parsedComponents.challenges.length} elements\n`;
+                            output.innerHTML += `  - kzg_proof: ${parsedComponents.kzg_proof.length} points\n`;
+                        } else {
+                            output.innerHTML += '⚠️  Using fallback format (generic commitments)\n';
+                            output.innerHTML += `  - commitments: ${parsedComponents.commitments?.length || 0} elements\n`;
+                        }
+                        
+                        // Format for contract
+                        const formatted = formatter.formatDeviceProximityProof(
+                            proofData.device_id,
+                            proofData.coordinates.x,
+                            proofData.coordinates.y,
+                            proofData
+                        );
+                        
+                        output.innerHTML += '\n<span class="success">✓ Formatted proof for contract</span>\n';
+                        output.innerHTML += 'Contract parameters:\n';
+                        output.innerHTML += `  - i_z0_zi: [${formatted.i_z0_zi.length}] elements\n`;
+                        output.innerHTML += `  - U_i_cmW_U_i_cmE: [${formatted.U_i_cmW_U_i_cmE.length}] elements\n`;
+                        output.innerHTML += `  - u_i_cmW: [${formatted.u_i_cmW.length}] elements\n`;
+                        output.innerHTML += `  - cmT_r: [${formatted.cmT_r.length}] elements\n`;
+                        output.innerHTML += `  - pA: [${formatted.pA.length}] elements\n`;
+                        output.innerHTML += `  - pB: [${formatted.pB.length}x${formatted.pB[0]?.length}] matrix\n`;
+                        output.innerHTML += `  - pC: [${formatted.pC.length}] elements\n`;
+                        output.innerHTML += `  - challenge_W_challenge_E_kzg_evals: [${formatted.challenge_W_challenge_E_kzg_evals.length}] elements\n`;
+                        output.innerHTML += `  - kzg_proof: [${formatted.kzg_proof.length}x${formatted.kzg_proof[0]?.length}] matrix\n`;
+                        
+                        // Validate all elements are proper hex
+                        const allElements = [
+                            ...formatted.i_z0_zi,
+                            ...formatted.U_i_cmW_U_i_cmE,
+                            ...formatted.u_i_cmW,
+                            ...formatted.cmT_r,
+                            ...formatted.pA,
+                            ...formatted.pB.flat(),
+                            ...formatted.pC,
+                            ...formatted.challenge_W_challenge_E_kzg_evals,
+                            ...formatted.kzg_proof.flat()
+                        ];
+                        
+                        const validHex = allElements.every(el => /^0x[0-9a-fA-F]{64}$/.test(el));
+                        output.innerHTML += `\n${validHex ? '✓' : '✗'} All elements are valid 256-bit hex values\n`;
+                        
+                        // Show sample elements
+                        output.innerHTML += '\nSample elements:\n';
+                        output.innerHTML += `  i_z0_zi[0]: ${formatted.i_z0_zi[0].substring(0, 10)}...${formatted.i_z0_zi[0].substring(60)}\n`;
+                        output.innerHTML += `  U_i_cmW_U_i_cmE[0]: ${formatted.U_i_cmW_U_i_cmE[0].substring(0, 10)}...${formatted.U_i_cmW_U_i_cmE[0].substring(60)}\n`;
+                        output.innerHTML += `  pA[0]: ${formatted.pA[0].substring(0, 10)}...${formatted.pA[0].substring(60)}\n`;
+                        
+                    } else {
+                        output.innerHTML += '<span class="error">✗ Failed to parse Nova proof binary</span>\n';
+                    }
+                } else {
+                    output.innerHTML += '<span class="error">No proof data available</span>\n';
+                }
+                
+                // Show public inputs
+                if (proofData.public_inputs) {
+                    output.innerHTML += '\nPublic inputs:\n';
+                    output.innerHTML += JSON.stringify(proofData.public_inputs, null, 2) + '\n';
+                }
+                
+            } catch (error) {
+                output.innerHTML += `<span class="error">Error: ${error.message}</span>\n`;
+                console.error(error);
+            }
+        }
+        
+        async function checkNovaDecider() {
+            output.innerHTML = '<h3>Checking Nova Decider Contract...</h3>\n';
+            
+            try {
+                const provider = new ethers.providers.JsonRpcProvider('https://babel-api.testnet.iotex.io');
+                
+                // Check V2 contract
+                const v2Address = '0x5967d15c7a6fD3ef7F1f309e766f35252a9de10d';
+                const v2Code = await provider.getCode(v2Address);
+                output.innerHTML += `V2 Contract deployed: ${v2Code !== '0x' ? 'Yes' : 'No'}\n`;
+                output.innerHTML += `V2 Contract address: ${v2Address}\n\n`;
+                
+                // Check Nova Decider
+                const novaDeciderAddress = '0xAD5f0101B94F581979AA22F123b7efd9501BfeB3';
+                const novaCode = await provider.getCode(novaDeciderAddress);
+                output.innerHTML += `Nova Decider deployed: ${novaCode !== '0x' ? 'Yes' : 'No'}\n`;
+                output.innerHTML += `Nova Decider address: ${novaDeciderAddress}\n\n`;
+                
+                // Check contract balance
+                const balance = await provider.getBalance(v2Address);
+                output.innerHTML += `Contract balance: ${ethers.utils.formatEther(balance)} IOTX\n`;
+                
+                if (balance.eq(0)) {
+                    output.innerHTML += '<span class="error">⚠️  Contract has 0 IOTX - cannot pay rewards!</span>\n';
+                    output.innerHTML += `Send IOTX to: ${v2Address}\n`;
+                }
+                
+            } catch (error) {
+                output.innerHTML += `<span class="error">Error: ${error.message}</span>\n`;
+            }
+        }
+        
+        async function simulateVerification() {
+            output.innerHTML = '<h3>Simulating Nova Verification...</h3>\n';
+            
+            try {
+                if (!window.ethereum) {
+                    throw new Error('MetaMask not installed');
+                }
+                
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const signer = provider.getSigner();
+                
+                // V2 contract ABI (just the verify function)
+                const abi = [{
+                    "inputs": [
+                        {"internalType": "uint256[3]", "name": "i_z0_zi", "type": "uint256[3]"},
+                        {"internalType": "uint256[4]", "name": "U_i_cmW_U_i_cmE", "type": "uint256[4]"},
+                        {"internalType": "uint256[2]", "name": "u_i_cmW", "type": "uint256[2]"},
+                        {"internalType": "uint256[3]", "name": "cmT_r", "type": "uint256[3]"},
+                        {"internalType": "uint256[2]", "name": "pA", "type": "uint256[2]"},
+                        {"internalType": "uint256[2][2]", "name": "pB", "type": "uint256[2][2]"},
+                        {"internalType": "uint256[2]", "name": "pC", "type": "uint256[2]"},
+                        {"internalType": "uint256[4]", "name": "challenge_W_challenge_E_kzg_evals", "type": "uint256[4]"},
+                        {"internalType": "uint256[2][2]", "name": "kzg_proof", "type": "uint256[2][2]"},
+                        {"internalType": "bytes32", "name": "deviceId", "type": "bytes32"},
+                        {"internalType": "uint256", "name": "proofId", "type": "uint256"}
+                    ],
+                    "name": "verifyDeviceProximity",
+                    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                }];
+                
+                const contract = new ethers.Contract('0x5967d15c7a6fD3ef7F1f309e766f35252a9de10d', abi, signer);
+                
+                // Create a test proof
+                const formatter = new NovaProofFormatter();
+                const testProof = formatter.createFallbackFormat('TEST123', 5050, 5050);
+                const deviceId = ethers.utils.id('TEST123');
+                const proofId = Math.floor(Date.now() / 1000);
+                
+                output.innerHTML += 'Attempting to call verifyDeviceProximity...\n';
+                
+                // Try to estimate gas first
+                try {
+                    const gasEstimate = await contract.estimateGas.verifyDeviceProximity(
+                        testProof.i_z0_zi,
+                        testProof.U_i_cmW_U_i_cmE,
+                        testProof.u_i_cmW,
+                        testProof.cmT_r,
+                        testProof.pA,
+                        testProof.pB,
+                        testProof.pC,
+                        testProof.challenge_W_challenge_E_kzg_evals,
+                        testProof.kzg_proof,
+                        deviceId,
+                        proofId
+                    );
+                    output.innerHTML += `Gas estimate: ${gasEstimate.toString()}\n`;
+                } catch (gasError) {
+                    output.innerHTML += `<span class="error">Gas estimation failed: ${gasError.reason || gasError.message}</span>\n`;
+                    
+                    // Try to decode the error
+                    if (gasError.error && gasError.error.data) {
+                        output.innerHTML += `Error data: ${gasError.error.data}\n`;
+                    }
+                }
+                
+            } catch (error) {
+                output.innerHTML += `<span class="error">Error: ${error.message}</span>\n`;
+            }
+        }
+    </script>
+</body>
+</html>

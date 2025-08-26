@@ -1,0 +1,24 @@
+{
+  "contractAddress": "0x5967d15c7a6fD3ef7F1f309e766f35252a9de10d",
+  "network": "IoTeX Testnet",
+  "status": "Smart Contract Ready",
+  "timestamp": "2025-08-16T01:21:58.051Z",
+  "features": [
+    "Device Registration with ioID/DID",
+    "Nova recursive SNARK verification",
+    "Proximity checking with cryptographic proofs",
+    "IOTX reward distribution",
+    "Auto-fallback to demo mode"
+  ],
+  "functions": {
+    "registerDevice": "registerDevice(bytes32,string) payable → (string,string)",
+    "verifyProximity": "verifyDeviceProximity(bytes32,NovaProof,uint256[4]) payable → (bool,uint256)",
+    "claimRewards": "claimRewards(bytes32) → uint256",
+    "getDevice": "getDevice(bytes32) view → Device"
+  },
+  "fees": {
+    "registration": "0.01 IOTX",
+    "verification": "0.001 IOTX",
+    "reward": "0.1 IOTX"
+  }
+}

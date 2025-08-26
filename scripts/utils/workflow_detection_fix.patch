@@ -1,0 +1,19 @@
+--- langchain_service.py.orig
++++ langchain_service.py
+@@ -45,6 +45,16 @@ def is_zkengine_command(message):
+         r'^(list|show)\s+(proofs?|verifications?)',
+         r'^proof\s+history',
+         r'^verification\s+history',
+         r'^workflow\s+history',
+         
+         # Transfer commands
+         r'send\s+.*usdc',
+         r'transfer\s+.*usdc',
++        # Conditional transfers
++        r'send\s+.*usdc.*if',
++        r'transfer\s+.*usdc.*if',
++        r'send\s+.*usdc.*when',
++        r'transfer\s+.*usdc.*when',
++        r'send\s+.*usdc.*compliant',
++        r'transfer\s+.*usdc.*compliant',
+     ]

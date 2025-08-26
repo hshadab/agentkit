@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Direct Nova Decider Test</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        button { margin: 10px; padding: 10px; }
+        #output { white-space: pre-wrap; background: #f0f0f0; padding: 10px; margin: 10px 0; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Direct Nova Decider Test</h1>
+    
+    <button onclick="testNovaDecider()">Test Nova Decider Directly</button>
+    <button onclick="testWithMinimalProof()">Test with Minimal Valid Proof</button>
+    
+    <div id="output"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        const NOVA_DECIDER_ADDRESS = '0xAD5f0101B94F581979AA22F123b7efd9501BfeB3';
+        
+        // Nova Decider ABI (just the verify function)
+        const NOVA_DECIDER_ABI = [{
+            "inputs": [
+                {"internalType": "uint256[3]", "name": "i_z0_zi", "type": "uint256[3]"},
+                {"internalType": "uint256[4]", "name": "U_i_cmW_U_i_cmE", "type": "uint256[4]"},
+                {"internalType": "uint256[2]", "name": "u_i_cmW", "type": "uint256[2]"},
+                {"internalType": "uint256[3]", "name": "cmT_r", "type": "uint256[3]"},
+                {"internalType": "uint256[2]", "name": "pA", "type": "uint256[2]"},
+                {"internalType": "uint256[2][2]", "name": "pB", "type": "uint256[2][2]"},
+                {"internalType": "uint256[2]", "name": "pC", "type": "uint256[2]"},
+                {"internalType": "uint256[4]", "name": "challenge_W_challenge_E_kzg_evals", "type": "uint256[4]"},
+                {"internalType": "uint256[2][2]", "name": "kzg_proof", "type": "uint256[2][2]"}
+            ],
+            "name": "verifyNovaProof",
+            "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+            "stateMutability": "view",
+            "type": "function"
+        }];
+        
+        async function testNovaDecider() {
+            output.innerHTML = '<h3>Testing Nova Decider Contract Directly...</h3>\n';
+            
+            try {
+                const provider = new ethers.providers.JsonRpcProvider('https://babel-api.testnet.iotex.io');
+                
+                // Check if Nova Decider is deployed
+                const code = await provider.getCode(NOVA_DECIDER_ADDRESS);
+                output.innerHTML += `Nova Decider deployed: ${code !== '0x' ? 'Yes' : 'No'}\n`;
+                output.innerHTML += `Nova Decider address: ${NOVA_DECIDER_ADDRESS}\n\n`;
+                
+                if (code === '0x') {
+                    output.innerHTML += '<span class="error">Nova Decider contract not found!</span>\n';
+                    return;
+                }
+                
+                const contract = new ethers.Contract(NOVA_DECIDER_ADDRESS, NOVA_DECIDER_ABI, provider);
+                
+                // Create a test proof with all zeros (will fail but tests the interface)
+                const testProof = {
+                    i_z0_zi: ['0', '0', '0'],
+                    U_i_cmW_U_i_cmE: ['0', '0', '0', '0'],
+                    u_i_cmW: ['0', '0'],
+                    cmT_r: ['0', '0', '0'],
+                    pA: ['0', '0'],
+                    pB: [['0', '0'], ['0', '0']],
+                    pC: ['0', '0'],
+                    challenge_W_challenge_E_kzg_evals: ['0', '0', '0', '0'],
+                    kzg_proof: [['0', '0'], ['0', '0']]
+                };
+                
+                output.innerHTML += 'Calling verifyNovaProof with zero proof...\n';
+                
+                try {
+                    const result = await contract.verifyNovaProof(
+                        testProof.i_z0_zi,
+                        testProof.U_i_cmW_U_i_cmE,
+                        testProof.u_i_cmW,
+                        testProof.cmT_r,
+                        testProof.pA,
+                        testProof.pB,
+                        testProof.pC,
+                        testProof.challenge_W_challenge_E_kzg_evals,
+                        testProof.kzg_proof
+                    );
+                    
+                    output.innerHTML += `Result: ${result}\n`;
+                    output.innerHTML += result ? 
+                        '<span class="success">✓ Proof verified (unexpected!)</span>\n' : 
+                        '<span class="error">✗ Proof rejected (expected for zero proof)</span>\n';
+                        
+                } catch (callError) {
+                    output.innerHTML += '<span class="error">Call failed: ' + callError.message + '</span>\n';
+                    
+                    // Check if it's a revert with specific reason
+                    if (callError.reason) {
+                        output.innerHTML += 'Revert reason: ' + callError.reason + '\n';
+                    }
+                }
+                
+            } catch (error) {
+                output.innerHTML += '<span class="error">Error: ' + error.message + '</span>\n';
+            }
+        }
+        
+        async function testWithMinimalProof() {
+            output.innerHTML = '<h3>Testing with Minimal Valid-Looking Proof...</h3>\n';
+            
+            try {
+                const provider = new ethers.providers.JsonRpcProvider('https://babel-api.testnet.iotex.io');
+                const contract = new ethers.Contract(NOVA_DECIDER_ADDRESS, NOVA_DECIDER_ABI, provider);
+                
+                // Create a proof with valid-looking curve points
+                // These are not cryptographically valid but have the right format
+                const testProof = {
+                    // Initial and final state
+                    i_z0_zi: [
+                        '5050', // x coordinate
+                        '5050', // y coordinate  
+                        '1'     // result (within proximity)
+                    ],
+                    
+                    // Random but valid field elements
+                    U_i_cmW_U_i_cmE: [
+                        '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+                        '0x2345678901bcdef02345678901bcdef02345678901bcdef02345678901bcdef0',
+                        '0x3456789012cdef013456789012cdef013456789012cdef013456789012cdef01',
+                        '0x4567890123def0124567890123def0124567890123def0124567890123def012'
+                    ],
+                    
+                    u_i_cmW: [
+                        '0x567890abcdef567890abcdef567890abcdef567890abcdef567890abcdef5678',
+                        '0x678901bcdef0678901bcdef0678901bcdef0678901bcdef0678901bcdef06789'
+                    ],
+                    
+                    cmT_r: [
+                        '0x7890abcdef7890abcdef7890abcdef7890abcdef7890abcdef7890abcdef7890',
+                        '0x8901bcdef08901bcdef08901bcdef08901bcdef08901bcdef08901bcdef08901',
+                        '0x9012cdef019012cdef019012cdef019012cdef019012cdef019012cdef019012'
+                    ],
+                    
+                    // Groth16 proof points (on curve)
+                    pA: [
+                        '0x0123def0120123def0120123def0120123def0120123def0120123def0120123',
+                        '0x1234ef01231234ef01231234ef01231234ef01231234ef01231234ef01231234'
+                    ],
+                    
+                    pB: [
+                        ['0x2345f012342345f012342345f012342345f012342345f012342345f012342345',
+                         '0x34560123453456012345345601234534560123453456012345345601234534560'],
+                        ['0x4567123456745671234567456712345674567123456745671234567456712345',
+                         '0x5678234567856782345678567823456785678234567856782345678567823456']
+                    ],
+                    
+                    pC: [
+                        '0x6789345678967893456789678934567896789345678967893456789678934567',
+                        '0x789a456789a789a456789a789a456789a789a456789a789a456789a789a456789'
+                    ],
+                    
+                    // KZG challenges
+                    challenge_W_challenge_E_kzg_evals: [
+                        '0x89ab56789ab89ab56789ab89ab56789ab89ab56789ab89ab56789ab89ab56789',
+                        '0x9abc6789abc9abc6789abc9abc6789abc9abc6789abc9abc6789abc9abc6789a',
+                        '0xabcd789abcdabcd789abcdabcd789abcdabcd789abcdabcd789abcdabcd789ab',
+                        '0xbcde89abcdebcde89abcdebcde89abcdebcde89abcdebcde89abcdebcde89abc'
+                    ],
+                    
+                    // KZG proof
+                    kzg_proof: [
+                        ['0xcdef9abcdefcdef9abcdefcdef9abcdefcdef9abcdefcdef9abcdefcdef9abcd',
+                         '0xdef0abcdef0def0abcdef0def0abcdef0def0abcdef0def0abcdef0def0abcde'],
+                        ['0xef01bcdef01ef01bcdef01ef01bcdef01ef01bcdef01ef01bcdef01ef01bcdef',
+                         '0xf012cdef012f012cdef012f012cdef012f012cdef012f012cdef012f012cdef0']
+                    ]
+                };
+                
+                output.innerHTML += 'Calling verifyNovaProof with formatted proof...\n';
+                
+                try {
+                    const result = await contract.verifyNovaProof(
+                        testProof.i_z0_zi,
+                        testProof.U_i_cmW_U_i_cmE,
+                        testProof.u_i_cmW,
+                        testProof.cmT_r,
+                        testProof.pA,
+                        testProof.pB,
+                        testProof.pC,
+                        testProof.challenge_W_challenge_E_kzg_evals,
+                        testProof.kzg_proof
+                    );
+                    
+                    output.innerHTML += `Result: ${result}\n`;
+                    output.innerHTML += result ? 
+                        '<span class="success">✓ Proof verified!</span>\n' : 
+                        '<span class="error">✗ Proof rejected (cryptographic validation failed)</span>\n';
+                        
+                } catch (callError) {
+                    output.innerHTML += '<span class="error">Call failed: ' + callError.message + '</span>\n';
+                    
+                    if (callError.reason) {
+                        output.innerHTML += 'Revert reason: ' + callError.reason + '\n';
+                    }
+                    
+                    // This is expected - the proof is not cryptographically valid
+                    output.innerHTML += '\nThis is expected - the Nova Decider is correctly rejecting invalid proofs.\n';
+                    output.innerHTML += 'Only proofs generated by zkEngine with the correct circuit will pass.\n';
+                }
+                
+            } catch (error) {
+                output.innerHTML += '<span class="error">Error: ' + error.message + '</span>\n';
+            }
+        }
+    </script>
+</body>
+</html>

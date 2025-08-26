@@ -1,0 +1,16 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "address": "0x9876543210987654321098765432109876543210",
+  "deployer": "0xE616B2eC620621797030E0AB1BA38DA68D78351C",
+  "deploymentTime": "2025-08-26T10:15:00.000Z",
+  "transactionHash": "0xabc123def456789abc123def456789abc123def456789abc123def456789abc1",
+  "blockNumber": 5234567,
+  "note": "SIMULATED - Contract will be deployed once wallet is funded with ~0.005 ETH",
+  "fundingInstructions": [
+    "1. Get Sepolia ETH from: https://sepoliafaucet.com",
+    "2. Send to: 0xE616B2eC620621797030E0AB1BA38DA68D78351C",
+    "3. Run: npx hardhat run scripts/deploy-zkml-real.js --network sepolia",
+    "4. Update this file with real deployment details"
+  ]
+}

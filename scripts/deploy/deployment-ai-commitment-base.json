@@ -1,0 +1,238 @@
+{
+  "network": "Base Sepolia",
+  "chainId": 84532,
+  "contractName": "AIPredictionCommitment",
+  "contractAddress": "0xae7d069d0A45a8Ecd969ABbb2705bA96472D36FC",
+  "deploymentTime": "2025-07-21T00:39:25.436Z",
+  "deployer": "0xE616B2eC620621797030E0AB1BA38DA68D78351C",
+  "transactionHash": "0x0882c7ae13c3b22fc8beeed1521b1615ed2028e3966c6e1e4d4e797141f32bd0",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "commitmentId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "predictor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "blockNumber",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "PredictionCommitted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "commitmentId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "prompt",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "response",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "revealBlock",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "commitBlock",
+          "type": "uint256"
+        }
+      ],
+      "name": "PredictionRevealed",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "promptHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "responseHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "commitPrediction",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "commitmentId",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "commitments",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "promptHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "responseHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "blockNumber",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "predictor",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "revealed",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "commitmentId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getCommitment",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "promptHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "responseHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "blockNumber",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "predictor",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "revealed",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "prompt",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "response",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "nonce",
+          "type": "string"
+        },
+        {
+          "internalType": "bytes",
+          "name": "zkProof",
+          "type": "bytes"
+        }
+      ],
+      "name": "revealPrediction",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "commitmentId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "verifyTemporalOrdering",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

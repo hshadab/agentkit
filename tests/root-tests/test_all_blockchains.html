@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>All Blockchains Verification Test</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script src="/static/js/core/config.js"></script>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .blockchain-test {
+            margin: 20px 0;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            background: #333;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        .success { color: #51cf66; }
+        .error { color: #ff6b6b; }
+        .warning { color: #ffc107; }
+        .info { color: #74c0fc; }
+        button {
+            background: #3a3a3a;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px 15px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #4a4a4a;
+        }
+        .chain-icon {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔗 All Blockchains Verification Test</h1>
+    
+    <div id="test-controls">
+        <button onclick="testAllChains()">Test All Chains</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <!-- Ethereum Sepolia -->
+    <div class="blockchain-test">
+        <h2>⟠ Ethereum Sepolia</h2>
+        <button onclick="testChain('ethereum')">Test Ethereum</button>
+        <div id="ethereum-result" class="test-result">
+            <div class="info">Ready to test...</div>
+        </div>
+    </div>
+    
+    <!-- Solana Devnet -->
+    <div class="blockchain-test">
+        <h2>◎ Solana Devnet</h2>
+        <button onclick="testChain('solana')">Test Solana</button>
+        <div id="solana-result" class="test-result">
+            <div class="info">Ready to test...</div>
+        </div>
+    </div>
+    
+    <!-- Base Sepolia -->
+    <div class="blockchain-test">
+        <h2>🔵 Base Sepolia</h2>
+        <button onclick="testChain('base')">Test Base</button>
+        <div id="base-result" class="test-result">
+            <div class="info">Ready to test...</div>
+        </div>
+    </div>
+    
+    <!-- Avalanche Fuji -->
+    <div class="blockchain-test">
+        <h2>🔺 Avalanche Fuji</h2>
+        <button onclick="testChain('avalanche')">Test Avalanche</button>
+        <div id="avalanche-result" class="test-result">
+            <div class="info">Ready to test...</div>
+        </div>
+    </div>
+    
+    <!-- IoTeX Testnet -->
+    <div class="blockchain-test">
+        <h2>🟣 IoTeX Testnet</h2>
+        <button onclick="testChain('iotex')">Test IoTeX</button>
+        <div id="iotex-result" class="test-result">
+            <div class="info">Ready to test...</div>
+        </div>
+    </div>
+    
+    <!-- Summary -->
+    <div class="blockchain-test">
+        <h2>📊 Test Summary</h2>
+        <div id="summary-result" class="test-result">
+            <div class="info">Run tests to see summary...</div>
+        </div>
+    </div>
+
+    <script>
+        const testResults = {};
+        
+        async function testChain(chain) {
+            const resultDiv = document.getElementById(`${chain}-result`);
+            resultDiv.innerHTML = '<div class="info">🔄 Testing...</div>';
+            
+            try {
+                const result = await performChainTest(chain);
+                testResults[chain] = result;
+                displayResult(chain, result);
+                updateSummary();
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Test failed: ${error.message}</div>`;
+                testResults[chain] = { success: false, error: error.message };
+                updateSummary();
+            }
+        }
+        
+        async function performChainTest(chain) {
+            const chainConfig = config.blockchain[chain];
+            const result = {
+                chain: chain,
+                timestamp: new Date().toISOString(),
+                tests: {}
+            };
+            
+            // Test 1: Configuration exists
+            result.tests.config = {
+                success: !!chainConfig,
+                message: chainConfig ? 'Configuration found' : 'No configuration'
+            };
+            
+            if (!chainConfig) {
+                result.success = false;
+                return result;
+            }
+            
+            // Test 2: Chain-specific tests
+            switch (chain) {
+                case 'ethereum':
+                case 'base':
+                case 'avalanche':
+                    result.tests.chainId = {
+                        success: !!chainConfig.chainId,
+                        value: chainConfig.chainId,
+                        decimal: chainConfig.chainIdDecimal
+                    };
+                    result.tests.contracts = {
+                        success: !!(chainConfig.verifierAddress || chainConfig.contracts),
+                        addresses: chainConfig.verifierAddress || chainConfig.contracts
+                    };
+                    
+                    // Test RPC connection
+                    if (chain === 'avalanche' && chainConfig.rpcUrl) {
+                        try {
+                            const provider = new ethers.providers.JsonRpcProvider(chainConfig.rpcUrl);
+                            const blockNumber = await provider.getBlockNumber();
+                            result.tests.rpcConnection = {
+                                success: true,
+                                blockNumber: blockNumber
+                            };
+                        } catch (e) {
+                            result.tests.rpcConnection = {
+                                success: false,
+                                error: e.message
+                            };
+                        }
+                    }
+                    break;
+                    
+                case 'solana':
+                    result.tests.network = {
+                        success: !!chainConfig.network,
+                        value: chainConfig.network
+                    };
+                    result.tests.programId = {
+                        success: !!chainConfig.verifierProgramId,
+                        value: chainConfig.verifierProgramId
+                    };
+                    result.tests.wallets = {
+                        success: !!chainConfig.wallets,
+                        preferred: chainConfig.wallets?.preferred,
+                        supported: chainConfig.wallets?.supported
+                    };
+                    break;
+                    
+                case 'iotex':
+                    result.tests.chainId = {
+                        success: !!chainConfig.chainId,
+                        value: chainConfig.chainId,
+                        decimal: chainConfig.chainIdDecimal
+                    };
+                    result.tests.contracts = {
+                        success: !!chainConfig.contracts,
+                        deviceVerifier: chainConfig.contracts?.deviceVerifier,
+                        ioIDRegistry: chainConfig.contracts?.ioIDRegistry,
+                        ioID: chainConfig.contracts?.ioID
+                    };
+                    result.tests.nativeCurrency = {
+                        success: !!chainConfig.nativeCurrency,
+                        symbol: chainConfig.nativeCurrency?.symbol,
+                        decimals: chainConfig.nativeCurrency?.decimals
+                    };
+                    
+                    // Test IoTeX RPC
+                    if (chainConfig.rpcUrl) {
+                        try {
+                            const provider = new ethers.providers.JsonRpcProvider(chainConfig.rpcUrl);
+                            const network = await provider.getNetwork();
+                            result.tests.rpcConnection = {
+                                success: true,
+                                network: network.name,
+                                chainId: network.chainId
+                            };
+                        } catch (e) {
+                            result.tests.rpcConnection = {
+                                success: false,
+                                error: e.message
+                            };
+                        }
+                    }
+                    break;
+            }
+            
+            // Test 3: Explorer URL
+            result.tests.explorer = {
+                success: !!chainConfig.explorerUrl,
+                url: chainConfig.explorerUrl
+            };
+            
+            // Overall success
+            result.success = Object.values(result.tests).every(test => test.success);
+            
+            return result;
+        }
+        
+        function displayResult(chain, result) {
+            const resultDiv = document.getElementById(`${chain}-result`);
+            let html = '';
+            
+            if (result.success) {
+                html += '<div class="success">✅ All tests passed</div>';
+            } else {
+                html += '<div class="error">❌ Some tests failed</div>';
+            }
+            
+            // Display individual test results
+            for (const [testName, testResult] of Object.entries(result.tests)) {
+                const status = testResult.success ? '✓' : '✗';
+                const className = testResult.success ? 'success' : 'error';
+                
+                html += `<div class="${className}">${status} ${testName}: `;
+                
+                if (testResult.value !== undefined) {
+                    html += `${testResult.value}`;
+                } else if (testResult.message) {
+                    html += testResult.message;
+                } else if (testResult.error) {
+                    html += `Error: ${testResult.error}`;
+                } else {
+                    html += 'OK';
+                }
+                
+                html += '</div>';
+            }
+            
+            resultDiv.innerHTML = html;
+        }
+        
+        async function testAllChains() {
+            const chains = ['ethereum', 'solana', 'base', 'avalanche', 'iotex'];
+            
+            for (const chain of chains) {
+                await testChain(chain);
+                await new Promise(resolve => setTimeout(resolve, 500)); // Small delay
+            }
+        }
+        
+        function updateSummary() {
+            const summaryDiv = document.getElementById('summary-result');
+            const testedChains = Object.keys(testResults);
+            
+            if (testedChains.length === 0) {
+                summaryDiv.innerHTML = '<div class="info">No tests run yet</div>';
+                return;
+            }
+            
+            const successful = testedChains.filter(chain => testResults[chain].success);
+            const failed = testedChains.filter(chain => !testResults[chain].success);
+            
+            let html = `
+                <div class="info">Total chains tested: ${testedChains.length}</div>
+                <div class="success">✅ Successful: ${successful.length}</div>
+                <div class="error">❌ Failed: ${failed.length}</div>
+            `;
+            
+            if (successful.length > 0) {
+                html += '<div class="success">Passed: ' + successful.join(', ') + '</div>';
+            }
+            
+            if (failed.length > 0) {
+                html += '<div class="error">Failed: ' + failed.join(', ') + '</div>';
+            }
+            
+            // Check for specific capabilities
+            const capabilities = {
+                'EVM Chains': ['ethereum', 'base', 'avalanche'],
+                'Non-EVM': ['solana'],
+                'IoT-Enabled': ['iotex'],
+                'RPC Available': []
+            };
+            
+            for (const chain of testedChains) {
+                if (testResults[chain].tests?.rpcConnection?.success) {
+                    capabilities['RPC Available'].push(chain);
+                }
+            }
+            
+            html += '<br><div class="info"><strong>Capabilities:</strong></div>';
+            for (const [cap, chains] of Object.entries(capabilities)) {
+                if (chains.length > 0) {
+                    html += `<div class="info">• ${cap}: ${chains.join(', ')}</div>`;
+                }
+            }
+            
+            summaryDiv.innerHTML = html;
+        }
+        
+        function clearResults() {
+            const chains = ['ethereum', 'solana', 'base', 'avalanche', 'iotex'];
+            chains.forEach(chain => {
+                document.getElementById(`${chain}-result`).innerHTML = '<div class="info">Ready to test...</div>';
+            });
+            document.getElementById('summary-result').innerHTML = '<div class="info">Run tests to see summary...</div>';
+            Object.keys(testResults).forEach(key => delete testResults[key]);
+        }
+        
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            console.log('Blockchain configuration loaded:', config.blockchain);
+        });
+    </script>
+</body>
+</html>

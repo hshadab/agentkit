@@ -1,0 +1,5181 @@
+{
+  "16b81a2f-3aa3-428a-b9c5-772dd0b55634": {
+    "file_path": "./proofs/16b81a2f-3aa3-428a-b9c5-772dd0b55634/proof.bin",
+    "id": "16b81a2f-3aa3-428a-b9c5-772dd0b55634",
+    "metadata": {
+      "additional_context": null,
+      "arguments": [
+        "verbose_test_1755429972932"
+      ],
+      "explanation": "Verbose test to understand response format",
+      "function": "prove_device_proximity",
+      "step_size": 10
+    },
+    "metrics": {
+      "error": "Error: AnyhowError\n\nCaused by:\n    failed to parse function argument verbose_test_1755429972932 at index 0 as i32\n",
+      "generation_time_secs": 8.566197586,
+      "time_ms": 8566
+    },
+    "status": "failed",
+    "timestamp": "2025-08-17T11:26:21.504109841+00:00"
+  },
+  "3a0129bc-c104-4b3e-a090-2b19723c22c5": {
+    "file_path": "./proofs/3a0129bc-c104-4b3e-a090-2b19723c22c5/proof.bin",
+    "id": "3a0129bc-c104-4b3e-a090-2b19723c22c5",
+    "metadata": {
+      "additional_context": null,
+      "arguments": [
+        "AGENT_AUTHORIZATION_test_age_1755429922104_5qg9twgu4"
+      ],
+      "explanation": "ZKP verification for AGENT_AUTHORIZATION - Agent test_agent_001",
+      "function": "prove_device_proximity",
+      "step_size": 10
+    },
+    "metrics": {
+      "error": "Error: AnyhowError\n\nCaused by:\n    failed to parse function argument AGENT_AUTHORIZATION_test_age_1755429922104_5qg9twgu4 at index 0 as i32\n",
+      "generation_time_secs": 9.448273246,
+      "time_ms": 9448
+    },
+    "status": "failed",
+    "timestamp": "2025-08-17T11:25:31.566893610+00:00"
+  },
+  "854df563-b348-4531-b2e3-02461fe3b891": {
+    "file_path": "./proofs/854df563-b348-4531-b2e3-02461fe3b891/proof.bin",
+    "id": "854df563-b348-4531-b2e3-02461fe3b891",
+    "metadata": {
+      "additional_context": null,
+      "arguments": [
+        "5050",
+        "5050"
+      ],
+      "explanation": "Simple proximity test",
+      "function": "prove_device_proximity",
+      "step_size": 10
+    },
+    "metrics": {
+      "error": "Error: WasmiError\n",
+      "generation_time_secs": 8.56200173,
+      "time_ms": 8562
+    },
+    "status": "failed",
+    "timestamp": "2025-08-17T11:28:37.057892809+00:00"
+  },
+  "bc3c128b-40b6-4c8e-941d-d3ae8a93ac27": {
+    "file_path": "./proofs/bc3c128b-40b6-4c8e-941d-d3ae8a93ac27/proof.bin",
+    "id": "bc3c128b-40b6-4c8e-941d-d3ae8a93ac27",
+    "metadata": {
+      "additional_context": null,
+      "arguments": [
+        "AGENT_AUTHORIZATION_test_age_1755429872576_m7o04bdh3"
+      ],
+      "explanation": "ZKP verification for AGENT_AUTHORIZATION - Agent test_agent_001",
+      "function": "prove_device_proximity",
+      "step_size": 10
+    },
+    "metrics": {
+      "error": "Error: AnyhowError\n\nCaused by:\n    failed to parse function argument AGENT_AUTHORIZATION_test_age_1755429872576_m7o04bdh3 at index 0 as i32\n",
+      "generation_time_secs": 9.511771687,
+      "time_ms": 9511
+    },
+    "status": "failed",
+    "timestamp": "2025-08-17T11:24:42.108558591+00:00"
+  },
+  "c4f88446-441a-44d7-96ce-cfe332dea100": {
+    "file_path": "./proofs/c4f88446-441a-44d7-96ce-cfe332dea100/proof.bin",
+    "id": "c4f88446-441a-44d7-96ce-cfe332dea100",
+    "metadata": {
+      "additional_context": null,
+      "arguments": [
+        "agent_test_001",
+        "5000",
+        "5000"
+      ],
+      "explanation": "AI agent authorization proof test",
+      "function": "prove_device_proximity",
+      "step_size": 10
+    },
+    "metrics": {
+      "error": "Error: AnyhowError\n\nCaused by:\n    failed to parse function argument agent_test_001 at index 0 as i32\n",
+      "generation_time_secs": 8.14732123,
+      "time_ms": 8147
+    },
+    "status": "failed",
+    "timestamp": "2025-08-17T11:27:49.715839018+00:00"
+  },
+  "d32522cc-9ae7-4733-bd51-4abb1699c3df": {
+    "file_path": "./proofs/d32522cc-9ae7-4733-bd51-4abb1699c3df/proof.bin",
+    "id": "d32522cc-9ae7-4733-bd51-4abb1699c3df",
+    "metadata": {
+      "additional_context": null,
+      "arguments": [
+        "AGENT_AUTHORIZATION_410a3ce3_1755429764443_i2erqw2h6"
+      ],
+      "explanation": "ZKP verification for AGENT_AUTHORIZATION - Agent 410a3ce3-35df-4347-bb23-1a899b31e02e",
+      "function": "prove_device_proximity",
+      "step_size": 10
+    },
+    "metrics": {
+      "error": "Error: AnyhowError\n\nCaused by:\n    failed to parse function argument AGENT_AUTHORIZATION_410a3ce3_1755429764443_i2erqw2h6 at index 0 as i32\n",
+      "generation_time_secs": 9.682396363,
+      "time_ms": 9682
+    },
+    "status": "failed",
+    "timestamp": "2025-08-17T11:22:54.146878513+00:00"
+  },
+  "proof_ai_prediction_1753883754566": {
+    "file_path": "./proofs/proof_ai_prediction_1753883754566/proof.bin",
+    "id": "proof_ai_prediction_1753883754566",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753883752"
+      },
+      "arguments": [
+        "12345",
+        "1347440205",
+        "999",
+        "1753883754",
+        "100"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_ai_content",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.818558025,
+      "proof_size": 19038604,
+      "time_ms": 15818
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T13:56:10.396378875+00:00"
+  },
+  "proof_ai_prediction_1753883838555": {
+    "file_path": "./proofs/proof_ai_prediction_1753883838555/proof.bin",
+    "id": "proof_ai_prediction_1753883838555",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753883836"
+      },
+      "arguments": [
+        "12345",
+        "1347440205",
+        "999",
+        "1753883838",
+        "100"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_ai_content",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.060419635,
+      "proof_size": 19038604,
+      "time_ms": 16060
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T13:57:34.646006816+00:00"
+  },
+  "proof_ai_prediction_1753884087056": {
+    "file_path": "./proofs/proof_ai_prediction_1753884087056/proof.bin",
+    "id": "proof_ai_prediction_1753884087056",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_ai_test_1753884086369"
+      },
+      "arguments": [
+        "12345",
+        "1347440205",
+        "999",
+        "1753884087",
+        "100"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_ai_content",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 17.290804235,
+      "proof_size": 19038604,
+      "time_ms": 17290
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T14:01:44.357405275+00:00"
+  },
+  "proof_ai_prediction_1753980870516": {
+    "file_path": "./proofs/proof_ai_prediction_1753980870516/proof.bin",
+    "id": "proof_ai_prediction_1753980870516",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753980868"
+      },
+      "arguments": [
+        "12345",
+        "1347440205",
+        "999",
+        "1753980870",
+        "100"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_ai_content",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.102567155,
+      "proof_size": 19038604,
+      "time_ms": 14102
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T16:54:44.635391604+00:00"
+  },
+  "proof_ai_prediction_1754009808331": {
+    "file_path": "./proofs/proof_ai_prediction_1754009808331/proof.bin",
+    "id": "proof_ai_prediction_1754009808331",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1754009805"
+      },
+      "arguments": [
+        "12345",
+        "1347440205",
+        "999",
+        "1754009808",
+        "100"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_ai_content",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 17.194755108,
+      "proof_size": 19038604,
+      "time_ms": 17194
+    },
+    "status": "complete",
+    "timestamp": "2025-08-01T00:57:05.551692869+00:00"
+  },
+  "proof_ai_prediction_1754010154003": {
+    "file_path": "./proofs/proof_ai_prediction_1754010154003/proof.bin",
+    "id": "proof_ai_prediction_1754010154003",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1754010152"
+      },
+      "arguments": [
+        "12345",
+        "1347440205",
+        "999",
+        "1754010154",
+        "100"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_ai_content",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 17.609866251,
+      "proof_size": 19038604,
+      "time_ms": 17609
+    },
+    "status": "complete",
+    "timestamp": "2025-08-01T01:02:51.617424117+00:00"
+  },
+  "proof_ai_prediction_1754012662472": {
+    "file_path": "./proofs/proof_ai_prediction_1754012662472/proof.bin",
+    "id": "proof_ai_prediction_1754012662472",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1754012660"
+      },
+      "arguments": [
+        "12345",
+        "1347440205",
+        "999",
+        "1754012662",
+        "100"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_ai_content",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 17.302490512,
+      "proof_size": 19038604,
+      "time_ms": 17302
+    },
+    "status": "complete",
+    "timestamp": "2025-08-01T01:44:39.815945928+00:00"
+  },
+  "proof_device_proximity_1754013886812": {
+    "file_path": "./proofs/proof_device_proximity_1754013886812/proof.bin",
+    "id": "proof_device_proximity_1754013886812",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754013837"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.966180419,
+      "proof_size": 19038604,
+      "time_ms": 15966
+    },
+    "status": "complete",
+    "timestamp": "2025-08-01T02:05:02.785385470+00:00"
+  },
+  "proof_device_proximity_1754044199721": {
+    "file_path": "./proofs/proof_device_proximity_1754044199721/proof.bin",
+    "id": "proof_device_proximity_1754044199721",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754044122"
+      },
+      "arguments": [
+        "616278",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 17.213256493,
+      "proof_size": 19038604,
+      "time_ms": 17213
+    },
+    "status": "complete",
+    "timestamp": "2025-08-01T10:30:16.988532947+00:00"
+  },
+  "proof_device_proximity_1754383724653": {
+    "file_path": "./proofs/proof_device_proximity_1754383724653/proof.bin",
+    "id": "proof_device_proximity_1754383724653",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754383678"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.921829223,
+      "proof_size": 19038604,
+      "time_ms": 13921
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T08:48:58.596959022+00:00"
+  },
+  "proof_device_proximity_1754385163242": {
+    "file_path": "./proofs/proof_device_proximity_1754385163242/proof.bin",
+    "id": "proof_device_proximity_1754385163242",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754385132"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.111632892,
+      "proof_size": 19038604,
+      "time_ms": 16111
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T09:12:58.752369620+00:00"
+  },
+  "proof_device_proximity_1754385887516": {
+    "file_path": "./proofs/proof_device_proximity_1754385887516/proof.bin",
+    "id": "proof_device_proximity_1754385887516",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754385853"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.904682801,
+      "proof_size": 19038604,
+      "time_ms": 15904
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T09:25:02.696159137+00:00"
+  },
+  "proof_device_proximity_1754387703757": {
+    "file_path": "./proofs/proof_device_proximity_1754387703757/proof.bin",
+    "id": "proof_device_proximity_1754387703757",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754387698"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.758871317,
+      "proof_size": 19038604,
+      "time_ms": 15758
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T09:55:19.530255564+00:00"
+  },
+  "proof_device_proximity_1754388559797": {
+    "file_path": "./proofs/proof_device_proximity_1754388559797/proof.bin",
+    "id": "proof_device_proximity_1754388559797",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754388556"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.685918694,
+      "proof_size": 19038604,
+      "time_ms": 15685
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T10:09:34.624073805+00:00"
+  },
+  "proof_device_proximity_1754389059928": {
+    "file_path": "./proofs/proof_device_proximity_1754389059928/proof.bin",
+    "id": "proof_device_proximity_1754389059928",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754389052"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 17.204726076,
+      "proof_size": 19038604,
+      "time_ms": 17204
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T10:17:56.304068161+00:00"
+  },
+  "proof_device_proximity_1754390650234": {
+    "file_path": "./proofs/proof_device_proximity_1754390650234/proof.bin",
+    "id": "proof_device_proximity_1754390650234",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754390644"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.258348755,
+      "proof_size": 19038604,
+      "time_ms": 16258
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T10:44:25.921783555+00:00"
+  },
+  "proof_device_proximity_1754390973561": {
+    "file_path": "./proofs/proof_device_proximity_1754390973561/proof.bin",
+    "id": "proof_device_proximity_1754390973561",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754390968"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.940744188,
+      "proof_size": 19038604,
+      "time_ms": 16940
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T10:49:49.950544774+00:00"
+  },
+  "proof_device_proximity_1754391251775": {
+    "file_path": "./proofs/proof_device_proximity_1754391251775/proof.bin",
+    "id": "proof_device_proximity_1754391251775",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754391247"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.110519251,
+      "proof_size": 19038604,
+      "time_ms": 16110
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T10:54:27.341495123+00:00"
+  },
+  "proof_device_proximity_1754391529764": {
+    "file_path": "./proofs/proof_device_proximity_1754391529764/proof.bin",
+    "id": "proof_device_proximity_1754391529764",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754391523"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.578710591,
+      "proof_size": 19038604,
+      "time_ms": 15578
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T10:59:05.355520097+00:00"
+  },
+  "proof_device_proximity_1754391912080": {
+    "file_path": "./proofs/proof_device_proximity_1754391912080/proof.bin",
+    "id": "proof_device_proximity_1754391912080",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754391909"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.749861324,
+      "proof_size": 19038604,
+      "time_ms": 15749
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T11:05:27.837878498+00:00"
+  },
+  "proof_device_proximity_1754392137198": {
+    "file_path": "./proofs/proof_device_proximity_1754392137198/proof.bin",
+    "id": "proof_device_proximity_1754392137198",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754392110"
+      },
+      "arguments": [
+        "616278",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.209079116,
+      "proof_size": 19038604,
+      "time_ms": 15209
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T11:09:11.876987694+00:00"
+  },
+  "proof_device_proximity_1754392212691": {
+    "file_path": "./proofs/proof_device_proximity_1754392212691/proof.bin",
+    "id": "proof_device_proximity_1754392212691",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754392207"
+      },
+      "arguments": [
+        "616278",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.366885115,
+      "proof_size": 19038604,
+      "time_ms": 15366
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T11:10:28.067379183+00:00"
+  },
+  "proof_device_proximity_1754393228763": {
+    "file_path": "./proofs/proof_device_proximity_1754393228763/proof.bin",
+    "id": "proof_device_proximity_1754393228763",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754393199"
+      },
+      "arguments": [
+        "878455",
+        "5000",
+        "5000"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.370143234,
+      "proof_size": 19038604,
+      "time_ms": 13370
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T11:27:20.736950899+00:00"
+  },
+  "proof_device_proximity_1754394878521": {
+    "file_path": "./proofs/proof_device_proximity_1754394878521/proof.bin",
+    "id": "proof_device_proximity_1754394878521",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754394873"
+      },
+      "arguments": [
+        "878455",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.556245854,
+      "proof_size": 19038604,
+      "time_ms": 14556
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T11:54:51.745980645+00:00"
+  },
+  "proof_device_proximity_1754395823100": {
+    "file_path": "./proofs/proof_device_proximity_1754395823100/proof.bin",
+    "id": "proof_device_proximity_1754395823100",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754395820"
+      },
+      "arguments": [
+        "878455",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.690201571,
+      "proof_size": 19038604,
+      "time_ms": 13690
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T12:10:36.795139365+00:00"
+  },
+  "proof_device_proximity_1754396243847": {
+    "file_path": "./proofs/proof_device_proximity_1754396243847/proof.bin",
+    "id": "proof_device_proximity_1754396243847",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754396237"
+      },
+      "arguments": [
+        "878455",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.866204336,
+      "proof_size": 19038604,
+      "time_ms": 12866
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T12:17:36.720465991+00:00"
+  },
+  "proof_device_proximity_1754398824142": {
+    "file_path": "./proofs/proof_device_proximity_1754398824142/proof.bin",
+    "id": "proof_device_proximity_1754398824142",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754398817"
+      },
+      "arguments": [
+        "878455",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.570363513,
+      "proof_size": 19038604,
+      "time_ms": 15570
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T13:00:38.460001389+00:00"
+  },
+  "proof_device_proximity_1754400189236": {
+    "file_path": "./proofs/proof_device_proximity_1754400189236/proof.bin",
+    "id": "proof_device_proximity_1754400189236",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754400174"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.154322887,
+      "proof_size": 19038604,
+      "time_ms": 13154
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T13:23:22.429062052+00:00"
+  },
+  "proof_device_proximity_1754400533037": {
+    "file_path": "./proofs/proof_device_proximity_1754400533037/proof.bin",
+    "id": "proof_device_proximity_1754400533037",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1754400529"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.931408974,
+      "proof_size": 19038604,
+      "time_ms": 14931
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T13:29:07.979381647+00:00"
+  },
+  "proof_device_proximity_1755277940270": {
+    "file_path": "./proofs/proof_device_proximity_1755277940270/proof.bin",
+    "id": "proof_device_proximity_1755277940270",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755277915"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.080862014,
+      "proof_size": 19038604,
+      "time_ms": 16080
+    },
+    "status": "complete",
+    "timestamp": "2025-08-15T17:12:36.384266564+00:00"
+  },
+  "proof_device_proximity_1755278634374": {
+    "file_path": "./proofs/proof_device_proximity_1755278634374/proof.bin",
+    "id": "proof_device_proximity_1755278634374",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755278599"
+      },
+      "arguments": [
+        "878455",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.735531791,
+      "proof_size": 19038604,
+      "time_ms": 15735
+    },
+    "status": "complete",
+    "timestamp": "2025-08-15T17:24:10.139323456+00:00"
+  },
+  "proof_device_proximity_1755280632272": {
+    "file_path": "./proofs/proof_device_proximity_1755280632272/proof.bin",
+    "id": "proof_device_proximity_1755280632272",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755280608"
+      },
+      "arguments": [
+        "878455",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.567638376,
+      "proof_size": 19038604,
+      "time_ms": 12567
+    },
+    "status": "complete",
+    "timestamp": "2025-08-15T17:57:24.851667673+00:00"
+  },
+  "proof_device_proximity_1755281678149": {
+    "file_path": "./proofs/proof_device_proximity_1755281678149/proof.bin",
+    "id": "proof_device_proximity_1755281678149",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755281651"
+      },
+      "arguments": [
+        "878455",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.002603869,
+      "proof_size": 19038604,
+      "time_ms": 13002
+    },
+    "status": "complete",
+    "timestamp": "2025-08-15T18:14:51.164124714+00:00"
+  },
+  "proof_device_proximity_1755286263302": {
+    "file_path": "./proofs/proof_device_proximity_1755286263302/proof.bin",
+    "id": "proof_device_proximity_1755286263302",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755286231"
+      },
+      "arguments": [
+        "878455",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.036109963,
+      "proof_size": 19038604,
+      "time_ms": 15036
+    },
+    "status": "complete",
+    "timestamp": "2025-08-15T19:31:18.373882072+00:00"
+  },
+  "proof_device_proximity_1755289645212": {
+    "file_path": "./proofs/proof_device_proximity_1755289645212/proof.bin",
+    "id": "proof_device_proximity_1755289645212",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1755289642"
+      },
+      "arguments": [
+        "604177",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.800615785,
+      "proof_size": 19038604,
+      "time_ms": 15800
+    },
+    "status": "complete",
+    "timestamp": "2025-08-15T20:27:41.026368020+00:00"
+  },
+  "proof_device_proximity_1755290785355": {
+    "file_path": "./proofs/proof_device_proximity_1755290785355/proof.bin",
+    "id": "proof_device_proximity_1755290785355",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755290766"
+      },
+      "arguments": [
+        "878455",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.219705173,
+      "proof_size": 19038604,
+      "time_ms": 13219
+    },
+    "status": "complete",
+    "timestamp": "2025-08-15T20:46:38.584296789+00:00"
+  },
+  "proof_device_proximity_1755291234893": {
+    "file_path": "./proofs/proof_device_proximity_1755291234893/proof.bin",
+    "id": "proof_device_proximity_1755291234893",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1755291232"
+      },
+      "arguments": [
+        "878455",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.359693655,
+      "proof_size": 19038604,
+      "time_ms": 12359
+    },
+    "status": "complete",
+    "timestamp": "2025-08-15T20:54:07.266068639+00:00"
+  },
+  "proof_device_proximity_1755291644358": {
+    "file_path": "./proofs/proof_device_proximity_1755291644358/proof.bin",
+    "id": "proof_device_proximity_1755291644358",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1755291642"
+      },
+      "arguments": [
+        "878455",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.60380064,
+      "proof_size": 19038604,
+      "time_ms": 12603
+    },
+    "status": "complete",
+    "timestamp": "2025-08-15T21:00:56.974974100+00:00"
+  },
+  "proof_device_proximity_1755292351265": {
+    "file_path": "./proofs/proof_device_proximity_1755292351265/proof.bin",
+    "id": "proof_device_proximity_1755292351265",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755292324"
+      },
+      "arguments": [
+        "878455",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.812135616,
+      "proof_size": 19038604,
+      "time_ms": 12812
+    },
+    "status": "complete",
+    "timestamp": "2025-08-15T21:12:44.085400275+00:00"
+  },
+  "proof_device_proximity_1755293132093": {
+    "file_path": "./proofs/proof_device_proximity_1755293132093/proof.bin",
+    "id": "proof_device_proximity_1755293132093",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755293108"
+      },
+      "arguments": [
+        "878455",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.323346853,
+      "proof_size": 19038604,
+      "time_ms": 13323
+    },
+    "status": "complete",
+    "timestamp": "2025-08-15T21:25:45.425529893+00:00"
+  },
+  "proof_device_proximity_1755293816146": {
+    "file_path": "./proofs/proof_device_proximity_1755293816146/proof.bin",
+    "id": "proof_device_proximity_1755293816146",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755293794"
+      },
+      "arguments": [
+        "878455",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.386022358,
+      "proof_size": 19038604,
+      "time_ms": 13386
+    },
+    "status": "complete",
+    "timestamp": "2025-08-15T21:37:09.536866344+00:00"
+  },
+  "proof_device_proximity_1755307745695": {
+    "file_path": "./proofs/proof_device_proximity_1755307745695/proof.bin",
+    "id": "proof_device_proximity_1755307745695",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755307723"
+      },
+      "arguments": [
+        "878455",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.133876377,
+      "proof_size": 19038604,
+      "time_ms": 16133
+    },
+    "status": "complete",
+    "timestamp": "2025-08-16T01:29:21.849505299+00:00"
+  },
+  "proof_device_proximity_1755310738390": {
+    "file_path": "./proofs/proof_device_proximity_1755310738390/proof.bin",
+    "id": "proof_device_proximity_1755310738390",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755310701"
+      },
+      "arguments": [
+        "878455",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.340325309,
+      "proof_size": 19038604,
+      "time_ms": 14340
+    },
+    "status": "complete",
+    "timestamp": "2025-08-16T02:19:12.749045543+00:00"
+  },
+  "proof_device_proximity_1755311893476": {
+    "file_path": "./proofs/proof_device_proximity_1755311893476/proof.bin",
+    "id": "proof_device_proximity_1755311893476",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755311867"
+      },
+      "arguments": [
+        "878455",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.248955014,
+      "proof_size": 19038604,
+      "time_ms": 15248
+    },
+    "status": "complete",
+    "timestamp": "2025-08-16T02:38:28.739288532+00:00"
+  },
+  "proof_device_proximity_1755313238274": {
+    "file_path": "./proofs/proof_device_proximity_1755313238274/proof.bin",
+    "id": "proof_device_proximity_1755313238274",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755313194"
+      },
+      "arguments": [
+        "878455",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.13914451,
+      "proof_size": 19038604,
+      "time_ms": 15139
+    },
+    "status": "complete",
+    "timestamp": "2025-08-16T03:00:53.435167993+00:00"
+  },
+  "proof_device_proximity_1755315985660": {
+    "file_path": "./proofs/proof_device_proximity_1755315985660/proof.bin",
+    "id": "proof_device_proximity_1755315985660",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755315955"
+      },
+      "arguments": [
+        "878455",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.207046889,
+      "proof_size": 19038604,
+      "time_ms": 15207
+    },
+    "status": "complete",
+    "timestamp": "2025-08-16T03:46:40.899503657+00:00"
+  },
+  "proof_device_proximity_1755337633737": {
+    "file_path": "./proofs/proof_device_proximity_1755337633737/proof.bin",
+    "id": "proof_device_proximity_1755337633737",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755337608"
+      },
+      "arguments": [
+        "878455",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.851217213,
+      "proof_size": 19038604,
+      "time_ms": 15851
+    },
+    "status": "complete",
+    "timestamp": "2025-08-16T09:47:29.595311247+00:00"
+  },
+  "proof_device_proximity_1755337931560": {
+    "file_path": "./proofs/proof_device_proximity_1755337931560/proof.bin",
+    "id": "proof_device_proximity_1755337931560",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755337929"
+      },
+      "arguments": [
+        "991254",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.536144955,
+      "proof_size": 19038604,
+      "time_ms": 14536
+    },
+    "status": "complete",
+    "timestamp": "2025-08-16T09:52:26.104903614+00:00"
+  },
+  "proof_device_proximity_1755338104984": {
+    "file_path": "./proofs/proof_device_proximity_1755338104984/proof.bin",
+    "id": "proof_device_proximity_1755338104984",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755338076"
+      },
+      "arguments": [
+        "718306",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.065954836,
+      "proof_size": 19038604,
+      "time_ms": 15065
+    },
+    "status": "complete",
+    "timestamp": "2025-08-16T09:55:20.059929151+00:00"
+  },
+  "proof_device_proximity_1755338624014": {
+    "file_path": "./proofs/proof_device_proximity_1755338624014/proof.bin",
+    "id": "proof_device_proximity_1755338624014",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755338598"
+      },
+      "arguments": [
+        "469162",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.145309146,
+      "proof_size": 19038604,
+      "time_ms": 16145
+    },
+    "status": "complete",
+    "timestamp": "2025-08-16T10:04:00.171552097+00:00"
+  },
+  "proof_device_proximity_1755339673713": {
+    "file_path": "./proofs/proof_device_proximity_1755339673713/proof.bin",
+    "id": "proof_device_proximity_1755339673713",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755339645"
+      },
+      "arguments": [
+        "487970",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.391795586,
+      "proof_size": 19038604,
+      "time_ms": 15391
+    },
+    "status": "complete",
+    "timestamp": "2025-08-16T10:21:29.144085516+00:00"
+  },
+  "proof_device_proximity_1755340918613": {
+    "file_path": "./proofs/proof_device_proximity_1755340918613/proof.bin",
+    "id": "proof_device_proximity_1755340918613",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755340886"
+      },
+      "arguments": [
+        "254186",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.337844764,
+      "proof_size": 19038604,
+      "time_ms": 15337
+    },
+    "status": "complete",
+    "timestamp": "2025-08-16T10:42:13.961079108+00:00"
+  },
+  "proof_device_proximity_1755342135323": {
+    "file_path": "./proofs/proof_device_proximity_1755342135323/proof.bin",
+    "id": "proof_device_proximity_1755342135323",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755342043"
+      },
+      "arguments": [
+        "103753",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.105138372,
+      "proof_size": 19038604,
+      "time_ms": 13105
+    },
+    "status": "complete",
+    "timestamp": "2025-08-16T11:02:28.442337965+00:00"
+  },
+  "proof_device_proximity_1755343346774": {
+    "file_path": "./proofs/proof_device_proximity_1755343346774/proof.bin",
+    "id": "proof_device_proximity_1755343346774",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755343331"
+      },
+      "arguments": [
+        "117093",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.871707125,
+      "proof_size": 19038604,
+      "time_ms": 12871
+    },
+    "status": "complete",
+    "timestamp": "2025-08-16T11:22:39.651196815+00:00"
+  },
+  "proof_device_proximity_1755365056763": {
+    "file_path": "./proofs/proof_device_proximity_1755365056763/proof.bin",
+    "id": "proof_device_proximity_1755365056763",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755365031"
+      },
+      "arguments": [
+        "501414",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.239365766,
+      "proof_size": 19038604,
+      "time_ms": 13239
+    },
+    "status": "complete",
+    "timestamp": "2025-08-16T17:24:30.009292842+00:00"
+  },
+  "proof_device_proximity_1755365699808": {
+    "file_path": "./proofs/proof_device_proximity_1755365699808/proof.bin",
+    "id": "proof_device_proximity_1755365699808",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755365670"
+      },
+      "arguments": [
+        "57256",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.816884858,
+      "proof_size": 19038604,
+      "time_ms": 13816
+    },
+    "status": "complete",
+    "timestamp": "2025-08-16T17:35:13.637053790+00:00"
+  },
+  "proof_device_proximity_1755367718715": {
+    "file_path": "./proofs/proof_device_proximity_1755367718715/proof.bin",
+    "id": "proof_device_proximity_1755367718715",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755367687"
+      },
+      "arguments": [
+        "380459",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.644022884,
+      "proof_size": 19038604,
+      "time_ms": 16644
+    },
+    "status": "complete",
+    "timestamp": "2025-08-16T18:08:55.364827835+00:00"
+  },
+  "proof_device_proximity_1755368718972": {
+    "file_path": "./proofs/proof_device_proximity_1755368718972/proof.bin",
+    "id": "proof_device_proximity_1755368718972",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755368694"
+      },
+      "arguments": [
+        "117946",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.581659945,
+      "proof_size": 19038604,
+      "time_ms": 15581
+    },
+    "status": "complete",
+    "timestamp": "2025-08-16T18:25:34.566401028+00:00"
+  },
+  "proof_device_proximity_1755369417079": {
+    "file_path": "./proofs/proof_device_proximity_1755369417079/proof.bin",
+    "id": "proof_device_proximity_1755369417079",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755369383"
+      },
+      "arguments": [
+        "126208",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.782587046,
+      "proof_size": 19038604,
+      "time_ms": 15782
+    },
+    "status": "complete",
+    "timestamp": "2025-08-16T18:37:12.882473155+00:00"
+  },
+  "proof_device_proximity_1755397537515": {
+    "file_path": "./proofs/proof_device_proximity_1755397537515/proof.bin",
+    "id": "proof_device_proximity_1755397537515",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755397483"
+      },
+      "arguments": [
+        "380559",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.994880307,
+      "proof_size": 19038604,
+      "time_ms": 15994
+    },
+    "status": "complete",
+    "timestamp": "2025-08-17T02:25:53.529401174+00:00"
+  },
+  "proof_device_proximity_1755397909897": {
+    "file_path": "./proofs/proof_device_proximity_1755397909897/proof.bin",
+    "id": "proof_device_proximity_1755397909897",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755397881"
+      },
+      "arguments": [
+        "111326",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.092184104,
+      "proof_size": 19038604,
+      "time_ms": 15092
+    },
+    "status": "complete",
+    "timestamp": "2025-08-17T02:32:04.997090932+00:00"
+  },
+  "proof_device_proximity_1755399081466": {
+    "file_path": "./proofs/proof_device_proximity_1755399081466/proof.bin",
+    "id": "proof_device_proximity_1755399081466",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755399053"
+      },
+      "arguments": [
+        "814289",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.313744934,
+      "proof_size": 19038604,
+      "time_ms": 16313
+    },
+    "status": "complete",
+    "timestamp": "2025-08-17T02:51:37.794852543+00:00"
+  },
+  "proof_device_proximity_1755399872158": {
+    "file_path": "./proofs/proof_device_proximity_1755399872158/proof.bin",
+    "id": "proof_device_proximity_1755399872158",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755399838"
+      },
+      "arguments": [
+        "844801",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.494681249,
+      "proof_size": 19038604,
+      "time_ms": 15494
+    },
+    "status": "complete",
+    "timestamp": "2025-08-17T03:04:47.660705464+00:00"
+  },
+  "proof_device_proximity_1755404040868": {
+    "file_path": "./proofs/proof_device_proximity_1755404040868/proof.bin",
+    "id": "proof_device_proximity_1755404040868",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755404015"
+      },
+      "arguments": [
+        "2955",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.652334459,
+      "proof_size": 19038604,
+      "time_ms": 15652
+    },
+    "status": "complete",
+    "timestamp": "2025-08-17T04:14:16.536616089+00:00"
+  },
+  "proof_device_proximity_1755404612386": {
+    "file_path": "./proofs/proof_device_proximity_1755404612386/proof.bin",
+    "id": "proof_device_proximity_1755404612386",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755404584"
+      },
+      "arguments": [
+        "857089",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.98348235,
+      "proof_size": 19038604,
+      "time_ms": 15983
+    },
+    "status": "complete",
+    "timestamp": "2025-08-17T04:23:48.376622478+00:00"
+  },
+  "proof_device_proximity_1755406046119": {
+    "file_path": "./proofs/proof_device_proximity_1755406046119/proof.bin",
+    "id": "proof_device_proximity_1755406046119",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1755406012"
+      },
+      "arguments": [
+        "335712",
+        "5080",
+        "5020"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.14174305,
+      "proof_size": 19038604,
+      "time_ms": 16141
+    },
+    "status": "complete",
+    "timestamp": "2025-08-17T04:47:42.273225906+00:00"
+  },
+  "proof_kyc_1753884702719": {
+    "file_path": "./proofs/proof_kyc_1753884702719/proof.bin",
+    "id": "proof_kyc_1753884702719",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753884700"
+      },
+      "arguments": [
+        "456604",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.326382749,
+      "proof_size": 19038604,
+      "time_ms": 15326
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T14:11:58.520810816+00:00"
+  },
+  "proof_kyc_1753887917339": {
+    "file_path": "./proofs/proof_kyc_1753887917339/proof.bin",
+    "id": "proof_kyc_1753887917339",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753887914"
+      },
+      "arguments": [
+        "671228",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.277487487,
+      "proof_size": 19038604,
+      "time_ms": 14277
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T15:05:31.639431772+00:00"
+  },
+  "proof_kyc_1753887934852": {
+    "file_path": "./proofs/proof_kyc_1753887934852/proof.bin",
+    "id": "proof_kyc_1753887934852",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753887933"
+      },
+      "arguments": [
+        "688740",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.2093846,
+      "proof_size": 19038604,
+      "time_ms": 15209
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T15:05:50.081053572+00:00"
+  },
+  "proof_kyc_1753889157935": {
+    "file_path": "./proofs/proof_kyc_1753889157935/proof.bin",
+    "id": "proof_kyc_1753889157935",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753889156"
+      },
+      "arguments": [
+        "911825",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.136969568,
+      "proof_size": 19038604,
+      "time_ms": 14136
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T15:26:12.094666577+00:00"
+  },
+  "proof_kyc_1753896801165": {
+    "file_path": "./proofs/proof_kyc_1753896801165/proof.bin",
+    "id": "proof_kyc_1753896801165",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753896798"
+      },
+      "arguments": [
+        "555062",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.398221228,
+      "proof_size": 19038604,
+      "time_ms": 12398
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T17:33:33.574800997+00:00"
+  },
+  "proof_kyc_1753897848969": {
+    "file_path": "./proofs/proof_kyc_1753897848969/proof.bin",
+    "id": "proof_kyc_1753897848969",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753897846"
+      },
+      "arguments": [
+        "602868",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.233606949,
+      "proof_size": 19038604,
+      "time_ms": 13233
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T17:51:02.211365260+00:00"
+  },
+  "proof_kyc_1753897985189": {
+    "file_path": "./proofs/proof_kyc_1753897985189/proof.bin",
+    "id": "proof_kyc_1753897985189",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753897982"
+      },
+      "arguments": [
+        "739088",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.705646861,
+      "proof_size": 19038604,
+      "time_ms": 12705
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T17:53:17.908249793+00:00"
+  },
+  "proof_kyc_1753898254723": {
+    "file_path": "./proofs/proof_kyc_1753898254723/proof.bin",
+    "id": "proof_kyc_1753898254723",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753898253"
+      },
+      "arguments": [
+        "8622",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.870874452,
+      "proof_size": 19038604,
+      "time_ms": 12870
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T17:57:48.342652133+00:00"
+  },
+  "proof_kyc_1753898317883": {
+    "file_path": "./proofs/proof_kyc_1753898317883/proof.bin",
+    "id": "proof_kyc_1753898317883",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753898315"
+      },
+      "arguments": [
+        "71782",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.339332471,
+      "proof_size": 19038604,
+      "time_ms": 13339
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T17:58:52.035123192+00:00"
+  },
+  "proof_kyc_1753899736290": {
+    "file_path": "./proofs/proof_kyc_1753899736290/proof.bin",
+    "id": "proof_kyc_1753899736290",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753899733"
+      },
+      "arguments": [
+        "490190",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 17.404713282,
+      "proof_size": 19038604,
+      "time_ms": 17404
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T18:22:34.251303919+00:00"
+  },
+  "proof_kyc_1753903411652": {
+    "file_path": "./proofs/proof_kyc_1753903411652/proof.bin",
+    "id": "proof_kyc_1753903411652",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753903408"
+      },
+      "arguments": [
+        "165557",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.660174118,
+      "proof_size": 19038604,
+      "time_ms": 13660
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T19:23:45.322223435+00:00"
+  },
+  "proof_kyc_1753905273198": {
+    "file_path": "./proofs/proof_kyc_1753905273198/proof.bin",
+    "id": "proof_kyc_1753905273198",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753905269"
+      },
+      "arguments": [
+        "27104",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.054309839,
+      "proof_size": 19038604,
+      "time_ms": 13054
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T19:54:46.264643713+00:00"
+  },
+  "proof_kyc_1753907336980": {
+    "file_path": "./proofs/proof_kyc_1753907336980/proof.bin",
+    "id": "proof_kyc_1753907336980",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753907334"
+      },
+      "arguments": [
+        "90889",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.203458434,
+      "proof_size": 19038604,
+      "time_ms": 13203
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T20:29:11.084864497+00:00"
+  },
+  "proof_kyc_1753907436391": {
+    "file_path": "./proofs/proof_kyc_1753907436391/proof.bin",
+    "id": "proof_kyc_1753907436391",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753907434"
+      },
+      "arguments": [
+        "190300",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.381698957,
+      "proof_size": 19038604,
+      "time_ms": 13381
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T20:30:50.814151782+00:00"
+  },
+  "proof_kyc_1753910208577": {
+    "file_path": "./proofs/proof_kyc_1753910208577/proof.bin",
+    "id": "proof_kyc_1753910208577",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753910205"
+      },
+      "arguments": [
+        "962487",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.863044745,
+      "proof_size": 19038604,
+      "time_ms": 14863
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T21:17:03.492799913+00:00"
+  },
+  "proof_kyc_1753911101075": {
+    "file_path": "./proofs/proof_kyc_1753911101075/proof.bin",
+    "id": "proof_kyc_1753911101075",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753911098"
+      },
+      "arguments": [
+        "854985",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.510758695,
+      "proof_size": 19038604,
+      "time_ms": 14510
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T21:31:55.600728999+00:00"
+  },
+  "proof_kyc_1753922847686": {
+    "file_path": "./proofs/proof_kyc_1753922847686/proof.bin",
+    "id": "proof_kyc_1753922847686",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753922845"
+      },
+      "arguments": [
+        "601609",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 17.723686832,
+      "proof_size": 19038604,
+      "time_ms": 17723
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T00:47:45.432591883+00:00"
+  },
+  "proof_kyc_1753923039920": {
+    "file_path": "./proofs/proof_kyc_1753923039920/proof.bin",
+    "id": "proof_kyc_1753923039920",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753923037"
+      },
+      "arguments": [
+        "793843",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.21236747,
+      "proof_size": 19038604,
+      "time_ms": 16212
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T00:50:56.138721499+00:00"
+  },
+  "proof_kyc_1753923194367": {
+    "file_path": "./proofs/proof_kyc_1753923194367/proof.bin",
+    "id": "proof_kyc_1753923194367",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753923192"
+      },
+      "arguments": [
+        "948290",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.17871641,
+      "proof_size": 19038604,
+      "time_ms": 15178
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T00:53:29.553218809+00:00"
+  },
+  "proof_kyc_1753924830193": {
+    "file_path": "./proofs/proof_kyc_1753924830193/proof.bin",
+    "id": "proof_kyc_1753924830193",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753924827"
+      },
+      "arguments": [
+        "584119",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.381739406,
+      "proof_size": 19038604,
+      "time_ms": 15381
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T01:20:45.599327214+00:00"
+  },
+  "proof_kyc_1753924853117": {
+    "file_path": "./proofs/proof_kyc_1753924853117/proof.bin",
+    "id": "proof_kyc_1753924853117",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753924851"
+      },
+      "arguments": [
+        "607042",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.80880746,
+      "proof_size": 19038604,
+      "time_ms": 15808
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T01:21:08.936090949+00:00"
+  },
+  "proof_kyc_1753925572715": {
+    "file_path": "./proofs/proof_kyc_1753925572715/proof.bin",
+    "id": "proof_kyc_1753925572715",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753925570"
+      },
+      "arguments": [
+        "326641",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.221251312,
+      "proof_size": 19038604,
+      "time_ms": 15221
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T01:33:07.953402539+00:00"
+  },
+  "proof_kyc_1753925759436": {
+    "file_path": "./proofs/proof_kyc_1753925759436/proof.bin",
+    "id": "proof_kyc_1753925759436",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753925757"
+      },
+      "arguments": [
+        "513362",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.020319036,
+      "proof_size": 19038604,
+      "time_ms": 16020
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T01:36:15.462832476+00:00"
+  },
+  "proof_kyc_1753926521710": {
+    "file_path": "./proofs/proof_kyc_1753926521710/proof.bin",
+    "id": "proof_kyc_1753926521710",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753926518"
+      },
+      "arguments": [
+        "275638",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.500089732,
+      "proof_size": 19038604,
+      "time_ms": 15500
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T01:48:57.224357926+00:00"
+  },
+  "proof_kyc_1753927349220": {
+    "file_path": "./proofs/proof_kyc_1753927349220/proof.bin",
+    "id": "proof_kyc_1753927349220",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753927347"
+      },
+      "arguments": [
+        "103149",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.449444302,
+      "proof_size": 19038604,
+      "time_ms": 15449
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T02:02:44.682679800+00:00"
+  },
+  "proof_kyc_1753928063132": {
+    "file_path": "./proofs/proof_kyc_1753928063132/proof.bin",
+    "id": "proof_kyc_1753928063132",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753928061"
+      },
+      "arguments": [
+        "817060",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.946338475,
+      "proof_size": 19038604,
+      "time_ms": 14946
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T02:14:38.092703050+00:00"
+  },
+  "proof_kyc_1753928683305": {
+    "file_path": "./proofs/proof_kyc_1753928683305/proof.bin",
+    "id": "proof_kyc_1753928683305",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753928680"
+      },
+      "arguments": [
+        "437234",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.102601173,
+      "proof_size": 19038604,
+      "time_ms": 13102
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T02:24:56.412119714+00:00"
+  },
+  "proof_kyc_1753928856802": {
+    "file_path": "./proofs/proof_kyc_1753928856802/proof.bin",
+    "id": "proof_kyc_1753928856802",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753928855"
+      },
+      "arguments": [
+        "610731",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.586103927,
+      "proof_size": 19038604,
+      "time_ms": 12586
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T02:27:49.391101065+00:00"
+  },
+  "proof_kyc_1753928988997": {
+    "file_path": "./proofs/proof_kyc_1753928988997/proof.bin",
+    "id": "proof_kyc_1753928988997",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753928987"
+      },
+      "arguments": [
+        "742926",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.989734575,
+      "proof_size": 19038604,
+      "time_ms": 12989
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T02:30:02.000948568+00:00"
+  },
+  "proof_kyc_1753929179582": {
+    "file_path": "./proofs/proof_kyc_1753929179582/proof.bin",
+    "id": "proof_kyc_1753929179582",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753929177"
+      },
+      "arguments": [
+        "933512",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.044075553,
+      "proof_size": 19038604,
+      "time_ms": 14044
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T02:33:13.632087544+00:00"
+  },
+  "proof_kyc_1753929364423": {
+    "file_path": "./proofs/proof_kyc_1753929364423/proof.bin",
+    "id": "proof_kyc_1753929364423",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753929362"
+      },
+      "arguments": [
+        "118353",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.176539122,
+      "proof_size": 19038604,
+      "time_ms": 13176
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T02:36:17.604392442+00:00"
+  },
+  "proof_kyc_1753929473229": {
+    "file_path": "./proofs/proof_kyc_1753929473229/proof.bin",
+    "id": "proof_kyc_1753929473229",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753929471"
+      },
+      "arguments": [
+        "227159",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.158331644,
+      "proof_size": 19038604,
+      "time_ms": 14158
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T02:38:07.392773127+00:00"
+  },
+  "proof_kyc_1753929532733": {
+    "file_path": "./proofs/proof_kyc_1753929532733/proof.bin",
+    "id": "proof_kyc_1753929532733",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753929530"
+      },
+      "arguments": [
+        "286663",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.609476566,
+      "proof_size": 19038604,
+      "time_ms": 13609
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T02:39:06.347031476+00:00"
+  },
+  "proof_kyc_1753929742793": {
+    "file_path": "./proofs/proof_kyc_1753929742793/proof.bin",
+    "id": "proof_kyc_1753929742793",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753929741"
+      },
+      "arguments": [
+        "496724",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.24155405,
+      "proof_size": 19038604,
+      "time_ms": 13241
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T02:42:36.038369186+00:00"
+  },
+  "proof_kyc_1753943537195": {
+    "file_path": "./proofs/proof_kyc_1753943537195/proof.bin",
+    "id": "proof_kyc_1753943537195",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753943534"
+      },
+      "arguments": [
+        "291139",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.773806241,
+      "proof_size": 19038604,
+      "time_ms": 16773
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T06:32:33.974625568+00:00"
+  },
+  "proof_kyc_1753943716703": {
+    "file_path": "./proofs/proof_kyc_1753943716703/proof.bin",
+    "id": "proof_kyc_1753943716703",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753943713"
+      },
+      "arguments": [
+        "470647",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.67062091,
+      "proof_size": 19038604,
+      "time_ms": 14670
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T06:35:31.388170961+00:00"
+  },
+  "proof_kyc_1753944394872": {
+    "file_path": "./proofs/proof_kyc_1753944394872/proof.bin",
+    "id": "proof_kyc_1753944394872",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753944392"
+      },
+      "arguments": [
+        "148816",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.771967362,
+      "proof_size": 19038604,
+      "time_ms": 15771
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T06:46:50.664664472+00:00"
+  },
+  "proof_kyc_1753944440099": {
+    "file_path": "./proofs/proof_kyc_1753944440099/proof.bin",
+    "id": "proof_kyc_1753944440099",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753944437"
+      },
+      "arguments": [
+        "194041",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.955808143,
+      "proof_size": 19038604,
+      "time_ms": 14955
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T06:47:35.073079347+00:00"
+  },
+  "proof_kyc_1753944668851": {
+    "file_path": "./proofs/proof_kyc_1753944668851/proof.bin",
+    "id": "proof_kyc_1753944668851",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753944666"
+      },
+      "arguments": [
+        "422796",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 17.498562577,
+      "proof_size": 19038604,
+      "time_ms": 17498
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T06:51:26.359292662+00:00"
+  },
+  "proof_kyc_1753947649337": {
+    "file_path": "./proofs/proof_kyc_1753947649337/proof.bin",
+    "id": "proof_kyc_1753947649337",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753947646"
+      },
+      "arguments": [
+        "403285",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.13160389,
+      "proof_size": 19038604,
+      "time_ms": 16131
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T07:41:05.481743681+00:00"
+  },
+  "proof_kyc_1753948325115": {
+    "file_path": "./proofs/proof_kyc_1753948325115/proof.bin",
+    "id": "proof_kyc_1753948325115",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753948320"
+      },
+      "arguments": [
+        "79064",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.849577537,
+      "proof_size": 19038604,
+      "time_ms": 14849
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T07:52:19.971900463+00:00"
+  },
+  "proof_kyc_1753948364004": {
+    "file_path": "./proofs/proof_kyc_1753948364004/proof.bin",
+    "id": "proof_kyc_1753948364004",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753948362"
+      },
+      "arguments": [
+        "117953",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.85341681,
+      "proof_size": 19038604,
+      "time_ms": 14853
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T07:52:58.861181521+00:00"
+  },
+  "proof_kyc_1753948490873": {
+    "file_path": "./proofs/proof_kyc_1753948490873/proof.bin",
+    "id": "proof_kyc_1753948490873",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753948489"
+      },
+      "arguments": [
+        "244822",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.830251433,
+      "proof_size": 19038604,
+      "time_ms": 15830
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T07:55:06.706524813+00:00"
+  },
+  "proof_kyc_1753948876539": {
+    "file_path": "./proofs/proof_kyc_1753948876539/proof.bin",
+    "id": "proof_kyc_1753948876539",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753948874"
+      },
+      "arguments": [
+        "630488",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.896677134,
+      "proof_size": 19038604,
+      "time_ms": 14896
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T08:01:31.439806295+00:00"
+  },
+  "proof_kyc_1753962955535": {
+    "file_path": "./proofs/proof_kyc_1753962955535/proof.bin",
+    "id": "proof_kyc_1753962955535",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753962953"
+      },
+      "arguments": [
+        "709499",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.444426882,
+      "proof_size": 19038604,
+      "time_ms": 16444
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T11:56:11.983840311+00:00"
+  },
+  "proof_kyc_1753963645986": {
+    "file_path": "./proofs/proof_kyc_1753963645986/proof.bin",
+    "id": "proof_kyc_1753963645986",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753963643"
+      },
+      "arguments": [
+        "399951",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.296990803,
+      "proof_size": 19038604,
+      "time_ms": 14296
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T12:07:40.286332705+00:00"
+  },
+  "proof_kyc_1753971843704": {
+    "file_path": "./proofs/proof_kyc_1753971843704/proof.bin",
+    "id": "proof_kyc_1753971843704",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753971841"
+      },
+      "arguments": [
+        "597676",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.93954432,
+      "proof_size": 19038604,
+      "time_ms": 14939
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T14:24:18.665283714+00:00"
+  },
+  "proof_kyc_1753972015090": {
+    "file_path": "./proofs/proof_kyc_1753972015090/proof.bin",
+    "id": "proof_kyc_1753972015090",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753972012"
+      },
+      "arguments": [
+        "769063",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.186809545,
+      "proof_size": 19038604,
+      "time_ms": 15186
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T14:27:10.284845725+00:00"
+  },
+  "proof_kyc_1753972461347": {
+    "file_path": "./proofs/proof_kyc_1753972461347/proof.bin",
+    "id": "proof_kyc_1753972461347",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753972458"
+      },
+      "arguments": [
+        "215317",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.131546696,
+      "proof_size": 19038604,
+      "time_ms": 15131
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T14:34:36.496187057+00:00"
+  },
+  "proof_kyc_1753973343373": {
+    "file_path": "./proofs/proof_kyc_1753973343373/proof.bin",
+    "id": "proof_kyc_1753973343373",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753973341"
+      },
+      "arguments": [
+        "97347",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.817643613,
+      "proof_size": 19038604,
+      "time_ms": 14817
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T14:49:18.205483605+00:00"
+  },
+  "proof_kyc_1753974896085": {
+    "file_path": "./proofs/proof_kyc_1753974896085/proof.bin",
+    "id": "proof_kyc_1753974896085",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753974892"
+      },
+      "arguments": [
+        "650060",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.906735973,
+      "proof_size": 19038604,
+      "time_ms": 15906
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T15:15:12.004143963+00:00"
+  },
+  "proof_kyc_1753974952479": {
+    "file_path": "./proofs/proof_kyc_1753974952479/proof.bin",
+    "id": "proof_kyc_1753974952479",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753974950"
+      },
+      "arguments": [
+        "706454",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.195117037,
+      "proof_size": 19038604,
+      "time_ms": 15195
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T15:16:07.687361440+00:00"
+  },
+  "proof_kyc_1753976949464": {
+    "file_path": "./proofs/proof_kyc_1753976949464/proof.bin",
+    "id": "proof_kyc_1753976949464",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753976946"
+      },
+      "arguments": [
+        "703441",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.88457274,
+      "proof_size": 19038604,
+      "time_ms": 12884
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T15:49:21.772727081+00:00"
+  },
+  "proof_kyc_1753980046189": {
+    "file_path": "./proofs/proof_kyc_1753980046189/proof.bin",
+    "id": "proof_kyc_1753980046189",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753980044"
+      },
+      "arguments": [
+        "800170",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.078267461,
+      "proof_size": 19038604,
+      "time_ms": 14078
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T16:41:00.278421435+00:00"
+  },
+  "proof_kyc_1755447938736": {
+    "file_path": "./proofs/proof_kyc_1755447938736/proof.bin",
+    "id": "proof_kyc_1755447938736",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1755447934"
+      },
+      "arguments": [
+        "694184",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.292487988,
+      "proof_size": 19038604,
+      "time_ms": 15292
+    },
+    "status": "complete",
+    "timestamp": "2025-08-17T16:25:54.067116467+00:00"
+  },
+  "proof_kyc_1755450298621": {
+    "file_path": "./proofs/proof_kyc_1755450298621/proof.bin",
+    "id": "proof_kyc_1755450298621",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1755450296"
+      },
+      "arguments": [
+        "54072",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.285013402,
+      "proof_size": 19038604,
+      "time_ms": 15285
+    },
+    "status": "complete",
+    "timestamp": "2025-08-17T17:05:13.913987701+00:00"
+  },
+  "proof_kyc_1755450328160": {
+    "file_path": "./proofs/proof_kyc_1755450328160/proof.bin",
+    "id": "proof_kyc_1755450328160",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1755450324"
+      },
+      "arguments": [
+        "83611",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.496591939,
+      "proof_size": 19038604,
+      "time_ms": 15496
+    },
+    "status": "complete",
+    "timestamp": "2025-08-17T17:05:43.664864134+00:00"
+  },
+  "proof_kyc_1755450369478": {
+    "file_path": "./proofs/proof_kyc_1755450369478/proof.bin",
+    "id": "proof_kyc_1755450369478",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1755450366"
+      },
+      "arguments": [
+        "124929",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.068067906,
+      "proof_size": 19038604,
+      "time_ms": 15068
+    },
+    "status": "complete",
+    "timestamp": "2025-08-17T17:06:24.561870331+00:00"
+  },
+  "proof_kyc_1755454676366": {
+    "file_path": "./proofs/proof_kyc_1755454676366/proof.bin",
+    "id": "proof_kyc_1755454676366",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1755454667"
+      },
+      "arguments": [
+        "431821",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.736151305,
+      "proof_size": 19038604,
+      "time_ms": 14736
+    },
+    "status": "complete",
+    "timestamp": "2025-08-17T18:18:11.123930447+00:00"
+  },
+  "proof_kyc_1755467819942": {
+    "file_path": "./proofs/proof_kyc_1755467819942/proof.bin",
+    "id": "proof_kyc_1755467819942",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1755467816"
+      },
+      "arguments": [
+        "575410",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.711249517,
+      "proof_size": 19038604,
+      "time_ms": 14711
+    },
+    "status": "complete",
+    "timestamp": "2025-08-17T21:57:14.710755403+00:00"
+  },
+  "proof_location_1755313073875": {
+    "file_path": "./proofs/proof_location_1755313073875/proof.bin",
+    "id": "proof_location_1755313073875",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1755313072"
+      },
+      "arguments": [
+        "1739989674"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_location",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.46654815,
+      "proof_size": 19038604,
+      "time_ms": 14466
+    },
+    "status": "complete",
+    "timestamp": "2025-08-16T02:58:08.368215680+00:00"
+  },
+  "proof_medical_integrity_1753803359989": {
+    "file_path": "./proofs/proof_medical_integrity_1753803359989/proof.bin",
+    "id": "proof_medical_integrity_1753803359989",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753803355"
+      },
+      "arguments": [
+        "12345",
+        "11256099",
+        "1753716959",
+        "1753803359"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.373307772,
+      "proof_size": 19038604,
+      "time_ms": 13373
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T15:36:14.053190314+00:00"
+  },
+  "proof_medical_integrity_1753808569098": {
+    "file_path": "./proofs/proof_medical_integrity_1753808569098/proof.bin",
+    "id": "proof_medical_integrity_1753808569098",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753808566"
+      },
+      "arguments": [
+        "12345",
+        "11256099",
+        "1753722169",
+        "1753808569"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.268101344,
+      "proof_size": 19038604,
+      "time_ms": 13268
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T17:03:02.377470487+00:00"
+  },
+  "proof_medical_integrity_1753818440403": {
+    "file_path": "./proofs/proof_medical_integrity_1753818440403/proof.bin",
+    "id": "proof_medical_integrity_1753818440403",
+    "metadata": {
+      "additional_context": {
+        "step_index": 2,
+        "workflow_id": "wf_1753818414"
+      },
+      "arguments": [
+        "12345",
+        "2881561566",
+        "1753732040",
+        "1753818440"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "error": "Error: AnyhowError\n\nCaused by:\n    failed to parse function argument 2881561566 at index 1 as i32\n",
+      "generation_time_secs": 9.52260841,
+      "time_ms": 9522
+    },
+    "status": "failed",
+    "timestamp": "2025-07-29T19:47:29.948858616+00:00"
+  },
+  "proof_medical_integrity_1753818699905": {
+    "file_path": "./proofs/proof_medical_integrity_1753818699905/proof.bin",
+    "id": "proof_medical_integrity_1753818699905",
+    "metadata": {
+      "additional_context": {
+        "step_index": 2,
+        "workflow_id": "wf_1753818677"
+      },
+      "arguments": [
+        "12345",
+        "734077919",
+        "1753732299",
+        "1753818699"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.118319879,
+      "proof_size": 19038604,
+      "time_ms": 16118
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T19:51:56.031134887+00:00"
+  },
+  "proof_medical_integrity_1753818710936": {
+    "file_path": "./proofs/proof_medical_integrity_1753818710936/proof.bin",
+    "id": "proof_medical_integrity_1753818710936",
+    "metadata": {
+      "additional_context": {
+        "step_index": 2,
+        "workflow_id": "wf_281aa288-724c-44a4-9d81-6e3c43a3ae80"
+      },
+      "arguments": [
+        "12345",
+        "12345678",
+        "1753732310",
+        "1753818710"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.23741647,
+      "proof_size": 19038604,
+      "time_ms": 15237
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T19:52:06.187996462+00:00"
+  },
+  "proof_medical_integrity_1753820894445": {
+    "file_path": "./proofs/proof_medical_integrity_1753820894445/proof.bin",
+    "id": "proof_medical_integrity_1753820894445",
+    "metadata": {
+      "additional_context": {
+        "step_index": 2,
+        "workflow_id": "wf_1753820875"
+      },
+      "arguments": [
+        "12345",
+        "734077919",
+        "1753734494",
+        "1753820894"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.42154937,
+      "proof_size": 19038604,
+      "time_ms": 14421
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T20:28:28.890231312+00:00"
+  },
+  "proof_medical_integrity_1753822397144": {
+    "file_path": "./proofs/proof_medical_integrity_1753822397144/proof.bin",
+    "id": "proof_medical_integrity_1753822397144",
+    "metadata": {
+      "additional_context": {
+        "step_index": 2,
+        "workflow_id": "wf_1753822369"
+      },
+      "arguments": [
+        "12345",
+        "734077919",
+        "1753735997",
+        "1753822397"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.538289564,
+      "proof_size": 19038604,
+      "time_ms": 13538
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T20:53:30.691796927+00:00"
+  },
+  "proof_medical_integrity_1753823364634": {
+    "file_path": "./proofs/proof_medical_integrity_1753823364634/proof.bin",
+    "id": "proof_medical_integrity_1753823364634",
+    "metadata": {
+      "additional_context": {
+        "step_index": 2,
+        "workflow_id": "wf_1753823342"
+      },
+      "arguments": [
+        "12345",
+        "734077919",
+        "1753736964",
+        "1753823364"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 11.936880552,
+      "proof_size": 19038604,
+      "time_ms": 11936
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T21:09:36.584746197+00:00"
+  },
+  "proof_medical_integrity_1753825104211": {
+    "file_path": "./proofs/proof_medical_integrity_1753825104211/proof.bin",
+    "id": "proof_medical_integrity_1753825104211",
+    "metadata": {
+      "additional_context": {
+        "step_index": 2,
+        "workflow_id": "wf_1753825045"
+      },
+      "arguments": [
+        "12345",
+        "734077919",
+        "1753738704",
+        "1753825104"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.970674465,
+      "proof_size": 19038604,
+      "time_ms": 14970
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T21:38:39.194042589+00:00"
+  },
+  "proof_medical_integrity_1753825405924": {
+    "file_path": "./proofs/proof_medical_integrity_1753825405924/proof.bin",
+    "id": "proof_medical_integrity_1753825405924",
+    "metadata": {
+      "additional_context": {
+        "step_index": 2,
+        "workflow_id": "wf_1753825381"
+      },
+      "arguments": [
+        "12345",
+        "734077919",
+        "1753739005",
+        "1753825405"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.8027142,
+      "proof_size": 19038604,
+      "time_ms": 14802
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T21:43:40.733119087+00:00"
+  },
+  "proof_medical_integrity_1753825656797": {
+    "file_path": "./proofs/proof_medical_integrity_1753825656797/proof.bin",
+    "id": "proof_medical_integrity_1753825656797",
+    "metadata": {
+      "additional_context": {
+        "step_index": 2,
+        "workflow_id": "wf_1753825633"
+      },
+      "arguments": [
+        "12345",
+        "734077919",
+        "1753739256",
+        "1753825656"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.476604347,
+      "proof_size": 19038604,
+      "time_ms": 15476
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T21:47:52.285003368+00:00"
+  },
+  "proof_medical_integrity_1753828315268": {
+    "file_path": "./proofs/proof_medical_integrity_1753828315268/proof.bin",
+    "id": "proof_medical_integrity_1753828315268",
+    "metadata": {
+      "additional_context": {
+        "step_index": 2,
+        "workflow_id": "wf_1753828295"
+      },
+      "arguments": [
+        "12345",
+        "734077919",
+        "1753741915",
+        "1753828315"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.647760461,
+      "proof_size": 19038604,
+      "time_ms": 13647
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T22:32:09.378027039+00:00"
+  },
+  "proof_medical_integrity_1753828855554": {
+    "file_path": "./proofs/proof_medical_integrity_1753828855554/proof.bin",
+    "id": "proof_medical_integrity_1753828855554",
+    "metadata": {
+      "additional_context": {
+        "step_index": 2,
+        "workflow_id": "wf_1753828836"
+      },
+      "arguments": [
+        "12345",
+        "734077919",
+        "1753742455",
+        "1753828855"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.900818954,
+      "proof_size": 19038604,
+      "time_ms": 13900
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T22:41:09.462120275+00:00"
+  },
+  "proof_medical_integrity_1753829283225": {
+    "file_path": "./proofs/proof_medical_integrity_1753829283225/proof.bin",
+    "id": "proof_medical_integrity_1753829283225",
+    "metadata": {
+      "additional_context": {
+        "step_index": 2,
+        "workflow_id": "wf_1753829262"
+      },
+      "arguments": [
+        "12345",
+        "734077919",
+        "1753742883",
+        "1753829283"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.509808765,
+      "proof_size": 19038604,
+      "time_ms": 13509
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T22:48:16.742322387+00:00"
+  },
+  "proof_medical_integrity_1753830485099": {
+    "file_path": "./proofs/proof_medical_integrity_1753830485099/proof.bin",
+    "id": "proof_medical_integrity_1753830485099",
+    "metadata": {
+      "additional_context": {
+        "step_index": 2,
+        "workflow_id": "wf_1753830448"
+      },
+      "arguments": [
+        "12345",
+        "734077919",
+        "1753744085",
+        "1753830485"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.860902359,
+      "proof_size": 19038604,
+      "time_ms": 16860
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T23:08:21.969501641+00:00"
+  },
+  "proof_medical_integrity_1753833319404": {
+    "file_path": "./proofs/proof_medical_integrity_1753833319404/proof.bin",
+    "id": "proof_medical_integrity_1753833319404",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753833315"
+      },
+      "arguments": [
+        "77777",
+        "1685534352",
+        "1753746919",
+        "1753833319"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.637604828,
+      "proof_size": 19038604,
+      "time_ms": 12637
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T23:55:32.046452460+00:00"
+  },
+  "proof_medical_integrity_1753833458089": {
+    "file_path": "./proofs/proof_medical_integrity_1753833458089/proof.bin",
+    "id": "proof_medical_integrity_1753833458089",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753833456"
+      },
+      "arguments": [
+        "77777",
+        "1767715928",
+        "1753747058",
+        "1753833458"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 11.736303375,
+      "proof_size": 19038604,
+      "time_ms": 11736
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T23:57:50.319684959+00:00"
+  },
+  "proof_medical_integrity_1753841686821": {
+    "file_path": "./proofs/proof_medical_integrity_1753841686821/proof.bin",
+    "id": "proof_medical_integrity_1753841686821",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753841683"
+      },
+      "arguments": [
+        "12345",
+        "1876270284",
+        "1753755286",
+        "1753841686"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.27107268,
+      "proof_size": 19038604,
+      "time_ms": 15271
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T02:15:02.119460169+00:00"
+  },
+  "proof_medical_integrity_1753843082920": {
+    "file_path": "./proofs/proof_medical_integrity_1753843082920/proof.bin",
+    "id": "proof_medical_integrity_1753843082920",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753843069"
+      },
+      "arguments": [
+        "12345",
+        "240482952",
+        "1753756682",
+        "1753843082"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.962713492,
+      "proof_size": 19038604,
+      "time_ms": 15962
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T02:38:19.434501213+00:00"
+  },
+  "proof_medical_integrity_1753870874037": {
+    "file_path": "./proofs/proof_medical_integrity_1753870874037/proof.bin",
+    "id": "proof_medical_integrity_1753870874037",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "commitment_timestamp": "1753784474",
+          "creation_timestamp": "1753784474",
+          "patient_id": "12345",
+          "record_hash": "0x3ab2d0eab664ad60df8aa6400dbddcd40f1cc58b1697fcd16385d0101ad1c481",
+          "status": "simulated"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753870868"
+      },
+      "arguments": [
+        "12345",
+        "984797418",
+        "1753784474",
+        "1753870874"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 22.452001121,
+      "proof_size": 19038604,
+      "time_ms": 22452
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T10:21:36.498419623+00:00"
+  },
+  "proof_medical_integrity_1753871042370": {
+    "file_path": "./proofs/proof_medical_integrity_1753871042370/proof.bin",
+    "id": "proof_medical_integrity_1753871042370",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "commitment_timestamp": "1753784642",
+          "creation_timestamp": "1753784642",
+          "patient_id": "12345",
+          "record_hash": "0x4e2e12f7b55a2f746464192d30a667a99bf738463b9e3014f11368ff8ed0cfb6",
+          "status": "simulated"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753871029"
+      },
+      "arguments": [
+        "12345",
+        "1311642359",
+        "1753784642",
+        "1753871042"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.759888895,
+      "proof_size": 19038604,
+      "time_ms": 15759
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T10:24:18.735245653+00:00"
+  },
+  "proof_medical_integrity_1753871474584": {
+    "file_path": "./proofs/proof_medical_integrity_1753871474584/proof.bin",
+    "id": "proof_medical_integrity_1753871474584",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "commitment_timestamp": "1753785074",
+          "creation_timestamp": "1753785074",
+          "patient_id": "12345",
+          "record_hash": "0x3f11b0da0401cfde5ccd6835f7a7ac86c69ee3aaa519890d75ca2c4cbe9505ec",
+          "status": "simulated"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753871460"
+      },
+      "arguments": [
+        "12345",
+        "1058123994",
+        "1753785074",
+        "1753871474"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.576703313,
+      "proof_size": 19038604,
+      "time_ms": 15576
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T10:31:30.746453025+00:00"
+  },
+  "proof_medical_integrity_1753872891326": {
+    "file_path": "./proofs/proof_medical_integrity_1753872891326/proof.bin",
+    "id": "proof_medical_integrity_1753872891326",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "commitment_timestamp": 1753786491,
+          "creation_timestamp": 1753786491,
+          "patient_id": "12345",
+          "record_hash": "0xabc123def456789",
+          "status": "simulated"
+        },
+        "step_index": 0,
+        "workflow_id": "test_medical_direct"
+      },
+      "arguments": [
+        "12345",
+        "123456789",
+        "1753786491",
+        "1753872891"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 11.894958481,
+      "proof_size": 19038604,
+      "time_ms": 11894
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T10:55:03.228868227+00:00"
+  },
+  "proof_medical_integrity_1753872951235": {
+    "file_path": "./proofs/proof_medical_integrity_1753872951235/proof.bin",
+    "id": "proof_medical_integrity_1753872951235",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "commitment_timestamp": "1753786551",
+          "creation_timestamp": "1753786551",
+          "patient_id": "12345",
+          "record_hash": "0x6b4dddf57f8e3795cb48edfca72d5bf5c374abe7663b1b73a5093df14fd4a405",
+          "status": "simulated"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_medical_simple_1753872940778"
+      },
+      "arguments": [
+        "12345",
+        "1800265205",
+        "1753786551",
+        "1753872951"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.731026444,
+      "proof_size": 19038604,
+      "time_ms": 12731
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T10:56:03.971988869+00:00"
+  },
+  "proof_medical_integrity_1753873186696": {
+    "file_path": "./proofs/proof_medical_integrity_1753873186696/proof.bin",
+    "id": "proof_medical_integrity_1753873186696",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "commitment_timestamp": "1753786786",
+          "creation_timestamp": "1753786786",
+          "patient_id": "12345",
+          "record_hash": "0x544ca64ae8300fe80b02f160a1fbb12bae0786f33e44574e38bcc1e24958ea32",
+          "status": "simulated"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753873172"
+      },
+      "arguments": [
+        "12345",
+        "1414309450",
+        "1753786786",
+        "1753873186"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.05948792,
+      "proof_size": 19038604,
+      "time_ms": 13059
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T11:00:00.180793830+00:00"
+  },
+  "proof_medical_integrity_1753873843909": {
+    "file_path": "./proofs/proof_medical_integrity_1753873843909/proof.bin",
+    "id": "proof_medical_integrity_1753873843909",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "commitment_timestamp": 1753787443,
+          "creation_timestamp": 1753787443,
+          "patient_id": "12345",
+          "record_hash": "0xabc123def456789",
+          "status": "simulated"
+        },
+        "step_index": 0,
+        "workflow_id": "test_medical_direct"
+      },
+      "arguments": [
+        "12345",
+        "123456789",
+        "1753787443",
+        "1753873843"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.73657037,
+      "proof_size": 19038604,
+      "time_ms": 12736
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T11:10:56.653376019+00:00"
+  },
+  "proof_medical_integrity_1753873899827": {
+    "file_path": "./proofs/proof_medical_integrity_1753873899827/proof.bin",
+    "id": "proof_medical_integrity_1753873899827",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalanche_record_id": 1,
+          "blockNumber": 463830,
+          "commitment_timestamp": 1753873899,
+          "creation_timestamp": 1753873899,
+          "patient_id": "12345",
+          "record_hash": "0xbaaf6217d36c2e745b35899da5453357cd7f7e5b3c8126228fe9c29b398b6e57",
+          "record_id": "medical_12345_1753873899781",
+          "status": "committed_simulated",
+          "transactionHash": "0xafac2b35a2d95"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_medical_headless_1753873898320"
+      },
+      "arguments": [
+        "12345",
+        "984572440",
+        "1753873899",
+        "1753873899"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.309286654,
+      "proof_size": 19038604,
+      "time_ms": 12309
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T11:11:52.149408394+00:00"
+  },
+  "proof_medical_integrity_1753874118526": {
+    "file_path": "./proofs/proof_medical_integrity_1753874118526/proof.bin",
+    "id": "proof_medical_integrity_1753874118526",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "commitment_timestamp": "1753787718",
+          "creation_timestamp": "1753787718",
+          "patient_id": "12345",
+          "record_hash": "0x8643fcd453c88d57f3dc0318a660e3896e68c3e8014db9ca5b53c1d17def8ef2",
+          "status": "simulated"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753874106"
+      },
+      "arguments": [
+        "12345",
+        "105118933",
+        "1753787718",
+        "1753874118"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.415160595,
+      "proof_size": 19038604,
+      "time_ms": 13415
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T11:15:31.958613293+00:00"
+  },
+  "proof_medical_integrity_1753875196667": {
+    "file_path": "./proofs/proof_medical_integrity_1753875196667/proof.bin",
+    "id": "proof_medical_integrity_1753875196667",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "commitment_timestamp": "1753788796",
+          "creation_timestamp": "1753788796",
+          "patient_id": "12345",
+          "record_hash": "0x2bd4d5d886b3406465ee0afe57c165a653af87f6e0635d48ab502be4d2a69468",
+          "status": "simulated"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753875182"
+      },
+      "arguments": [
+        "12345",
+        "735368664",
+        "1753788796",
+        "1753875196"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.810638393,
+      "proof_size": 19038604,
+      "time_ms": 13810
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T11:33:30.505332842+00:00"
+  },
+  "proof_medical_integrity_1753875779795": {
+    "file_path": "./proofs/proof_medical_integrity_1753875779795/proof.bin",
+    "id": "proof_medical_integrity_1753875779795",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "commitment_timestamp": "1753789379",
+          "creation_timestamp": "1753789379",
+          "patient_id": "12345",
+          "record_hash": "0x22c33800bc9e68af42348423b168948ad9af2c5bcd17c761ba116023ce231141",
+          "status": "simulated"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_medical_proof_only_1753875769261"
+      },
+      "arguments": [
+        "12345",
+        "583219200",
+        "1753789379",
+        "1753875779"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.672277173,
+      "proof_size": 19038604,
+      "time_ms": 15672
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T11:43:16.016525522+00:00"
+  },
+  "proof_medical_integrity_1753875862155": {
+    "file_path": "./proofs/proof_medical_integrity_1753875862155/proof.bin",
+    "id": "proof_medical_integrity_1753875862155",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "commitment_timestamp": "1753789462",
+          "creation_timestamp": "1753789462",
+          "patient_id": "12345",
+          "record_hash": "0x289763c7b63cb8af3ca82dfcd0c40e3474bc595fe7efff11eb02ea4319bb9801",
+          "status": "simulated"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_medical_final_1753875851131"
+      },
+      "arguments": [
+        "12345",
+        "681010119",
+        "1753789462",
+        "1753875862"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.3696554,
+      "proof_size": 19038604,
+      "time_ms": 15369
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T11:44:37.533888436+00:00"
+  },
+  "proof_medical_integrity_1753876287548": {
+    "file_path": "./proofs/proof_medical_integrity_1753876287548/proof.bin",
+    "id": "proof_medical_integrity_1753876287548",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "commitment_timestamp": "1753789887",
+          "creation_timestamp": "1753789887",
+          "patient_id": "12345",
+          "record_hash": "0x284bf07fa1c74c7ba2f93ee9e4ccc84b9343fe6f93955e79da91d8b9b4b68fa0",
+          "status": "simulated"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753876274"
+      },
+      "arguments": [
+        "12345",
+        "676065407",
+        "1753789887",
+        "1753876287"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.780329264,
+      "proof_size": 19038604,
+      "time_ms": 15780
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T11:51:43.338274584+00:00"
+  },
+  "proof_medical_integrity_1753876946247": {
+    "file_path": "./proofs/proof_medical_integrity_1753876946247/proof.bin",
+    "id": "proof_medical_integrity_1753876946247",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "commitment_timestamp": "1753790546",
+          "creation_timestamp": "1753790546",
+          "patient_id": "12345",
+          "record_hash": "0x1e22e7b270035f297ad06074bca2febc1e179c8162b85d2094bad02c33b1b942",
+          "status": "simulated"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753876932"
+      },
+      "arguments": [
+        "12345",
+        "505604018",
+        "1753790546",
+        "1753876946"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.591914968,
+      "proof_size": 19038604,
+      "time_ms": 15591
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T12:02:42.290409240+00:00"
+  },
+  "proof_medical_integrity_1753883606368": {
+    "file_path": "./proofs/proof_medical_integrity_1753883606368/proof.bin",
+    "id": "proof_medical_integrity_1753883606368",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "commitment_timestamp": "1753797206",
+          "creation_timestamp": "1753797206",
+          "patient_id": "12345",
+          "record_hash": "0x80f8e6435dfc9aaa2ab5b9c75bd7fa8c9b0390368161b1d0ea14618509103645",
+          "status": "simulated"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753883592"
+      },
+      "arguments": [
+        "12345",
+        "16311876",
+        "1753797206",
+        "1753883606"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.61080933,
+      "proof_size": 19038604,
+      "time_ms": 16610
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T13:53:42.995905700+00:00"
+  },
+  "proof_medical_integrity_1753884211649": {
+    "file_path": "./proofs/proof_medical_integrity_1753884211649/proof.bin",
+    "id": "proof_medical_integrity_1753884211649",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheExplorerUrl": "https://testnet.snowtrace.io/tx/0xf1ab1ec73af0eff3b314ccceb72f7440de9aab43693acd9742121c73c7fbc7b9",
+          "commitment_timestamp": "1753797811",
+          "creation_timestamp": "1753797811",
+          "patient_id": "12345",
+          "record_hash": "0x2f942490f3dd08c4d66051c51dcb80c957b198869f9ca4140665d9957c745ffb",
+          "status": "simulated",
+          "transactionHash": "0x22932dbf826b4ceb5561c2ef82ab8881c5bec7bcc4961d19e9e7047da36a4505"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_medical_fixed_1753884211086"
+      },
+      "arguments": [
+        "12345",
+        "798237840",
+        "1753797811",
+        "1753884211"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 17.230986951,
+      "proof_size": 19038604,
+      "time_ms": 17230
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T14:03:49.302801965+00:00"
+  },
+  "proof_medical_integrity_1753884552296": {
+    "file_path": "./proofs/proof_medical_integrity_1753884552296/proof.bin",
+    "id": "proof_medical_integrity_1753884552296",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheExplorerUrl": "https://testnet.snowtrace.io/tx/0x26056c155e9e1eb8fc0b1b48fc235908ddebc64bf7ed9215e63a2976f6b66f3c",
+          "commitment_timestamp": "1753798152",
+          "creation_timestamp": "1753798152",
+          "patient_id": "12345",
+          "record_hash": "0x740c94b886b16d1e8f30f9d6cf2d79518985e1a28cdb011f37b2e34e41e28b6f",
+          "status": "simulated",
+          "transactionHash": "0x929df7a1dfb8f540190cfae8e1129083593b2bc36980cabdf85ae7acbad4ee4a"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753884547"
+      },
+      "arguments": [
+        "12345",
+        "1946981560",
+        "1753798152",
+        "1753884552"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.458292563,
+      "proof_size": 19038604,
+      "time_ms": 14458
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T14:09:26.774740673+00:00"
+  },
+  "proof_medical_integrity_1753887775277": {
+    "file_path": "./proofs/proof_medical_integrity_1753887775277/proof.bin",
+    "id": "proof_medical_integrity_1753887775277",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheExplorerUrl": "https://testnet.snowtrace.io/tx/0x4266a28572b676d76693bd575695ad824e3fec58f73335907c3ab19ab9dbc775",
+          "commitment_timestamp": "1753801375",
+          "creation_timestamp": "1753801375",
+          "patient_id": "12345",
+          "record_hash": "0x0f42df39afc1261d2664579e6c662e1d0fe2d40d96366333b91774a35dde2402",
+          "status": "simulated",
+          "transactionHash": "0x4a2ec6d9390afd0bd88b17948a34ef669037f129032fc0de118573b06186fca4"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753887771"
+      },
+      "arguments": [
+        "12345",
+        "256040761",
+        "1753801375",
+        "1753887775"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.412122025,
+      "proof_size": 19038604,
+      "time_ms": 16412
+    },
+    "status": "complete",
+    "timestamp": "2025-07-30T15:03:11.701777543+00:00"
+  },
+  "proof_medical_integrity_1753977262522": {
+    "file_path": "./proofs/proof_medical_integrity_1753977262522/proof.bin",
+    "id": "proof_medical_integrity_1753977262522",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheExplorerUrl": "https://testnet.snowtrace.io/tx/0x17016df279f8078f8556f3dd027b8f9faca9511f20b442a1b1ede4d3778003c9",
+          "commitment_timestamp": "1753890862",
+          "creation_timestamp": "1753890862",
+          "patient_id": "12345",
+          "record_hash": "0xcae79a62093f39f1b3cbcdb4c8aa68fb097c67051e8446d65f8417fd8369bd64",
+          "status": "simulated",
+          "transactionHash": "0x8ba8d95b837515e8cb58f0e8580c5639db58b52e3028b29aa82969420f617465"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753977259"
+      },
+      "arguments": [
+        "12345",
+        "1256692323",
+        "1753890862",
+        "1753977262"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.713668718,
+      "proof_size": 19038604,
+      "time_ms": 13713
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T15:54:35.642475800+00:00"
+  },
+  "proof_medical_integrity_1753978622153": {
+    "file_path": "./proofs/proof_medical_integrity_1753978622153/proof.bin",
+    "id": "proof_medical_integrity_1753978622153",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheExplorerUrl": "https://testnet.snowtrace.io/tx/0xc82cb96f0ef2476010abfd0ebcd028e996b6f8eaed369a76788b1c5c91969136",
+          "commitment_timestamp": "1753892222",
+          "creation_timestamp": "1753892222",
+          "patient_id": "12345",
+          "record_hash": "0x8f5c86aa72ec2dd58df71c9468d88e4bf8c51ff782a6cf5ece82c1d454179d08",
+          "status": "simulated",
+          "transactionHash": "0xcdea5f1f08378dd0f43418c45f7af110a131a4e42fbf68b667a34025e42fb609"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753978617"
+      },
+      "arguments": [
+        "12345",
+        "257722027",
+        "1753892222",
+        "1753978622"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.978480935,
+      "proof_size": 19038604,
+      "time_ms": 13978
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T16:17:16.138835047+00:00"
+  },
+  "proof_medical_integrity_1753981156122": {
+    "file_path": "./proofs/proof_medical_integrity_1753981156122/proof.bin",
+    "id": "proof_medical_integrity_1753981156122",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheExplorerUrl": "https://testnet.snowtrace.io/tx/0xf4d96d8e9b1869ba3098479715642198ec6e982656ebcf4a92396b459090a1b9",
+          "commitment_timestamp": "1753894756",
+          "creation_timestamp": "1753894756",
+          "patient_id": "12345",
+          "record_hash": "0x52030888fb36a61b3aa2e66add153ed78602ff8aad23bba07b15424f3bcf4a96",
+          "status": "simulated",
+          "transactionHash": "0xe100936b55542ed2676aa4614012cf61d59f8b9aae12790c4b390ba695f60eac"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753981152"
+      },
+      "arguments": [
+        "12345",
+        "1375930504",
+        "1753894756",
+        "1753981156"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.977155991,
+      "proof_size": 19038604,
+      "time_ms": 13977
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T16:59:30.116875555+00:00"
+  },
+  "proof_medical_integrity_1753981793130": {
+    "file_path": "./proofs/proof_medical_integrity_1753981793130/proof.bin",
+    "id": "proof_medical_integrity_1753981793130",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheExplorerUrl": "https://testnet.snowtrace.io/tx/0x3c18f44a7c3bb8f6b0bec43c33dfb7aae9e3088ee09e377ba71f7aec68c1cb80",
+          "commitment_timestamp": "1753895393",
+          "creation_timestamp": "1753895393",
+          "patient_id": "12345",
+          "record_hash": "0x9caaa8279e8c58fb046692f703c3dac77836d2f8d5f62ed76f9a3af6f842d66b",
+          "status": "simulated",
+          "transactionHash": "0x7c320a51723d0aee3a266a7af0274f91d4b73a9fd6996034879ae6aab2cc2681"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753981790"
+      },
+      "arguments": [
+        "12345",
+        "480946216",
+        "1753895393",
+        "1753981793"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.987321851,
+      "proof_size": 19038604,
+      "time_ms": 12987
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T17:10:06.122066193+00:00"
+  },
+  "proof_medical_integrity_1753982223758": {
+    "file_path": "./proofs/proof_medical_integrity_1753982223758/proof.bin",
+    "id": "proof_medical_integrity_1753982223758",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheExplorerUrl": "https://testnet.snowtrace.io/tx/0xaf7644cc2e7b6200d6d9ea4e6a0027813a627c98ead3486fa8fbe9ef49b87e03",
+          "commitment_timestamp": "1753895823",
+          "creation_timestamp": "1753895823",
+          "patient_id": "54321",
+          "record_hash": "0xfc69ade29263233b35072d8afdfc1e40396a348e261c3168560a568b4e73db56",
+          "status": "simulated",
+          "transactionHash": "0xb167fe8ffb51cae0dfebce3af6523997dc7dc9f1065e531b980b3644901b5865"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753982219"
+      },
+      "arguments": [
+        "54321",
+        "2087300579",
+        "1753895823",
+        "1753982223"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.45668061,
+      "proof_size": 19038604,
+      "time_ms": 12456
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T17:17:16.221029941+00:00"
+  },
+  "proof_medical_integrity_1753982588616": {
+    "file_path": "./proofs/proof_medical_integrity_1753982588616/proof.bin",
+    "id": "proof_medical_integrity_1753982588616",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheExplorerUrl": "https://testnet.snowtrace.io/tx/0xad56f192e0b21c1966bdc7b5fe95accf4279aeca0475401c200806e6f8a9cfe3",
+          "commitment_timestamp": "1753896188",
+          "creation_timestamp": "1753896188",
+          "patient_id": "12345",
+          "record_hash": "0x26635296e5127282fc3d908852f38c6bda60a748fb138f2660aa9a12e25ff63c",
+          "status": "simulated",
+          "transactionHash": "0x45564a229e87720fab0f94a08ab26a9a103aa3a55f71bead079a2db0f77784f6"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753982585"
+      },
+      "arguments": [
+        "12345",
+        "644043414",
+        "1753896188",
+        "1753982588"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.758736504,
+      "proof_size": 19038604,
+      "time_ms": 12758
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T17:23:21.380953605+00:00"
+  },
+  "proof_medical_integrity_1753983545280": {
+    "file_path": "./proofs/proof_medical_integrity_1753983545280/proof.bin",
+    "id": "proof_medical_integrity_1753983545280",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheExplorerUrl": "https://testnet.snowtrace.io/tx/0x9b65c7a6d589e21adf54974943cd6c4e123a22b4b1001b450087113cb12957ce",
+          "commitment_timestamp": "1753897145",
+          "creation_timestamp": "1753897145",
+          "patient_id": "12345",
+          "record_hash": "0x8769127c2236f7cf6c74eb692b484b9197a86a63e73e8714e98b3a8161d52812",
+          "status": "simulated",
+          "transactionHash": "0x5569a9c88fc01a7defe793fbe535f84f4b1f07d87494da5db17921c350065691"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753983542"
+      },
+      "arguments": [
+        "12345",
+        "124326525",
+        "1753897145",
+        "1753983545"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 20.195667582,
+      "proof_size": 12271244,
+      "time_ms": 20195
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T17:39:25.488820567+00:00"
+  },
+  "proof_medical_integrity_1753985303390": {
+    "file_path": "./proofs/proof_medical_integrity_1753985303390/proof.bin",
+    "id": "proof_medical_integrity_1753985303390",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheExplorerUrl": "https://testnet.snowtrace.io/tx/0x979523f6a358c1c40e087f626c990361059f7c1146866a2e368a1b6f2648a976",
+          "commitment_timestamp": "1753898903",
+          "creation_timestamp": "1753898903",
+          "patient_id": "12345",
+          "record_hash": "0x30d8dc4d633c68cc89b4fe04b0a493168f01192827e95d0c1ab1bdce89b46cc5",
+          "status": "simulated",
+          "transactionHash": "0xf32a841624a157e45fc677fd8ae3133d879872ce77c3f6ca7e8c5d6ce820c4d6"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753985301"
+      },
+      "arguments": [
+        "12345",
+        "819518541",
+        "1753898903",
+        "1753985303"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 19.696953857,
+      "proof_size": 12271244,
+      "time_ms": 19696
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T18:08:43.097299297+00:00"
+  },
+  "proof_medical_integrity_1753988856987": {
+    "file_path": "./proofs/proof_medical_integrity_1753988856987/proof.bin",
+    "id": "proof_medical_integrity_1753988856987",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheExplorerUrl": "https://testnet.snowtrace.io/tx/0x686e9323a3ba5d4c34cb675c699ce479dd01140ecd68ac4201f164dae30eafb8",
+          "commitment_timestamp": "1753902456",
+          "creation_timestamp": "1753902456",
+          "patient_id": "12345",
+          "record_hash": "0xc7e6349b1ae0887427be93d9e09b4cf6ef049074b17c25bf95c8d0e57f10d5a8",
+          "status": "simulated",
+          "transactionHash": "0x067351b90e655189bacdebeca5450b1b6a85e8769913e85006a3db63de109547"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753988853"
+      },
+      "arguments": [
+        "12345",
+        "1206269084",
+        "1753902456",
+        "1753988856"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 21.79056822,
+      "proof_size": 12271244,
+      "time_ms": 21790
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T19:07:58.788322918+00:00"
+  },
+  "proof_medical_integrity_1753989500847": {
+    "file_path": "./proofs/proof_medical_integrity_1753989500847/proof.bin",
+    "id": "proof_medical_integrity_1753989500847",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheExplorerUrl": "https://testnet.snowtrace.io/tx/0xae42552fb88e23d359ca04627acc380695ed2b86110064d07d736a9099e52a2b",
+          "commitment_timestamp": "1753903100",
+          "creation_timestamp": "1753903100",
+          "patient_id": "12345",
+          "record_hash": "0x68d331594936e8967b8cb5ca83a9b303b9fdf8381935ac9187146fa2a85de7fc",
+          "status": "simulated",
+          "transactionHash": "0x88c2bab1e40c04936cec636ea1044793f7615eb1d6c58ad456019787992de7dd"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753989497"
+      },
+      "arguments": [
+        "12345",
+        "1758671193",
+        "1753903100",
+        "1753989500"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 20.325098264,
+      "proof_size": 12271244,
+      "time_ms": 20325
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T19:18:41.180945474+00:00"
+  },
+  "proof_medical_integrity_1753992835794": {
+    "file_path": "./proofs/proof_medical_integrity_1753992835794/proof.bin",
+    "id": "proof_medical_integrity_1753992835794",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheRecordId": "0xcc2d77c3589dc82d60fe4281bdd0921dee49b686f85b4b8b8dcb9b0d50507599",
+          "blockNumber": 44168632,
+          "commitment_timestamp": 1753992809,
+          "creation_timestamp": 1753992809,
+          "patient_id": "12345",
+          "record_hash": "0x6edf58aef04f1e46e23ec93ec154fc2519dacd88e088ef08795c7282d3a06b14",
+          "record_id": "medical_12345_1753992809285",
+          "status": "committed",
+          "transactionHash": "0xac263738928689bfa7f5811c3206b9050ac1e135674312aa0cc008bce2c02321"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753992806"
+      },
+      "arguments": [
+        "12345",
+        "1860130990",
+        "1753992809",
+        "1753992835"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 19.04266181,
+      "proof_size": 12271244,
+      "time_ms": 19042
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T20:14:14.846629189+00:00"
+  },
+  "proof_medical_integrity_1753994175943": {
+    "file_path": "./proofs/proof_medical_integrity_1753994175943/proof.bin",
+    "id": "proof_medical_integrity_1753994175943",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheRecordId": "0x8e70908b11012982f691d31abe2f12cdb2ab297969ecd26b18a797a3467e9218",
+          "blockNumber": 44169345,
+          "commitment_timestamp": 1753994149,
+          "creation_timestamp": 1753994149,
+          "patient_id": "12345",
+          "record_hash": "0x9ef1b9a97ca46e4d458aa6de00973331eb79d6cf1fc86d9619982165c4832df7",
+          "record_id": "medical_12345_1753994149775",
+          "status": "committed",
+          "transactionHash": "0x467adb27c4ecd3dc5c92ba6361e47cec67fb5b16767fb666814804b60ccec458"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753994146"
+      },
+      "arguments": [
+        "12345",
+        "519158186",
+        "1753994149",
+        "1753994175"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 20.883782996,
+      "proof_size": 12271244,
+      "time_ms": 20883
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T20:36:36.840921361+00:00"
+  },
+  "proof_medical_integrity_1753995131585": {
+    "file_path": "./proofs/proof_medical_integrity_1753995131585/proof.bin",
+    "id": "proof_medical_integrity_1753995131585",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheRecordId": "0x93e4987b0ff50190e94c53509eaee4ef4202417b637f717ac694ca5d36cff8da",
+          "blockNumber": 44169839,
+          "commitment_timestamp": 1753995100,
+          "creation_timestamp": 1753995100,
+          "patient_id": "12345",
+          "record_hash": "0x954df3497b54a243a31d3fdeda82e935876fee6bb6b080df0510fc88f6df93e1",
+          "record_id": "medical_12345_1753995100245",
+          "status": "committed",
+          "transactionHash": "0xbd6446e383a8fc2962899481e3650527eb5eb367bd22b1895fc75a3ba57d3887"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753995096"
+      },
+      "arguments": [
+        "12345",
+        "357430090",
+        "1753995100",
+        "1753995131"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 20.561886402,
+      "proof_size": 12271244,
+      "time_ms": 20561
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T20:52:32.160849671+00:00"
+  },
+  "proof_medical_integrity_1753995620314": {
+    "file_path": "./proofs/proof_medical_integrity_1753995620314/proof.bin",
+    "id": "proof_medical_integrity_1753995620314",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheRecordId": "0x778a7110f2d12fd4cafcc1f276b6fbc9954dcc572b304ae67c0e6d77f9fd4a8c",
+          "blockNumber": 44170100,
+          "commitment_timestamp": 1753995599,
+          "creation_timestamp": 1753995599,
+          "patient_id": "12345",
+          "record_hash": "0x67de65a95f3913fec515a7012dc447a938798f8d8a5396b838f3625d2055d5f5",
+          "record_id": "medical_12345_1753995599057",
+          "status": "committed",
+          "transactionHash": "0xad0c5ded06819ee3a584ef4556b09bee0f3b03e58e5cfc07b28ec7db462b2fff"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1753995596"
+      },
+      "arguments": [
+        "12345",
+        "1742628265",
+        "1753995599",
+        "1753995620"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 21.556738539,
+      "proof_size": 12271244,
+      "time_ms": 21556
+    },
+    "status": "complete",
+    "timestamp": "2025-07-31T21:00:41.877480252+00:00"
+  },
+  "proof_medical_integrity_1754339262124": {
+    "file_path": "./proofs/proof_medical_integrity_1754339262124/proof.bin",
+    "id": "proof_medical_integrity_1754339262124",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheRecordId": "0x7b18dd06492884a964a17e729128af5cd94268739975dc4213ed8a208ffa5135",
+          "blockNumber": 44340767,
+          "commitment_timestamp": 1754339237,
+          "creation_timestamp": 1754339237,
+          "patient_id": "12345",
+          "record_hash": "0x0dd6092e369e6a94b8ee27a4458aa8c9b445ae72cafcfc685e42e68bfc040af4",
+          "record_id": "medical_12345_1754339237728",
+          "status": "committed",
+          "transactionHash": "0x41447fb37d1e6ee07bed0489f0ea8d05419529cca0bbf575926bb4635ff35efa"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1754339231"
+      },
+      "arguments": [
+        "12345",
+        "232130862",
+        "1754339237",
+        "1754339262"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 19.936657365,
+      "proof_size": 12271244,
+      "time_ms": 19936
+    },
+    "status": "complete",
+    "timestamp": "2025-08-04T20:28:02.087598478+00:00"
+  },
+  "proof_medical_integrity_1754340706537": {
+    "file_path": "./proofs/proof_medical_integrity_1754340706537/proof.bin",
+    "id": "proof_medical_integrity_1754340706537",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheRecordId": "0xdcc0ad3307e7b65a56d9594b258be39194b54a6a39161aca01a616ca58188c02",
+          "blockNumber": 44341480,
+          "commitment_timestamp": 1754340681,
+          "creation_timestamp": 1754340681,
+          "patient_id": "12345",
+          "record_hash": "0x9822a80f1269bd1fd73d9752c4fcf863fd650ef37927efb7529b2fa84016f402",
+          "record_id": "medical_12345_1754340681840",
+          "status": "committed",
+          "transactionHash": "0xcf66e0c7cbcc8297ab18c5a18eb166bad8ee6e119e9d13f2cc01ff89acc14e91"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1754340679"
+      },
+      "arguments": [
+        "12345",
+        "404924432",
+        "1754340681",
+        "1754340706"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 19.893604808,
+      "proof_size": 12271244,
+      "time_ms": 19893
+    },
+    "status": "complete",
+    "timestamp": "2025-08-04T20:52:06.441771045+00:00"
+  },
+  "proof_medical_integrity_1754343419782": {
+    "file_path": "./proofs/proof_medical_integrity_1754343419782/proof.bin",
+    "id": "proof_medical_integrity_1754343419782",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheRecordId": "0x9c437e0856ff0091c9df9486238b380ed685b0547faaf51335ce962990ccf50e",
+          "blockNumber": 44342785,
+          "commitment_timestamp": 1754343406,
+          "creation_timestamp": 1754343406,
+          "patient_id": "12345",
+          "record_hash": "0xf4f15e12f27ff1c489dbcfbc272ec5fd2961a2c38d2c7327d9c4e4177da8b5bb",
+          "record_id": "medical_12345_1754343406005",
+          "status": "committed",
+          "transactionHash": "0xbabe197946cca12ba15676281033e3165fc5de1bcce3d4abcae29fd98b4c479c"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1754343403"
+      },
+      "arguments": [
+        "12345",
+        "1961975315",
+        "1754343406",
+        "1754343419"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 18.114081103,
+      "proof_size": 12271244,
+      "time_ms": 18114
+    },
+    "status": "complete",
+    "timestamp": "2025-08-04T21:37:17.914904644+00:00"
+  },
+  "proof_medical_integrity_1754343840231": {
+    "file_path": "./proofs/proof_medical_integrity_1754343840231/proof.bin",
+    "id": "proof_medical_integrity_1754343840231",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheRecordId": "0xf67ddb36fac4e6c005e20cc2f22f3210b124694344ba95b2e7954219be05bcd9",
+          "blockNumber": 44342986,
+          "commitment_timestamp": 1754343826,
+          "creation_timestamp": 1754343826,
+          "patient_id": "12345",
+          "record_hash": "0x1647dc752986dee314123e8e320658d63a6a92346d6aecff5139a3edc43f7741",
+          "record_id": "medical_12345_1754343826271",
+          "status": "committed",
+          "transactionHash": "0xb9013c270fc50ad79cbe421532414cbff2bd0a59b30c3ed7d0b64777e84fb37b"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1754343823"
+      },
+      "arguments": [
+        "12345",
+        "373808245",
+        "1754343826",
+        "1754343840"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 16.696873484,
+      "proof_size": 12271244,
+      "time_ms": 16696
+    },
+    "status": "complete",
+    "timestamp": "2025-08-04T21:44:16.934398286+00:00"
+  },
+  "proof_medical_integrity_1754349464711": {
+    "file_path": "./proofs/proof_medical_integrity_1754349464711/proof.bin",
+    "id": "proof_medical_integrity_1754349464711",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheRecordId": "0x7fde6a60833baaff9873fddbe121ca5fe981415e22843b861a77ad94a2814221",
+          "blockNumber": 44345666,
+          "commitment_timestamp": 1754349450,
+          "creation_timestamp": 1754349450,
+          "patient_id": "12345",
+          "record_hash": "0xe9a6617b700e0679a700ae233512dfab7a3589c6b22f099a8107819f8929fb87",
+          "record_id": "medical_12345_1754349450709",
+          "status": "committed",
+          "transactionHash": "0x4039d40db282e4e70431c18bc719618a6ce25f6e92cb2d27f1f3cd28bd171ace"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1754349448"
+      },
+      "arguments": [
+        "12345",
+        "1772511612",
+        "1754349450",
+        "1754349464"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 18.61217121,
+      "proof_size": 12271244,
+      "time_ms": 18612
+    },
+    "status": "complete",
+    "timestamp": "2025-08-04T23:18:03.762929515+00:00"
+  },
+  "proof_medical_integrity_1754349967202": {
+    "file_path": "./proofs/proof_medical_integrity_1754349967202/proof.bin",
+    "id": "proof_medical_integrity_1754349967202",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheRecordId": "0xc1181b88c9b95d03e5b456d11d415a91c471120d00356efbb42a19fa202e493a",
+          "blockNumber": 44345900,
+          "commitment_timestamp": 1754349954,
+          "creation_timestamp": 1754349954,
+          "patient_id": "12345",
+          "record_hash": "0x2553c54c37be3dce491efa4f4519a1e9da556679a0f09e4627c60022817505a2",
+          "record_id": "medical_12345_1754349954090",
+          "status": "committed",
+          "transactionHash": "0x67ad4b396cd5554c07d736655d66650e8532c7acebd68909fb5eae2a6caeaa5d"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1754349949"
+      },
+      "arguments": [
+        "12345",
+        "626246988",
+        "1754349954",
+        "1754349967"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 17.33066402,
+      "proof_size": 12271244,
+      "time_ms": 17330
+    },
+    "status": "complete",
+    "timestamp": "2025-08-04T23:26:24.540316324+00:00"
+  },
+  "proof_medical_integrity_1754352394979": {
+    "file_path": "./proofs/proof_medical_integrity_1754352394979/proof.bin",
+    "id": "proof_medical_integrity_1754352394979",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheRecordId": "0x5b7a71a507334541dc414361c71bad58c3d7775d72327725a567ce1e6c2541af",
+          "blockNumber": 44347077,
+          "commitment_timestamp": 1754352375,
+          "creation_timestamp": 1754352375,
+          "patient_id": "12345",
+          "record_hash": "0xa0e06b44dd5f6c1190fd1e8d03f7ba7d38bb0d6a5a9116ff52f1c938dc5dd76d",
+          "record_id": "medical_12345_1754352375699",
+          "status": "committed",
+          "transactionHash": "0x19a65d965265384c6c90fbc60438a240b40c426229409ba3d298c4911ca37af0"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1754352371"
+      },
+      "arguments": [
+        "12345",
+        "551578437",
+        "1754352375",
+        "1754352394"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 20.834908539,
+      "proof_size": 12271244,
+      "time_ms": 20834
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T00:06:55.827809707+00:00"
+  },
+  "proof_medical_integrity_1754352729276": {
+    "file_path": "./proofs/proof_medical_integrity_1754352729276/proof.bin",
+    "id": "proof_medical_integrity_1754352729276",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheRecordId": "0x01ce04e8b7e203f10571417708312d91d506564ce5b2c177d3b91d281fd04221",
+          "blockNumber": 44347242,
+          "commitment_timestamp": 1754352708,
+          "creation_timestamp": 1754352708,
+          "patient_id": "12345",
+          "record_hash": "0xf3493fd8059ead8cfc71711f6735cd34a5129a86cb2479cd32448bf2e2ceb82a",
+          "record_id": "medical_12345_1754352708828",
+          "status": "committed",
+          "transactionHash": "0x6323ca43f35b67c9e76d5f2cee3ba1fd7be15d8fe6ca877cc7f885c12e246873"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1754352705"
+      },
+      "arguments": [
+        "12345",
+        "1934180313",
+        "1754352708",
+        "1754352729"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 19.627931818,
+      "proof_size": 12271244,
+      "time_ms": 19627
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T00:12:29.408819078+00:00"
+  },
+  "proof_medical_integrity_1754353304673": {
+    "file_path": "./proofs/proof_medical_integrity_1754353304673/proof.bin",
+    "id": "proof_medical_integrity_1754353304673",
+    "metadata": {
+      "additional_context": {
+        "medicalRecordData": {
+          "avalancheRecordId": "0x41b73313b652d60dd67b8d5a925c40d395b7218798f7e080603283445e66620e",
+          "blockNumber": 44347532,
+          "commitment_timestamp": 1754353284,
+          "creation_timestamp": 1754353284,
+          "patient_id": "12345",
+          "record_hash": "0xe06e3df345e362b0171abcbdfe07db493f9898462057bd9df86932b20c38c760",
+          "record_id": "medical_12345_1754353284333",
+          "status": "committed",
+          "transactionHash": "0xf9cfe9db0723a024c6d9e75d15f4ffec6cd0d7257a988a09f31eedd7fdb38f64"
+        },
+        "step_index": 0,
+        "workflow_id": "wf_1754353281"
+      },
+      "arguments": [
+        "12345",
+        "1617837556",
+        "1754353284",
+        "1754353304"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_medical_integrity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 19.682547568,
+      "proof_size": 12271244,
+      "time_ms": 19682
+    },
+    "status": "complete",
+    "timestamp": "2025-08-05T00:22:04.362966913+00:00"
+  }
+}

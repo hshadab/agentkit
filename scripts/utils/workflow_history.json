@@ -1,0 +1,2337 @@
+{
+  "wf_397abd0a-d77e-4cf6-873a-cb92c27da32a": {
+    "id": "wf_397abd0a-d77e-4cf6-873a-cb92c27da32a",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-13T03:17:51.343Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_7457ce6b-f45f-4762-8ded-2c1abe5cf1b0": {
+    "id": "wf_7457ce6b-f45f-4762-8ded-2c1abe5cf1b0",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-13T03:44:57.840Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_87d72bcc-35c9-4e87-9b99-3a15cae1316c": {
+    "id": "wf_87d72bcc-35c9-4e87-9b99-3a15cae1316c",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-13T03:45:25.723Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_10457233-33b2-482a-8f27-b173eeaf786c": {
+    "id": "wf_10457233-33b2-482a-8f27-b173eeaf786c",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-13T03:58:52.390Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_d5bc7c09-6897-47a5-a412-f0baab34fd66": {
+    "id": "wf_d5bc7c09-6897-47a5-a412-f0baab34fd66",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-13T04:05:10.185Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_80e27169-992a-48b5-98f3-c74f87b08bd2": {
+    "id": "wf_80e27169-992a-48b5-98f3-c74f87b08bd2",
+    "description": "Prove location",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "description": "Generate location proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-13T04:07:04.013Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_eb2a2fa2-b35d-46c3-bf45-e9f6cc8b1116": {
+    "id": "wf_eb2a2fa2-b35d-46c3-bf45-e9f6cc8b1116",
+    "description": "Prove AI content",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      },
+      {
+        "type": "process_with_ai",
+        "request": "explain",
+        "context": "ai_content",
+        "description": "Process AI request: explain AI content proof",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-13T04:08:00.342Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_00b25699-0f52-4be4-85f9-e9682d70eadb": {
+    "id": "wf_00b25699-0f52-4be4-85f9-e9682d70eadb",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-13T04:15:59.566Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_3d07cf85-b268-467b-beff-e2b5d30134d2": {
+    "id": "wf_3d07cf85-b268-467b-beff-e2b5d30134d2",
+    "description": "Prove location",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "description": "Generate location proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-13T04:16:17.447Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_99863c3e-e4c0-4592-b6f4-83210789e061": {
+    "id": "wf_99863c3e-e4c0-4592-b6f4-83210789e061",
+    "description": "Prove AI content",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      },
+      {
+        "type": "process_with_ai",
+        "request": "explain",
+        "context": "ai_content",
+        "description": "Process AI request: explain AI content proof",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-13T04:16:34.092Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_b943700b-39e1-4213-96e1-dddb35d32328": {
+    "id": "wf_b943700b-39e1-4213-96e1-dddb35d32328",
+    "description": "Prove AI content",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      },
+      {
+        "type": "process_with_ai",
+        "request": "explain",
+        "context": "ai_content",
+        "description": "Process AI request: explain AI content proof",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-13T04:17:22.166Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_6c1420c4-6419-4d3a-a734-2b68172d84b2": {
+    "id": "wf_6c1420c4-6419-4d3a-a734-2b68172d84b2",
+    "description": "Verify proof proof_kyc_1752380159715",
+    "steps": [
+      {
+        "type": "verify_proof",
+        "proof_id": "proof_kyc_1752380159715",
+        "description": "Verify KYC proof with ID proof_kyc_1752380159715 locally",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-13T04:24:16.925Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_5787f9b5-ca88-46bb-bb69-ccafaf835557": {
+    "id": "wf_5787f9b5-ca88-46bb-bb69-ccafaf835557",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-13T04:54:14.538Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_29088b73-7298-40b4-95ba-83e4ac78af3e": {
+    "id": "wf_29088b73-7298-40b4-95ba-83e4ac78af3e",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-13T05:00:21.304Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_a7af44e3-8e09-4e5c-b6f8-cd8793c3ecb0": {
+    "id": "wf_a7af44e3-8e09-4e5c-b6f8-cd8793c3ecb0",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-13T05:15:42.732Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_aacb4800-65a8-48c3-bb8b-1d52c0ee65cf": {
+    "id": "wf_aacb4800-65a8-48c3-bb8b-1d52c0ee65cf",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-13T05:17:14.199Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_ec39de62-15b9-4a49-9770-65254d298398": {
+    "id": "wf_ec39de62-15b9-4a49-9770-65254d298398",
+    "description": "Prove AI content authenticity",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      },
+      {
+        "type": "process_with_ai",
+        "request": "explain",
+        "context": "ai_content",
+        "description": "Process AI request: explain AI content authenticity",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-13T18:37:58.362Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_ee51f6c9-4927-4ba4-88b5-e55c0724425c": {
+    "id": "wf_ee51f6c9-4927-4ba4-88b5-e55c0724425c",
+    "description": "Prove location: NYC (40.7°, -74.0°)",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "location": "NYC (40.7°, -74.0°)",
+        "description": "Generate location proof for NYC (40.7°, -74.0°)",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-13T18:50:45.076Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_2ad3f9fd-c163-4201-b6d2-6dcda506fd9d": {
+    "id": "wf_2ad3f9fd-c163-4201-b6d2-6dcda506fd9d",
+    "description": "Prove AI content authenticity",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      },
+      {
+        "type": "process_with_ai",
+        "request": "explain",
+        "context": "ai_content",
+        "description": "Process AI request: explain AI content authenticity",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-13T19:00:05.073Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_cf2f5fa3-a2e8-4e31-b6a4-ab256a3dad7d": {
+    "id": "wf_cf2f5fa3-a2e8-4e31-b6a4-ab256a3dad7d",
+    "description": "Prove AI content authenticity",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      },
+      {
+        "type": "process_with_ai",
+        "request": "explain",
+        "context": "ai_content",
+        "description": "Process AI request: explain AI content authenticity",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-13T19:19:31.475Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_535e3f8c-9710-47de-b710-edf84f3566c0": {
+    "id": "wf_535e3f8c-9710-47de-b710-edf84f3566c0",
+    "description": "Prove AI content authenticity",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      },
+      {
+        "type": "process_with_ai",
+        "request": "prove authenticity",
+        "context": "ai_content",
+        "description": "Process AI request: prove AI content authenticity",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T00:25:16.155Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_76ade079-da0f-474c-845c-b3269b25ea47": {
+    "id": "wf_76ade079-da0f-474c-845c-b3269b25ea47",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T11:16:11.040Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_b049ba12-79fe-4b6c-94f1-cd4fcca50d19": {
+    "id": "wf_b049ba12-79fe-4b6c-94f1-cd4fcca50d19",
+    "description": "Prove AI content authenticity",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      },
+      {
+        "type": "process_with_ai",
+        "request": "explain",
+        "context": "ai_content",
+        "description": "Process AI request: explain AI content authenticity",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T11:19:10.895Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_473528ab-2573-40f4-88c3-2e6cd439e50a": {
+    "id": "wf_473528ab-2573-40f4-88c3-2e6cd439e50a",
+    "description": "Prove location: NYC (40.7°, -74.0°)",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "location": "NYC (40.7°, -74.0°)",
+        "description": "Generate location proof for NYC (40.7°, -74.0°)",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T11:23:23.142Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_e4f5fcf9-d525-4545-99a7-ed4fff4aaf34": {
+    "id": "wf_e4f5fcf9-d525-4545-99a7-ed4fff4aaf34",
+    "description": "Prove AI content authenticity",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      },
+      {
+        "type": "process_with_ai",
+        "request": "prove AI content authenticity",
+        "context": "ai_content",
+        "description": "Process AI request: prove AI content authenticity",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T13:20:23.735Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_cc236cb9-4f68-471e-ae83-3bb276972fbd": {
+    "id": "wf_cc236cb9-4f68-471e-ae83-3bb276972fbd",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T13:22:24.390Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_1945ebce-6656-41c7-8cf5-f7514ebf4b1d": {
+    "id": "wf_1945ebce-6656-41c7-8cf5-f7514ebf4b1d",
+    "description": "Prove location: NYC (40.7°, -74.0°)",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "location": "NYC (40.7°, -74.0°)",
+        "description": "Generate location proof for NYC (40.7°, -74.0°)",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T13:26:53.216Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_17dc0331-4f4e-4768-821a-40ce19bd16fb": {
+    "id": "wf_17dc0331-4f4e-4768-821a-40ce19bd16fb",
+    "description": "Prove AI content authenticity",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      },
+      {
+        "type": "process_with_ai",
+        "request": "prove AI content authenticity",
+        "context": "ai_content",
+        "description": "Process AI request: prove AI content authenticity",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T13:32:41.157Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_c7be1b2f-4359-40fd-bc86-0ada7f315cd5": {
+    "id": "wf_c7be1b2f-4359-40fd-bc86-0ada7f315cd5",
+    "description": "Prove AI content authenticity",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      },
+      {
+        "type": "process_with_ai",
+        "request": "prove AI content authenticity",
+        "context": "ai_content",
+        "description": "Process AI request: prove AI content authenticity",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T15:04:17.256Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_ed09bf62-43cc-4b9c-9826-df543cbf992d": {
+    "id": "wf_ed09bf62-43cc-4b9c-9826-df543cbf992d",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T17:33:27.663Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_f37b7935-3c1d-420c-a486-988225ce7f88": {
+    "id": "wf_f37b7935-3c1d-420c-a486-988225ce7f88",
+    "description": "Generate a KYC proof for Bob then if Bob's wallet is KYC verified generate a NYC proof of location and if verified on Solana send him 0.03 USDC on Solana.",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Generate KYC proof for Bob",
+        "index": 0
+      },
+      {
+        "type": "verify_proof",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Verify KYC proof for Bob locally",
+        "index": 1,
+        "proof_id": "pending_kyc_bob"
+      },
+      {
+        "type": "verify_on_ethereum",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Verify KYC proof for Bob on Ethereum",
+        "index": 2,
+        "proof_id": "pending_kyc_bob"
+      },
+      {
+        "type": "verify_on_solana",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Verify KYC proof for Bob on Solana",
+        "index": 3,
+        "proof_id": "pending_kyc_bob"
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "person": "bob",
+        "description": "Generate location proof for Bob",
+        "index": 4
+      },
+      {
+        "type": "verify_proof",
+        "proof_type": "location",
+        "person": "bob",
+        "description": "Verify location proof for Bob locally",
+        "index": 5,
+        "proof_id": "pending_location_bob"
+      },
+      {
+        "type": "verify_on_solana",
+        "proof_type": "location",
+        "person": "bob",
+        "description": "Verify location proof for Bob on Solana",
+        "index": 6,
+        "proof_id": "pending_location_bob"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.03",
+        "recipient": "bob",
+        "blockchain": "SOL",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.03 USDC to bob on Solana if KYC verified",
+        "index": 7
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T17:34:35.420Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_ee9e5c40-d906-4503-8507-7ed8c888db10": {
+    "id": "wf_ee9e5c40-d906-4503-8507-7ed8c888db10",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List existing proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T17:35:59.636Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_212817ab-9218-4439-b0d1-a7b881f98912": {
+    "id": "wf_212817ab-9218-4439-b0d1-a7b881f98912",
+    "description": "Prove location: NYC (40.7°, -74.0°)",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "location": "NYC (40.7°, -74.0°)",
+        "description": "Generate location proof for NYC (40.7°, -74.0°)",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T17:59:24.292Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_6668d09c-9b3a-4fa6-845b-efb04a88eb14": {
+    "id": "wf_6668d09c-9b3a-4fa6-845b-efb04a88eb14",
+    "description": "Verify proof proof_location_1752515964448",
+    "steps": [
+      {
+        "type": "verify_proof",
+        "proof_id": "proof_location_1752515964448",
+        "description": "Verify proof with ID proof_location_1752515964448 locally",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T17:59:42.969Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_bef677e9-28cd-4f72-a62c-82dd8f3742f7": {
+    "id": "wf_bef677e9-28cd-4f72-a62c-82dd8f3742f7",
+    "description": "Verify proof proof_location_1752515964448",
+    "steps": [
+      {
+        "type": "verify_proof",
+        "proof_type": "location",
+        "proof_id": "1752515964448",
+        "description": "Verify location proof 1752515964448 locally",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T18:00:36.245Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_b2c1e9c2-bcc9-4054-aac7-57d8b8d9d56d": {
+    "id": "wf_b2c1e9c2-bcc9-4054-aac7-57d8b8d9d56d",
+    "description": "Prove AI content authenticity",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      },
+      {
+        "type": "process_with_ai",
+        "request": "explain",
+        "context": "ai_content",
+        "description": "Process AI request: explain AI content authenticity",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T18:10:18.575Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_e963a954-ecca-485f-a2be-4d1bd34e9523": {
+    "id": "wf_e963a954-ecca-485f-a2be-4d1bd34e9523",
+    "description": "Verify proof with ID proof_ai_content_1752516618719 locally",
+    "steps": [
+      {
+        "type": "verify_proof",
+        "proof_id": "proof_ai_content_1752516618719",
+        "description": "Verify AI content proof with ID proof_ai_content_1752516618719 locally",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T18:38:12.978Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_3c2b02c4-b850-42b4-b579-dbe861391d03": {
+    "id": "wf_3c2b02c4-b850-42b4-b579-dbe861391d03",
+    "description": "Verify proof with ID proof_ai_content_1752516618719 locally",
+    "steps": [
+      {
+        "type": "verify_proof",
+        "proof_id": "proof_ai_content_1752516618719",
+        "description": "Verify proof with ID proof_ai_content_1752516618719 locally",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T18:44:35.409Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_2e1ff282-8962-43c6-9764-8ffaa287d748": {
+    "id": "wf_2e1ff282-8962-43c6-9764-8ffaa287d748",
+    "description": "Verify proof with ID proof_ai_content_1752516618719 locally",
+    "steps": [
+      {
+        "type": "verify_proof",
+        "proof_id": "proof_ai_content_1752516618719",
+        "description": "Verify proof with ID proof_ai_content_1752516618719 locally",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T18:44:37.671Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_22ee222e-fa89-4ad5-9ba7-903f4d606f44": {
+    "id": "wf_22ee222e-fa89-4ad5-9ba7-903f4d606f44",
+    "description": "Prove AI content authenticity",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      },
+      {
+        "type": "process_with_ai",
+        "request": "prove AI content authenticity",
+        "context": "ai_content",
+        "description": "Process AI request: prove AI content authenticity",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T18:48:52.246Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_c70a0657-75e8-4cfe-9e2c-9fef52d0d270": {
+    "id": "wf_c70a0657-75e8-4cfe-9e2c-9fef52d0d270",
+    "description": "Verify proof with ID proof_ai_content_1752518932400 locally",
+    "steps": [
+      {
+        "type": "verify_proof",
+        "proof_id": "proof_ai_content_1752518932400",
+        "description": "Verify proof with ID proof_ai_content_1752518932400 locally",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T18:49:16.857Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_b4319c53-ed22-4ee9-afd3-2694a6f13b24": {
+    "id": "wf_b4319c53-ed22-4ee9-afd3-2694a6f13b24",
+    "description": "Prove AI content authenticity",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      },
+      {
+        "type": "process_with_ai",
+        "request": "explain",
+        "context": "ai_content",
+        "description": "Process AI request: explain AI content authenticity",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T18:55:53.072Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_8b4c00bf-9244-4b65-b15c-3a13d947b5e3": {
+    "id": "wf_8b4c00bf-9244-4b65-b15c-3a13d947b5e3",
+    "description": "Verify proof with ID proof_ai_content_1752519353218 locally",
+    "steps": [
+      {
+        "type": "verify_proof",
+        "proof_id": "proof_ai_content_1752519353218",
+        "description": "Verify AI content proof with ID proof_ai_content_1752519353218 locally",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T18:56:11.870Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_b793404b-fae0-4f6d-8b90-1b4c70fcd593": {
+    "id": "wf_b793404b-fae0-4f6d-8b90-1b4c70fcd593",
+    "description": "Prove location: NYC (40.7°, -74.0°)",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "location": "NYC (40.7°, -74.0°)",
+        "description": "Generate location proof for NYC (40.7°, -74.0°)",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T19:16:55.552Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_65e962b2-971e-4a56-b992-0b252e746b37": {
+    "id": "wf_65e962b2-971e-4a56-b992-0b252e746b37",
+    "description": "Verify proof with ID proof_location_1752520615697 locally",
+    "steps": [
+      {
+        "type": "verify_proof",
+        "proof_id": "proof_location_1752520615697",
+        "description": "Verify proof with ID proof_location_1752520615697 locally",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T19:18:33.736Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_b14d8c53-7dd0-45de-a8f4-165b54082127": {
+    "id": "wf_b14d8c53-7dd0-45de-a8f4-165b54082127",
+    "description": "Prove AI content authenticity",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      },
+      {
+        "type": "process_with_ai",
+        "request": "prove AI content authenticity",
+        "context": "ai_content",
+        "description": "Process AI request: prove AI content authenticity",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T19:19:33.386Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_4a3b8ba0-1fc3-4b36-aa36-e3507658fd5e": {
+    "id": "wf_4a3b8ba0-1fc3-4b36-aa36-e3507658fd5e",
+    "description": "Verify proof with ID proof_ai_content_1752520773529 locally",
+    "steps": [
+      {
+        "type": "verify_proof",
+        "proof_id": "proof_ai_content_1752520773529",
+        "description": "Verify proof with ID proof_ai_content_1752520773529 locally",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T19:19:51.040Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_23867b63-3840-4e4e-bec8-30a9ef502886": {
+    "id": "wf_23867b63-3840-4e4e-bec8-30a9ef502886",
+    "description": "Prove AI content authenticity",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      },
+      {
+        "type": "process_with_ai",
+        "request": "explain",
+        "context": "ai_content",
+        "description": "Process AI request: explain AI content authenticity",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T19:26:21.161Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_a4c12c93-3be9-417f-9ec6-a87e1d231df1": {
+    "id": "wf_a4c12c93-3be9-417f-9ec6-a87e1d231df1",
+    "description": "Verify proof with ID proof_ai_content_1752521181311 locally",
+    "steps": [
+      {
+        "type": "verify_proof",
+        "proof_id": "proof_ai_content_1752521181311",
+        "description": "Verify AI content proof with ID proof_ai_content_1752521181311 locally",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T19:26:37.668Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_c54aa0f9-4add-4e90-9c9d-152c97bc881b": {
+    "id": "wf_c54aa0f9-4add-4e90-9c9d-152c97bc881b",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T19:28:26.381Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_91886bde-cf2f-4683-b2ad-cbb9c0ac944d": {
+    "id": "wf_91886bde-cf2f-4683-b2ad-cbb9c0ac944d",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-14T20:14:17.390Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_33f1a516-550c-4a08-9f40-81c35bfdcfd8": {
+    "id": "wf_33f1a516-550c-4a08-9f40-81c35bfdcfd8",
+    "description": "Generate a KYC proof for Bob, verify the proof on Solana, and transfer 0.03 USDC on Solana to Bob if verification passes.",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Generate KYC proof for Bob",
+        "index": 0
+      },
+      {
+        "type": "verify_on_solana",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Verify KYC proof for Bob on Solana",
+        "index": 1,
+        "proof_id": "pending_kyc_bob"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.03",
+        "recipient": "bob",
+        "blockchain": "SOL",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.03 USDC to Bob on Solana if KYC verified",
+        "index": 2
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T00:52:28.905Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_0f25c769-8e03-4181-998c-f63485d7ff8d": {
+    "id": "wf_0f25c769-8e03-4181-998c-f63485d7ff8d",
+    "description": "Generate a KYC proof for Bob, verify the proof on Solana, and if verification passes transfer .02 USDC to Bob on Solana",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Generate KYC proof for Bob",
+        "index": 0
+      },
+      {
+        "type": "verify_on_solana",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Verify KYC proof for Bob on Solana",
+        "index": 1,
+        "proof_id": "pending_kyc_bob"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.02",
+        "recipient": "bob",
+        "blockchain": "SOL",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.02 USDC to Bob on Solana if KYC verified",
+        "index": 2
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T01:09:21.102Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_340bab5e-4405-4d63-a7e3-b313aabe1021": {
+    "id": "wf_340bab5e-4405-4d63-a7e3-b313aabe1021",
+    "description": "-w Generate a KYC proof for Bob, verify the proof on Solana, and if verification passes transfer .02 USDC to Bob on Solana",
+    "steps": [
+      {
+        "index": 0,
+        "raw": "-w Generate a KYC proof for Bob, verify the proof on Solana, and if verification passes transfer .02 USDC to Bob on Solana",
+        "conditions": [],
+        "type": "kyc_proof",
+        "description": "Generate KYC compliance proof"
+      }
+    ],
+    "currentStep": 0,
+    "status": "completed",
+    "createdAt": "2025-07-15T01:28:23.180Z",
+    "completedSteps": [
+      0
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_1752542908232",
+        "status": "verified",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_kyc_1752542906229"
+      }
+    },
+    "updatedAt": "2025-07-15T01:28:28.240Z"
+  },
+  "wf_6f94fa9d-2c9f-4357-b15e-c27b7974e0b1": {
+    "id": "wf_6f94fa9d-2c9f-4357-b15e-c27b7974e0b1",
+    "description": "Generate a KYC proof for Bob, verify the proof on Solana, and if verification passes transfer .02 USDC to Bob on Solana",
+    "steps": [
+      {
+        "index": 0,
+        "raw": "Generate a KYC proof for Bob, verify the proof on Solana, and if verification passes transfer .02 USDC to Bob on Solana",
+        "conditions": [],
+        "type": "kyc_proof",
+        "description": "Generate KYC compliance proof"
+      }
+    ],
+    "currentStep": 0,
+    "status": "completed",
+    "createdAt": "2025-07-15T01:28:35.049Z",
+    "completedSteps": [
+      0
+    ],
+    "results": {
+      "step_0": {
+        "proofId": "proof_kyc_1752542920081",
+        "status": "verified",
+        "proofDir": "/home/hshadab/agentkit/proofs/proof_kyc_1752542918079"
+      }
+    },
+    "updatedAt": "2025-07-15T01:28:40.089Z"
+  },
+  "wf_b7d0c1d0-97dc-4a26-acf1-32b817dadaa6": {
+    "id": "wf_b7d0c1d0-97dc-4a26-acf1-32b817dadaa6",
+    "description": "Generate a KYC proof for Bob, verify the proof on Solana, and if verification passes transfer .02 USDC to Bob on Solana",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Generate KYC proof for Bob",
+        "index": 0
+      },
+      {
+        "type": "verify_on_solana",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Verify KYC proof for Bob on Solana",
+        "index": 1,
+        "proof_id": "pending_kyc_bob"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.02",
+        "recipient": "bob",
+        "blockchain": "SOL",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.02 USDC to Bob on Solana if KYC verified",
+        "index": 2
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T02:27:19.384Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_f07289e9-6c02-4490-97b0-45113b5e9f8b": {
+    "id": "wf_f07289e9-6c02-4490-97b0-45113b5e9f8b",
+    "description": "Generate a KYC proof for Bob, verify the proof on Solana, and if verification passes transfer .02 USDC to Bob on Solana",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Generate KYC proof for Bob",
+        "index": 0
+      },
+      {
+        "type": "verify_on_solana",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Verify KYC proof for Bob on Solana",
+        "index": 1,
+        "proof_id": "pending_kyc_bob"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.02",
+        "recipient": "bob",
+        "blockchain": "SOL",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.02 USDC to Bob on Solana if KYC verified",
+        "index": 2
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T02:37:48.746Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_b437ba6e-3c66-468d-b61a-2043cc6b9312": {
+    "id": "wf_b437ba6e-3c66-468d-b61a-2043cc6b9312",
+    "description": "Generate a KYC proof for Bob, verify the proof on Solana, and if verification passes transfer .02 USDC to Bob on Solana",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Generate KYC proof for Bob",
+        "index": 0
+      },
+      {
+        "type": "verify_on_solana",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Verify KYC proof for Bob on Solana",
+        "index": 1,
+        "proof_id": "pending_kyc_bob"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.02",
+        "recipient": "bob",
+        "blockchain": "SOL",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.02 USDC to Bob on Solana if KYC verified",
+        "index": 2
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T02:47:54.375Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_e942b0f6-6f48-4511-9ff6-d5113fc43d80": {
+    "id": "wf_e942b0f6-6f48-4511-9ff6-d5113fc43d80",
+    "description": "Generate a KYC proof for Bob, verify the proof on Solana, and if verification passes transfer .02 USDC to Bob on Solana",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Generate KYC proof for Bob",
+        "index": 0
+      },
+      {
+        "type": "verify_on_solana",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Verify KYC proof for Bob on Solana",
+        "index": 1,
+        "proof_id": "pending_kyc_bob"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.02",
+        "recipient": "bob",
+        "blockchain": "SOL",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.02 USDC to Bob on Solana if KYC verified",
+        "index": 2
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T02:59:57.338Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_63337472-8dca-420c-867e-9afbbe7225eb": {
+    "id": "wf_63337472-8dca-420c-867e-9afbbe7225eb",
+    "description": "Generate a KYC proof for Bob, verify the proof on Solana, and if verification passes transfer .02 USDC to Bob on Solana",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Generate KYC proof for Bob",
+        "index": 0
+      },
+      {
+        "type": "verify_on_solana",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Verify KYC proof for Bob on Solana",
+        "index": 1,
+        "proof_id": "pending_kyc_bob"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.02",
+        "recipient": "bob",
+        "blockchain": "SOL",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.02 USDC to Bob on Solana if KYC verified",
+        "index": 2
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T03:15:28.643Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_335cf7ae-8a8d-4832-bc68-ecf3a8cb5574": {
+    "id": "wf_335cf7ae-8a8d-4832-bc68-ecf3a8cb5574",
+    "description": "Generate a KYC proof for Bob, verify the proof on Solana, and if verification passes transfer .02 USDC to Bob on Solana",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Generate KYC proof for Bob",
+        "index": 0
+      },
+      {
+        "type": "verify_on_solana",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Verify KYC proof for Bob on Solana",
+        "index": 1,
+        "proof_id": "pending_kyc_bob"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.02",
+        "recipient": "bob",
+        "blockchain": "SOL",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.02 USDC to Bob on Solana if KYC verified",
+        "index": 2
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T03:22:13.792Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_a9cec3d5-7da5-4c6e-887d-10648feab0d1": {
+    "id": "wf_a9cec3d5-7da5-4c6e-887d-10648feab0d1",
+    "description": "Generate a KYC proof for Bob, verify the proof on Solana, and if verification passes transfer .02 USDC to Bob on Solana",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Generate KYC proof for Bob",
+        "index": 0
+      },
+      {
+        "type": "verify_on_solana",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Verify KYC proof for Bob on Solana",
+        "index": 1,
+        "proof_id": "pending_kyc_bob"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.02",
+        "recipient": "bob",
+        "blockchain": "SOL",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.02 USDC to Bob on Solana if KYC verified",
+        "index": 2
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T03:41:03.114Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_ed7f3d19-4993-466d-b884-57d349192072": {
+    "id": "wf_ed7f3d19-4993-466d-b884-57d349192072",
+    "description": "Generate a KYC proof for Bob, verify the proof on Solana, and if verification passes transfer .02 USDC to Bob on Solana",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Generate KYC proof for Bob",
+        "index": 0
+      },
+      {
+        "type": "verify_on_solana",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Verify KYC proof for Bob on Solana",
+        "index": 1,
+        "proof_id": "pending_kyc_bob"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.02",
+        "recipient": "bob",
+        "blockchain": "SOL",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.02 USDC to Bob on Solana if KYC verified",
+        "index": 2
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T03:54:21.997Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_d3cbcbb5-eae3-4c99-a951-74c677e08f94": {
+    "id": "wf_d3cbcbb5-eae3-4c99-a951-74c677e08f94",
+    "description": "Generate a KYC proof for Bob, verify the proof on Solana, and if verification passes transfer .02 USDC to Bob on Solana",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Generate KYC proof for Bob",
+        "index": 0
+      },
+      {
+        "type": "verify_on_solana",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Verify KYC proof for Bob on Solana",
+        "index": 1,
+        "proof_id": "pending_kyc_bob"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.02",
+        "recipient": "bob",
+        "blockchain": "SOL",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.02 USDC to Bob on Solana if KYC verified",
+        "index": 2
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T04:02:07.973Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_69ae5c5a-8a21-4faf-8a28-661be988b395": {
+    "id": "wf_69ae5c5a-8a21-4faf-8a28-661be988b395",
+    "description": "Generate a KYC proof for Bob, verify the proof on Solana, and if verification passes transfer .02 USDC to Bob on Solana",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Generate KYC proof for Bob",
+        "index": 0
+      },
+      {
+        "type": "verify_on_solana",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Verify KYC proof for Bob on Solana",
+        "index": 1,
+        "proof_id": "pending_kyc_bob"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.02",
+        "recipient": "bob",
+        "blockchain": "SOL",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.02 USDC to Bob on Solana if KYC verified",
+        "index": 2
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T04:09:06.261Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_b86466e6-51ce-45cf-99a1-3ff14a861a68": {
+    "id": "wf_b86466e6-51ce-45cf-99a1-3ff14a861a68",
+    "description": "Generate a KYC proof for Bob, verify the proof on Ethereum, and if verification passes transfer .02 USDC to Bob on Ethereum",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Generate KYC proof for Bob",
+        "index": 0
+      },
+      {
+        "type": "verify_on_ethereum",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Verify KYC proof for Bob on Ethereum",
+        "index": 1,
+        "proof_id": "pending_kyc_bob"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.02",
+        "recipient": "bob",
+        "blockchain": "ETH",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.02 USDC to Bob on Ethereum if KYC verified",
+        "index": 2
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T04:19:57.334Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_ebfba8ee-c062-4192-96c4-d8ee4b4a5c46": {
+    "id": "wf_ebfba8ee-c062-4192-96c4-d8ee4b4a5c46",
+    "description": "Generate a KYC proof for Alice, verify the proof on Ethereum, and if verification passes transfer .02 USDC to Bob on Solana",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "alice",
+        "description": "Generate KYC proof for Alice",
+        "index": 0
+      },
+      {
+        "type": "verify_on_ethereum",
+        "proof_type": "kyc",
+        "person": "alice",
+        "description": "Verify KYC proof for Alice on Ethereum",
+        "index": 1,
+        "proof_id": "pending_kyc_alice"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.02",
+        "recipient": "bob",
+        "blockchain": "SOL",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.02 USDC to bob on Solana if KYC verified",
+        "index": 2
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T04:32:32.817Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_f34f2e3d-ef22-4abd-9fdd-d896a482330d": {
+    "id": "wf_f34f2e3d-ef22-4abd-9fdd-d896a482330d",
+    "description": "Generate a KYC proof for Alice, verify the proof on Ethereum, and if verification passes transfer .02 USDC to Alice on Solana",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "Alice",
+        "description": "Generate KYC proof for Alice",
+        "index": 0
+      },
+      {
+        "type": "verify_on_ethereum",
+        "proof_type": "kyc",
+        "person": "Alice",
+        "description": "Verify KYC proof for Alice on Ethereum",
+        "index": 1,
+        "proof_id": "pending_kyc_Alice"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.02",
+        "recipient": "Alice",
+        "blockchain": "SOL",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.02 USDC to Alice on Solana if KYC verified",
+        "index": 2
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T04:34:29.130Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_9e22e0cc-8948-4bbd-aad7-0618f263afd1": {
+    "id": "wf_9e22e0cc-8948-4bbd-aad7-0618f263afd1",
+    "description": "Generate a KYC proof for Alice, verify the proof on Ethereum, and if verification passes transfer .02 USDC on Solana",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "Alice",
+        "description": "Generate KYC proof for Alice",
+        "index": 0
+      },
+      {
+        "type": "verify_on_ethereum",
+        "proof_type": "kyc",
+        "person": "Alice",
+        "description": "Verify KYC proof for Alice on Ethereum",
+        "index": 1,
+        "proof_id": "pending_kyc_Alice"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.02",
+        "recipient": "Alice",
+        "blockchain": "SOL",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.02 USDC to Alice on Solana if KYC verified",
+        "index": 2
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T05:01:15.633Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_4c52a658-7612-4bf2-a0f2-477715106d18": {
+    "id": "wf_4c52a658-7612-4bf2-a0f2-477715106d18",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List existing proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T11:07:46.187Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_6417da90-f66c-41ac-a534-cd068c66b9f2": {
+    "id": "wf_6417da90-f66c-41ac-a534-cd068c66b9f2",
+    "description": "Verification History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List existing proofs",
+        "index": 0
+      },
+      {
+        "type": "process_with_ai",
+        "request": "explain",
+        "context": "verification history",
+        "description": "Process AI request: explain about Verification History",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T11:12:38.857Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_c1148ee5-1331-4e1e-8f49-7f953e3e5aeb": {
+    "id": "wf_c1148ee5-1331-4e1e-8f49-7f953e3e5aeb",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T11:24:30.068Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_d8b454f1-0783-4750-b5a5-8cb34370b579": {
+    "id": "wf_d8b454f1-0783-4750-b5a5-8cb34370b579",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List existing proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T11:25:16.083Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_f1c7d585-30c5-4498-8904-6f2f1b496578": {
+    "id": "wf_f1c7d585-30c5-4498-8904-6f2f1b496578",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List existing proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T11:31:11.253Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_1705d7be-0f76-4b30-a6ab-4c27c9eb370f": {
+    "id": "wf_1705d7be-0f76-4b30-a6ab-4c27c9eb370f",
+    "description": "Prove AI content authenticity",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content authenticity proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T11:36:04.148Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_24669ea9-1683-4699-be8f-c8ff6931de95": {
+    "id": "wf_24669ea9-1683-4699-be8f-c8ff6931de95",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List existing proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T13:31:29.455Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_23b20d31-88fb-4fcc-b4a4-e798d55f72a7": {
+    "id": "wf_23b20d31-88fb-4fcc-b4a4-e798d55f72a7",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List existing proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T13:45:25.845Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_c73a4014-e90b-4dec-b483-7510c29cc1bf": {
+    "id": "wf_c73a4014-e90b-4dec-b483-7510c29cc1bf",
+    "description": "Prove AI content authenticity",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content authenticity proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T13:50:18.219Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_1be9849c-6d92-4704-9b25-9c268b2cf48b": {
+    "id": "wf_1be9849c-6d92-4704-9b25-9c268b2cf48b",
+    "description": "Verify proof with ID prove_ai_content_1752590296901 locally",
+    "steps": [
+      {
+        "type": "verify_proof",
+        "proof_id": "prove_ai_content_1752590296901",
+        "description": "Verify proof with ID prove_ai_content_1752590296901 locally",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T14:39:46.989Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_697d1d65-6c1d-4b78-bbdb-895d8c1fa9b0": {
+    "id": "wf_697d1d65-6c1d-4b78-bbdb-895d8c1fa9b0",
+    "description": "Generate KYC proof, verify it locally, then send 0.01 USDC to 0x70997970C51812dc3A010C7d01b50e0d17dc79C8 on Ethereum if verified",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      },
+      {
+        "type": "verify_proof",
+        "proof_type": "kyc",
+        "description": "Verify KYC proof locally",
+        "index": 1,
+        "proof_id": "pending_kyc_user"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.01",
+        "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        "blockchain": "ETH",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.01 USDC to 0x70997970C51812dc3A010C7d01b50e0d17dc79C8 on Ethereum if KYC verified",
+        "index": 2
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T15:08:24.537Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_c1420b9d-3b29-4f70-a574-738699b0feba": {
+    "id": "wf_c1420b9d-3b29-4f70-a574-738699b0feba",
+    "description": "If Alice is KYC verified send her 0.05 USDC on Ethereum and if Bob is KYC verified send him 0.03 USDC on Solana",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "alice",
+        "description": "Generate KYC proof for Alice",
+        "index": 0
+      },
+      {
+        "type": "verify_proof",
+        "proof_type": "kyc",
+        "person": "alice",
+        "description": "Verify KYC proof for Alice locally",
+        "index": 1,
+        "proof_id": "pending_kyc_alice"
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Generate KYC proof for Bob",
+        "index": 2
+      },
+      {
+        "type": "verify_proof",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Verify KYC proof for Bob locally",
+        "index": 3,
+        "proof_id": "pending_kyc_bob"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.05",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.05 USDC to alice on Ethereum if KYC verified",
+        "index": 4
+      },
+      {
+        "type": "transfer",
+        "amount": "0.03",
+        "recipient": "bob",
+        "blockchain": "SOL",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.03 USDC to bob on Solana if KYC verified",
+        "index": 5
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T15:09:06.052Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_5d1e45b5-3244-4928-a660-040626dcf1ab": {
+    "id": "wf_5d1e45b5-3244-4928-a660-040626dcf1ab",
+    "description": "Prove location: NYC (40.7°, -74.0°)",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "location": "NYC",
+        "description": "Generate location proof for NYC",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T16:40:10.616Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_452e8f37-e9a5-4e08-b02b-de7a3ebaf9ce": {
+    "id": "wf_452e8f37-e9a5-4e08-b02b-de7a3ebaf9ce",
+    "description": "Prove location: NYC (40.7°, -74.0°)",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "location": "NYC",
+        "description": "Generate location proof for NYC",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T16:53:26.601Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_b7456f6b-a165-46f4-a4b9-034ed44251ad": {
+    "id": "wf_b7456f6b-a165-46f4-a4b9-034ed44251ad",
+    "description": "Verify proof with ID proof_location_1752598406742 locally",
+    "steps": [
+      {
+        "type": "verify_proof",
+        "proof_id": "proof_location_1752598406742",
+        "description": "Verify proof with ID proof_location_1752598406742 locally",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T17:04:58.784Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_802c062e-1c75-4ea7-80b7-03742729d65e": {
+    "id": "wf_802c062e-1c75-4ea7-80b7-03742729d65e",
+    "description": "Verify proof with ID prove_kyc_1752599287763 locally",
+    "steps": [
+      {
+        "type": "verify_proof",
+        "proof_id": "prove_kyc_1752599287763",
+        "description": "Verify KYC proof with ID prove_kyc_1752599287763 locally",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T17:18:59.596Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_25df4d11-2369-4d5a-9222-b05794cc1274": {
+    "id": "wf_25df4d11-2369-4d5a-9222-b05794cc1274",
+    "description": "Prove location: NYC (40.7°, -74.0°)",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "location": "NYC",
+        "description": "Generate location proof for NYC",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T17:58:58.818Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_5be5287f-171f-459b-960c-8e9ce4b984dc": {
+    "id": "wf_5be5287f-171f-459b-960c-8e9ce4b984dc",
+    "description": "Verify proof with ID proof_location_1752602338965 locally",
+    "steps": [
+      {
+        "type": "verify_proof",
+        "proof_id": "proof_location_1752602338965",
+        "description": "Verify proof with ID proof_location_1752602338965 locally",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T17:59:19.270Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_a486e26f-3c06-45d2-aafa-b989df02a70d": {
+    "id": "wf_a486e26f-3c06-45d2-aafa-b989df02a70d",
+    "description": "Verify proof with ID prove_ai_content_1752605392426 locally",
+    "steps": [
+      {
+        "type": "verify_proof",
+        "proof_id": "prove_ai_content_1752605392426",
+        "description": "Verify AI content proof with ID prove_ai_content_1752605392426 locally",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T18:51:35.309Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_33041d91-c291-4fad-9610-1fe8a813c0b8": {
+    "id": "wf_33041d91-c291-4fad-9610-1fe8a813c0b8",
+    "description": "Verify proof with ID prove_ai_content_1752608468099 locally",
+    "steps": [
+      {
+        "type": "verify_proof",
+        "proof_id": "prove_ai_content_1752608468099",
+        "description": "Verify AI content proof with ID prove_ai_content_1752608468099 locally",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T19:41:59.224Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_61272be8-1aa5-45b1-89df-41a1b956f2a0": {
+    "id": "wf_61272be8-1aa5-45b1-89df-41a1b956f2a0",
+    "description": "Prove location: NYC (40.7°, -74.0°)",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "location": "NYC",
+        "description": "Generate location proof for NYC",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T19:57:22.870Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_2bc4dbbb-6122-4daf-9fb3-d533987daf3f": {
+    "id": "wf_2bc4dbbb-6122-4daf-9fb3-d533987daf3f",
+    "description": "Prove location: NYC (40.7°, -74.0°)",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "location": "NYC",
+        "description": "Generate location proof for NYC",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T19:59:15.526Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_2ab44c8d-47dd-48ec-ab9c-b3c4d021a6c9": {
+    "id": "wf_2ab44c8d-47dd-48ec-ab9c-b3c4d021a6c9",
+    "description": "Prove location: NYC (40.7°, -74.0°)",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "location": "NYC",
+        "description": "Generate location proof for NYC",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T20:06:22.763Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_b4cb27d6-2710-4d0c-b6e0-74b17c4c00e3": {
+    "id": "wf_b4cb27d6-2710-4d0c-b6e0-74b17c4c00e3",
+    "description": "Prove location: NYC (40.7°, -74.0°)",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "location": "NYC",
+        "description": "Generate location proof for NYC",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T20:16:44.308Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_365bfbc1-821c-489e-abc0-968a93f1df14": {
+    "id": "wf_365bfbc1-821c-489e-abc0-968a93f1df14",
+    "description": "Prove location: NYC (40.7°, -74.0°)",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "location": "NYC",
+        "description": "Generate location proof for NYC",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-15T20:30:52.343Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_dfc8e6ba-bb7f-4e0f-9936-c791bb978daf": {
+    "id": "wf_dfc8e6ba-bb7f-4e0f-9936-c791bb978daf",
+    "description": "Verify proof with ID prove_ai_content_1752640272366 locally",
+    "steps": [
+      {
+        "type": "verify_proof",
+        "proof_id": "prove_ai_content_1752640272366",
+        "description": "Verify proof with ID prove_ai_content_1752640272366 locally",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-16T04:33:31.795Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_18e037aa-87b2-4c93-9468-90c9d78276ad": {
+    "id": "wf_18e037aa-87b2-4c93-9468-90c9d78276ad",
+    "description": "Prove location: NYC (40.7°, -74.0°)",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "location": "NYC",
+        "description": "Generate location proof for NYC",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-16T05:13:25.967Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_49ccc009-cacf-4892-9027-4a776049a29c": {
+    "id": "wf_49ccc009-cacf-4892-9027-4a776049a29c",
+    "description": "Prove location: NYC (40.7°, -74.0°)",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "location": "NYC",
+        "description": "Generate location proof for NYC",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-16T06:00:55.206Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_452cc8fa-8f2c-40e7-91ab-2e6f08dc9d47": {
+    "id": "wf_452cc8fa-8f2c-40e7-91ab-2e6f08dc9d47",
+    "description": "Verify proof with ID proof_location_1752645655383 locally",
+    "steps": [
+      {
+        "type": "verify_proof",
+        "proof_id": "proof_location_1752645655383",
+        "description": "Verify proof with ID proof_location_1752645655383 locally",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-16T06:01:20.707Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_4fdba393-de99-4dc3-a16b-161883120dec": {
+    "id": "wf_4fdba393-de99-4dc3-a16b-161883120dec",
+    "description": "Generate a KYC proof for Bob and if verified on Etheruem send Bob 0.03 USDC on Ethereum. Generate a KYC proof for Alice and if verified on Solana send Alice 0.03 USDC on Solana.",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Generate KYC proof for Bob",
+        "index": 0
+      },
+      {
+        "type": "verify_proof",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Verify KYC proof for Bob locally",
+        "index": 1,
+        "proof_id": "pending_kyc_bob"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.03",
+        "recipient": "bob",
+        "blockchain": "ETH",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.03 USDC to bob on Ethereum if KYC verified",
+        "index": 2
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "alice",
+        "description": "Generate KYC proof for Alice",
+        "index": 3
+      },
+      {
+        "type": "verify_proof",
+        "proof_type": "kyc",
+        "person": "alice",
+        "description": "Verify KYC proof for Alice locally",
+        "index": 4,
+        "proof_id": "pending_kyc_alice"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.03",
+        "recipient": "alice",
+        "blockchain": "SOL",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.03 USDC to alice on Solana if KYC verified",
+        "index": 5
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-16T12:51:30.375Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_fbe71ec2-e72d-4e65-aa33-c1af1563bbae": {
+    "id": "wf_fbe71ec2-e72d-4e65-aa33-c1af1563bbae",
+    "description": "Generate a KYC proof for Bob, verify on Ethereum, if verified send Bob 0.03 USDC on Ethereum. Then generate a KYC proof for Alice, verify on Solana, if verified send Alice 0.05 USDC on Solana.",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Generate KYC proof for Bob",
+        "index": 0
+      },
+      {
+        "type": "verify_on_ethereum",
+        "proof_type": "kyc",
+        "person": "bob",
+        "description": "Verify KYC proof for Bob on Ethereum",
+        "index": 1,
+        "proof_id": "pending_kyc_bob"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.03",
+        "recipient": "bob",
+        "blockchain": "ETH",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.03 USDC to bob on Ethereum if KYC verified",
+        "index": 2
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "alice",
+        "description": "Generate KYC proof for Alice",
+        "index": 3
+      },
+      {
+        "type": "verify_on_solana",
+        "proof_type": "kyc",
+        "person": "alice",
+        "description": "Verify KYC proof for Alice on Solana",
+        "index": 4,
+        "proof_id": "pending_kyc_alice"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.05",
+        "recipient": "alice",
+        "blockchain": "SOL",
+        "condition": "kyc_verified",
+        "description": "Transfer 0.05 USDC to alice on Solana if KYC verified",
+        "index": 5
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-16T12:56:36.533Z",
+    "completedSteps": [],
+    "results": {}
+  }
+}

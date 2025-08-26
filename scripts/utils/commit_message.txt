@@ -1,0 +1,16 @@
+feat: Add OpenAI integration for intelligent workflow parsing
+
+- Integrate OpenAI (GPT-3.5-turbo) for parsing complex multi-person conditional transfers
+- Fix standalone verification cards appearing outside workflow context
+- Fix transfer polling not stopping after transaction completion
+- Add person-specific proof storage for multi-recipient workflows
+- Fix infinite recursion in conditional transfer parsing
+- Improve JSON parsing for nested Circle API responses
+- Add automatic verification step insertion for conditional workflows
+- Make condition matching case-insensitive
+- Add comprehensive error handling and fallback to regex parser
+- Remove problematic command preprocessing that broke parser
+
+Example: "If Alice is KYC verified send her 0.05 USDC on Solana and if Bob is KYC verified send him 0.03 USDC on Ethereum" now correctly generates 6 steps (2 proofs, 2 verifications, 2 transfers)
+
+BREAKING: None - all changes are backward compatible

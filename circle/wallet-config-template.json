@@ -1,0 +1,7 @@
+{
+  "note": "Update these values after creating wallets in Circle dashboard",
+  "CIRCLE_ETH_WALLET_ID": "your-eth-wallet-id",
+  "CIRCLE_SOL_WALLET_ID": "your-sol-wallet-id",
+  "ENTITY_SECRET": "92e3e23f98fa38d221dfc79c11169a2b0352c208fa6dc11cd354ae0ace90c87c",
+  "WALLET_SET_ID": "your-wallet-set-id"
+}

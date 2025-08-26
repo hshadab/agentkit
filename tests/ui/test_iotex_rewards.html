@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IoTeX Device Rewards Test</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script src="/static/js/core/config.js"></script>
+    <script src="/static/js/blockchain/iotex-device-verifier.js"></script>
+</head>
+<body>
+    <h1>IoTeX Device Rewards Test</h1>
+    <div id="status"></div>
+    <button onclick="checkDevice()">Check Device Info</button>
+    <button onclick="checkContract()">Check Contract State</button>
+    
+    <script>
+        const statusDiv = document.getElementById('status');
+        
+        async function checkDevice() {
+            try {
+                const verifier = new IoTeXDeviceVerifier();
+                await verifier.connect();
+                
+                const deviceId = 'DEV123';
+                const info = await verifier.getDeviceInfo(deviceId);
+                
+                statusDiv.innerHTML = `
+                    <h3>Device ${deviceId} Info:</h3>
+                    <p>Registered: ${info?.registered || false}</p>
+                    <p>Owner: ${info?.owner || 'N/A'}</p>
+                    <p>Registration Time: ${info?.registrationTime || 'N/A'}</p>
+                    <p>Last Proximity Proof: ${info?.lastProximityProof || 'Never'}</p>
+                    <p>Pending Rewards: ${info?.pendingRewards || '0'} IOTX</p>
+                `;
+                
+                // Also check the raw contract data
+                const deviceIdBytes32 = await verifier.deviceIdToBytes32(deviceId);
+                const rawInfo = await verifier.contract.getDeviceInfo(deviceIdBytes32);
+                console.log('Raw device info:', rawInfo);
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+                console.error(error);
+            }
+        }
+        
+        async function checkContract() {
+            try {
+                const verifier = new IoTeXDeviceVerifier();
+                await verifier.connect();
+                
+                // Check contract configuration
+                const contract = verifier.contract;
+                
+                // Try to check if there are any configuration parameters
+                statusDiv.innerHTML = '<h3>Checking contract configuration...</h3>';
+                
+                // Check contract address and network
+                const network = await verifier.provider.getNetwork();
+                const code = await verifier.provider.getCode(contract.address);
+                
+                statusDiv.innerHTML += `
+                    <p>Contract Address: ${contract.address}</p>
+                    <p>Network: ${network.name} (Chain ID: ${network.chainId})</p>
+                    <p>Contract Deployed: ${code !== '0x' ? 'Yes' : 'No'}</p>
+                `;
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>

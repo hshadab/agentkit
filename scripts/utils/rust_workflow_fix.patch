@@ -1,0 +1,88 @@
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -252,11 +252,18 @@ async fn generate_proof(state: AppState, proof_id: String, metadata: ProofMetada
+     info!("Starting proof generation for {}", proof_id);
+     
+     // Send status update
++    let workflow_context = metadata.additional_context.clone();
+     let status_msg = json!({
+         "type": "proof_status",
+         "proof_id": proof_id,
+         "status": "generating",
+         "message": "Generating proof...",
+-        "metadata": metadata
++        "metadata": &metadata,
++        // Extract workflow context to top level for easier access
++        "workflowId": workflow_context.as_ref()
++            .and_then(|ctx| ctx.get("workflow_id"))
++            .and_then(|id| id.as_str()),
++        "additional_context": workflow_context
+     });
+     let _ = state.tx.send(status_msg.to_string());
+     
+@@ -343,7 +350,13 @@ async fn generate_proof(state: AppState, proof_id: String, metadata: ProofMetada
+                                 "time_ms": duration.as_millis(),
+                                 "proof_size": proof_size
+                             },
+-                            "metadata": metadata,
+-                            "additional_context": metadata.additional_context
++                            "metadata": &metadata,
++                            // Extract workflow context to top level
++                            "workflowId": metadata.additional_context.as_ref()
++                                .and_then(|ctx| ctx.get("workflow_id"))
++                                .and_then(|id| id.as_str()),
++                            "additional_context": metadata.additional_context.clone(),
++                            // Preserve step index
++                            "stepIndex": metadata.additional_context.as_ref()
++                                .and_then(|ctx| ctx.get("step_index"))
+                         });
+                         let _ = state.tx.send(success_msg.to_string());
+@@ -382,11 +395,18 @@ async fn generate_proof(state: AppState, proof_id: String, metadata: ProofMetada
+ async fn verify_proof(state: AppState, proof_id: String, metadata: ProofMetadata) {
+     info!("Starting proof verification for {}", proof_id);
+     
++    let workflow_context = metadata.additional_context.clone();
+     // Send status update
+     let status_msg = json!({
+         "type": "verification_status",
+         "proof_id": proof_id,
+         "status": "verifying",
+-        "message": "Verifying proof..."
++        "message": "Verifying proof...",
++        "metadata": &metadata,
++        // Extract workflow context to top level
++        "workflowId": workflow_context.as_ref()
++            .and_then(|ctx| ctx.get("workflow_id"))
++            .and_then(|id| id.as_str()),
++        "additional_context": workflow_context
+     });
+     let _ = state.tx.send(status_msg.to_string());
+     
+@@ -428,7 +448,12 @@ async fn verify_proof(state: AppState, proof_id: String, metadata: ProofMetadata
+                             "type": "verification_complete",
+                             "proof_id": proof_id,
+                             "status": "verified",
+-                            "result": "VALID"
++                            "result": "VALID",
++                            "metadata": &metadata,
++                            "workflowId": metadata.additional_context.as_ref()
++                                .and_then(|ctx| ctx.get("workflow_id"))
++                                .and_then(|id| id.as_str()),
++                            "additional_context": metadata.additional_context.clone()
+                         });
+                         let _ = state.tx.send(success_msg.to_string());
+                         
+@@ -437,7 +462,12 @@ async fn verify_proof(state: AppState, proof_id: String, metadata: ProofMetadata
+                             "type": "verification_complete",
+                             "proof_id": proof_id,
+                             "status": "invalid",
+-                            "result": "INVALID"
++                            "result": "INVALID",
++                            "metadata": &metadata,
++                            "workflowId": metadata.additional_context.as_ref()
++                                .and_then(|ctx| ctx.get("workflow_id"))
++                                .and_then(|id| id.as_str()),
++                            "additional_context": metadata.additional_context.clone()
+                         });
+                         let _ = state.tx.send(err_msg.to_string());
+                     }

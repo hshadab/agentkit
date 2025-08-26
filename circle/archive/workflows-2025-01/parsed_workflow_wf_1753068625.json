@@ -1,0 +1,17 @@
+{
+  "description": "Proof History",
+  "steps": [
+    {
+      "type": "list_proofs",
+      "description": "List proofs",
+      "index": 0
+    },
+    {
+      "type": "process_with_ai",
+      "request": "explain",
+      "context": "proof_history",
+      "description": "Process AI request: explain proof history",
+      "index": 1
+    }
+  ]
+}

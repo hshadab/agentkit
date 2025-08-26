@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UI Debug Test</title>
+</head>
+<body>
+    <h1>Testing UI Updates</h1>
+    <p>Open the browser console to see debug logs</p>
+    <p>Try these commands in the main app:</p>
+    <ol>
+        <li>"Generate KYC proof" - Should show proof card with verification buttons</li>
+        <li>"Generate location proof and make a joke" - Should show proof card + AI response</li>
+        <li>"List proofs" - Should not show any workflow card</li>
+        <li>"Generate KYC proof then send 0.1 USDC to Alice" - Should show workflow card</li>
+    </ol>
+    
+    <h2>What to look for in console:</h2>
+    <ul>
+        <li>Debug: "addWorkflowCard called with X steps"</li>
+        <li>Debug: "Step 0: type=generate_proof, action=undefined" (or similar)</li>
+        <li>Debug: "Single proof workflow detected" (for single proof commands)</li>
+    </ul>
+    
+    <p>The key fix: Single-step proof workflows (even with AI processing) should show as proof cards with:</p>
+    <ul>
+        <li>Title: "Zero-Knowledge Proof Generation"</li>
+        <li>Status badge: GENERATING → COMPLETE</li>
+        <li>Proof details: Function name, time, size</li>
+        <li>3 buttons: Verify Locally, Verify on Ethereum, Verify on Solana</li>
+    </ul>
+</body>
+</html>

@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCTP Integration Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .test-section h3 {
+            color: #0052FF;
+            margin-bottom: 16px;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .test-btn {
+            background: linear-gradient(135deg, #0052FF 0%, #0040CC 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .test-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 82, 255, 0.3);
+        }
+        
+        .test-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .status.success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #22c55e;
+        }
+        
+        .status.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+        
+        .status.info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #3b82f6;
+        }
+        
+        .workflow-display {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin-bottom: 8px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        
+        .log-entry.info { color: #3b82f6; }
+        .log-entry.success { color: #22c55e; }
+        .log-entry.error { color: #ef4444; }
+        .log-entry.warning { color: #f59e0b; }
+        
+        /* CCTP Workflow Card Styles */
+        .cctp-workflow {
+            border-left: 4px solid #0052FF;
+            background: linear-gradient(135deg, rgba(0, 82, 255, 0.05) 0%, rgba(0, 82, 255, 0.02) 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+        
+        .cctp-header {
+            background: rgba(0, 82, 255, 0.1);
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .cctp-route {
+            font-size: 0.85em;
+            color: #0052FF;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-badge.pending {
+            background: rgba(156, 163, 175, 0.2);
+            color: #9ca3af;
+        }
+        
+        .status-badge.completed {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+        
+        .status-badge.failed {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        .transfer-info {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: rgba(0, 82, 255, 0.05);
+            border-radius: 6px;
+        }
+        
+        .transfer-info .amount {
+            font-weight: 700;
+            color: #0052FF;
+            font-size: 1.1em;
+        }
+        
+        .cctp-step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .cctp-step.pending {
+            background: rgba(156, 163, 175, 0.1);
+        }
+        
+        .cctp-step.in_progress {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid #3b82f6;
+        }
+        
+        .cctp-step.completed {
+            background: rgba(34, 197, 94, 0.1);
+            border-left: 3px solid #22c55e;
+        }
+        
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            margin-right: 12px;
+            transition: all 0.3s ease;
+            color: #000;
+        }
+        
+        .step-indicator.active {
+            background: #3b82f6;
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #333;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 16px 0 8px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6 0%, #0052FF 100%);
+            transition: width 0.5s ease;
+            border-radius: 4px;
+            width: 0%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌉 CCTP Workflow Integration Test</h1>
+            <p>Testing AI Agent Cross-Chain USDC Transfers with ZKP Authorization</p>
+        </div>
+        
+        <div class="test-section">
+            <h3>🚀 Backend Connection</h3>
+            <div class="test-buttons">
+                <button class="test-btn" onclick="connectToBackend()">Connect to Mock Backend</button>
+                <button class="test-btn" onclick="disconnectFromBackend()">Disconnect</button>
+                <button class="test-btn" onclick="checkBackendStatus()">Check Status</button>
+            </div>
+            <div id="connectionStatus" class="status info">Not connected</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🧪 Test Workflows</h3>
+            <div class="test-buttons">
+                <button class="test-btn" onclick="testBasicCCTP()">Basic CCTP Transfer</button>
+                <button class="test-btn" onclick="testFastTransfer()">Fast Transfer</button>
+                <button class="test-btn" onclick="testMultipleAgents()">Multiple Agents</button>
+                <button class="test-btn" onclick="testErrorScenario()">Error Scenario</button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 Live Workflow Display</h3>
+            <div id="workflowContainer"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📝 Test Logs</h3>
+            <div class="workflow-display" id="testLogs"></div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let connectionStatus = 'disconnected';
+        
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('testLogs');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function updateConnectionStatus(status, message) {
+            const statusElement = document.getElementById('connectionStatus');
+            connectionStatus = status;
+            
+            switch (status) {
+                case 'connected':
+                    statusElement.className = 'status success';
+                    statusElement.textContent = message || 'Connected to Mock CCTP Backend';
+                    break;
+                case 'disconnected':
+                    statusElement.className = 'status info';
+                    statusElement.textContent = message || 'Not connected';
+                    break;
+                case 'error':
+                    statusElement.className = 'status error';
+                    statusElement.textContent = message || 'Connection error';
+                    break;
+            }
+        }
+        
+        function connectToBackend() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                log('Already connected to backend', 'warning');
+                return;
+            }
+            
+            log('Connecting to Mock CCTP Backend...', 'info');
+            
+            try {
+                ws = new WebSocket('ws://localhost:8003');
+                
+                ws.onopen = () => {
+                    log('✅ Connected to Mock CCTP Backend', 'success');
+                    updateConnectionStatus('connected');
+                };
+                
+                ws.onmessage = (event) => {
+                    try {
+                        const message = JSON.parse(event.data);
+                        handleBackendMessage(message);
+                    } catch (error) {
+                        log(`Error parsing message: ${error.message}`, 'error');
+                    }
+                };
+                
+                ws.onclose = () => {
+                    log('❌ Disconnected from backend', 'warning');
+                    updateConnectionStatus('disconnected');
+                };
+                
+                ws.onerror = (error) => {
+                    log(`Connection error: ${error.message || 'Unknown error'}`, 'error');
+                    updateConnectionStatus('error', 'Failed to connect - ensure mock backend is running');
+                };
+                
+            } catch (error) {
+                log(`Failed to connect: ${error.message}`, 'error');
+                updateConnectionStatus('error');
+            }
+        }
+        
+        function disconnectFromBackend() {
+            if (ws) {
+                ws.close();
+                ws = null;
+                log('Disconnected from backend', 'info');
+                updateConnectionStatus('disconnected');
+            }
+        }
+        
+        function checkBackendStatus() {
+            if (!ws) {
+                log('No connection established', 'warning');
+                return;
+            }
+            
+            const status = ws.readyState;
+            const statusText = {
+                0: 'CONNECTING',
+                1: 'OPEN',
+                2: 'CLOSING',
+                3: 'CLOSED'
+            }[status];
+            
+            log(`Backend connection status: ${statusText}`, 'info');
+        }
+        
+        function sendMessage(message) {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                log('Not connected to backend', 'error');
+                return false;
+            }
+            
+            ws.send(JSON.stringify(message));
+            return true;
+        }
+        
+        function testBasicCCTP() {
+            log('🧪 Starting Basic CCTP Transfer Test...', 'info');
+            
+            const success = sendMessage({
+                type: 'cctp_transfer_request',
+                amount: '5.0',
+                fromNetwork: 'ethereum-sepolia',
+                toNetwork: 'base-sepolia',
+                agentId: 'cross_chain_executor_001',
+                recipient: '0x742d35Cc6634C0532925a3b8D402b1DeF8d87d87'
+            });
+            
+            if (success) {
+                log('✅ Test request sent', 'success');
+            }
+        }
+        
+        function testFastTransfer() {
+            log('🧪 Starting Fast Transfer Test...', 'info');
+            
+            const success = sendMessage({
+                type: 'cctp_transfer_request',
+                amount: '2.5',
+                fromNetwork: 'ethereum-sepolia',
+                toNetwork: 'base-sepolia',
+                agentId: 'fast_executor_002',
+                recipient: '0x742d35Cc6634C0532925a3b8D402b1DeF8d87d87',
+                urgency: 'fast'
+            });
+            
+            if (success) {
+                log('✅ Fast transfer request sent', 'success');
+            }
+        }
+        
+        function testMultipleAgents() {
+            log('🧪 Starting Multiple Agents Test...', 'info');
+            
+            const agents = ['agent_001', 'agent_002', 'agent_003'];
+            
+            agents.forEach((agentId, index) => {
+                setTimeout(() => {
+                    const success = sendMessage({
+                        type: 'cctp_transfer_request',
+                        amount: (1.0 + index).toString(),
+                        fromNetwork: 'ethereum-sepolia',
+                        toNetwork: 'base-sepolia',
+                        agentId: agentId,
+                        recipient: '0x742d35Cc6634C0532925a3b8D402b1DeF8d87d87'
+                    });
+                    
+                    if (success) {
+                        log(`✅ Request sent for ${agentId}`, 'success');
+                    }
+                }, index * 1000);
+            });
+        }
+        
+        function testErrorScenario() {
+            log('🧪 Starting Error Scenario Test...', 'info');
+            
+            const success = sendMessage({
+                type: 'cctp_transfer_request',
+                amount: '999999.0', // Invalid amount to trigger error
+                fromNetwork: 'ethereum-sepolia',
+                toNetwork: 'base-sepolia',
+                agentId: 'error_test_agent',
+                recipient: '0x0000000000000000000000000000000000000000' // Invalid recipient
+            });
+            
+            if (success) {
+                log('✅ Error scenario request sent', 'success');
+            }
+        }
+        
+        function handleBackendMessage(message) {
+            log(`📨 Received: ${message.type}`, 'info');
+            
+            switch (message.type) {
+                case 'cctp_workflow_started':
+                    handleWorkflowStarted(message);
+                    break;
+                case 'cctp_step_update':
+                    handleStepUpdate(message);
+                    break;
+                case 'cctp_workflow_complete':
+                    handleWorkflowComplete(message);
+                    break;
+                case 'cctp_workflow_error':
+                    handleWorkflowError(message);
+                    break;
+                default:
+                    log(`Unknown message type: ${message.type}`, 'warning');
+            }
+        }
+        
+        function handleWorkflowStarted(data) {
+            log(`🌉 Workflow started: ${data.workflow_id}`, 'success');
+            log(`   Route: ${data.fromNetwork} → ${data.toNetwork}`, 'info');
+            log(`   Amount: ${data.amount} USDC`, 'info');
+            log(`   Agent: ${data.agentId}`, 'info');
+            
+            createWorkflowCard(data);
+        }
+        
+        function handleStepUpdate(data) {
+            log(`🔄 Step ${data.step_id}: ${data.status}`, 'info');
+            if (data.message) {
+                log(`   ${data.message}`, 'info');
+            }
+            
+            updateWorkflowCard(data);
+        }
+        
+        function handleWorkflowComplete(data) {
+            log(`✅ Workflow completed: ${data.workflow_id}`, 'success');
+            log(`   Total time: ${data.totalTime}ms`, 'info');
+            
+            completeWorkflowCard(data);
+        }
+        
+        function handleWorkflowError(data) {
+            log(`❌ Workflow failed: ${data.workflow_id}`, 'error');
+            log(`   Error: ${data.error}`, 'error');
+        }
+        
+        function createWorkflowCard(data) {
+            const container = document.getElementById('workflowContainer');
+            
+            const card = document.createElement('div');
+            card.className = 'cctp-workflow';
+            card.setAttribute('data-workflow-id', data.workflow_id);
+            
+            card.innerHTML = `
+                <div class="cctp-header">
+                    <div>
+                        🌉 Cross-Chain USDC Transfer
+                        <span class="cctp-route">${data.fromNetwork} → ${data.toNetwork}</span>
+                    </div>
+                    <span class="status-badge pending">In Progress</span>
+                </div>
+                <div class="transfer-info">
+                    <span class="amount">${data.amount} USDC</span>
+                    <span>Agent: ${data.agentId}</span>
+                    <span>To: ${data.recipient}</span>
+                </div>
+                <div class="cctp-steps">
+                    ${createStepsHTML()}
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" data-progress="0"></div>
+                </div>
+                <div class="progress-text">Starting transfer...</div>
+            `;
+            
+            container.appendChild(card);
+        }
+        
+        function createStepsHTML() {
+            const steps = [
+                { id: 'zkp_authorization', name: 'ZKP Authorization' },
+                { id: 'onchain_verification', name: 'On-Chain Verification' },
+                { id: 'usdc_burn', name: 'USDC Burn' },
+                { id: 'circle_attestation', name: 'Circle Attestation' },
+                { id: 'usdc_mint', name: 'USDC Mint' }
+            ];
+            
+            return steps.map((step, index) => `
+                <div class="cctp-step pending" data-step-id="${step.id}">
+                    <div class="step-indicator ${index === 0 ? 'active' : ''}">
+                        <span>${index + 1}</span>
+                    </div>
+                    <div>
+                        <div><strong>${step.name}</strong></div>
+                        <div style="font-size: 0.9em; color: #666;">Waiting...</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function updateWorkflowCard(data) {
+            const card = document.querySelector(`[data-workflow-id="${data.workflow_id}"]`);
+            if (!card) return;
+            
+            const step = card.querySelector(`[data-step-id="${data.step_id}"]`);
+            if (!step) return;
+            
+            // Update step status
+            step.className = `cctp-step ${data.status}`;
+            
+            // Update progress
+            const steps = ['zkp_authorization', 'onchain_verification', 'usdc_burn', 'circle_attestation', 'usdc_mint'];
+            const currentIndex = steps.indexOf(data.step_id);
+            const progress = data.status === 'completed' ? 
+                ((currentIndex + 1) / steps.length) * 100 : 
+                (currentIndex / steps.length) * 100;
+            
+            const progressFill = card.querySelector('.progress-fill');
+            if (progressFill) {
+                progressFill.style.width = `${progress}%`;
+            }
+            
+            // Activate next step
+            if (data.status === 'completed' && currentIndex < steps.length - 1) {
+                const nextStep = card.querySelector(`[data-step-id="${steps[currentIndex + 1]}"]`);
+                if (nextStep) {
+                    const indicator = nextStep.querySelector('.step-indicator');
+                    if (indicator) {
+                        indicator.classList.add('active');
+                    }
+                }
+            }
+        }
+        
+        function completeWorkflowCard(data) {
+            const card = document.querySelector(`[data-workflow-id="${data.workflow_id}"]`);
+            if (!card) return;
+            
+            const statusBadge = card.querySelector('.status-badge');
+            if (statusBadge) {
+                statusBadge.className = 'status-badge completed';
+                statusBadge.textContent = 'Completed';
+            }
+            
+            const progressFill = card.querySelector('.progress-fill');
+            if (progressFill) {
+                progressFill.style.width = '100%';
+            }
+            
+            const progressText = card.querySelector('.progress-text');
+            if (progressText) {
+                progressText.innerHTML = `
+                    <span style="color: #22c55e;">✅ Transfer completed!</span><br>
+                    <small>${data.amount} USDC transferred in ${Math.round(data.totalTime / 1000)}s</small>
+                `;
+            }
+        }
+        
+        // Auto-connect on page load
+        window.addEventListener('load', () => {
+            log('🚀 CCTP Integration Test Page Loaded', 'info');
+            log('💡 Click "Connect to Mock Backend" to start testing', 'info');
+        });
+    </script>
+</body>
+</html>

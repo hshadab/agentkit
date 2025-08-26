@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wallet Connection Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>Wallet Connection Test</h1>
+    <button onclick="testConnection()">Test Wallet Connection</button>
+    <div id="result"></div>
+    
+    <script>
+        async function testConnection() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Testing wallet connection...</p>';
+            
+            try {
+                // Check what's available
+                const checks = [
+                    { name: 'window.ethereum', value: !!window.ethereum },
+                    { name: 'window.phantom', value: !!window.phantom },
+                    { name: 'window.phantom.ethereum', value: !!window.phantom?.ethereum },
+                    { name: 'window.solana', value: !!window.solana },
+                ];
+                
+                let html = '<h3>Available Providers:</h3><ul>';
+                for (const check of checks) {
+                    html += `<li>${check.name}: ${check.value ? '✅' : '❌'}</li>`;
+                }
+                html += '</ul>';
+                
+                // Try to connect
+                let provider = null;
+                let walletName = '';
+                
+                if (window.phantom?.ethereum) {
+                    provider = window.phantom.ethereum;
+                    walletName = 'Phantom';
+                } else if (window.ethereum) {
+                    provider = window.ethereum;
+                    walletName = 'MetaMask/Other';
+                }
+                
+                if (provider) {
+                    html += `<p>Using provider: ${walletName}</p>`;
+                    
+                    try {
+                        const accounts = await provider.request({ method: 'eth_requestAccounts' });
+                        html += `<p>✅ Connected! Account: ${accounts[0]}</p>`;
+                        
+                        // Check network
+                        const chainId = await provider.request({ method: 'eth_chainId' });
+                        html += `<p>Chain ID: ${chainId} (${parseInt(chainId, 16)})</p>`;
+                        
+                        // Check if it's Sepolia
+                        if (chainId === '0xaa36a7') {
+                            html += '<p>✅ Connected to Sepolia testnet</p>';
+                        } else {
+                            html += '<p>⚠️ Not on Sepolia testnet (chainId should be 11155111)</p>';
+                            html += '<button onclick="switchToSepolia()">Switch to Sepolia</button>';
+                        }
+                        
+                    } catch (error) {
+                        html += `<p>❌ Connection error: ${error.message}</p>`;
+                    }
+                } else {
+                    html += '<p>❌ No Ethereum provider found</p>';
+                }
+                
+                resultDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<p>❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        async function switchToSepolia() {
+            const provider = window.phantom?.ethereum || window.ethereum;
+            try {
+                await provider.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: '0xaa36a7' }], // Sepolia chainId
+                });
+                testConnection(); // Re-test after switching
+            } catch (error) {
+                if (error.code === 4902) {
+                    // Chain not added, try to add it
+                    try {
+                        await provider.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: '0xaa36a7',
+                                chainName: 'Sepolia Testnet',
+                                rpcUrls: ['https://sepolia.infura.io/v3/'],
+                                nativeCurrency: {
+                                    name: 'SepoliaETH',
+                                    symbol: 'ETH',
+                                    decimals: 18
+                                },
+                                blockExplorerUrls: ['https://sepolia.etherscan.io/']
+                            }]
+                        });
+                    } catch (addError) {
+                        alert('Error adding Sepolia network: ' + addError.message);
+                    }
+                } else {
+                    alert('Error switching network: ' + error.message);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

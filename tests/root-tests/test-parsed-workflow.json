@@ -1,0 +1,18 @@
+{
+  "description": "Test IoT device workflow",
+  "steps": [
+    {
+      "type": "register_device",
+      "device_id": "TEST123",
+      "description": "Register IoT device TEST123",
+      "index": 0
+    },
+    {
+      "type": "generate_proof",
+      "proof_type": "device_proximity",
+      "device_id": "TEST123",
+      "description": "Generate device proximity proof for TEST123",
+      "index": 1
+    }
+  ]
+}

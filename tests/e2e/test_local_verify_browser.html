@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Local Verification</title>
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            font-family: monospace;
+            padding: 20px;
+        }
+        button {
+            background: #6B7CFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 20px;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 10px;
+            white-space: pre-wrap;
+        }
+        .success { color: #0f0; }
+        .error { color: #f00; }
+        .info { color: #0ff; }
+    </style>
+</head>
+<body>
+    <h1>Test Local Verification</h1>
+    
+    <button onclick="testFullFlow()">Test Full Flow (Generate + Verify)</button>
+    <button onclick="clearResults()">Clear</button>
+    
+    <div id="results"></div>
+    
+    <script>
+        let ws;
+        let generatedProofId = null;
+        
+        function log(msg, className = '') {
+            const div = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            div.innerHTML += `<span class="${className}">[${timestamp}] ${msg}</span>\n`;
+            div.scrollTop = div.scrollHeight;
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        function connectWebSocket() {
+            return new Promise((resolve, reject) => {
+                ws = new WebSocket('ws://localhost:8001/ws');
+                
+                ws.onopen = () => {
+                    log('✅ Connected to WebSocket', 'success');
+                    resolve();
+                };
+                
+                ws.onerror = (error) => {
+                    log('❌ WebSocket error: ' + error, 'error');
+                    reject(error);
+                };
+            });
+        }
+        
+        async function testFullFlow() {
+            clearResults();
+            log('=== Starting Local Verification Test ===', 'info');
+            
+            try {
+                await connectWebSocket();
+                
+                // Step 1: Generate proof
+                log('\n📤 Step 1: Generating KYC proof...', 'info');
+                
+                ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    
+                    switch(data.type) {
+                        case 'proof_complete':
+                            generatedProofId = data.proof_id;
+                            log(`✅ Proof generated: ${generatedProofId}`, 'success');
+                            
+                            // Step 2: Verify the proof
+                            log('\n📤 Step 2: Verifying proof locally...', 'info');
+                            log(`Sending: Verify proof ${generatedProofId}`, 'info');
+                            
+                            ws.send(JSON.stringify({
+                                type: 'query',
+                                content: `Verify proof ${generatedProofId}`
+                            }));
+                            break;
+                            
+                        case 'verification_complete':
+                            log(`\n✅ Verification complete!`, 'success');
+                            log(`Result: ${data.result}`, data.result === 'VALID' ? 'success' : 'error');
+                            log(`Proof ID: ${data.proof_id}`, 'info');
+                            
+                            log('\n=== TEST SUMMARY ===', 'info');
+                            log('1. Proof generation: ✅ SUCCESS', 'success');
+                            log('2. Local verification: ✅ SUCCESS', 'success');
+                            log(`3. Result: ${data.result}`, data.result === 'VALID' ? 'success' : 'error');
+                            
+                            ws.close();
+                            break;
+                            
+                        case 'workflow_step_update':
+                            if (data.updates && data.updates.status === 'failed') {
+                                log(`❌ Step failed: ${data.updates.result}`, 'error');
+                            }
+                            break;
+                            
+                        case 'proof_status':
+                        case 'verification_status':
+                            log(`   ${data.message}`, 'info');
+                            break;
+                            
+                        case 'workflow_completed':
+                            if (!data.success) {
+                                log(`❌ Workflow failed: ${data.error}`, 'error');
+                            }
+                            break;
+                    }
+                };
+                
+                // Send initial proof generation request
+                ws.send(JSON.stringify({
+                    type: 'query',
+                    content: 'Generate KYC proof'
+                }));
+                
+            } catch (error) {
+                log('❌ Error: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

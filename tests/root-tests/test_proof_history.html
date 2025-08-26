@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Proof History & Saving Test</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+        .proof-card {
+            background: #333;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 3px solid #74c0fc;
+        }
+        .success { color: #51cf66; }
+        .error { color: #ff6b6b; }
+        .info { color: #74c0fc; }
+        button {
+            background: #3a3a3a;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px 15px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #4a4a4a;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #555;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background: #3a3a3a;
+        }
+    </style>
+</head>
+<body>
+    <h1>Proof History & Saving Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Generate Test Proofs</h2>
+        <button onclick="generateTestProof('kyc')">Generate KYC Proof</button>
+        <button onclick="generateTestProof('device')">Generate Device Proof</button>
+        <button onclick="generateTestProof('age')">Generate Age Proof</button>
+        <button onclick="generateTestProof('ai')">Generate AI Prediction</button>
+        <button onclick="generateTestProof('identity')">Generate Identity Proof</button>
+        <div id="generation-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Proof Storage Test</h2>
+        <button onclick="checkProofStorage()">Check Proof Storage</button>
+        <button onclick="saveProofToLocalStorage()">Test Save to LocalStorage</button>
+        <div id="storage-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Proof History Table</h2>
+        <button onclick="loadProofHistory()">Load Proof History</button>
+        <button onclick="clearHistory()">Clear History</button>
+        <div id="history-table"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Active Proofs</h2>
+        <div id="active-proofs"></div>
+    </div>
+
+    <script>
+        // Mock proof data for testing
+        const mockProofs = [];
+        let proofCounter = 1;
+        
+        async function generateTestProof(type) {
+            const status = document.getElementById('generation-status');
+            status.innerHTML = `<div class="info">Generating ${type} proof...</div>`;
+            
+            // Create mock proof
+            const proof = {
+                proofId: `test-${type}-${Date.now()}`,
+                circuit: type,
+                timestamp: new Date().toISOString(),
+                status: 'complete',
+                data: {
+                    type: type,
+                    generated: true,
+                    hash: ethers.utils.id(`${type}-${Date.now()}`)
+                }
+            };
+            
+            // Add to mock storage
+            mockProofs.push(proof);
+            
+            // Save to localStorage
+            saveProofToStorage(proof);
+            
+            // Update UI
+            setTimeout(() => {
+                status.innerHTML = `<div class="success">✅ ${type} proof generated: ${proof.proofId}</div>`;
+                updateActiveProofs();
+            }, 1000);
+        }
+        
+        function saveProofToStorage(proof) {
+            try {
+                // Get existing proofs
+                const existingProofs = JSON.parse(localStorage.getItem('agentkit_proofs') || '[]');
+                
+                // Add new proof
+                existingProofs.push({
+                    id: proof.proofId,
+                    circuit: proof.circuit,
+                    timestamp: proof.timestamp,
+                    data: proof.data
+                });
+                
+                // Save back
+                localStorage.setItem('agentkit_proofs', JSON.stringify(existingProofs));
+                
+                console.log('Proof saved to localStorage:', proof.proofId);
+            } catch (error) {
+                console.error('Error saving proof:', error);
+            }
+        }
+        
+        function checkProofStorage() {
+            const status = document.getElementById('storage-status');
+            
+            try {
+                const storedProofs = JSON.parse(localStorage.getItem('agentkit_proofs') || '[]');
+                
+                status.innerHTML = `
+                    <div class="success">✅ Proof storage working</div>
+                    <div class="info">Total stored proofs: ${storedProofs.length}</div>
+                    <div class="info">Storage used: ${new Blob([JSON.stringify(storedProofs)]).size} bytes</div>
+                `;
+                
+                // Show last 3 proofs
+                if (storedProofs.length > 0) {
+                    status.innerHTML += '<div class="info">Recent proofs:</div>';
+                    storedProofs.slice(-3).forEach(proof => {
+                        status.innerHTML += `<div>- ${proof.circuit}: ${proof.id}</div>`;
+                    });
+                }
+            } catch (error) {
+                status.innerHTML = `<div class="error">❌ Storage error: ${error.message}</div>`;
+            }
+        }
+        
+        function saveProofToLocalStorage() {
+            const status = document.getElementById('storage-status');
+            
+            const testProof = {
+                id: `manual-test-${Date.now()}`,
+                circuit: 'test',
+                timestamp: new Date().toISOString(),
+                data: { test: true }
+            };
+            
+            saveProofToStorage(testProof);
+            status.innerHTML = `<div class="success">✅ Test proof saved: ${testProof.id}</div>`;
+        }
+        
+        function loadProofHistory() {
+            const historyDiv = document.getElementById('history-table');
+            
+            try {
+                const proofs = JSON.parse(localStorage.getItem('agentkit_proofs') || '[]');
+                
+                if (proofs.length === 0) {
+                    historyDiv.innerHTML = '<div class="info">No proof history found</div>';
+                    return;
+                }
+                
+                let html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Proof ID</th>
+                                <th>Type</th>
+                                <th>Timestamp</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                proofs.reverse().forEach(proof => {
+                    const date = new Date(proof.timestamp);
+                    html += `
+                        <tr>
+                            <td>${proof.id}</td>
+                            <td>${proof.circuit}</td>
+                            <td>${date.toLocaleString()}</td>
+                            <td>
+                                <button onclick="viewProofDetails('${proof.id}')">View</button>
+                                <button onclick="deleteProof('${proof.id}')">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+                historyDiv.innerHTML = html;
+                
+            } catch (error) {
+                historyDiv.innerHTML = `<div class="error">❌ Error loading history: ${error.message}</div>`;
+            }
+        }
+        
+        function viewProofDetails(proofId) {
+            const proofs = JSON.parse(localStorage.getItem('agentkit_proofs') || '[]');
+            const proof = proofs.find(p => p.id === proofId);
+            
+            if (proof) {
+                alert('Proof Details:\n\n' + JSON.stringify(proof, null, 2));
+            }
+        }
+        
+        function deleteProof(proofId) {
+            if (!confirm('Delete this proof?')) return;
+            
+            const proofs = JSON.parse(localStorage.getItem('agentkit_proofs') || '[]');
+            const filtered = proofs.filter(p => p.id !== proofId);
+            localStorage.setItem('agentkit_proofs', JSON.stringify(filtered));
+            
+            loadProofHistory();
+        }
+        
+        function clearHistory() {
+            if (!confirm('Clear all proof history?')) return;
+            
+            localStorage.removeItem('agentkit_proofs');
+            document.getElementById('history-table').innerHTML = '<div class="info">History cleared</div>';
+            updateActiveProofs();
+        }
+        
+        function updateActiveProofs() {
+            const activeDiv = document.getElementById('active-proofs');
+            
+            // Show mock proofs from current session
+            if (mockProofs.length === 0) {
+                activeDiv.innerHTML = '<div class="info">No active proofs in this session</div>';
+                return;
+            }
+            
+            let html = '<h3>Session Proofs:</h3>';
+            mockProofs.forEach(proof => {
+                html += `
+                    <div class="proof-card">
+                        <strong>${proof.circuit.toUpperCase()} Proof</strong><br>
+                        ID: ${proof.proofId}<br>
+                        Status: <span class="success">${proof.status}</span><br>
+                        Time: ${new Date(proof.timestamp).toLocaleTimeString()}
+                    </div>
+                `;
+            });
+            
+            activeDiv.innerHTML = html;
+        }
+        
+        // Initialize on load
+        updateActiveProofs();
+        
+        // Also check if window.proofManager exists
+        setTimeout(() => {
+            if (window.proofManager) {
+                console.log('✅ ProofManager found on window');
+                console.log('Proofs Map:', window.proofManager.proofs);
+            } else {
+                console.log('❌ ProofManager not found on window');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "description": "Only generate proximity proof without registration",
+  "steps": [
+    {
+      "type": "generate_proof",
+      "proof_type": "device_proximity",
+      "description": "Generate device proximity proof",
+      "index": 0
+    }
+  ],
+  "workflow_id": "wf_1753666456"
+}

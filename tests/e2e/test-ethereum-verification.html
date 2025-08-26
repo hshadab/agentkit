@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Ethereum Verification</title>
+    <script src="/static/ethereum-verifier.js"></script>
+</head>
+<body>
+    <h1>Test Ethereum Verification</h1>
+    <p>Proof ID: proof_location_1752279279695</p>
+    <button onclick="testVerification()">Test Ethereum Verification</button>
+    <div id="result"></div>
+    
+    <script>
+        window.ethereumVerifier = new EthereumVerifier();
+        
+        async function testVerification() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                // First connect
+                console.log('Connecting to Ethereum...');
+                const connectResult = await window.ethereumVerifier.connect();
+                if (!connectResult.success) {
+                    throw new Error('Failed to connect: ' + connectResult.error);
+                }
+                console.log('Connected successfully');
+                
+                // Fetch proof data
+                const proofId = 'proof_location_1752279279695';
+                console.log('Fetching proof data for:', proofId);
+                const proofData = await window.ethereumVerifier.fetchProofData(proofId);
+                console.log('Fetched proof data:', proofData);
+                
+                // Verify on chain
+                console.log('Verifying on chain...');
+                const result = await window.ethereumVerifier.verifyProofOnChain(
+                    proofId,
+                    proofData,
+                    proofData.publicInputs,
+                    'prove_location'
+                );
+                
+                console.log('Verification result:', result);
+                resultDiv.innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+                
+            } catch (error) {
+                console.error('Test failed:', error);
+                resultDiv.innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

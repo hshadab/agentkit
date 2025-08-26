@@ -1,0 +1,13 @@
+1,1,0,main.commitment
+2,2,0,main.isValid
+3,3,0,main.novaProofCommitment
+4,4,0,main.proofType
+5,5,0,main.timestamp
+6,6,0,main.verificationResult
+7,7,0,main.proofId
+8,8,0,main.executionResult
+9,9,0,main.proofTypeNonZero
+10,10,0,main.proofTypeCheck
+11,11,0,main.temp1
+12,12,0,main.temp2
+13,13,0,main.temp3

@@ -1,0 +1,14 @@
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -120,7 +120,10 @@ async fn process_user_command(state: AppState, message: String) {
+                 let ui_message = json!({
+                     "type": "chat_response",
+                     "response": chat_response.get("response").and_then(|r| r.as_str()).unwrap_or(""),
+-                    "metadata": chat_response.get("metadata")
++                    "metadata": chat_response.get("metadata"),
++                    "intent": chat_response.get("intent"),
++                    "command": chat_response.get("command"),
++                    "messageId": chat_response.get("messageId")
+                 });
+                 
+                 if state.tx.send(ui_message.to_string()).is_err() {

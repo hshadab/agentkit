@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ethereum Verification Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .button { padding: 10px 20px; margin: 10px; cursor: pointer; }
+        .log { margin: 10px 0; padding: 10px; background: #f0f0f0; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Ethereum Verification Debug Test</h1>
+    
+    <button class="button" onclick="testConnection()">1. Test Wallet Connection</button>
+    <button class="button" onclick="testProofFetch()">2. Test Proof Fetch</button>
+    <button class="button" onclick="testFullVerification()">3. Test Full Verification</button>
+    
+    <div id="logs"></div>
+    
+    <script src="/static/ethereum-verifier.js"></script>
+    <script>
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logs.appendChild(div);
+            console.log(message);
+        }
+        
+        async function testConnection() {
+            log('Testing wallet connection...');
+            try {
+                const result = await window.ethereumVerifier.connect();
+                if (result.success) {
+                    log(`Connected to ${result.wallet} - Account: ${result.account}`, 'success');
+                    log(`Network ID: ${result.network}`, 'success');
+                    log(`Contract Address: ${result.contractAddress}`, 'success');
+                } else {
+                    log(`Connection failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Connection error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testProofFetch() {
+            const proofId = 'proof_location_1752256338427';
+            log(`Testing proof fetch for ${proofId}...`);
+            try {
+                const startTime = Date.now();
+                const proofData = await window.ethereumVerifier.fetchProofData(proofId);
+                const fetchTime = Date.now() - startTime;
+                
+                log(`Proof fetched in ${fetchTime}ms`, 'success');
+                log(`Proof structure: ${JSON.stringify(Object.keys(proofData))}`, 'success');
+                log(`Proof a length: ${proofData.proof?.a?.length}`, 'success');
+                log(`Public signals: ${proofData.public_signals?.length} items`, 'success');
+            } catch (error) {
+                log(`Proof fetch error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testFullVerification() {
+            const proofId = 'proof_location_1752256338427';
+            log(`Testing full verification for ${proofId}...`);
+            
+            try {
+                // First connect
+                if (!window.ethereumVerifier.isConnected) {
+                    log('Connecting wallet first...');
+                    const connectResult = await window.ethereumVerifier.connect();
+                    if (!connectResult.success) {
+                        throw new Error(`Connection failed: ${connectResult.error}`);
+                    }
+                }
+                
+                // Fetch proof data
+                log('Fetching proof data...');
+                const proofData = await window.ethereumVerifier.fetchProofData(proofId);
+                log('Proof data fetched successfully', 'success');
+                
+                // Try verification
+                log('Starting on-chain verification...');
+                const result = await window.ethereumVerifier.verifyProofOnChain(
+                    proofId,
+                    proofData,
+                    proofData.publicInputs,
+                    'location' // proof type
+                );
+                
+                if (result.success) {
+                    log(`Verification successful!`, 'success');
+                    log(`Transaction Hash: ${result.transactionHash}`, 'success');
+                    log(`Block Number: ${result.blockNumber}`, 'success');
+                    log(`Gas Used: ${result.gasUsed}`, 'success');
+                } else {
+                    log(`Verification failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Full verification error: ${error.message}`, 'error');
+                log(`Error stack: ${error.stack}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

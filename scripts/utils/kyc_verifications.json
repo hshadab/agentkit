@@ -1,0 +1,17 @@
+{
+  "verified_proofs": {},
+  "pending_transfers": {
+    "e2e_test": {
+      "transfer_id": "transfer_e2e_test_1750280098.533959",
+      "session_id": "e2e_test",
+      "amount": "0.1",
+      "recipient": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "original_command": "send 0.1 USDC to alice if KYC verified",
+      "status": "awaiting_kyc_proof",
+      "created_at": "2025-06-18T16:54:58.533983",
+      "kyc_proof_id": null,
+      "verified": false
+    }
+  },
+  "proof_to_session": {}
+}

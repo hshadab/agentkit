@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nova Proof Debug</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script src="/static/js/core/config.js"></script>
+    <script src="/static/parsers/nova/nova-proof-parser.js"></script>
+    <script src="/static/parsers/nova/nova-proof-formatter.js"></script>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        button { margin: 10px; padding: 10px; }
+        #output { white-space: pre-wrap; background: #f0f0f0; padding: 10px; margin: 10px 0; }
+        .error { color: red; }
+        .success { color: green; }
+        .warning { color: orange; }
+    </style>
+</head>
+<body>
+    <h1>Nova Proof Debugging</h1>
+    
+    <input type="text" id="proofId" placeholder="Enter proof ID" value="proof_device_proximity_1753716178252" style="width: 400px; padding: 5px;">
+    <br>
+    <button onclick="fetchAndDebugProof()">Fetch and Debug Proof</button>
+    <button onclick="testBinaryParsing()">Test Binary Parsing</button>
+    
+    <div id="output"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        async function fetchAndDebugProof() {
+            const proofId = document.getElementById('proofId').value;
+            output.innerHTML = `<h3>Fetching proof: ${proofId}</h3>\n`;
+            
+            try {
+                // Fetch from the IoTeX endpoint
+                const response = await fetch(`/api/proof/${proofId}/iotex`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                output.innerHTML += '<h4>1. Proof Data Structure:</h4>\n';
+                output.innerHTML += `Proof ID: ${data.proof_id}\n`;
+                output.innerHTML += `Device ID: ${data.device_id}\n`;
+                output.innerHTML += `Coordinates: (${data.coordinates?.x}, ${data.coordinates?.y})\n`;
+                output.innerHTML += `Has proof_data: ${!!data.proof_data}\n`;
+                output.innerHTML += `Proof data length: ${data.proof_data?.length || 0} chars\n`;
+                output.innerHTML += `Has public_inputs: ${!!data.public_inputs}\n`;
+                output.innerHTML += `Public inputs: ${JSON.stringify(data.public_inputs, null, 2)}\n\n`;
+                
+                if (!data.proof_data) {
+                    output.innerHTML += '<span class="error">❌ No proof_data found!</span>\n';
+                    return;
+                }
+                
+                // Test formatting
+                output.innerHTML += '<h4>2. Testing Nova Proof Formatter:</h4>\n';
+                const formatter = new NovaProofFormatter();
+                const formatted = formatter.formatDeviceProximityProof(
+                    data.device_id,
+                    data.coordinates?.x || 5050,
+                    data.coordinates?.y || 5050,
+                    data
+                );
+                
+                // Check what we got
+                output.innerHTML += 'Formatted proof structure:\n';
+                const components = [
+                    'i_z0_zi', 'U_i_cmW_U_i_cmE', 'u_i_cmW', 'cmT_r',
+                    'pA', 'pB', 'pC', 'challenge_W_challenge_E_kzg_evals', 'kzg_proof'
+                ];
+                
+                let allZeros = true;
+                for (const comp of components) {
+                    const value = formatted[comp];
+                    if (Array.isArray(value)) {
+                        const isZero = value.flat().every(v => 
+                            v === '0x0000000000000000000000000000000000000000000000000000000000000000' ||
+                            v === '0x' + '0'.repeat(64)
+                        );
+                        output.innerHTML += `  ${comp}: ${Array.isArray(value[0]) ? `[${value.length}x${value[0].length}]` : `[${value.length}]`} ${isZero ? '❌ ALL ZEROS' : '✓ Has values'}\n`;
+                        if (!isZero) allZeros = false;
+                    }
+                }
+                
+                if (allZeros) {
+                    output.innerHTML += '\n<span class="error">❌ All components are zeros - using fallback format!</span>\n';
+                } else {
+                    output.innerHTML += '\n<span class="success">✓ Real proof data parsed</span>\n';
+                }
+                
+                // Show sample values
+                output.innerHTML += '\n<h4>3. Sample Component Values:</h4>\n';
+                output.innerHTML += `i_z0_zi[0] (x coord): ${formatted.i_z0_zi[0]}\n`;
+                output.innerHTML += `i_z0_zi[1] (y coord): ${formatted.i_z0_zi[1]}\n`;
+                output.innerHTML += `i_z0_zi[2] (result): ${formatted.i_z0_zi[2]}\n`;
+                output.innerHTML += `First commitment: ${formatted.U_i_cmW_U_i_cmE[0]?.substring(0, 20)}...\n`;
+                
+                // Test binary decoding
+                output.innerHTML += '\n<h4>4. Binary Decoding Test:</h4>\n';
+                try {
+                    const binaryString = atob(data.proof_data);
+                    output.innerHTML += `Decoded binary size: ${binaryString.length} bytes\n`;
+                    
+                    // Show first few bytes
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < Math.min(64, binaryString.length); i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    
+                    const hexPreview = Array.from(bytes.slice(0, 64))
+                        .map(b => b.toString(16).padStart(2, '0'))
+                        .join(' ');
+                    output.innerHTML += `First 64 bytes: ${hexPreview}\n`;
+                    
+                    // Count non-zero bytes in first 1000
+                    let nonZeroCount = 0;
+                    for (let i = 0; i < Math.min(1000, binaryString.length); i++) {
+                        if (binaryString.charCodeAt(i) !== 0) nonZeroCount++;
+                    }
+                    output.innerHTML += `Non-zero bytes in first 1000: ${nonZeroCount}\n`;
+                    
+                } catch (e) {
+                    output.innerHTML += `<span class="error">Failed to decode base64: ${e.message}</span>\n`;
+                }
+                
+            } catch (error) {
+                output.innerHTML += `<span class="error">Error: ${error.message}</span>\n`;
+                console.error(error);
+            }
+        }
+        
+        function testBinaryParsing() {
+            output.innerHTML = '<h3>Testing Binary Parsing with Mock Data</h3>\n';
+            
+            // Create a mock binary proof (not valid, just for testing parser)
+            const mockSize = 1000;
+            const mockBytes = new Uint8Array(mockSize);
+            
+            // Fill with some non-zero data
+            for (let i = 0; i < mockSize; i++) {
+                mockBytes[i] = (i * 7 + 13) % 256;
+            }
+            
+            // Convert to base64
+            const binaryString = String.fromCharCode.apply(null, mockBytes);
+            const base64 = btoa(binaryString);
+            
+            output.innerHTML += `Created mock proof: ${mockSize} bytes\n`;
+            output.innerHTML += `Base64 length: ${base64.length} chars\n\n`;
+            
+            // Test parser
+            const parser = new NovaProofParser();
+            try {
+                const components = parser.parseNovaBinary(base64);
+                output.innerHTML += components ? 
+                    '<span class="success">✓ Parser returned components</span>\n' :
+                    '<span class="error">✗ Parser returned null</span>\n';
+                    
+                if (components) {
+                    output.innerHTML += `Components: ${JSON.stringify(Object.keys(components))}\n`;
+                }
+            } catch (e) {
+                output.innerHTML += `<span class="error">Parser error: ${e.message}</span>\n`;
+            }
+        }
+        
+        // Auto-fetch on load if we have a proof ID
+        window.onload = () => {
+            const proofId = document.getElementById('proofId').value;
+            if (proofId) {
+                fetchAndDebugProof();
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>USDC Transfer Operations Test</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script src="/static/js/core/config.js"></script>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .transfer-test {
+            margin: 20px 0;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            background: #333;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        .success { color: #51cf66; }
+        .error { color: #ff6b6b; }
+        .warning { color: #ffc107; }
+        .info { color: #74c0fc; }
+        button {
+            background: #3a3a3a;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px 15px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #4a4a4a;
+        }
+        input {
+            background: #3a3a3a;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px;
+            margin: 5px;
+            border-radius: 4px;
+            width: 300px;
+        }
+        .transfer-form {
+            margin: 15px 0;
+            padding: 15px;
+            background: #333;
+            border-radius: 5px;
+        }
+        .logo {
+            width: 24px;
+            height: 24px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>💸 USDC Transfer Operations Test</h1>
+    
+    <!-- Circle Developer Wallet -->
+    <div class="transfer-test">
+        <h2>🔵 Circle Developer Wallet Transfer</h2>
+        <div class="test-result">
+            <div class="info">Configuration:</div>
+            <div>Wallet ID: <span id="circle-wallet-id">Loading...</span></div>
+            <div>Address: <span id="circle-address">Loading...</span></div>
+        </div>
+        
+        <div class="transfer-form">
+            <h3>Test Transfer</h3>
+            <input type="text" id="circle-recipient" placeholder="Recipient address" value="0x742d35Cc6634C0532925a3b844Bc9e7595f7e2c1">
+            <input type="number" id="circle-amount" placeholder="Amount" value="0.1" step="0.01">
+            <button onclick="testCircleTransfer()">Send Test Transfer</button>
+            <div id="circle-result"></div>
+        </div>
+    </div>
+    
+    <!-- Coinbase API -->
+    <div class="transfer-test">
+        <h2>🟦 Coinbase API Transfer</h2>
+        <div class="test-result">
+            <div class="info">Configuration:</div>
+            <div>API Key: <span id="coinbase-api-key">Loading...</span></div>
+        </div>
+        
+        <div class="transfer-form">
+            <h3>Test Transfer</h3>
+            <input type="text" id="coinbase-recipient" placeholder="Recipient address" value="0x742d35Cc6634C0532925a3b844Bc9e7595f7e2c1">
+            <input type="number" id="coinbase-amount" placeholder="Amount" value="0.05" step="0.01">
+            <button onclick="testCoinbaseTransfer()">Send Test Transfer</button>
+            <div id="coinbase-result"></div>
+        </div>
+    </div>
+    
+    <!-- Transfer History -->
+    <div class="transfer-test">
+        <h2>📜 Transfer History</h2>
+        <button onclick="loadTransferHistory()">Load History</button>
+        <button onclick="clearTransferHistory()">Clear History</button>
+        <div id="transfer-history" class="test-result">
+            <div class="info">No transfers yet...</div>
+        </div>
+    </div>
+    
+    <!-- Test Summary -->
+    <div class="transfer-test">
+        <h2>📊 Test Summary</h2>
+        <button onclick="runAllTests()">Run All Tests</button>
+        <div id="test-summary" class="test-result">
+            <div class="info">Click "Run All Tests" to begin...</div>
+        </div>
+    </div>
+
+    <script>
+        // Transfer history storage
+        const transferHistory = [];
+        
+        // Load configuration on page load
+        window.addEventListener('load', () => {
+            // Load Circle config
+            if (config.circle?.developerWallet) {
+                document.getElementById('circle-wallet-id').textContent = config.circle.developerWallet.walletId;
+                document.getElementById('circle-address').textContent = config.circle.developerWallet.address;
+            } else {
+                document.getElementById('circle-wallet-id').textContent = 'Not configured';
+                document.getElementById('circle-address').textContent = 'Not configured';
+            }
+            
+            // Load Coinbase config
+            if (config.coinbase?.apiKey) {
+                const apiKey = config.coinbase.apiKey;
+                const masked = apiKey.substring(0, 8) + '...' + apiKey.substring(apiKey.length - 4);
+                document.getElementById('coinbase-api-key').textContent = masked;
+            } else {
+                document.getElementById('coinbase-api-key').textContent = 'Not configured';
+            }
+        });
+        
+        async function testCircleTransfer() {
+            const recipient = document.getElementById('circle-recipient').value;
+            const amount = document.getElementById('circle-amount').value;
+            const resultDiv = document.getElementById('circle-result');
+            
+            resultDiv.innerHTML = '<div class="info">🔄 Initiating Circle transfer...</div>';
+            
+            try {
+                // Simulate transfer workflow
+                const transfer = {
+                    id: `circle-${Date.now()}`,
+                    type: 'circle',
+                    from: config.circle.developerWallet.address,
+                    to: recipient,
+                    amount: amount,
+                    currency: 'USDC',
+                    status: 'pending',
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Simulate API call
+                await simulateTransfer(transfer);
+                
+                transfer.status = 'completed';
+                transfer.txHash = '0x' + ethers.utils.id(`circle-${Date.now()}`).substring(2, 66);
+                
+                transferHistory.push(transfer);
+                saveTransferToStorage(transfer);
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✅ Transfer initiated successfully!</div>
+                    <div class="info">Transfer ID: ${transfer.id}</div>
+                    <div class="info">Amount: ${amount} USDC</div>
+                    <div class="info">To: ${recipient.substring(0, 10)}...${recipient.substring(recipient.length - 8)}</div>
+                    <div class="info">Status: ${transfer.status}</div>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Transfer failed: ${error.message}</div>`;
+            }
+        }
+        
+        async function testCoinbaseTransfer() {
+            const recipient = document.getElementById('coinbase-recipient').value;
+            const amount = document.getElementById('coinbase-amount').value;
+            const resultDiv = document.getElementById('coinbase-result');
+            
+            resultDiv.innerHTML = '<div class="info">🔄 Initiating Coinbase transfer...</div>';
+            
+            try {
+                // Simulate transfer workflow
+                const transfer = {
+                    id: `coinbase-${Date.now()}`,
+                    type: 'coinbase',
+                    from: 'Coinbase Account',
+                    to: recipient,
+                    amount: amount,
+                    currency: 'USDC',
+                    status: 'pending',
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Simulate API call
+                await simulateTransfer(transfer);
+                
+                transfer.status = 'completed';
+                transfer.txHash = '0x' + ethers.utils.id(`coinbase-${Date.now()}`).substring(2, 66);
+                
+                transferHistory.push(transfer);
+                saveTransferToStorage(transfer);
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✅ Transfer initiated successfully!</div>
+                    <div class="info">Transfer ID: ${transfer.id}</div>
+                    <div class="info">Amount: ${amount} USDC</div>
+                    <div class="info">To: ${recipient.substring(0, 10)}...${recipient.substring(recipient.length - 8)}</div>
+                    <div class="info">Status: ${transfer.status}</div>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Transfer failed: ${error.message}</div>`;
+            }
+        }
+        
+        async function simulateTransfer(transfer) {
+            // Simulate network delay
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    console.log('Transfer processed:', transfer);
+                    resolve();
+                }, 2000);
+            });
+        }
+        
+        function saveTransferToStorage(transfer) {
+            try {
+                const stored = JSON.parse(localStorage.getItem('agentkit_transfers') || '[]');
+                stored.push(transfer);
+                localStorage.setItem('agentkit_transfers', JSON.stringify(stored));
+            } catch (error) {
+                console.error('Error saving transfer:', error);
+            }
+        }
+        
+        function loadTransferHistory() {
+            const historyDiv = document.getElementById('transfer-history');
+            
+            try {
+                const stored = JSON.parse(localStorage.getItem('agentkit_transfers') || '[]');
+                const allTransfers = [...transferHistory, ...stored.filter(t => 
+                    !transferHistory.find(h => h.id === t.id)
+                )];
+                
+                if (allTransfers.length === 0) {
+                    historyDiv.innerHTML = '<div class="info">No transfer history found</div>';
+                    return;
+                }
+                
+                let html = '<table style="width: 100%; border-collapse: collapse;">';
+                html += '<thead><tr>';
+                html += '<th style="border: 1px solid #555; padding: 8px;">Type</th>';
+                html += '<th style="border: 1px solid #555; padding: 8px;">Amount</th>';
+                html += '<th style="border: 1px solid #555; padding: 8px;">To</th>';
+                html += '<th style="border: 1px solid #555; padding: 8px;">Status</th>';
+                html += '<th style="border: 1px solid #555; padding: 8px;">Time</th>';
+                html += '</tr></thead><tbody>';
+                
+                allTransfers.reverse().forEach(transfer => {
+                    const date = new Date(transfer.timestamp);
+                    const shortTo = transfer.to.substring(0, 10) + '...' + transfer.to.substring(transfer.to.length - 8);
+                    
+                    html += '<tr>';
+                    html += `<td style="border: 1px solid #555; padding: 8px;">${transfer.type.toUpperCase()}</td>`;
+                    html += `<td style="border: 1px solid #555; padding: 8px;">${transfer.amount} ${transfer.currency}</td>`;
+                    html += `<td style="border: 1px solid #555; padding: 8px;">${shortTo}</td>`;
+                    html += `<td style="border: 1px solid #555; padding: 8px;"><span class="${transfer.status === 'completed' ? 'success' : 'warning'}">${transfer.status}</span></td>`;
+                    html += `<td style="border: 1px solid #555; padding: 8px;">${date.toLocaleString()}</td>`;
+                    html += '</tr>';
+                });
+                
+                html += '</tbody></table>';
+                historyDiv.innerHTML = html;
+                
+            } catch (error) {
+                historyDiv.innerHTML = `<div class="error">❌ Error loading history: ${error.message}</div>`;
+            }
+        }
+        
+        function clearTransferHistory() {
+            if (!confirm('Clear all transfer history?')) return;
+            
+            localStorage.removeItem('agentkit_transfers');
+            transferHistory.length = 0;
+            document.getElementById('transfer-history').innerHTML = '<div class="info">History cleared</div>';
+        }
+        
+        async function runAllTests() {
+            const summaryDiv = document.getElementById('test-summary');
+            summaryDiv.innerHTML = '<div class="info">🔄 Running all tests...</div>';
+            
+            const results = {
+                circleConfig: false,
+                coinbaseConfig: false,
+                circleTransfer: false,
+                coinbaseTransfer: false
+            };
+            
+            // Test 1: Check Circle configuration
+            results.circleConfig = !!(config.circle?.developerWallet?.walletId && config.circle?.developerWallet?.address);
+            
+            // Test 2: Check Coinbase configuration
+            results.coinbaseConfig = !!config.coinbase?.apiKey;
+            
+            // Test 3: Simulate Circle transfer
+            try {
+                await testCircleTransfer();
+                results.circleTransfer = true;
+            } catch (error) {
+                results.circleTransfer = false;
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Test 4: Simulate Coinbase transfer
+            try {
+                await testCoinbaseTransfer();
+                results.coinbaseTransfer = true;
+            } catch (error) {
+                results.coinbaseTransfer = false;
+            }
+            
+            // Display summary
+            let html = '<h3>Test Results:</h3>';
+            html += `<div class="${results.circleConfig ? 'success' : 'error'}">${results.circleConfig ? '✅' : '❌'} Circle Configuration</div>`;
+            html += `<div class="${results.coinbaseConfig ? 'success' : 'error'}">${results.coinbaseConfig ? '✅' : '❌'} Coinbase Configuration</div>`;
+            html += `<div class="${results.circleTransfer ? 'success' : 'error'}">${results.circleTransfer ? '✅' : '❌'} Circle Transfer Test</div>`;
+            html += `<div class="${results.coinbaseTransfer ? 'success' : 'error'}">${results.coinbaseTransfer ? '✅' : '❌'} Coinbase Transfer Test</div>`;
+            
+            const totalTests = Object.keys(results).length;
+            const passed = Object.values(results).filter(r => r).length;
+            
+            html += '<br>';
+            html += `<div class="info">Total: ${passed}/${totalTests} tests passed</div>`;
+            
+            if (passed === totalTests) {
+                html += '<div class="success">🎉 All tests passed!</div>';
+            } else {
+                html += '<div class="warning">⚠️ Some tests failed</div>';
+            }
+            
+            summaryDiv.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

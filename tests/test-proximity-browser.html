@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Proximity Proof Browser Test</title>
+    <script>
+        // Mock window.debugLog if not available
+        if (!window.debugLog) {
+            window.debugLog = console.log;
+        }
+    </script>
+    <script src="/static/parsers/nova/zkengine-calldata-parser.js"></script>
+</head>
+<body>
+    <h1>Proximity Proof Parser Test</h1>
+    <pre id="output"></pre>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(msg) {
+            output.textContent += msg + '\n';
+            console.log(msg);
+        }
+        
+        async function runTests() {
+            log('=== Testing zkEngine Calldata Parser ===\n');
+            
+            try {
+                const parser = new ZKEngineCalldataParser();
+                log('✅ Parser loaded successfully');
+                
+                // Create test proof data
+                const numFieldElements = 32;
+                const fieldElementSize = 32;
+                const proofSize = numFieldElements * fieldElementSize;
+                const proofBytes = new Uint8Array(proofSize);
+                
+                // Fill with test pattern
+                for (let i = 0; i < numFieldElements; i++) {
+                    const start = i * fieldElementSize;
+                    for (let j = 0; j < fieldElementSize; j++) {
+                        proofBytes[start + j] = (i + j) % 256;
+                    }
+                }
+                
+                // Convert to base64
+                let binaryString = '';
+                for (let i = 0; i < proofBytes.length; i++) {
+                    binaryString += String.fromCharCode(proofBytes[i]);
+                }
+                const base64Proof = btoa(binaryString);
+                
+                const proofData = {
+                    proof_data: base64Proof,
+                    public_inputs: {
+                        execution_z0: ["5050", "5050"]
+                    }
+                };
+                
+                log(`Created test proof: ${base64Proof.length} chars (base64)`);
+                
+                // Test parsing
+                const components = parser.parseZKEngineProof(proofData);
+                
+                if (components) {
+                    log('✅ Successfully parsed proof components:');
+                    log(`  - i_z0_zi: ${components.i_z0_zi.length} elements`);
+                    log(`  - U_i_cmW_U_i_cmE: ${components.U_i_cmW_U_i_cmE.length} elements`);
+                    log(`  - pA: ${components.pA.length} elements`);
+                    log(`  - pB: ${components.pB.length}x${components.pB[0].length} matrix`);
+                    
+                    // Test formatting
+                    const formatted = parser.formatForIoTeXContract(components, "5050", "5050");
+                    if (formatted) {
+                        log('✅ Successfully formatted for IoTeX contract');
+                        log(`  - X coordinate: ${formatted.i_z0_zi[0]}`);
+                        log(`  - Y coordinate: ${formatted.i_z0_zi[1]}`);
+                        log(`  - Proximity result: ${formatted.i_z0_zi[2]}`);
+                        
+                        // Check all components are present
+                        const required = [
+                            'i_z0_zi', 'U_i_cmW_U_i_cmE', 'u_i_cmW', 'cmT_r',
+                            'pA', 'pB', 'pC', 'challenge_W_challenge_E_kzg_evals', 'kzg_proof'
+                        ];
+                        
+                        let allPresent = true;
+                        for (const comp of required) {
+                            if (!formatted[comp]) {
+                                log(`❌ Missing component: ${comp}`);
+                                allPresent = false;
+                            }
+                        }
+                        
+                        if (allPresent) {
+                            log('\n✅ All required components present!');
+                            log('✅ Parser is working correctly!');
+                        }
+                    } else {
+                        log('❌ Failed to format for contract');
+                    }
+                } else {
+                    log('❌ Failed to parse proof components');
+                }
+                
+            } catch (error) {
+                log(`❌ Error: ${error.message}`);
+                console.error(error);
+            }
+        }
+        
+        // Run tests on load
+        window.addEventListener('load', runTests);
+    </script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nova Proof Verification Debug</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script src="/static/js/core/config.js"></script>
+    <script src="/static/parsers/nova/nova-proof-parser.js"></script>
+    <script src="/static/parsers/nova/nova-proof-formatter.js"></script>
+</head>
+<body>
+    <h1>Nova Proof Verification Debug</h1>
+    
+    <button onclick="testProofFormat()">Test Proof Format</button>
+    <button onclick="checkContractDecider()">Check Contract Decider</button>
+    <button onclick="testMockVerification()">Test Mock Verification</button>
+    
+    <div id="output" style="margin-top: 20px; white-space: pre-wrap; font-family: monospace;"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        async function testProofFormat() {
+            output.innerHTML = '<h3>Testing Nova Proof Format...</h3>';
+            
+            try {
+                // Test with mock proof data
+                const formatter = new NovaProofFormatter();
+                const mockProof = formatter.formatDeviceProximityProof('TEST123', 5050, 5050, null);
+                
+                output.innerHTML += 'Mock Proof Format:\n';
+                output.innerHTML += JSON.stringify(mockProof, null, 2) + '\n\n';
+                
+                // Check if all components are properly formatted
+                output.innerHTML += 'Format Validation:\n';
+                output.innerHTML += `- i_z0_zi length: ${mockProof.i_z0_zi.length} (expected: 3)\n`;
+                output.innerHTML += `- U_i_cmW_U_i_cmE length: ${mockProof.U_i_cmW_U_i_cmE.length} (expected: 4)\n`;
+                output.innerHTML += `- u_i_cmW length: ${mockProof.u_i_cmW.length} (expected: 2)\n`;
+                output.innerHTML += `- cmT_r length: ${mockProof.cmT_r.length} (expected: 3)\n`;
+                output.innerHTML += `- pA length: ${mockProof.pA.length} (expected: 2)\n`;
+                output.innerHTML += `- pB shape: ${mockProof.pB.length}x${mockProof.pB[0]?.length} (expected: 2x2)\n`;
+                output.innerHTML += `- pC length: ${mockProof.pC.length} (expected: 2)\n`;
+                output.innerHTML += `- challenge length: ${mockProof.challenge_W_challenge_E_kzg_evals.length} (expected: 4)\n`;
+                output.innerHTML += `- kzg_proof shape: ${mockProof.kzg_proof.length}x${mockProof.kzg_proof[0]?.length} (expected: 2x2)\n`;
+                
+                // Check hex format
+                const allHexValid = [
+                    ...mockProof.i_z0_zi,
+                    ...mockProof.U_i_cmW_U_i_cmE,
+                    ...mockProof.u_i_cmW,
+                    ...mockProof.cmT_r,
+                    ...mockProof.pA,
+                    ...mockProof.pB.flat(),
+                    ...mockProof.pC,
+                    ...mockProof.challenge_W_challenge_E_kzg_evals,
+                    ...mockProof.kzg_proof.flat()
+                ].every(hex => /^0x[0-9a-fA-F]{64}$/.test(hex));
+                
+                output.innerHTML += `\nAll hex values valid (0x + 64 chars): ${allHexValid}\n`;
+                
+            } catch (error) {
+                output.innerHTML += `<span style="color: red;">Error: ${error.message}</span>\n`;
+            }
+        }
+        
+        async function checkContractDecider() {
+            output.innerHTML = '<h3>Checking Contract Nova Decider...</h3>';
+            
+            try {
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const contractAddress = config.blockchain.iotex.contracts.deviceVerifier;
+                
+                // Check contract bytecode
+                const code = await provider.getCode(contractAddress);
+                output.innerHTML += `Contract deployed: ${code !== '0x' ? 'Yes' : 'No'}\n`;
+                output.innerHTML += `Contract address: ${contractAddress}\n\n`;
+                
+                // Try to read the Nova Decider address from the contract
+                const abi = [
+                    "function NOVA_DECIDER() view returns (address)"
+                ];
+                
+                try {
+                    const contract = new ethers.Contract(contractAddress, abi, provider);
+                    const novaDeciderAddr = await contract.NOVA_DECIDER();
+                    output.innerHTML += `Nova Decider address: ${novaDeciderAddr}\n`;
+                    
+                    // Check if Nova Decider is deployed
+                    const deciderCode = await provider.getCode(novaDeciderAddr);
+                    output.innerHTML += `Nova Decider deployed: ${deciderCode !== '0x' ? 'Yes' : 'No'}\n`;
+                } catch (e) {
+                    output.innerHTML += `Could not read NOVA_DECIDER (might be V1 contract)\n`;
+                }
+                
+            } catch (error) {
+                output.innerHTML += `<span style="color: red;">Error: ${error.message}</span>\n`;
+            }
+        }
+        
+        async function testMockVerification() {
+            output.innerHTML = '<h3>Testing Mock Verification...</h3>';
+            
+            try {
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                const signer = provider.getSigner();
+                
+                const contractAddress = config.blockchain.iotex.contracts.deviceVerifier;
+                const abi = [{
+                    "inputs": [
+                        {"internalType": "uint256[3]", "name": "i_z0_zi", "type": "uint256[3]"},
+                        {"internalType": "uint256[4]", "name": "U_i_cmW_U_i_cmE", "type": "uint256[4]"},
+                        {"internalType": "uint256[2]", "name": "u_i_cmW", "type": "uint256[2]"},
+                        {"internalType": "uint256[3]", "name": "cmT_r", "type": "uint256[3]"},
+                        {"internalType": "uint256[2]", "name": "pA", "type": "uint256[2]"},
+                        {"internalType": "uint256[2][2]", "name": "pB", "type": "uint256[2][2]"},
+                        {"internalType": "uint256[2]", "name": "pC", "type": "uint256[2]"},
+                        {"internalType": "uint256[4]", "name": "challenge_W_challenge_E_kzg_evals", "type": "uint256[4]"},
+                        {"internalType": "uint256[2][2]", "name": "kzg_proof", "type": "uint256[2][2]"},
+                        {"internalType": "bytes32", "name": "deviceId", "type": "bytes32"},
+                        {"internalType": "uint256", "name": "proofId", "type": "uint256"}
+                    ],
+                    "name": "verifyDeviceProximity",
+                    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                }];
+                
+                const contract = new ethers.Contract(contractAddress, abi, signer);
+                
+                // Create a mock proof
+                const formatter = new NovaProofFormatter();
+                const mockProof = formatter.formatDeviceProximityProof('TESTVERIFY', 5050, 5050, null);
+                const deviceIdBytes32 = ethers.utils.id('TESTVERIFY');
+                const proofId = Math.floor(Date.now() / 1000);
+                
+                output.innerHTML += 'Attempting static call with mock proof...\n';
+                
+                try {
+                    // Try a static call first (doesn't send transaction)
+                    const result = await contract.callStatic.verifyDeviceProximity(
+                        mockProof.i_z0_zi,
+                        mockProof.U_i_cmW_U_i_cmE,
+                        mockProof.u_i_cmW,
+                        mockProof.cmT_r,
+                        mockProof.pA,
+                        mockProof.pB,
+                        mockProof.pC,
+                        mockProof.challenge_W_challenge_E_kzg_evals,
+                        mockProof.kzg_proof,
+                        deviceIdBytes32,
+                        proofId
+                    );
+                    
+                    output.innerHTML += `Static call result: ${result}\n`;
+                    output.innerHTML += 'Mock proof would pass verification!\n';
+                } catch (e) {
+                    output.innerHTML += `Static call failed: ${e.reason || e.message}\n`;
+                    output.innerHTML += 'This is expected - mock proofs should fail cryptographic verification\n';
+                }
+                
+            } catch (error) {
+                output.innerHTML += `<span style="color: red;">Error: ${error.message}</span>\n`;
+            }
+        }
+    </script>
+</body>
+</html>

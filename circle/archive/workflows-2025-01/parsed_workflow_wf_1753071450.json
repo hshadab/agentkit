@@ -1,0 +1,10 @@
+{
+  "description": "test",
+  "steps": [
+    {
+      "type": "list_proofs",
+      "description": "List all proofs",
+      "index": 0
+    }
+  ]
+}

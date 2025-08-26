@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Proximity Proof Parsing</title>
+    <script src="/static/parsers/nova/zkengine-calldata-parser.js"></script>
+    <script>
+        async function testParsing() {
+            console.log('=== TESTING PROXIMITY PROOF PARSING ===');
+            
+            // Create a test proof data structure similar to what zkEngine outputs
+            const testProofData = {
+                proof_data: "", // This would be base64 encoded binary from zkEngine
+                public_inputs: {
+                    execution_z0: ["5050", "5050"],
+                    IC_i: ["1", "2", "3"],
+                    ops_z0: ["0", "0"]
+                }
+            };
+            
+            // Create a sample binary proof (normally from zkEngine)
+            // This creates 32 field elements of 32 bytes each
+            const fieldElements = [];
+            for (let i = 0; i < 32; i++) {
+                // Create a 32-byte field element
+                const bytes = new Uint8Array(32);
+                // Fill with test data
+                for (let j = 0; j < 32; j++) {
+                    bytes[j] = (i * 32 + j) % 256;
+                }
+                fieldElements.push(bytes);
+            }
+            
+            // Concatenate all field elements
+            const totalBytes = fieldElements.length * 32;
+            const binaryProof = new Uint8Array(totalBytes);
+            let offset = 0;
+            for (const elem of fieldElements) {
+                binaryProof.set(elem, offset);
+                offset += 32;
+            }
+            
+            // Convert to base64
+            let binaryString = '';
+            for (let i = 0; i < binaryProof.length; i++) {
+                binaryString += String.fromCharCode(binaryProof[i]);
+            }
+            testProofData.proof_data = btoa(binaryString);
+            
+            console.log('Test proof data created');
+            console.log('Binary length:', binaryProof.length);
+            console.log('Base64 length:', testProofData.proof_data.length);
+            
+            // Test the parser
+            const parser = new ZKEngineCalldataParser();
+            
+            try {
+                const components = parser.parseZKEngineProof(testProofData);
+                console.log('Parsing successful!');
+                console.log('Components:', components);
+                
+                // Test formatting for IoTeX
+                const formatted = parser.formatForIoTeXContract(components, "5050", "5050");
+                console.log('Formatting successful!');
+                console.log('Formatted proof:', formatted);
+                
+                // Verify all components are present
+                const requiredComponents = [
+                    'i_z0_zi', 'U_i_cmW_U_i_cmE', 'u_i_cmW', 'cmT_r',
+                    'pA', 'pB', 'pC', 'challenge_W_challenge_E_kzg_evals', 'kzg_proof'
+                ];
+                
+                let allPresent = true;
+                for (const comp of requiredComponents) {
+                    if (!formatted[comp]) {
+                        console.error(`Missing component: ${comp}`);
+                        allPresent = false;
+                    }
+                }
+                
+                if (allPresent) {
+                    console.log('✅ All components present!');
+                } else {
+                    console.log('❌ Some components missing');
+                }
+                
+            } catch (error) {
+                console.error('Parsing failed:', error);
+            }
+        }
+        
+        // Run test on page load
+        window.addEventListener('load', testParsing);
+    </script>
+</head>
+<body>
+    <h1>Proximity Proof Parsing Test</h1>
+    <p>Check the browser console for test results.</p>
+</body>
+</html>

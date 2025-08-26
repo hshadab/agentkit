@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Base Sepolia Balance</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+</head>
+<body>
+    <h2>Base Sepolia Balance Checker</h2>
+    <div id="status">Not connected</div>
+    <button onclick="checkBalance()">Check Balance</button>
+    <div id="result"></div>
+
+    <script>
+    async function checkBalance() {
+        try {
+            if (!window.ethereum) {
+                alert('Please install Coinbase Wallet or MetaMask');
+                return;
+            }
+
+            // Request account access
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            const account = accounts[0];
+            
+            // Check if on Base Sepolia
+            const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+            if (chainId !== '0x14a34') { // 84532 in hex
+                // Try to switch to Base Sepolia
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0x14a34' }],
+                    });
+                } catch (switchError) {
+                    if (switchError.code === 4902) {
+                        // Add the network
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: '0x14a34',
+                                chainName: 'Base Sepolia',
+                                nativeCurrency: {
+                                    name: 'Ethereum',
+                                    symbol: 'ETH',
+                                    decimals: 18
+                                },
+                                rpcUrls: ['https://sepolia.base.org'],
+                                blockExplorerUrls: ['https://sepolia.basescan.org']
+                            }],
+                        });
+                    }
+                }
+            }
+            
+            // Create Web3 instance
+            const web3 = new Web3(window.ethereum);
+            
+            // Get balance
+            const balanceWei = await web3.eth.getBalance(account);
+            const balanceEth = web3.utils.fromWei(balanceWei, 'ether');
+            
+            document.getElementById('result').innerHTML = `
+                <h3>Wallet: ${account}</h3>
+                <h3>Base Sepolia Balance: ${balanceEth} ETH</h3>
+                <p>Explorer: <a href="https://sepolia.basescan.org/address/${account}" target="_blank">View on BaseScan</a></p>
+                ${parseFloat(balanceEth) < 0.01 ? '<p style="color: red;">⚠️ Low balance! You need testnet ETH to verify proofs.</p>' : '<p style="color: green;">✓ Sufficient balance for verification</p>'}
+            `;
+            
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('result').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+        }
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+{
+  "description": "Generate device proximity proof for device DEV001",
+  "steps": [
+    {
+      "type": "register_device",
+      "device_id": "DEV001",
+      "description": "Register IoT device DEV001",
+      "index": 0
+    },
+    {
+      "type": "generate_proof",
+      "proof_type": "device_proximity",
+      "device_id": "DEV001",
+      "description": "Generate device proximity proof for DEV001",
+      "index": 1
+    },
+    {
+      "type": "verify_on_iotex",
+      "proof_type": "device_proximity",
+      "device_id": "DEV001",
+      "description": "Verify device proximity proof on IoTeX blockchain",
+      "index": 2
+    },
+    {
+      "type": "claim_rewards",
+      "device_id": "DEV001",
+      "description": "Claim rewards for verified device DEV001",
+      "index": 3
+    }
+  ],
+  "workflow_id": "wf_1753666325"
+}

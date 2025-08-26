@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Medical Proof Verification Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1976D2;
+        }
+        .log {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Medical Proof Verification Test</h1>
+        <p>This page tests the medical proof generation and verification workflow.</p>
+        
+        <button id="generate-proof">1. Generate Medical Proof</button>
+        <button id="verify-proof" disabled>2. Verify on Avalanche</button>
+        <button id="clear-log">Clear Log</button>
+        
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        let proofId = null;
+        const log = document.getElementById('log');
+        const generateBtn = document.getElementById('generate-proof');
+        const verifyBtn = document.getElementById('verify-proof');
+        const clearBtn = document.getElementById('clear-log');
+        
+        function addLog(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = type;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        clearBtn.addEventListener('click', () => {
+            log.innerHTML = '';
+            proofId = null;
+            verifyBtn.disabled = true;
+            addLog('Log cleared');
+        });
+        
+        generateBtn.addEventListener('click', async () => {
+            try {
+                generateBtn.disabled = true;
+                addLog('Starting medical proof generation...');
+                
+                const response = await fetch('http://localhost:8002/execute_workflow', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        command: 'Generate medical integrity proof for patient 12345 with record hash 0xabc123',
+                        workflowId: `wf_test_${Date.now()}`
+                    })
+                });
+                
+                const result = await response.json();
+                addLog(`Response status: ${response.status}`);
+                addLog(`Response: ${JSON.stringify(result, null, 2)}`);
+                
+                if (result.success && result.proofSummary && result.proofSummary.medical_integrity) {
+                    proofId = result.proofSummary.medical_integrity.proofId;
+                    addLog(`Proof generated successfully! ID: ${proofId}`, 'success');
+                    verifyBtn.disabled = false;
+                } else {
+                    addLog(`Failed to generate proof: ${result.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                addLog(`Error: ${error.message}`, 'error');
+            } finally {
+                generateBtn.disabled = false;
+            }
+        });
+        
+        verifyBtn.addEventListener('click', async () => {
+            if (!proofId) {
+                addLog('No proof ID available', 'error');
+                return;
+            }
+            
+            try {
+                verifyBtn.disabled = true;
+                addLog(`Starting verification for proof: ${proofId}...`);
+                
+                // First, fetch the proof data
+                addLog('Fetching proof data...');
+                const proofResponse = await fetch(`http://localhost:8001/api/proof/${proofId}/ethereum`);
+                if (!proofResponse.ok) {
+                    throw new Error(`Failed to fetch proof: ${proofResponse.status}`);
+                }
+                
+                const proofData = await proofResponse.json();
+                addLog(`Proof data fetched: ${JSON.stringify(proofData, null, 2)}`);
+                
+                // Check if MetaMask is available
+                if (!window.ethereum) {
+                    throw new Error('MetaMask not installed');
+                }
+                
+                // Request account access
+                addLog('Requesting MetaMask account access...');
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                addLog(`Connected account: ${accounts[0]}`);
+                
+                // Switch to Avalanche network
+                addLog('Switching to Avalanche Fuji testnet...');
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0xa869' }], // 43113 in hex
+                    });
+                } catch (switchError) {
+                    if (switchError.code === 4902) {
+                        addLog('Adding Avalanche network...');
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: '0xa869',
+                                chainName: 'Avalanche Fuji Testnet',
+                                nativeCurrency: {
+                                    name: 'AVAX',
+                                    symbol: 'AVAX',
+                                    decimals: 18
+                                },
+                                rpcUrls: ['https://api.avax-test.network/ext/bc/C/rpc'],
+                                blockExplorerUrls: ['https://testnet.snowtrace.io/']
+                            }],
+                        });
+                    }
+                }
+                
+                addLog('Network switched successfully');
+                addLog('Simulating verification (check console for details)...');
+                
+                // Log what would be sent to the verifier
+                console.log('Proof data for verification:', proofData);
+                
+                addLog('Test complete! Check browser console for details.', 'success');
+                addLog('In a real scenario, this would submit the proof to the Avalanche verifier contract.');
+                
+            } catch (error) {
+                addLog(`Error: ${error.message}`, 'error');
+                console.error('Verification error:', error);
+            } finally {
+                verifyBtn.disabled = false;
+            }
+        });
+        
+        addLog('Test page loaded. Click "Generate Medical Proof" to start.');
+    </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "contracts": {
+    "SimplifiedZKVerifier": {
+      "address": "0xB511DE43036aCFb3D4Ec84A913c1eCa237f9437E",
+      "transactionHash": "0xaf363338713db9f082ca4b7732ff27fc8c0109fdfe307b6a1b8e7a33c5413fbd",
+      "deployer": "0x27aFfeb992734022531Aaf8bD03C189518898D3F",
+      "deployedAt": "2025-07-10T11:43:13.052Z"
+    }
+  }
+}

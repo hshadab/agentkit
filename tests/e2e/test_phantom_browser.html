@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Phantom Integration Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            background: rgba(107, 124, 255, 0.05);
+            border: 1px solid rgba(107, 124, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        button {
+            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+        .warning {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            color: #fbbf24;
+        }
+        .info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+        }
+    </style>
+</head>
+<body>
+    <h1>Phantom Wallet Integration Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Wallet Detection</h2>
+        <button onclick="detectPhantom()">Detect Phantom</button>
+        <div id="detect-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Ethereum Connection</h2>
+        <button onclick="connectEthereum()">Connect Ethereum</button>
+        <div id="eth-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Solana Connection</h2>
+        <button onclick="connectSolana()">Connect Solana</button>
+        <div id="sol-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Generate & Verify Proof</h2>
+        <button onclick="testFullFlow()">Test Full Flow</button>
+        <div id="flow-results"></div>
+    </div>
+    
+    <script>
+        const log = (containerId, message, className = 'info') => {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `result ${className}`;
+            div.textContent = message;
+            container.appendChild(div);
+        };
+        
+        function detectPhantom() {
+            const container = 'detect-results';
+            document.getElementById(container).innerHTML = '';
+            
+            log(container, 'Checking for Phantom wallet...');
+            
+            // Check Ethereum provider
+            if (window.ethereum) {
+                log(container, `✓ window.ethereum detected`, 'success');
+                log(container, `  isPhantom: ${window.ethereum.isPhantom}`, window.ethereum.isPhantom ? 'success' : 'warning');
+                log(container, `  isMetaMask: ${window.ethereum.isMetaMask}`, window.ethereum.isMetaMask ? 'warning' : 'info');
+                
+                if (window.ethereum.providers) {
+                    log(container, `  Multiple providers: ${window.ethereum.providers.length}`, 'warning');
+                }
+            } else {
+                log(container, '✗ window.ethereum not found', 'error');
+            }
+            
+            // Check Solana provider
+            if (window.solana) {
+                log(container, `✓ window.solana detected`, 'success');
+                log(container, `  isPhantom: ${window.solana.isPhantom}`, window.solana.isPhantom ? 'success' : 'warning');
+                log(container, `  isConnected: ${window.solana.isConnected}`, window.solana.isConnected ? 'success' : 'info');
+            } else {
+                log(container, '✗ window.solana not found', 'error');
+            }
+        }
+        
+        async function connectEthereum() {
+            const container = 'eth-results';
+            document.getElementById(container).innerHTML = '';
+            
+            if (!window.ethereum) {
+                log(container, 'No Ethereum provider found', 'error');
+                return;
+            }
+            
+            try {
+                log(container, 'Requesting Ethereum accounts...');
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                log(container, `✓ Connected: ${accounts[0]}`, 'success');
+                
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                log(container, `  Chain ID: ${chainId} (${parseInt(chainId, 16)})`, 'info');
+                
+                // Test if we can get balance (this often triggers the service worker issue)
+                try {
+                    const balance = await window.ethereum.request({
+                        method: 'eth_getBalance',
+                        params: [accounts[0], 'latest']
+                    });
+                    log(container, `  Balance: ${parseInt(balance, 16) / 1e18} ETH`, 'success');
+                } catch (balanceError) {
+                    log(container, `  Balance check failed: ${balanceError.message}`, 'warning');
+                }
+                
+            } catch (error) {
+                log(container, `Connection failed: ${error.message}`, 'error');
+                
+                if (error.message.includes('service worker')) {
+                    log(container, '⚠️ Phantom service worker issue detected!', 'warning');
+                    log(container, 'This is the known Phantom Ethereum bug', 'warning');
+                }
+            }
+        }
+        
+        async function connectSolana() {
+            const container = 'sol-results';
+            document.getElementById(container).innerHTML = '';
+            
+            if (!window.solana) {
+                log(container, 'No Solana provider found', 'error');
+                return;
+            }
+            
+            try {
+                log(container, 'Connecting to Phantom (Solana)...');
+                const response = await window.solana.connect();
+                log(container, `✓ Connected: ${response.publicKey.toString()}`, 'success');
+                
+                // Get balance
+                const connection = new solanaWeb3.Connection('https://api.devnet.solana.com');
+                const balance = await connection.getBalance(response.publicKey);
+                log(container, `  Balance: ${balance / 1e9} SOL`, 'info');
+                
+            } catch (error) {
+                log(container, `Connection failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testFullFlow() {
+            const container = 'flow-results';
+            document.getElementById(container).innerHTML = '';
+            
+            log(container, 'Starting full flow test...');
+            
+            // Test WebSocket connection
+            const ws = new WebSocket('ws://localhost:8001/ws');
+            
+            ws.onopen = () => {
+                log(container, '✓ WebSocket connected', 'success');
+                
+                // Send test command
+                ws.send(JSON.stringify({
+                    message: 'Generate KYC proof',
+                    metadata: {
+                        source: 'phantom-test'
+                    }
+                }));
+                log(container, '📤 Sent proof generation request', 'info');
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                switch(data.type) {
+                    case 'proof_complete':
+                        log(container, `✓ Proof generated: ${data.proof_id}`, 'success');
+                        log(container, 'Test recommendation:', 'info');
+                        log(container, '• Use "Verify on Solana" for Phantom', 'warning');
+                        log(container, '• "Verify on Ethereum" will show warning', 'warning');
+                        ws.close();
+                        break;
+                        
+                    case 'proof_status':
+                        log(container, `Status: ${data.message}`, 'info');
+                        break;
+                        
+                    case 'error':
+                        log(container, `Error: ${data.error}`, 'error');
+                        ws.close();
+                        break;
+                }
+            };
+            
+            ws.onerror = (error) => {
+                log(container, `WebSocket error: ${error.message}`, 'error');
+            };
+        }
+        
+        // Add Solana Web3.js
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js';
+        document.head.appendChild(script);
+        
+        // Auto-detect on load
+        window.addEventListener('load', detectPhantom);
+    </script>
+</body>
+</html>

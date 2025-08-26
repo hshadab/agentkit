@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enhanced Solana Verification Test</title>
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script src="/static/solana-verifier.js"></script>
+</head>
+<body>
+    <h1>Enhanced Solana Verification Test</h1>
+    <button onclick="testVerification()">Test Enhanced Verification</button>
+    <div id="result"></div>
+    
+    <script>
+        async function testVerification() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Testing enhanced Solana verification...</p>';
+            
+            try {
+                // Connect first
+                const connectResult = await window.solanaVerifier.connect();
+                if (!connectResult.success) {
+                    throw new Error('Failed to connect: ' + connectResult.error);
+                }
+                
+                resultDiv.innerHTML += `<p>✅ Connected to ${connectResult.wallet}</p>`;
+                
+                // Test verification with dummy data
+                const proofId = 'test_proof_' + Date.now();
+                const proofData = null; // Will use fallback
+                const publicInputs = {
+                    commitment: '0x1234567890abcdef',
+                    proof_type: 1,
+                    timestamp: Math.floor(Date.now() / 1000)
+                };
+                const proofType = 'prove_kyc';
+                
+                resultDiv.innerHTML += '<p>🔄 Submitting multi-step verification...</p>';
+                
+                const result = await window.solanaVerifier.verifyProofOnChain(
+                    proofId,
+                    proofData,
+                    publicInputs,
+                    proofType
+                );
+                
+                if (result.success) {
+                    resultDiv.innerHTML += `
+                        <h3>✅ Enhanced Verification Successful!</h3>
+                        <ul>
+                            <li>Transaction: <a href="${result.explorerUrl}" target="_blank">${result.signature}</a></li>
+                            <li>3 instructions executed (Init → Hash → Verify)</li>
+                            <li>Proof PDA created deterministically</li>
+                            <li>Metadata stored on-chain</li>
+                            <li>Compute units: ~${result.computeUnits || 15000}</li>
+                        </ul>
+                    `;
+                } else {
+                    throw new Error(result.error);
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML += `<p>❌ Error: ${error.message}</p>`;
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>

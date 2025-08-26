@@ -1,0 +1,39 @@
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -1234,12 +1234,35 @@ async fn verify_proof(state: AppState, proof_id: String, metadata: ProofMetadata
+     });
+     let _ = state.tx.send(status_msg.to_string());
+     
+-    let proof_dir = PathBuf::from(&state.proofs_dir).join(&proof_id);
++    // Try multiple directory naming patterns
++    let mut proof_dir = PathBuf::from(&state.proofs_dir).join(&proof_id);
++    
++    // If directory doesn't exist, try alternative naming patterns
++    if !proof_dir.exists() {
++        // Try replacing "proof_" with "prove_"
++        if proof_id.starts_with("proof_") {
++            let alt_id = proof_id.replacen("proof_", "prove_", 1);
++            let alt_dir = PathBuf::from(&state.proofs_dir).join(&alt_id);
++            if alt_dir.exists() {
++                info!("Using alternative proof directory: {} -> {}", proof_id, alt_id);
++                proof_dir = alt_dir;
++            }
++        }
++        // Try replacing "prove_" with "proof_"
++        else if proof_id.starts_with("prove_") {
++            let alt_id = proof_id.replacen("prove_", "proof_", 1);
++            let alt_dir = PathBuf::from(&state.proofs_dir).join(&alt_id);
++            if alt_dir.exists() {
++                info!("Using alternative proof directory: {} -> {}", proof_id, alt_id);
++                proof_dir = alt_dir;
++            }
++        }
++    }
++    
+     let proof_path = proof_dir.join("proof.bin");
+     let public_path = proof_dir.join("public.json");
+     
+     // Check for cached verification result
+     let verified_marker = proof_dir.join(".verified");
+     if verified_marker.exists() {
+         info!("Using cached verification for {} (already verified)", proof_id);
