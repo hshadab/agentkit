@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IoTeX Contract Balance Checker</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .info-box {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .balance {
+            font-size: 24px;
+            color: #51cf66;
+            margin: 10px 0;
+        }
+        .address {
+            font-family: monospace;
+            background: #333;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        button {
+            background: #7c3aed;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #6d28d9;
+        }
+        .error { color: #ff6b6b; }
+        .success { color: #51cf66; }
+        .warning { color: #ffc107; }
+        input {
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px;
+            border-radius: 4px;
+            width: 400px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 IoTeX Contract Balance Checker</h1>
+    
+    <div class="info-box">
+        <h2>Device Verifier Contract</h2>
+        <p>Address: <span class="address">0x5967d15c7a6fD3ef7F1f309e766f35252a9de10d</span></p>
+        <p>Network: IoTeX Testnet (Chain ID: 4690)</p>
+        <button onclick="checkBalance()">Check Contract Balance</button>
+        <div id="balance-info"></div>
+    </div>
+    
+    <div class="info-box">
+        <h2>Your Wallet Information</h2>
+        <p>Enter your IoTeX testnet address to check balance:</p>
+        <input type="text" id="user-address" placeholder="0x..." />
+        <button onclick="checkUserBalance()">Check My Balance</button>
+        <div id="user-balance"></div>
+    </div>
+    
+    <div class="info-box">
+        <h2>Get Test IOTX</h2>
+        <p>Need test tokens? Use the IoTeX faucet:</p>
+        <button onclick="window.open('https://faucet.iotex.io/', '_blank')">Open IoTeX Faucet</button>
+        <p class="warning">⚠️ The faucet provides 1000 test IOTX per request</p>
+    </div>
+    
+    <div class="info-box">
+        <h2>Important Notes</h2>
+        <p>I cannot directly transfer funds from the smart contract because:</p>
+        <ul>
+            <li>Smart contracts have ownership and access controls</li>
+            <li>Only the contract owner or authorized functions can withdraw funds</li>
+            <li>The contract is designed to distribute rewards through device registration and proof verification</li>
+        </ul>
+        
+        <h3>How to Earn Rewards:</h3>
+        <ol>
+            <li>Register your IoT device using the contract</li>
+            <li>Submit valid proximity proofs</li>
+            <li>Accumulate rewards based on your contributions</li>
+            <li>Claim rewards through the contract's reward mechanism</li>
+        </ol>
+    </div>
+
+    <script>
+        async function checkBalance() {
+            const infoDiv = document.getElementById('balance-info');
+            infoDiv.innerHTML = '<p>Checking...</p>';
+            
+            try {
+                const provider = new ethers.providers.JsonRpcProvider('https://babel-api.testnet.iotex.io');
+                const contractAddress = '0x5967d15c7a6fD3ef7F1f309e766f35252a9de10d';
+                
+                // Get contract balance
+                const balance = await provider.getBalance(contractAddress);
+                const balanceInIOTX = ethers.utils.formatEther(balance);
+                
+                // Check if contract is deployed
+                const code = await provider.getCode(contractAddress);
+                const isDeployed = code !== '0x';
+                
+                // Get block number
+                const blockNumber = await provider.getBlockNumber();
+                
+                let html = `
+                    <div class="balance">Balance: ${balanceInIOTX} IOTX</div>
+                    <p>Contract Deployed: <span class="${isDeployed ? 'success' : 'error'}">${isDeployed ? 'Yes' : 'No'}</span></p>
+                    <p>Latest Block: ${blockNumber.toLocaleString()}</p>
+                `;
+                
+                // Try to get owner
+                const abi = ["function owner() view returns (address)"];
+                const contract = new ethers.Contract(contractAddress, abi, provider);
+                
+                try {
+                    const owner = await contract.owner();
+                    html += `<p>Contract Owner: <span class="address">${owner}</span></p>`;
+                } catch (e) {
+                    html += `<p class="warning">Owner function not accessible</p>`;
+                }
+                
+                infoDiv.innerHTML = html;
+                
+            } catch (error) {
+                infoDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+        
+        async function checkUserBalance() {
+            const address = document.getElementById('user-address').value;
+            const resultDiv = document.getElementById('user-balance');
+            
+            if (!address || !address.startsWith('0x')) {
+                resultDiv.innerHTML = '<p class="error">Please enter a valid address</p>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<p>Checking...</p>';
+            
+            try {
+                const provider = new ethers.providers.JsonRpcProvider('https://babel-api.testnet.iotex.io');
+                const balance = await provider.getBalance(address);
+                const balanceInIOTX = ethers.utils.formatEther(balance);
+                
+                resultDiv.innerHTML = `
+                    <div class="balance">Your Balance: ${balanceInIOTX} IOTX</div>
+                    <p>Address: <span class="address">${address}</span></p>
+                    ${parseFloat(balanceInIOTX) < 0.1 ? '<p class="warning">⚠️ Low balance - visit the faucet to get test tokens</p>' : ''}
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Auto-check contract balance on load
+        window.addEventListener('load', () => {
+            checkBalance();
+        });
+    </script>
+</body>
+</html>

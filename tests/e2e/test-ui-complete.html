@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UI Functionality Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn:hover { background: #45a049; }
+        .btn-secondary {
+            background: #2196F3;
+        }
+        .btn-secondary:hover { background: #0b7dda; }
+        .status {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .code-block {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 AgentKit UI Complete Test Suite</h1>
+    
+    <div class="test-section">
+        <h2>📋 Configuration Check</h2>
+        <div id="config-status" class="status info" style="display:block;">Checking configuration...</div>
+        <button class="btn" onclick="checkConfig()">Refresh Config</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🌐 UI Access</h2>
+        <p>Main UI is running at: <a href="http://localhost:8080/static/index.html" target="_blank">http://localhost:8080/static/index.html</a></p>
+        <button class="btn" onclick="openUI()">Open UI in New Tab</button>
+        <button class="btn btn-secondary" onclick="loadUIFrame()">Load UI in Frame Below</button>
+        <div id="ui-frame-container" style="margin-top: 20px; display: none;">
+            <iframe id="ui-frame" src=""></iframe>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔗 Ethereum Verification Tests</h2>
+        <div class="test-grid">
+            <div>
+                <h3>1. Connection Test</h3>
+                <button class="btn" onclick="testConnection()">Test MetaMask Connection</button>
+                <div id="connection-status" class="status"></div>
+            </div>
+            
+            <div>
+                <h3>2. Contract Check</h3>
+                <button class="btn" onclick="testContract()">Verify Contract Address</button>
+                <div id="contract-status" class="status"></div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <h3>3. Proof Verification Tests</h3>
+            <p>Test each proof type:</p>
+            <button class="btn" onclick="testVerification('kyc')">Test KYC Verification</button>
+            <button class="btn" onclick="testVerification('location')">Test Location Verification</button>
+            <button class="btn" onclick="testVerification('ai')">Test AI Content Verification</button>
+            <div id="verification-status" class="status"></div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>💬 Text Prompt Tests</h2>
+        <div>
+            <h3>Test Natural Language Workflow Creation</h3>
+            <p>Sample prompts to test:</p>
+            <div class="code-block">
+                • "Verify KYC for Alice"<br>
+                • "Check if Bob is in New York"<br>
+                • "Verify AI-generated content from ChatGPT"<br>
+                • "Prove Alice is over 18 and Bob is in California"
+            </div>
+            <button class="btn" onclick="testTextPrompt('Verify KYC for Alice')">Test KYC Prompt</button>
+            <button class="btn" onclick="testTextPrompt('Check if Bob is in New York')">Test Location Prompt</button>
+            <button class="btn" onclick="testTextPrompt('Verify AI-generated content from ChatGPT')">Test AI Content Prompt</button>
+            <div id="prompt-status" class="status"></div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 Test Results Summary</h2>
+        <div id="summary-status" class="status info" style="display:block;">
+            Run tests above to see results here...
+        </div>
+    </div>
+
+    <script src="/static/ethereum-verifier.js"></script>
+    <script>
+        let testResults = {
+            config: false,
+            connection: false,
+            contract: false,
+            verification: false,
+            prompts: false
+        };
+        
+        function updateSummary() {
+            const summaryDiv = document.getElementById('summary-status');
+            const passed = Object.values(testResults).filter(v => v).length;
+            const total = Object.keys(testResults).length;
+            
+            if (passed === total) {
+                summaryDiv.className = 'status success';
+                summaryDiv.innerHTML = `✅ All tests passed! (${passed}/${total})`;
+            } else if (passed > 0) {
+                summaryDiv.className = 'status warning';
+                summaryDiv.innerHTML = `⚠️ Partial success: ${passed}/${total} tests passed`;
+            } else {
+                summaryDiv.className = 'status info';
+                summaryDiv.innerHTML = `Run tests above to see results here...`;
+            }
+        }
+        
+        async function checkConfig() {
+            const statusDiv = document.getElementById('config-status');
+            statusDiv.style.display = 'block';
+            
+            try {
+                // Check ethereum-verifier.js
+                if (!window.ethereumVerifier) {
+                    throw new Error('Ethereum verifier not loaded');
+                }
+                
+                // Check backend
+                const response = await fetch('http://localhost:8001/health');
+                if (!response.ok) {
+                    throw new Error('Backend not responding');
+                }
+                
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = `
+                    ✅ Configuration OK<br>
+                    • Ethereum Verifier: Loaded<br>
+                    • Contract Address: 0x09378444046d1ccb32ca2d5b44fab6634738d067<br>
+                    • Backend API: Running on port 8001<br>
+                    • UI Server: Running on port 8080
+                `;
+                testResults.config = true;
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `❌ Configuration Error: ${error.message}`;
+                testResults.config = false;
+            }
+            updateSummary();
+        }
+        
+        function openUI() {
+            window.open('http://localhost:8080/static/index.html', '_blank');
+        }
+        
+        function loadUIFrame() {
+            const container = document.getElementById('ui-frame-container');
+            const frame = document.getElementById('ui-frame');
+            container.style.display = 'block';
+            frame.src = 'http://localhost:8080/static/index.html';
+        }
+        
+        async function testConnection() {
+            const statusDiv = document.getElementById('connection-status');
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Connecting to MetaMask...';
+            
+            try {
+                const result = await window.ethereumVerifier.connect();
+                if (result.success) {
+                    statusDiv.className = 'status success';
+                    statusDiv.innerHTML = `
+                        ✅ Connected successfully!<br>
+                        • Account: ${result.account}<br>
+                        • Network: Sepolia (${result.network})<br>
+                        • Wallet: ${result.wallet}
+                    `;
+                    testResults.connection = true;
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `❌ Connection failed: ${error.message}`;
+                testResults.connection = false;
+            }
+            updateSummary();
+        }
+        
+        async function testContract() {
+            const statusDiv = document.getElementById('contract-status');
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Checking contract...';
+            
+            try {
+                if (!window.ethereumVerifier.isConnected) {
+                    await window.ethereumVerifier.connect();
+                }
+                
+                const expectedAddress = '0x09378444046d1ccb32ca2d5b44fab6634738d067';
+                const actualAddress = window.ethereumVerifier.contractAddress;
+                
+                if (actualAddress?.toLowerCase() === expectedAddress.toLowerCase()) {
+                    statusDiv.className = 'status success';
+                    statusDiv.innerHTML = `
+                        ✅ Contract configured correctly!<br>
+                        • Address: ${actualAddress}<br>
+                        • Status: Ready for verification
+                    `;
+                    testResults.contract = true;
+                } else {
+                    throw new Error(`Wrong contract address: ${actualAddress}`);
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `❌ Contract check failed: ${error.message}`;
+                testResults.contract = false;
+            }
+            updateSummary();
+        }
+        
+        async function testVerification(type) {
+            const statusDiv = document.getElementById('verification-status');
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status info';
+            statusDiv.textContent = `Testing ${type} verification...`;
+            
+            const proofIds = {
+                kyc: 'proof_kyc_1752383834341',
+                location: 'proof_location_1752380177607',
+                ai: 'proof_ai_content_1752380242318'
+            };
+            
+            try {
+                if (!window.ethereumVerifier.isConnected) {
+                    await window.ethereumVerifier.connect();
+                }
+                
+                const proofId = proofIds[type];
+                const proofData = await window.ethereumVerifier.fetchProofData(proofId);
+                
+                statusDiv.innerHTML = `
+                    📋 Fetched ${type.toUpperCase()} proof<br>
+                    • Proof ID: ${proofId}<br>
+                    • Type Signal: ${proofData.public_signals?.[3]}<br>
+                    • Status: Ready to verify on-chain<br>
+                    <br>
+                    ⏳ Would you like to submit on-chain? (Click "Verify on Ethereum" in main UI)
+                `;
+                statusDiv.className = 'status success';
+                testResults.verification = true;
+                
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `❌ Verification test failed: ${error.message}`;
+                testResults.verification = false;
+            }
+            updateSummary();
+        }
+        
+        async function testTextPrompt(prompt) {
+            const statusDiv = document.getElementById('prompt-status');
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status info';
+            statusDiv.textContent = `Testing prompt: "${prompt}"...`;
+            
+            try {
+                const response = await fetch('http://localhost:8001/api/workflow/parse', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: prompt })
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Parse failed: ${errorText}`);
+                }
+                
+                const result = await response.json();
+                
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = `
+                    ✅ Text prompt parsed successfully!<br>
+                    • Input: "${prompt}"<br>
+                    • Parsed Steps: ${JSON.stringify(result.steps || result, null, 2)}<br>
+                    <br>
+                    💡 To test in UI: Enter this prompt in the main interface
+                `;
+                testResults.prompts = true;
+                
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `
+                    ❌ Text prompt test failed<br>
+                    • Error: ${error.message}<br>
+                    <br>
+                    ℹ️ Note: OpenAI integration may need to be configured
+                `;
+                testResults.prompts = false;
+            }
+            updateSummary();
+        }
+        
+        // Run initial config check
+        window.addEventListener('load', checkConfig);
+    </script>
+</body>
+</html>

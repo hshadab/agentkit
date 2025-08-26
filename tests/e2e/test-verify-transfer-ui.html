@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Verification → Transfer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #fff;
+        }
+        .container {
+            background: rgba(20, 20, 20, 0.8);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(107, 124, 255, 0.2);
+        }
+        h1 { color: #c4b5fd; }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(107, 124, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(107, 124, 255, 0.1);
+        }
+        .btn {
+            background: #6B7CFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background: #5a6cdd;
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: #10b981;
+        }
+        .btn-secondary:hover {
+            background: #0ea672;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+        .success { 
+            background: rgba(16, 185, 129, 0.1); 
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+        .error { 
+            background: rgba(239, 68, 68, 0.1); 
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+        .info { 
+            background: rgba(107, 124, 255, 0.1); 
+            border: 1px solid rgba(107, 124, 255, 0.3);
+            color: #a78bfa;
+        }
+        .code {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            margin: 10px 0;
+            border: 1px solid rgba(107, 124, 255, 0.2);
+        }
+        ul {
+            line-height: 1.8;
+        }
+        .workflow-options {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 Test: On-Chain Verification → USDC Transfer</h1>
+        
+        <div class="test-section">
+            <h2>📋 How It Works</h2>
+            <p>This demo shows how on-chain verification can trigger a USDC transfer:</p>
+            <ol>
+                <li>Generate a zero-knowledge proof (KYC, Location, or AI Content)</li>
+                <li>Verify the proof on Ethereum blockchain</li>
+                <li>Upon successful verification, automatically transfer USDC</li>
+            </ol>
+            <p><strong>Key Feature:</strong> The transfer only happens if the on-chain verification succeeds!</p>
+        </div>
+        
+        <div class="test-section">
+            <h2>🚀 Quick Test Options</h2>
+            <div class="workflow-options">
+                <div>
+                    <h3>Option 1: Generate New Proof → Verify → Transfer</h3>
+                    <button class="btn" onclick="testFullWorkflow()">
+                        Start Full Workflow
+                    </button>
+                    <p style="font-size: 14px; color: #888;">Generates KYC proof, verifies on-chain, then transfers 0.1 USDC</p>
+                </div>
+                
+                <div>
+                    <h3>Option 2: Use Existing Proof</h3>
+                    <input type="text" id="proofId" placeholder="Enter proof ID" style="padding: 10px; border-radius: 6px; background: rgba(0,0,0,0.5); border: 1px solid #444; color: white; width: 300px;">
+                    <button class="btn btn-secondary" onclick="testExistingProof()">
+                        Verify & Transfer
+                    </button>
+                    <p style="font-size: 14px; color: #888;">Verifies existing proof on-chain, then transfers USDC</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="status" class="status"></div>
+        
+        <div class="test-section">
+            <h2>💡 Technical Details</h2>
+            <h3>Workflow Steps:</h3>
+            <div class="code">
+[
+  { type: "kyc", action: "generate_proof", person: "Alice" },
+  { type: "blockchain", action: "verify", blockchain: "ethereum" },
+  { type: "transfer", action: "transfer", amount: "0.1", recipient: "Alice", blockchain: "ETH" }
+]
+            </div>
+            
+            <h3>How Conditional Logic Works:</h3>
+            <ul>
+                <li>✅ Each workflow step can depend on previous step results</li>
+                <li>✅ Transfer step checks if verification was successful</li>
+                <li>✅ If verification fails, transfer is skipped</li>
+                <li>✅ All steps are tracked in real-time via WebSocket</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h2>🔍 What to Expect</h2>
+            <ol>
+                <li><strong>Proof Generation:</strong> ~15 seconds for zkEngine to generate proof</li>
+                <li><strong>MetaMask Popup:</strong> Approve the verification transaction</li>
+                <li><strong>On-Chain Verification:</strong> Wait for blockchain confirmation</li>
+                <li><strong>USDC Transfer:</strong> Automatic transfer via Circle API</li>
+            </ol>
+            <p><strong>Note:</strong> Make sure you're connected to Sepolia testnet in MetaMask!</p>
+        </div>
+    </div>
+    
+    <script>
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.style.display = 'block';
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+        }
+        
+        async function testFullWorkflow() {
+            showStatus('🚀 Starting full workflow: Generate → Verify → Transfer...', 'info');
+            
+            try {
+                // Send the workflow as a natural language command to the main UI
+                const command = "Generate KYC proof for Alice, verify it on Ethereum, then transfer 0.1 USDC to Alice on Ethereum";
+                
+                showStatus(`
+                    <h3>📤 Workflow Initiated!</h3>
+                    <p>Copy and paste this command in the main UI:</p>
+                    <div class="code" style="user-select: all; cursor: text;">${command}</div>
+                    <p>Or try these shorter versions:</p>
+                    <ul>
+                        <li>"Send 0.1 USDC to Alice on Ethereum if KYC compliant"</li>
+                        <li>"Generate KYC proof, then transfer to Alice on Ethereum"</li>
+                    </ul>
+                    <p><strong>What happens:</strong></p>
+                    <ol>
+                        <li>KYC proof generation starts</li>
+                        <li>MetaMask prompts for verification</li>
+                        <li>USDC transfer executes if verified</li>
+                    </ol>
+                `, 'success');
+                
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testExistingProof() {
+            const proofId = document.getElementById('proofId').value.trim();
+            
+            if (!proofId) {
+                showStatus('❌ Please enter a proof ID', 'error');
+                return;
+            }
+            
+            showStatus(`🔍 Testing with proof: ${proofId}...`, 'info');
+            
+            try {
+                const command = `Verify proof ${proofId} on Ethereum, then transfer 0.1 USDC to Bob`;
+                
+                showStatus(`
+                    <h3>📤 Verification → Transfer Workflow</h3>
+                    <p>Copy and paste this command in the main UI:</p>
+                    <div class="code" style="user-select: all; cursor: text;">${command}</div>
+                    <p><strong>This will:</strong></p>
+                    <ol>
+                        <li>Fetch proof ${proofId}</li>
+                        <li>Verify it on Ethereum (MetaMask popup)</li>
+                        <li>Transfer 0.1 USDC to Bob if verified</li>
+                    </ol>
+                    <p><strong>Example proof IDs to try:</strong></p>
+                    <ul>
+                        <li>proof_kyc_1752383834341</li>
+                        <li>proof_location_1752380177607</li>
+                        <li>proof_ai_content_1752380242318</li>
+                    </ul>
+                `, 'success');
+                
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Add example proof IDs on load
+        window.addEventListener('load', () => {
+            document.getElementById('proofId').placeholder = 'e.g., proof_kyc_1752383834341';
+        });
+    </script>
+</body>
+</html>

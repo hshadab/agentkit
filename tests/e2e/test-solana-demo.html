@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solana ZK Verification Test</title>
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #000;
+            color: #fff;
+        }
+        button {
+            background: linear-gradient(135deg, #9945FF, #19FB9B);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+        }
+        .success {
+            border-left: 4px solid #19FB9B;
+        }
+        .error {
+            border-left: 4px solid #FF4545;
+        }
+        .info {
+            border-left: 4px solid #9945FF;
+        }
+        pre {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        h1 {
+            background: linear-gradient(135deg, #9945FF, #19FB9B);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <h1>◎ Solana ZK Verification Test</h1>
+    
+    <p>Test the Solana verification flow without deployment!</p>
+    
+    <button onclick="connectWallet()">Connect Phantom Wallet</button>
+    <button onclick="testVerification()" disabled id="verifyBtn">Test ZK Verification</button>
+    
+    <div id="status"></div>
+    
+    <script>
+        let wallet = null;
+        let connection = null;
+        
+        function log(message, type = 'info') {
+            const status = document.getElementById('status');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            status.appendChild(div);
+        }
+        
+        async function connectWallet() {
+            try {
+                if (!window.solana || !window.solana.isPhantom) {
+                    log('❌ Phantom wallet not found. Please install it.', 'error');
+                    return;
+                }
+                
+                const response = await window.solana.connect();
+                wallet = response.publicKey;
+                connection = new solanaWeb3.Connection('https://api.devnet.solana.com', 'confirmed');
+                
+                log(`✅ Connected: ${wallet.toString()}`, 'success');
+                document.getElementById('verifyBtn').disabled = false;
+                
+                // Check balance
+                const balance = await connection.getBalance(wallet);
+                const sol = balance / solanaWeb3.LAMPORTS_PER_SOL;
+                log(`💰 Balance: ${sol.toFixed(4)} SOL`, 'info');
+                
+                if (sol < 0.01) {
+                    log('⚠️ Low balance! Get free devnet SOL: <a href="https://faucet.solana.com" target="_blank">Solana Faucet</a>', 'info');
+                }
+                
+            } catch (error) {
+                log(`❌ Connection failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testVerification() {
+            try {
+                log('🔄 Creating demo ZK verification transaction...', 'info');
+                
+                // Create a memo transaction for demo
+                const memoProgram = new solanaWeb3.PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
+                const proofId = 'demo_' + Date.now();
+                
+                const transaction = new solanaWeb3.Transaction();
+                
+                // Add memo instruction
+                const memoInstruction = new solanaWeb3.TransactionInstruction({
+                    keys: [],
+                    programId: memoProgram,
+                    data: Buffer.from(`ZK Proof Verification Demo: ${proofId}`)
+                });
+                
+                transaction.add(memoInstruction);
+                
+                // Get recent blockhash
+                const { blockhash } = await connection.getLatestBlockhash();
+                transaction.recentBlockhash = blockhash;
+                transaction.feePayer = wallet;
+                
+                // Sign and send
+                const signed = await window.solana.signTransaction(transaction);
+                const signature = await connection.sendRawTransaction(signed.serialize());
+                
+                log(`📤 Transaction sent: ${signature.substring(0, 20)}...`, 'info');
+                
+                // Wait for confirmation
+                const confirmation = await connection.confirmTransaction(signature, 'confirmed');
+                
+                if (confirmation.value.err) {
+                    throw new Error('Transaction failed');
+                }
+                
+                const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
+                log(`✅ Verification complete! <a href="${explorerUrl}" target="_blank">View on Explorer</a>`, 'success');
+                
+                // Show what a real verification would look like
+                log(`<pre>
+// In production, this would call the ZK verifier:
+const ix = await program.methods
+  .verifyProof(proofData, publicInputs)
+  .accounts({
+    proofAccount,
+    userVerification,
+    verifier: wallet,
+    systemProgram
+  })
+  .instruction();
+                </pre>`, 'info');
+                
+                // Show cost
+                const fee = 0.00025; // SOL
+                log(`💸 Cost: ~${fee} SOL`, 'success');
+                
+            } catch (error) {
+                log(`❌ Verification failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-connect if wallet is already connected
+        window.addEventListener('load', async () => {
+            if (window.solana && window.solana.isConnected) {
+                await connectWallet();
+            }
+        });
+    </script>
+</body>
+</html>

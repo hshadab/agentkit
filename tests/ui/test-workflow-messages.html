@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow WebSocket Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #fff;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            background-color: #2a2a2a;
+            border-left: 4px solid #333;
+        }
+        .workflow_started { border-left-color: #3b82f6; }
+        .workflow_step_update { border-left-color: #10b981; }
+        .workflow_completed { border-left-color: #8b5cf6; }
+        .proof_status { border-left-color: #f59e0b; }
+        .error { border-left-color: #ef4444; }
+        button {
+            background-color: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #2563eb;
+        }
+        #status {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .connected { background-color: #10b981; }
+        .disconnected { background-color: #ef4444; }
+    </style>
+</head>
+<body>
+    <h1>Workflow WebSocket Message Test</h1>
+    
+    <div id="status" class="disconnected">Disconnected</div>
+    
+    <div>
+        <button onclick="connectWS()">Connect to WebSocket</button>
+        <button onclick="clearMessages()">Clear Messages</button>
+        <button onclick="sendTestMessage()">Send Test Message</button>
+    </div>
+    
+    <h2>Received Messages:</h2>
+    <div id="messages"></div>
+
+    <script>
+        let ws = null;
+        const messagesDiv = document.getElementById('messages');
+        const statusDiv = document.getElementById('status');
+
+        function log(message, type = '') {
+            const entry = document.createElement('div');
+            entry.className = `message ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            messagesDiv.appendChild(entry);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function connectWS() {
+            if (ws) {
+                ws.close();
+            }
+
+            ws = new WebSocket('ws://localhost:8001/ws');
+            
+            ws.onopen = () => {
+                log('WebSocket connected');
+                statusDiv.textContent = 'Connected';
+                statusDiv.className = 'connected';
+            };
+            
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    const messageType = data.type || 'unknown';
+                    log(`${messageType}: ${JSON.stringify(data, null, 2)}`, messageType);
+                    
+                    // Log specific workflow messages
+                    if (messageType === 'workflow_started') {
+                        console.log('WORKFLOW STARTED:', data);
+                    } else if (messageType === 'workflow_step_update') {
+                        console.log('WORKFLOW STEP UPDATE:', data);
+                    } else if (messageType === 'workflow_completed') {
+                        console.log('WORKFLOW COMPLETED:', data);
+                    }
+                } catch (e) {
+                    log(`Raw message: ${event.data}`, 'error');
+                }
+            };
+            
+            ws.onerror = (error) => {
+                log(`WebSocket error: ${error}`, 'error');
+            };
+            
+            ws.onclose = () => {
+                log('WebSocket disconnected');
+                statusDiv.textContent = 'Disconnected';
+                statusDiv.className = 'disconnected';
+            };
+        }
+
+        function clearMessages() {
+            messagesDiv.innerHTML = '';
+        }
+
+        function sendTestMessage() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const testMsg = {
+                    type: 'test',
+                    timestamp: new Date().toISOString()
+                };
+                ws.send(JSON.stringify(testMsg));
+                log(`Sent: ${JSON.stringify(testMsg)}`, 'sent');
+            } else {
+                alert('WebSocket not connected');
+            }
+        }
+
+        // Auto-connect on load
+        window.addEventListener('load', () => {
+            connectWS();
+        });
+    </script>
+</body>
+</html>

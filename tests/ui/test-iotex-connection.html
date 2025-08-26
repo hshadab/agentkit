@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoTeX MetaMask Connection Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background-color: #2a2a2a;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .error {
+            color: #ff6b6b;
+        }
+        .success {
+            color: #51cf66;
+        }
+        .info {
+            color: #74c0fc;
+        }
+        pre {
+            background-color: #1a1a1a;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>IoTeX MetaMask Connection Test</h1>
+    
+    <div class="test-section">
+        <h2>Network Configuration</h2>
+        <pre id="config">
+IoTeX Testnet Configuration:
+- Chain ID: 0x1252 (4690)
+- RPC URL: https://babel-api.testnet.iotex.io
+- Explorer: https://testnet.iotexscan.io
+- Native Currency: IOTX
+        </pre>
+    </div>
+
+    <div class="test-section">
+        <h2>Connection Tests</h2>
+        <button onclick="testMetaMaskInstalled()">1. Check MetaMask</button>
+        <button onclick="testConnect()">2. Connect Wallet</button>
+        <button onclick="testNetworkCheck()">3. Check Current Network</button>
+        <button onclick="testSwitchToIoTeX()">4. Switch to IoTeX</button>
+        <button onclick="testContractCall()">5. Test Contract Call</button>
+        <div id="results" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        const config = {
+            chainId: '0x1252',
+            chainIdDecimal: 4690,
+            rpcUrl: 'https://babel-api.testnet.iotex.io',
+            explorerUrl: 'https://testnet.iotexscan.io',
+            name: 'IoTeX Testnet',
+            nativeCurrency: {
+                name: 'IOTX',
+                symbol: 'IOTX',
+                decimals: 18
+            },
+            deviceVerifierContract: '0x5967d15c7a6fD3ef7F1f309e766f35252a9de10d'
+        };
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const entry = document.createElement('div');
+            entry.className = type;
+            entry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            results.appendChild(entry);
+        }
+
+        async function testMetaMaskInstalled() {
+            try {
+                if (typeof window.ethereum !== 'undefined') {
+                    log('✅ MetaMask is installed', 'success');
+                    log(`Provider: ${window.ethereum.isMetaMask ? 'MetaMask' : 'Other'}`, 'info');
+                } else {
+                    log('❌ MetaMask is not installed', 'error');
+                }
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testConnect() {
+            try {
+                const accounts = await window.ethereum.request({ 
+                    method: 'eth_requestAccounts' 
+                });
+                log(`✅ Connected to account: ${accounts[0]}`, 'success');
+            } catch (error) {
+                log(`❌ Connection failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testNetworkCheck() {
+            try {
+                const chainId = await window.ethereum.request({ 
+                    method: 'eth_chainId' 
+                });
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const network = await provider.getNetwork();
+                
+                log(`Current Chain ID (hex): ${chainId}`, 'info');
+                log(`Current Chain ID (decimal): ${network.chainId}`, 'info');
+                log(`Network name: ${network.name || 'Unknown'}`, 'info');
+                
+                if (network.chainId === config.chainIdDecimal) {
+                    log('✅ Already on IoTeX Testnet', 'success');
+                } else {
+                    log('⚠️ Not on IoTeX Testnet', 'error');
+                }
+            } catch (error) {
+                log(`❌ Network check failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSwitchToIoTeX() {
+            try {
+                log('Attempting to switch to IoTeX Testnet...', 'info');
+                
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: config.chainId }],
+                    });
+                    log('✅ Successfully switched to IoTeX Testnet', 'success');
+                } catch (switchError) {
+                    if (switchError.code === 4902) {
+                        log('IoTeX network not found, adding it...', 'info');
+                        try {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: config.chainId,
+                                    chainName: config.name,
+                                    nativeCurrency: config.nativeCurrency,
+                                    rpcUrls: [config.rpcUrl],
+                                    blockExplorerUrls: [config.explorerUrl]
+                                }],
+                            });
+                            log('✅ IoTeX network added and switched', 'success');
+                        } catch (addError) {
+                            log(`❌ Failed to add network: ${addError.message}`, 'error');
+                        }
+                    } else if (switchError.code === -32603) {
+                        log(`⚠️ Network switch error: ${switchError.message}`, 'error');
+                        log('This might be a temporary error. Try again in a moment.', 'info');
+                    } else {
+                        log(`❌ Switch failed: ${switchError.message}`, 'error');
+                    }
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testContractCall() {
+            try {
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const network = await provider.getNetwork();
+                
+                if (network.chainId !== config.chainIdDecimal) {
+                    log('⚠️ Please switch to IoTeX Testnet first', 'error');
+                    return;
+                }
+                
+                // Simple contract interface for getDeviceInfo
+                const abi = [{
+                    "inputs": [{"internalType": "bytes32", "name": "deviceId", "type": "bytes32"}],
+                    "name": "getDeviceInfo",
+                    "outputs": [
+                        {"internalType": "address", "name": "owner", "type": "address"},
+                        {"internalType": "bool", "name": "registered", "type": "bool"},
+                        {"internalType": "uint256", "name": "registrationTime", "type": "uint256"},
+                        {"internalType": "uint256", "name": "lastProximityProof", "type": "uint256"},
+                        {"internalType": "uint256", "name": "pendingRewards", "type": "uint256"}
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                }];
+                
+                const contract = new ethers.Contract(config.deviceVerifierContract, abi, provider);
+                
+                // Test with a sample device ID
+                const deviceId = ethers.utils.id("TEST_DEVICE_001");
+                log(`Testing contract call with device ID: ${deviceId}`, 'info');
+                
+                const deviceInfo = await contract.getDeviceInfo(deviceId);
+                log('✅ Contract call successful!', 'success');
+                log(`Device registered: ${deviceInfo.registered}`, 'info');
+                log(`Owner: ${deviceInfo.owner}`, 'info');
+                
+            } catch (error) {
+                log(`❌ Contract call failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-check MetaMask on load
+        window.addEventListener('load', () => {
+            testMetaMaskInstalled();
+        });
+    </script>
+</body>
+</html>

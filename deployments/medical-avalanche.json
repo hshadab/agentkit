@@ -1,0 +1,403 @@
+{
+  "network": "avalanche-fuji",
+  "chainId": 43113,
+  "contractAddress": "0x1698ebB10e789EebE7A66bDb096F0a65ce49Dc68",
+  "deploymentTx": "0x6a6da88fe04ebd6fef21a07929693dc2bfeae8fa0bf9f9537c60fc04ac905aeb",
+  "deployer": "0xDe4ae53e3a3E425b5d845b1e4003042a6d985079",
+  "timestamp": "2025-07-29T19:09:34.591Z",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "recordId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "integrityScore",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "rewardAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "IntegrityVerified",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "recordId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "accessor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "integrityVerified",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "RecordAccessed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "recordId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "provider",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "RecordCreated",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "INTEGRITY_REWARD",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "accessLogs",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "accessor",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "verified",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "claimRewards",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "patientId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "recordHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "patientAddress",
+          "type": "address"
+        }
+      ],
+      "name": "createMedicalRecord",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "recordId",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "recordId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "limit",
+          "type": "uint256"
+        }
+      ],
+      "name": "getAccessHistory",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "accessor",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "timestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "verified",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct MedicalRecordsIntegrity.AccessLog[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        }
+      ],
+      "name": "getPatientRecords",
+      "outputs": [
+        {
+          "internalType": "bytes32[]",
+          "name": "",
+          "type": "bytes32[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "recordId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getRecord",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "recordHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "creationTimestamp",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "provider",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "accessCount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "integrityScore",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "medicalRecords",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "recordHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "creationTimestamp",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "provider",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "exists",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "accessCount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "integrityScore",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "patientRecords",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "providerRewards",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "recordId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes",
+          "name": "zkProof",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "currentHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "verifyIntegrity",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
+    }
+  ]
+}

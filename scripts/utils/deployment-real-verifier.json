@@ -1,0 +1,13 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "contracts": {
+    "ProofOfProofVerifier": {
+      "address": "0x7eCe59B5e5fBEbf8761642352d70ADdCA7B38d29",
+      "transactionHash": "0x77f7907e81c9ac01b6242a4c1d499a8cb6c4ff9af0b4adb92afc9794eff34002",
+      "deployer": "0x27aFfeb992734022531Aaf8bD03C189518898D3F",
+      "deployedAt": "2025-07-10T13:37:13.275Z",
+      "type": "Real Groth16 Verifier"
+    }
+  }
+}

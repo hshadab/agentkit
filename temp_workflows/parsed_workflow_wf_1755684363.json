@@ -1,0 +1,11 @@
+{
+  "description": "show gateway balance only",
+  "steps": [
+    {
+      "type": "list_proofs",
+      "description": "List existing proofs",
+      "index": 0
+    }
+  ],
+  "workflow_id": "wf_1755684363"
+}

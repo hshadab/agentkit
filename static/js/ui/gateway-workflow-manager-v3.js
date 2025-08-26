@@ -735,7 +735,7 @@ export class GatewayWorkflowManager {
                         body: JSON.stringify({
                             sessionId,
                             proof: status.proof.proofData,
-                            network: 'sepolia', // or detect from current network
+                            network: window.VERIFICATION_NETWORK || 'sepolia', // Default to Ethereum Sepolia
                             useRealChain: useRealChain,
                             inputs: [3, 10, 1, 5] // Cross-chain agent example
                         })

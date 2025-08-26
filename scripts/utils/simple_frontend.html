@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Agent Kit - Simple</title>
+    <style>
+        body { font-family: Arial; background: #000; color: #fff; padding: 20px; }
+        input { padding: 10px; width: 300px; }
+        button { padding: 10px 20px; background: #6B7CFF; color: white; border: none; }
+        .message { margin: 10px 0; padding: 10px; background: #333; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Agent Kit - Simple Mode</h1>
+    <div>
+        <input type="text" id="input" placeholder="Type your command..." />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+    <div id="messages"></div>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById('input');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            addMessage(`User: ${message}`, 'user');
+            input.value = '';
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                
+                const data = await response.json();
+                addMessage(`Assistant: ${data.response}`, 'assistant');
+                
+                if (data.intent === 'direct_to_rust') {
+                    addMessage('Processing proof...', 'system');
+                }
+            } catch (error) {
+                addMessage(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function addMessage(text, type) {
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.textContent = text;
+            document.getElementById('messages').appendChild(div);
+        }
+        
+        document.getElementById('input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>

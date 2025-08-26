@@ -1,0 +1,298 @@
+{
+  "network": "iotex-testnet",
+  "address": "0x5967d15c7a6fD3ef7F1f309e766f35252a9de10d",
+  "novaDecider": "0xAD5f0101B94F581979AA22F123b7efd9501BfeB3",
+  "deployer": "0xE616B2eC620621797030E0AB1BA38DA68D78351C",
+  "deploymentTime": "2025-07-26T18:40:13.246Z",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "deviceId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "DeviceRegistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "deviceId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "proofId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "ProximityVerified",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "deviceId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "RewardsClaimed",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "deviceId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "claimRewards",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "deviceRewards",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "devices",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "registered",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "registrationTime",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "lastProximityProof",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "deviceId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getDeviceInfo",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "registered",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "registrationTime",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "lastProximityProof",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "pendingRewards",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "deviceId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "registerDevice",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "verifiedProofs",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256[3]",
+          "name": "i_z0_zi",
+          "type": "uint256[3]"
+        },
+        {
+          "internalType": "uint256[4]",
+          "name": "U_i_cmW_U_i_cmE",
+          "type": "uint256[4]"
+        },
+        {
+          "internalType": "uint256[2]",
+          "name": "u_i_cmW",
+          "type": "uint256[2]"
+        },
+        {
+          "internalType": "uint256[3]",
+          "name": "cmT_r",
+          "type": "uint256[3]"
+        },
+        {
+          "internalType": "uint256[2]",
+          "name": "pA",
+          "type": "uint256[2]"
+        },
+        {
+          "internalType": "uint256[2][2]",
+          "name": "pB",
+          "type": "uint256[2][2]"
+        },
+        {
+          "internalType": "uint256[2]",
+          "name": "pC",
+          "type": "uint256[2]"
+        },
+        {
+          "internalType": "uint256[4]",
+          "name": "challenge_W_challenge_E_kzg_evals",
+          "type": "uint256[4]"
+        },
+        {
+          "internalType": "uint256[2][2]",
+          "name": "kzg_proof",
+          "type": "uint256[2][2]"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "deviceId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "proofId",
+          "type": "uint256"
+        }
+      ],
+      "name": "verifyDeviceProximity",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
+    }
+  ]
+}

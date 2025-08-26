@@ -1,0 +1,1206 @@
+{
+  "wf_38fed69e-8d8c-4282-bce8-51b1615708b7": {
+    "id": "wf_38fed69e-8d8c-4282-bce8-51b1615708b7",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List all proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-21T17:07:01.634Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_d542e4d3-e3d2-40d3-94c9-026ed37376cf": {
+    "id": "wf_d542e4d3-e3d2-40d3-94c9-026ed37376cf",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List all proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-21T20:10:51.088Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_9d357aa1-edb0-42e2-b28a-ae6d3b3299f5": {
+    "id": "wf_9d357aa1-edb0-42e2-b28a-ae6d3b3299f5",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-21T20:16:41.313Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_74754156-40c1-42e8-823b-23ea97573581": {
+    "id": "wf_74754156-40c1-42e8-823b-23ea97573581",
+    "description": "Prove AI prediction commitment",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-21T20:21:43.232Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_d4a1619b-e897-429a-88fb-7fdc4c56847a": {
+    "id": "wf_d4a1619b-e897-429a-88fb-7fdc4c56847a",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List all proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-21T21:21:20.061Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_cc5e4660-430f-4ed2-9b3c-a25dee402127": {
+    "id": "wf_cc5e4660-430f-4ed2-9b3c-a25dee402127",
+    "description": "Prove AI prediction commitment",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI prediction commitment proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-21T21:24:42.536Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_81c11eea-0446-49e2-97f4-3cf21bc1395e": {
+    "id": "wf_81c11eea-0446-49e2-97f4-3cf21bc1395e",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-21T22:06:12.449Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_d7ad3b19-e73f-4b77-b9ac-339e63a264b0": {
+    "id": "wf_d7ad3b19-e73f-4b77-b9ac-339e63a264b0",
+    "description": "Prove location: NYC (40.7°, -74.0°)",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "location": "NYC",
+        "description": "Generate location proof for NYC",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-21T22:11:14.291Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_c204c243-0b9b-4b64-af97-3937216874cb": {
+    "id": "wf_c204c243-0b9b-4b64-af97-3937216874cb",
+    "description": "Prove AI prediction commitment",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-22T00:34:52.906Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_bfeadec5-1c90-4c50-a9e9-bb04fcd701c8": {
+    "id": "wf_bfeadec5-1c90-4c50-a9e9-bb04fcd701c8",
+    "description": "Send 0.05 USDC to Alice on Ethereum if KYC compliant",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "alice",
+        "description": "Generate KYC proof for Alice",
+        "index": 0
+      },
+      {
+        "type": "verify_proof",
+        "proof_type": "kyc",
+        "person": "alice",
+        "description": "Verify KYC proof for Alice locally",
+        "index": 1,
+        "proof_id": "pending_kyc_alice"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.05",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "condition": "kyc_compliant",
+        "description": "Transfer 0.05 USDC to alice on Ethereum if KYC compliant",
+        "index": 2
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-22T00:35:43.896Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_14087a14-0e2b-4d0b-8d25-14e834161086": {
+    "id": "wf_14087a14-0e2b-4d0b-8d25-14e834161086",
+    "description": "Prove AI prediction commitment",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-22T00:56:59.415Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_5172610e-fe17-4fa8-b3d7-531784a5bb57": {
+    "id": "wf_5172610e-fe17-4fa8-b3d7-531784a5bb57",
+    "description": "Send 0.05 USDC to Alice on Ethereum if KYC compliant",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "alice",
+        "description": "Generate KYC proof for Alice",
+        "index": 0
+      },
+      {
+        "type": "verify_proof",
+        "proof_type": "kyc",
+        "person": "alice",
+        "description": "Verify KYC proof for Alice locally",
+        "index": 1,
+        "proof_id": "pending_kyc_alice"
+      },
+      {
+        "type": "verify_on_ethereum",
+        "proof_type": "kyc",
+        "person": "alice",
+        "description": "Verify KYC proof for Alice on Ethereum",
+        "index": 2,
+        "proof_id": "pending_kyc_alice"
+      },
+      {
+        "type": "transfer",
+        "amount": "0.05",
+        "recipient": "alice",
+        "blockchain": "ETH",
+        "condition": "kyc_compliant",
+        "description": "Transfer 0.05 USDC to alice on Ethereum if KYC compliant",
+        "index": 3
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-22T00:57:45.357Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_d76a9ea4-455b-4607-9e13-84c6d701c310": {
+    "id": "wf_d76a9ea4-455b-4607-9e13-84c6d701c310",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List all proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-22T02:08:06.924Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_beb0a9a5-be25-4887-81de-9f7744ab121e": {
+    "id": "wf_beb0a9a5-be25-4887-81de-9f7744ab121e",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List all proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-22T03:34:57.315Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_4228ae4d-5f63-4af1-8b21-b7c1d303f1d3": {
+    "id": "wf_4228ae4d-5f63-4af1-8b21-b7c1d303f1d3",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-22T03:39:58.787Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_7300a167-4dce-41f7-b048-6e5cb0a51812": {
+    "id": "wf_7300a167-4dce-41f7-b048-6e5cb0a51812",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List all proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-22T03:45:00.319Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_5ddf4c1e-dd09-49bd-8ce8-d924dbe208d0": {
+    "id": "wf_5ddf4c1e-dd09-49bd-8ce8-d924dbe208d0",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-22T15:41:15.452Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_726b5b62-d9b1-4add-af6b-96c175e166db": {
+    "id": "wf_726b5b62-d9b1-4add-af6b-96c175e166db",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List all proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-22T15:51:22.246Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_35c0c0ee-8e4c-42e3-ab3f-64e12aeb9a46": {
+    "id": "wf_35c0c0ee-8e4c-42e3-ab3f-64e12aeb9a46",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-22T17:44:05.899Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_00627886-2f7f-4631-9b7c-e82ba42217ca": {
+    "id": "wf_00627886-2f7f-4631-9b7c-e82ba42217ca",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List all proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-22T18:02:49.686Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_7b0e636c-e03a-47ff-99b4-e5e85153d487": {
+    "id": "wf_7b0e636c-e03a-47ff-99b4-e5e85153d487",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-22T18:32:42.080Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_7ff07cee-3d38-475c-aefb-7c7c0fe70e31": {
+    "id": "wf_7ff07cee-3d38-475c-aefb-7c7c0fe70e31",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-22T18:37:52.933Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_f914c8c4-d11a-45de-9c0e-9be00a4e1d46": {
+    "id": "wf_f914c8c4-d11a-45de-9c0e-9be00a4e1d46",
+    "description": "Proof History",
+    "steps": [
+      {
+        "type": "list_proofs",
+        "description": "List proofs",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-22T20:20:42.992Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_e5b9af9b-9ae3-4ecf-96db-620cfcec812c": {
+    "id": "wf_e5b9af9b-9ae3-4ecf-96db-620cfcec812c",
+    "description": "Prove AI prediction commitment",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-23T03:58:22.570Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_a5d11377-2e5f-48c8-b119-8083d9fb41d8": {
+    "id": "wf_a5d11377-2e5f-48c8-b119-8083d9fb41d8",
+    "description": "Prove AI prediction commitment",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-23T13:24:34.428Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_502faebd-9da0-4ccd-bfcc-12a08a5e9cf6": {
+    "id": "wf_502faebd-9da0-4ccd-bfcc-12a08a5e9cf6",
+    "description": "Generate a KYC proof for Alice",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "person": "Alice",
+        "description": "Generate KYC proof for Alice",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-25T19:03:54.822Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_ea850a45-ca63-4d55-afd0-aa8742e8dadd": {
+    "id": "wf_ea850a45-ca63-4d55-afd0-aa8742e8dadd",
+    "description": "Prove AI prediction commitment",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-25T19:24:59.736Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_6a29fd6f-8b68-4f17-b34f-8a9f9a201a5f": {
+    "id": "wf_6a29fd6f-8b68-4f17-b34f-8a9f9a201a5f",
+    "description": "Prove location: NYC (40.7°, -74.0°)",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "location": "NYC",
+        "description": "Generate location proof for NYC",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-26T01:40:18.875Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_8c298a82-b590-461a-8120-ea84559c619d": {
+    "id": "wf_8c298a82-b590-461a-8120-ea84559c619d",
+    "description": "Prove location: NYC (40.7°, -74.0°)",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "location": "NYC",
+        "description": "Generate location proof for NYC",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-26T01:46:08.415Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_ee44de34-8813-4615-aa61-a347ece46486": {
+    "id": "wf_ee44de34-8813-4615-aa61-a347ece46486",
+    "description": "Prove AI prediction commitment",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "ai_content",
+        "description": "Generate AI content proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-26T01:47:23.212Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_5bcb18d2-69de-4148-947e-cc261060a354": {
+    "id": "wf_5bcb18d2-69de-4148-947e-cc261060a354",
+    "description": "Prove location: NYC (40.7°, -74.0°)",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "location",
+        "location": "NYC",
+        "description": "Generate location proof for NYC",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-26T02:00:43.399Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_8cf8b808-cb89-4a9c-a504-8dfefb627d77": {
+    "id": "wf_8cf8b808-cb89-4a9c-a504-8dfefb627d77",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-26T02:05:38.996Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_37ced799-5aad-4501-ac32-e6485677e1a5": {
+    "id": "wf_37ced799-5aad-4501-ac32-e6485677e1a5",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-26T02:10:03.999Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_81b6563d-6fc1-4ff0-be83-67d6706d7645": {
+    "id": "wf_81b6563d-6fc1-4ff0-be83-67d6706d7645",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-26T02:36:00.388Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_c0587d46-439b-42ef-a707-faf8809ab528": {
+    "id": "wf_c0587d46-439b-42ef-a707-faf8809ab528",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-26T16:49:36.112Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_3d0c7340-b57f-499c-ac93-e5401f138107": {
+    "id": "wf_3d0c7340-b57f-499c-ac93-e5401f138107",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "proximity",
+        "description": "Generate proximity proof for IoT device DEV123",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-26T17:04:18.796Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_e0da5e82-b426-49fc-baff-47c2349934ce": {
+    "id": "wf_e0da5e82-b426-49fc-baff-47c2349934ce",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "proximity",
+        "description": "Generate proximity proof for IoT device DEV123",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-26T17:42:50.271Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_3d60aba7-c71c-4919-ae14-5791c4148a36": {
+    "id": "wf_3d60aba7-c71c-4919-ae14-5791c4148a36",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "proximity",
+        "description": "Generate proximity proof for IoT device DEV123",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-26T17:59:07.961Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_1ec28e75-b8f0-4f55-8ab5-62c16c63a607": {
+    "id": "wf_1ec28e75-b8f0-4f55-8ab5-62c16c63a607",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "register_device",
+        "device_id": "DEV123",
+        "description": "Register IoT device DEV123",
+        "index": 0
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Generate device proximity proof for DEV123",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-26T18:00:31.623Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_40a32844-eab3-4bd8-878e-a66a2d9f64ea": {
+    "id": "wf_40a32844-eab3-4bd8-878e-a66a2d9f64ea",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "register_device",
+        "device_id": "DEV123",
+        "description": "Register IoT device DEV123",
+        "index": 0
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Generate device proximity proof for DEV123",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-26T18:04:51.915Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_e3725f90-a0e5-4650-977d-c60d58ba8cf6": {
+    "id": "wf_e3725f90-a0e5-4650-977d-c60d58ba8cf6",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "register_device",
+        "device_id": "DEV123",
+        "description": "Register IoT device DEV123",
+        "index": 0
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Generate device proximity proof for DEV123",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-26T18:15:41.194Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_4658f0f5-2386-4ea0-bce2-ff83fa6c2d37": {
+    "id": "wf_4658f0f5-2386-4ea0-bce2-ff83fa6c2d37",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "register_device",
+        "device_id": "DEV123",
+        "description": "Register IoT device DEV123",
+        "index": 0
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Generate device proximity proof for DEV123",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-27T01:43:18.645Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_06e7ff5c-418d-47c7-8e63-87b864f2ea24": {
+    "id": "wf_06e7ff5c-418d-47c7-8e63-87b864f2ea24",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "register_device",
+        "device_id": "DEV123",
+        "description": "Register IoT device DEV123",
+        "index": 0
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Generate device proximity proof for DEV123",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-27T01:50:19.790Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_b027dcd6-9b1c-4751-b258-3e19c07d56e4": {
+    "id": "wf_b027dcd6-9b1c-4751-b258-3e19c07d56e4",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "register_device",
+        "device_id": "DEV123",
+        "description": "Register IoT device DEV123",
+        "index": 0
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Generate device proximity proof for DEV123",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-27T02:06:36.902Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_717b0391-d447-48fc-b49d-c6f22ea36dfd": {
+    "id": "wf_717b0391-d447-48fc-b49d-c6f22ea36dfd",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "register_device",
+        "device_id": "DEV123",
+        "description": "Register IoT device DEV123",
+        "index": 0
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Generate device proximity proof for DEV123",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-27T02:51:57.565Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_0d4d8e28-428b-4797-bbc2-8f9c441355e7": {
+    "id": "wf_0d4d8e28-428b-4797-bbc2-8f9c441355e7",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "register_device",
+        "device_id": "DEV123",
+        "description": "Register IoT device DEV123",
+        "index": 0
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Generate device proximity proof for DEV123",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-27T03:09:56.697Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_5683d1d2-1c41-450b-90d0-c6037105d73c": {
+    "id": "wf_5683d1d2-1c41-450b-90d0-c6037105d73c",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "register_device",
+        "device_id": "DEV123",
+        "description": "Register IoT device DEV123",
+        "index": 0
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Generate device proximity proof for DEV123",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-27T03:17:56.388Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_b37830e1-fbbe-4467-bf7c-4e32576c3047": {
+    "id": "wf_b37830e1-fbbe-4467-bf7c-4e32576c3047",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "register_device",
+        "device_id": "DEV123",
+        "description": "Register IoT device DEV123",
+        "index": 0
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Generate device proximity proof for DEV123",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-27T03:20:48.312Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_552fae85-24ce-40bc-a0c8-49e94a068c50": {
+    "id": "wf_552fae85-24ce-40bc-a0c8-49e94a068c50",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "register_device",
+        "device_id": "DEV123",
+        "description": "Register IoT device DEV123",
+        "index": 0
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Generate device proximity proof for DEV123",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-27T03:25:43.801Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_45ad415e-43a9-419c-b10c-a10dd982c9a5": {
+    "id": "wf_45ad415e-43a9-419c-b10c-a10dd982c9a5",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "register_device",
+        "device_id": "DEV123",
+        "description": "Register IoT device DEV123",
+        "index": 0
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Generate device proximity proof for DEV123",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-27T03:35:22.574Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_2fede5dc-8203-4fab-9dca-ae84e2257a13": {
+    "id": "wf_2fede5dc-8203-4fab-9dca-ae84e2257a13",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "register_device",
+        "device_id": "DEV123",
+        "description": "Register IoT device DEV123",
+        "index": 0
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Generate device proximity proof for DEV123",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-27T03:40:18.168Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_73161b30-afd5-4bc5-b051-0b9c8975c868": {
+    "id": "wf_73161b30-afd5-4bc5-b051-0b9c8975c868",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "register_device",
+        "device_id": "DEV123",
+        "description": "Register IoT device DEV123",
+        "index": 0
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Generate device proximity proof for DEV123",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-27T10:39:19.291Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_e313e0fc-bc9e-40b8-8e80-50c0e81dc83f": {
+    "id": "wf_e313e0fc-bc9e-40b8-8e80-50c0e81dc83f",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "register_device",
+        "device_id": "DEV123",
+        "description": "Register IoT device DEV123",
+        "index": 0
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Generate device proximity proof for DEV123",
+        "index": 1
+      },
+      {
+        "type": "verify_on_iotex",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Verify device proximity proof on IoTeX blockchain",
+        "index": 2
+      },
+      {
+        "type": "claim_rewards",
+        "device_id": "DEV123",
+        "description": "Claim rewards for verified device DEV123",
+        "index": 3
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-27T10:40:35.536Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_12a771b5-32ac-4c81-a49c-12df1f39c97e": {
+    "id": "wf_12a771b5-32ac-4c81-a49c-12df1f39c97e",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "register_device",
+        "device_id": "DEV123",
+        "description": "Register IoT device DEV123",
+        "index": 0
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Generate device proximity proof for DEV123",
+        "index": 1
+      },
+      {
+        "type": "verify_on_iotex",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Verify device proximity proof on IoTeX blockchain",
+        "index": 2
+      },
+      {
+        "type": "claim_rewards",
+        "device_id": "DEV123",
+        "description": "Claim rewards for verified device DEV123",
+        "index": 3
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-27T11:03:41.876Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_31679853-06c6-43cf-b77e-7998fb0aee16": {
+    "id": "wf_31679853-06c6-43cf-b77e-7998fb0aee16",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "register_device",
+        "device_id": "DEV123",
+        "description": "Register IoT device DEV123",
+        "index": 0
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Generate device proximity proof for DEV123",
+        "index": 1
+      },
+      {
+        "type": "verify_on_iotex",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Verify device proximity proof on IoTeX blockchain",
+        "index": 2
+      },
+      {
+        "type": "claim_rewards",
+        "device_id": "DEV123",
+        "description": "Claim rewards for verified device DEV123",
+        "index": 3
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-27T20:34:40.400Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_855c7a44-88bf-4a9c-b221-62914ba9eefb": {
+    "id": "wf_855c7a44-88bf-4a9c-b221-62914ba9eefb",
+    "description": "Generate KYC proof",
+    "steps": [
+      {
+        "type": "generate_proof",
+        "proof_type": "kyc",
+        "description": "Generate KYC proof",
+        "index": 0
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-27T21:24:31.308Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_ab004f8f-d604-475d-84c9-3131b7a8c887": {
+    "id": "wf_ab004f8f-d604-475d-84c9-3131b7a8c887",
+    "description": "Test IoT device workflow",
+    "steps": [
+      {
+        "type": "register_device",
+        "device_id": "TEST123",
+        "description": "Register IoT device TEST123",
+        "index": 0
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "device_proximity",
+        "device_id": "TEST123",
+        "description": "Generate device proximity proof for TEST123",
+        "index": 1
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-27T21:27:18.447Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_e9af4ac6-a1d5-4b08-bd16-5693db8bb286": {
+    "id": "wf_e9af4ac6-a1d5-4b08-bd16-5693db8bb286",
+    "description": "Register IoT device DEV123 with proximity proof",
+    "steps": [
+      {
+        "type": "register_device",
+        "device_id": "DEV123",
+        "description": "Register IoT device DEV123",
+        "index": 0
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Generate device proximity proof for DEV123",
+        "index": 1
+      },
+      {
+        "type": "verify_on_iotex",
+        "proof_type": "device_proximity",
+        "device_id": "DEV123",
+        "description": "Verify device proximity proof on IoTeX blockchain",
+        "index": 2
+      },
+      {
+        "type": "claim_rewards",
+        "device_id": "DEV123",
+        "description": "Claim rewards for verified device DEV123",
+        "index": 3
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-27T21:31:35.215Z",
+    "completedSteps": [],
+    "results": {}
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "network": "iotex-testnet",
+  "chainId": 4690,
+  "address": "0xD782e96B97153ebE3BfFB24085A022c2320B7613",
+  "deployer": "0xE616B2eC620621797030E0AB1BA38DA68D78351C",
+  "deploymentTime": "2025-08-26T09:35:39.830Z",
+  "transactionHash": "0xf16d301819fe21baa02794882d54ebebcdf08f233102c2c1b393868709b52619",
+  "blockNumber": null
+}

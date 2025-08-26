@@ -1,0 +1,16 @@
+{
+  "name": "iotex-proximity-verifier",
+  "version": "1.0.0",
+  "description": "IoTeX smart contract for Nova recursive SNARK device proximity verification",
+  "main": "scripts/deploy-iotex-contract.js",
+  "scripts": {
+    "deploy": "node scripts/deploy-iotex-contract.js",
+    "test": "echo \"Run workflow test via frontend\""
+  },
+  "dependencies": {
+    "ethers": "^5.7.2"
+  },
+  "keywords": ["iotex", "nova", "snark", "proximity", "iot", "blockchain"],
+  "author": "Verifiable Agent Kit",
+  "license": "MIT"
+}

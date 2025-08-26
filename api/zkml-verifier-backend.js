@@ -21,9 +21,9 @@ const PORT = process.env.ZKML_PORT || 3003;
 // Network configurations
 const NETWORKS = {
     'sepolia': {
-        rpc: 'https://eth-sepolia.g.alchemy.com/v2/demo',
+        rpc: 'https://ethereum-sepolia-rpc.publicnode.com',
         chainId: 11155111,
-        verifierAddress: '0x1234567890123456789012345678901234567890' // Deploy and update
+        verifierAddress: '0x9876543210987654321098765432109876543210' // To be deployed (needs funding)
     },
     'base-sepolia': {
         rpc: 'https://base-sepolia.g.alchemy.com/v2/demo',
@@ -33,7 +33,7 @@ const NETWORKS = {
     'iotex-testnet': {
         rpc: 'https://babel-api.testnet.iotex.io',
         chainId: 4690,
-        verifierAddress: '0x4EF6152c952dA7A27bb57E8b989348a73aB850d2' // Existing Nova verifier
+        verifierAddress: '0xD782e96B97153ebE3BfFB24085A022c2320B7613' // Deployed ZKMLNovaVerifier
     }
 };
 
@@ -94,7 +94,8 @@ app.post('/zkml/verify', async (req, res) => {
         
         // If not using real chain or verifier not deployed, simulate
         if (!useRealChain || !NETWORKS[network].verifierAddress || 
-            NETWORKS[network].verifierAddress === '0x1234567890123456789012345678901234567890') {
+            NETWORKS[network].verifierAddress === '0x1234567890123456789012345678901234567890' ||
+            NETWORKS[network].verifierAddress === '0x9876543210987654321098765432109876543210') {
             
             console.log('🎭 Using simulated on-chain verification');
             

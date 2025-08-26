@@ -1,0 +1,8 @@
+{
+  "network": "iotex-testnet",
+  "address": "0x74D68B2481d298F337e62efc50724CbBA68dCF8f",
+  "deployer": "0xE616B2eC620621797030E0AB1BA38DA68D78351C",
+  "deploymentTime": "2025-01-26T03:55:00.000Z",
+  "contractName": "IoTeXNovaDecider",
+  "description": "Nova Decider contract for IoT device proximity verification on IoTeX testnet"
+}

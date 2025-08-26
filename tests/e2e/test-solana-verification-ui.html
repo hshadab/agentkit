@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Solana Verification Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #fff;
+        }
+        .container {
+            background: rgba(20, 20, 20, 0.9);
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 209, 140, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 209, 140, 0.1);
+        }
+        h1 { 
+            color: #00D18C; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status-section {
+            background: rgba(0, 209, 140, 0.05);
+            border: 1px solid rgba(0, 209, 140, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .card {
+            background: rgba(30, 30, 30, 0.8);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(107, 124, 255, 0.1);
+        }
+        .solana-card {
+            border-color: rgba(0, 209, 140, 0.3);
+        }
+        .eth-card {
+            border-color: rgba(98, 126, 234, 0.3);
+        }
+        h2 { 
+            font-size: 20px; 
+            margin-bottom: 15px;
+        }
+        .solana-card h2 { color: #00D18C; }
+        .eth-card h2 { color: #627eea; }
+        .btn {
+            background: linear-gradient(135deg, #00D18C 0%, #00B67A 100%);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 209, 140, 0.3);
+        }
+        .btn-eth {
+            background: linear-gradient(135deg, #627eea 0%, #4c5ed8 100%);
+            color: white;
+        }
+        .btn-eth:hover {
+            box-shadow: 0 6px 20px rgba(98, 126, 234, 0.3);
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        .success { 
+            background: rgba(16, 185, 129, 0.1); 
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+        .warning { 
+            background: rgba(251, 191, 36, 0.1); 
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            color: #fbbf24;
+        }
+        .info { 
+            background: rgba(59, 130, 246, 0.1); 
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #3b82f6;
+        }
+        ul { line-height: 1.8; }
+        .demo-badge {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .code {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 13px;
+            margin: 10px 0;
+            border: 1px solid rgba(107, 124, 255, 0.1);
+        }
+        .feature-list {
+            display: grid;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .check { color: #10b981; }
+        .pending { color: #fbbf24; }
+        .cross { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            ◎ Solana On-Chain Verification
+            <span class="demo-badge">DEMO MODE</span>
+        </h1>
+        
+        <div class="status-section">
+            <h2>📊 Current Status</h2>
+            <div class="feature-list">
+                <div class="feature">
+                    <span class="check">✅</span> Wallet Connection (Phantom, Solflare, Backpack)
+                </div>
+                <div class="feature">
+                    <span class="check">✅</span> Transaction Creation & Signing
+                </div>
+                <div class="feature">
+                    <span class="check">✅</span> Memo Program Integration
+                </div>
+                <div class="feature">
+                    <span class="pending">⏳</span> Groth16 Verifier Program (Written, Not Deployed)
+                </div>
+                <div class="feature">
+                    <span class="cross">❌</span> Actual Proof Verification On-Chain
+                </div>
+            </div>
+        </div>
+        
+        <div class="comparison">
+            <div class="card solana-card">
+                <h2>🌊 Solana Verification</h2>
+                <p><strong>Network:</strong> Devnet</p>
+                <p><strong>Implementation:</strong> Demo (Memo TX)</p>
+                <p><strong>Cost:</strong> ~5,000 lamports ($0.001)</p>
+                <p><strong>Speed:</strong> ~400ms</p>
+                <p><strong>Status:</strong> Creates memo with proof metadata</p>
+                
+                <button class="btn" onclick="testSolana()">
+                    Test Solana Verification
+                </button>
+                
+                <div class="code" style="margin-top: 15px;">
+// Current implementation<br>
+transaction.add(memoInstruction({<br>
+&nbsp;&nbsp;proofId: "proof_kyc_123",<br>
+&nbsp;&nbsp;type: "kyc",<br>
+&nbsp;&nbsp;action: "verify"<br>
+}));
+                </div>
+            </div>
+            
+            <div class="card eth-card">
+                <h2>🔷 Ethereum Verification</h2>
+                <p><strong>Network:</strong> Sepolia</p>
+                <p><strong>Implementation:</strong> Full Groth16</p>
+                <p><strong>Cost:</strong> ~250,000 gas ($2-5)</p>
+                <p><strong>Speed:</strong> ~15 seconds</p>
+                <p><strong>Status:</strong> Verifies actual cryptographic proof</p>
+                
+                <button class="btn btn-eth" onclick="testEthereum()">
+                    Test Ethereum Verification
+                </button>
+                
+                <div class="code" style="margin-top: 15px;">
+// Real verification<br>
+contract.verifyProof(<br>
+&nbsp;&nbsp;proof.a, proof.b, proof.c,<br>
+&nbsp;&nbsp;publicSignals<br>
+);
+                </div>
+            </div>
+        </div>
+        
+        <div id="test-status" class="status"></div>
+        
+        <div class="status-section" style="margin-top: 30px;">
+            <h2>🚀 Roadmap to Full Solana Implementation</h2>
+            <ol>
+                <li><strong>Deploy Groth16 Verifier Program</strong>
+                    <ul>
+                        <li>Build and deploy ./solana/groth16-verifier</li>
+                        <li>Get program ID from deployment</li>
+                    </ul>
+                </li>
+                <li><strong>Update Frontend Integration</strong>
+                    <ul>
+                        <li>Add program ID to solana-verifier.js</li>
+                        <li>Implement proof serialization</li>
+                    </ul>
+                </li>
+                <li><strong>Handle Compute Limitations</strong>
+                    <ul>
+                        <li>Request increased compute units (up to 1.4M)</li>
+                        <li>Optimize pairing operations</li>
+                    </ul>
+                </li>
+                <li><strong>Test on Devnet</strong>
+                    <ul>
+                        <li>Verify all 3 proof types</li>
+                        <li>Benchmark performance</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+        
+        <div class="status-section" style="margin-top: 20px;">
+            <h2>💻 Deploy Commands</h2>
+            <div class="code">
+# Build Solana program<br>
+cd solana/groth16-verifier<br>
+cargo build-sbf<br>
+<br>
+# Deploy to devnet<br>
+solana program deploy target/deploy/groth16_verifier.so<br>
+<br>
+# Update program ID in frontend<br>
+# Edit: static/solana-verifier.js<br>
+# Line 56: this.programId = new PublicKey('YOUR_NEW_PROGRAM_ID');
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script src="/static/solana-verifier.js"></script>
+    <script>
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('test-status');
+            statusDiv.style.display = 'block';
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+        }
+        
+        async function testSolana() {
+            showStatus('🌊 Testing Solana verification...', 'info');
+            
+            try {
+                // Initialize verifier
+                if (!window.solanaVerifier) {
+                    window.solanaVerifier = new SolanaVerifier();
+                }
+                
+                // Connect wallet
+                const connectResult = await window.solanaVerifier.connect();
+                if (!connectResult.success) {
+                    throw new Error(connectResult.error);
+                }
+                
+                showStatus(`
+                    <h3>✅ Connected to ${connectResult.provider}</h3>
+                    <p><strong>Wallet:</strong> ${connectResult.wallet}</p>
+                    <p><strong>Network:</strong> ${connectResult.network}</p>
+                    <p style="margin-top: 15px;"><strong>What happens next:</strong></p>
+                    <ol>
+                        <li>In production: Would verify Groth16 proof on-chain</li>
+                        <li>Currently: Creates memo transaction with proof metadata</li>
+                        <li>Transaction viewable on Solana Explorer</li>
+                    </ol>
+                    <p style="margin-top: 15px;">
+                        <strong>Note:</strong> This is a demo implementation. 
+                        Real proof verification requires deploying the Groth16 verifier program.
+                    </p>
+                `, 'warning');
+                
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testEthereum() {
+            showStatus(`
+                <h3>🔷 Ethereum Verification</h3>
+                <p>Ethereum has full Groth16 verification implemented!</p>
+                <p><strong>Contract:</strong> 0x09378444046d1ccb32ca2d5b44fab6634738d067</p>
+                <p><strong>Network:</strong> Sepolia Testnet</p>
+                <p>Use the main UI to test Ethereum verification with real proofs.</p>
+            `, 'success');
+        }
+    </script>
+</body>
+</html>

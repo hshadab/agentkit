@@ -1,0 +1,21 @@
+#!/bin/bash
+
+echo "ICME-Lab Push Instructions"
+echo "=========================="
+echo ""
+echo "Since I can't interactively get your token, please run these commands manually:"
+echo ""
+echo "1. First, set your token as an environment variable (it won't be shown):"
+echo "   export GITHUB_TOKEN='your_token_here'"
+echo ""
+echo "2. Then run this command to push:"
+echo '   git push https://houmanicme:${GITHUB_TOKEN}@github.com/ICME-Lab/verifiable-agentkit.git main'
+echo ""
+echo "3. After pushing, clear the token:"
+echo "   unset GITHUB_TOKEN"
+echo ""
+echo "Alternative: You can also do it in one line (replace YOUR_TOKEN):"
+echo "   git push https://houmanicme:YOUR_TOKEN@github.com/ICME-Lab/verifiable-agentkit.git main"
+echo ""
+echo "Make sure you've created the repository first at:"
+echo "https://github.com/ICME-Lab"

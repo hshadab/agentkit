@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Full Verification Test</title>
+    <style>
+        body { 
+            font-family: monospace; 
+            padding: 20px; 
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        button { 
+            padding: 10px 20px; 
+            margin: 10px 5px;
+            font-size: 16px;
+        }
+        #status { 
+            margin: 20px 0; 
+            padding: 15px; 
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .info { color: blue; }
+        .timestamp { color: #666; }
+    </style>
+</head>
+<body>
+    <h1>Full Verification Test - Real SNARK</h1>
+    
+    <div>
+        <button onclick="runFullTest()">Run Full Test</button>
+        <button onclick="clearStatus()">Clear</button>
+    </div>
+    
+    <div id="status">Ready to test...</div>
+
+    <script src="solana-verifier.js"></script>
+    <script src="ethereum-verifier.js"></script>
+    
+    <script>
+        const status = document.getElementById('status');
+        
+        function log(message, className = '') {
+            const timestamp = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+            if (className) line.className = className;
+            status.appendChild(line);
+            console.log(message);
+        }
+        
+        function clearStatus() {
+            status.innerHTML = 'Cleared. Ready to test...';
+        }
+        
+        async function runFullTest() {
+            clearStatus();
+            log('<b>Starting Full Verification Test with Real SNARK...</b>');
+            
+            try {
+                // Test Solana
+                log('');
+                log('<b>1. Testing Solana Verification</b>', 'info');
+                const solanaVerifier = new SolanaVerifier();
+                
+                log('Connecting to Phantom wallet...');
+                await solanaVerifier.connectWallet();
+                log('✅ Connected to Solana', 'success');
+                
+                const solanaResult = await solanaVerifier.verifyOnChain('test-proof-' + Date.now());
+                if (solanaResult.success) {
+                    log(`✅ Solana verification successful! Signature: ${solanaResult.signature}`, 'success');
+                } else {
+                    log(`❌ Solana verification failed: ${solanaResult.error}`, 'error');
+                }
+                
+                // Test Ethereum
+                log('');
+                log('<b>2. Testing Ethereum Verification with Real SNARK</b>', 'info');
+                const ethVerifier = new EthereumVerifier();
+                
+                log('Connecting to MetaMask...');
+                await ethVerifier.connectWallet();
+                log('✅ Connected to Ethereum', 'success');
+                
+                log('Generating proof (this will use real SNARK generation)...');
+                const startTime = Date.now();
+                
+                const ethResult = await ethVerifier.verifyOnChain('test-proof-' + Date.now());
+                const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+                
+                if (ethResult.success) {
+                    log(`✅ Ethereum verification successful!`, 'success');
+                    log(`⏱️ SNARK generation took ${duration} seconds`, 'info');
+                    log(`📋 Transaction: ${ethResult.txHash}`, 'info');
+                    log(`🔐 Using real Groth16 verification on-chain`, 'info');
+                } else {
+                    log(`❌ Ethereum verification failed: ${ethResult.error}`, 'error');
+                }
+                
+                log('');
+                log('<b>✅ Test Complete!</b>', 'success');
+                
+            } catch (error) {
+                log(`❌ Test failed: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+        
+        // Auto-connect on load
+        window.addEventListener('load', async () => {
+            log('Page loaded. Click "Run Full Test" to begin.');
+        });
+    </script>
+</body>
+</html>

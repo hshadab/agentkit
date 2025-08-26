@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Phantom Live Test</title>
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            font-family: monospace;
+            padding: 20px;
+        }
+        button {
+            background: #6B7CFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 5px;
+        }
+        .success { border-color: #0f0; color: #0f0; }
+        .error { border-color: #f00; color: #f00; }
+        .warning { border-color: #ff0; color: #ff0; }
+    </style>
+</head>
+<body>
+    <h1>Phantom Wallet Status</h1>
+    
+    <button onclick="checkStatus()">Check Phantom Status</button>
+    <button onclick="testSolana()">Test Solana (Should Work)</button>
+    <button onclick="testEthereum()">Test Ethereum (May Fail)</button>
+    
+    <div id="results"></div>
+    
+    <script>
+        function log(msg, type = '') {
+            const div = document.createElement('div');
+            div.className = 'result ' + type;
+            div.textContent = new Date().toLocaleTimeString() + ' - ' + msg;
+            document.getElementById('results').prepend(div);
+        }
+        
+        function checkStatus() {
+            log('=== Checking Phantom Status ===');
+            
+            // Check if Phantom errors are appearing
+            log('Note: Phantom content script errors in console are EXPECTED', 'warning');
+            log('These errors confirm Phantom\'s internal issues', 'warning');
+            
+            if (window.ethereum && window.ethereum.isPhantom) {
+                log('✓ Phantom Ethereum provider detected', 'success');
+            }
+            
+            if (window.solana && window.solana.isPhantom) {
+                log('✓ Phantom Solana provider detected', 'success');
+            }
+            
+            log('Despite errors, the app should work with Solana verification', 'warning');
+        }
+        
+        async function testSolana() {
+            try {
+                log('Testing Solana connection...');
+                await window.solana.connect();
+                log('✓ Solana connection successful!', 'success');
+                log('This is why we recommend Solana with Phantom', 'success');
+            } catch (e) {
+                log('✗ Solana failed: ' + e.message, 'error');
+            }
+        }
+        
+        async function testEthereum() {
+            try {
+                log('Testing Ethereum connection...');
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                log('✓ Got accounts: ' + accounts[0], 'success');
+                
+                // This often triggers the service worker issue
+                log('Testing transaction capability...');
+                const gasPrice = await window.ethereum.request({ 
+                    method: 'eth_gasPrice' 
+                });
+                log('✓ Gas price: ' + parseInt(gasPrice, 16), 'success');
+                
+            } catch (e) {
+                log('✗ Ethereum failed: ' + e.message, 'error');
+                if (e.message.includes('service worker')) {
+                    log('This is the known Phantom bug!', 'error');
+                }
+            }
+        }
+        
+        // Initial check
+        setTimeout(checkStatus, 1000);
+    </script>
+</body>
+</html>

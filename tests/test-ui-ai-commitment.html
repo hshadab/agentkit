@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test AI Commitment UI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #eee;
+        }
+        button {
+            padding: 10px 20px;
+            background: #0052FF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #0041CC;
+        }
+        .result {
+            margin: 20px 0;
+            padding: 20px;
+            background: #2a2a3a;
+            border-radius: 5px;
+            border: 1px solid #3a3a4a;
+        }
+        .hash {
+            font-family: monospace;
+            word-break: break-all;
+            color: #0052FF;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            display: inline-block;
+            margin: 5px 0;
+        }
+        .success { background: #10b981; }
+        .error { background: #ef4444; }
+        .pending { background: #f59e0b; }
+    </style>
+</head>
+<body>
+    <h1>Test AI Prediction Commitment</h1>
+    
+    <div>
+        <h3>Test Configuration</h3>
+        <p>Contract: <span class="hash" id="contractAddress">Loading...</span></p>
+        <p>Network: Base Sepolia (Chain ID: 84532)</p>
+        <p>Your Address: <span id="userAddress">Not connected</span></p>
+    </div>
+    
+    <button onclick="connectWallet()">Connect MetaMask</button>
+    <button onclick="testCommitment()" disabled id="testBtn">Test AI Commitment</button>
+    
+    <div id="results"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+    <script>
+        let web3;
+        let contract;
+        let userAccount;
+        
+        // Load deployment info
+        async function loadDeploymentInfo() {
+            try {
+                const response = await fetch('/deployment-ai-commitment-base.json');
+                const deploymentInfo = await response.json();
+                
+                document.getElementById('contractAddress').textContent = deploymentInfo.contractAddress;
+                
+                // Initialize contract
+                if (window.ethereum) {
+                    web3 = new Web3(window.ethereum);
+                    contract = new web3.eth.Contract(deploymentInfo.abi, deploymentInfo.contractAddress);
+                }
+                
+                return deploymentInfo;
+            } catch (error) {
+                console.error('Failed to load deployment info:', error);
+                addResult('Error', 'Failed to load contract info', 'error');
+            }
+        }
+        
+        async function connectWallet() {
+            if (!window.ethereum) {
+                addResult('Error', 'MetaMask not found!', 'error');
+                return;
+            }
+            
+            try {
+                // Request account access
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                userAccount = accounts[0];
+                document.getElementById('userAddress').textContent = userAccount;
+                
+                // Switch to Base Sepolia
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0x14a34' }], // 84532 in hex
+                    });
+                } catch (switchError) {
+                    // This error code indicates that the chain has not been added to MetaMask
+                    if (switchError.code === 4902) {
+                        try {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: '0x14a34',
+                                    chainName: 'Base Sepolia',
+                                    nativeCurrency: {
+                                        name: 'Ethereum',
+                                        symbol: 'ETH',
+                                        decimals: 18
+                                    },
+                                    rpcUrls: ['https://sepolia.base.org'],
+                                    blockExplorerUrls: ['https://sepolia.basescan.org']
+                                }],
+                            });
+                        } catch (addError) {
+                            console.error('Failed to add Base Sepolia:', addError);
+                        }
+                    }
+                }
+                
+                document.getElementById('testBtn').disabled = false;
+                addResult('Success', 'Wallet connected!', 'success');
+            } catch (error) {
+                console.error('Failed to connect wallet:', error);
+                addResult('Error', 'Failed to connect wallet: ' + error.message, 'error');
+            }
+        }
+        
+        async function testCommitment() {
+            if (!contract || !userAccount) {
+                addResult('Error', 'Please connect wallet first', 'error');
+                return;
+            }
+            
+            try {
+                // Simulate AI prediction
+                const prompt = "What will be the weather in NYC tomorrow?";
+                const aiResponse = "Based on meteorological data, NYC will have partly cloudy skies with a high of 72°F.";
+                const nonce = web3.utils.randomHex(16);
+                
+                addResult('AI Prediction', `
+                    <strong>Prompt:</strong> ${prompt}<br>
+                    <strong>Response:</strong> ${aiResponse}<br>
+                    <strong>Nonce:</strong> <span class="hash">${nonce}</span>
+                `, 'pending');
+                
+                // Create hashes
+                const promptHash = web3.utils.keccak256(prompt + nonce);
+                const responseHash = web3.utils.keccak256(aiResponse + nonce);
+                
+                addResult('Hashes Generated', `
+                    <strong>Prompt Hash:</strong> <span class="hash">${promptHash}</span><br>
+                    <strong>Response Hash:</strong> <span class="hash">${responseHash}</span>
+                `, 'pending');
+                
+                // Send commitment to blockchain
+                addResult('Transaction', 'Sending commitment to Base blockchain...', 'pending');
+                
+                const receipt = await contract.methods
+                    .commitPrediction(promptHash, responseHash)
+                    .send({ from: userAccount });
+                
+                console.log('Transaction receipt:', receipt);
+                
+                // Get commitment ID from event
+                const event = receipt.events.PredictionCommitted;
+                const commitmentId = event.returnValues.commitmentId;
+                
+                addResult('Success!', `
+                    <strong>Transaction Hash:</strong> <span class="hash">${receipt.transactionHash}</span><br>
+                    <strong>Block Number:</strong> ${receipt.blockNumber}<br>
+                    <strong>Commitment ID:</strong> <span class="hash">${commitmentId}</span><br>
+                    <strong>Gas Used:</strong> ${receipt.gasUsed}<br>
+                    <a href="https://sepolia.basescan.org/tx/${receipt.transactionHash}" target="_blank" style="color: #0052FF;">View on BaseScan →</a>
+                `, 'success');
+                
+                // Query the commitment
+                const commitment = await contract.methods.getCommitment(commitmentId).call();
+                
+                addResult('Commitment Details', `
+                    <strong>On-Chain Data:</strong><br>
+                    - Block: ${commitment.blockNumber}<br>
+                    - Timestamp: ${new Date(commitment.timestamp * 1000).toLocaleString()}<br>
+                    - Predictor: ${commitment.predictor}<br>
+                    - Revealed: ${commitment.revealed}
+                `, 'success');
+                
+            } catch (error) {
+                console.error('Commitment failed:', error);
+                addResult('Error', 'Failed to create commitment: ' + error.message, 'error');
+            }
+        }
+        
+        function addResult(title, content, status) {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = `
+                <div class="status ${status}">${title}</div>
+                <div>${content}</div>
+                <div style="font-size: 12px; color: #666; margin-top: 10px;">
+                    ${new Date().toLocaleTimeString()}
+                </div>
+            `;
+            resultsDiv.appendChild(resultDiv);
+        }
+        
+        // Load on page load
+        loadDeploymentInfo();
+    </script>
+</body>
+</html>

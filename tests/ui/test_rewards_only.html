@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test IoTeX Rewards System</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script src="/static/js/core/config.js"></script>
+</head>
+<body>
+    <h1>IoTeX Rewards System Test</h1>
+    
+    <button onclick="checkContract()">Check Contract Version</button>
+    <button onclick="checkRewards('DEV123')">Check DEV123 Rewards</button>
+    <button onclick="checkRecentDevice()">Check Recent Device</button>
+    
+    <div id="output"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        async function checkContract() {
+            try {
+                if (!window.ethereum) throw new Error('MetaMask not found');
+                
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const contractAddress = config.blockchain.iotex.contracts.deviceVerifier;
+                
+                // Check if contract has V2 methods
+                const abi = [
+                    "function REWARD_PER_PROOF() view returns (uint256)",
+                    "function deviceRewards(bytes32) view returns (uint256)",
+                    "function getDeviceInfo(bytes32) view returns (address,bool,uint256,uint256,uint256)"
+                ];
+                
+                const contract = new ethers.Contract(contractAddress, abi, provider);
+                
+                output.innerHTML = '<h3>Checking contract...</h3>';
+                
+                try {
+                    // Try to call V2-specific method
+                    const rewardAmount = await contract.REWARD_PER_PROOF();
+                    output.innerHTML += `<p style="color: green;">✅ This is V2 contract with REWARD_PER_PROOF: ${ethers.utils.formatEther(rewardAmount)} IOTX</p>`;
+                } catch (e) {
+                    output.innerHTML += `<p style="color: orange;">⚠️ Not V2 contract or REWARD_PER_PROOF not available</p>`;
+                }
+                
+                // Show contract address
+                output.innerHTML += `<p>Contract Address: ${contractAddress}</p>`;
+                
+            } catch (error) {
+                output.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        async function checkRewards(deviceId) {
+            try {
+                if (!window.ethereum) throw new Error('MetaMask not found');
+                
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const contractAddress = config.blockchain.iotex.contracts.deviceVerifier;
+                
+                // Full ABI with both V1 and V2 methods
+                const abi = [
+                    "function getDeviceInfo(bytes32) view returns (address,bool,uint256,uint256,uint256)",
+                    "function deviceRewards(bytes32) view returns (uint256)"
+                ];
+                
+                const contract = new ethers.Contract(contractAddress, abi, provider);
+                
+                // Convert device ID to bytes32
+                const deviceIdBytes32 = ethers.utils.id(deviceId);
+                
+                output.innerHTML = `<h3>Checking device ${deviceId}...</h3>`;
+                output.innerHTML += `<p>Device ID (bytes32): ${deviceIdBytes32}</p>`;
+                
+                // Get device info
+                try {
+                    const info = await contract.getDeviceInfo(deviceIdBytes32);
+                    output.innerHTML += `
+                        <p>Owner: ${info[0]}</p>
+                        <p>Registered: ${info[1]}</p>
+                        <p>Registration Time: ${new Date(info[2] * 1000).toLocaleString()}</p>
+                        <p>Last Proximity Proof: ${info[3] > 0 ? new Date(info[3] * 1000).toLocaleString() : 'Never'}</p>
+                        <p>Pending Rewards (from getDeviceInfo): ${ethers.utils.formatEther(info[4])} IOTX</p>
+                    `;
+                } catch (e) {
+                    output.innerHTML += `<p style="color: red;">Error getting device info: ${e.message}</p>`;
+                }
+                
+                // Try V2 method
+                try {
+                    const rewards = await contract.deviceRewards(deviceIdBytes32);
+                    output.innerHTML += `<p>Device Rewards (from deviceRewards mapping): ${ethers.utils.formatEther(rewards)} IOTX</p>`;
+                } catch (e) {
+                    output.innerHTML += `<p style="color: orange;">deviceRewards mapping not available (V1 contract)</p>`;
+                }
+                
+            } catch (error) {
+                output.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        async function checkRecentDevice() {
+            // Check a device that was recently verified
+            const recentDevices = ['DEV123', 'TESTDEVICE001', 'TEST456', 'IOT001'];
+            
+            output.innerHTML = '<h3>Checking recent devices...</h3>';
+            
+            for (const deviceId of recentDevices) {
+                await checkRewards(deviceId);
+                output.innerHTML += '<hr>';
+            }
+        }
+    </script>
+</body>
+</html>

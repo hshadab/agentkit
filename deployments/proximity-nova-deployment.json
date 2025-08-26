@@ -1,0 +1,17 @@
+{
+  "network": "iotex-testnet",
+  "deploymentTime": "2025-08-01T09:55:30.711Z",
+  "contracts": {
+    "proximityNovaDecider": {
+      "address": "0x4EF6152c952dA7A27bb57E8b989348a73aB850d2",
+      "type": "ProximityNovaDecider"
+    },
+    "deviceVerifierV3": {
+      "address": "0xd3778e76ce0131762337464EEF1BAefFc608e8e0",
+      "type": "IoTeXDeviceVerifierV3",
+      "novaDecider": "0x4EF6152c952dA7A27bb57E8b989348a73aB850d2",
+      "initialFunding": "2.0 IOTX"
+    }
+  },
+  "deployer": "0xE616B2eC620621797030E0AB1BA38DA68D78351C"
+}

@@ -1,0 +1,10 @@
+{
+  "description": "Proof History",
+  "steps": [
+    {
+      "type": "list_proofs",
+      "description": "List existing proofs",
+      "index": 0
+    }
+  ]
+}

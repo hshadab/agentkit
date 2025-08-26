@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Proof Card Visibility Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-case {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #444;
+            border-radius: 5px;
+        }
+        .pass { color: #4caf50; }
+        .fail { color: #f44336; }
+        .info { color: #2196f3; }
+    </style>
+</head>
+<body>
+    <h1>Proof Card Visibility Test</h1>
+    <div id="results"></div>
+
+    <script>
+        // Mock the workflow manager
+        const workflowManager = {
+            workflowStates: new Map()
+        };
+
+        // Test function that mimics the logic in main.js
+        function shouldShowProofCard(data) {
+            const activeWorkflowId = data.workflowId || data.workflow_id || 
+                                   data.additional_context?.workflow_id;
+            
+            const isPartOfWorkflow = activeWorkflowId && workflowManager.workflowStates.has(activeWorkflowId);
+            
+            return !isPartOfWorkflow;
+        }
+
+        // Test cases
+        const testCases = [
+            {
+                name: "Standalone proof (no workflow ID)",
+                data: { proof_id: "proof_123", status: "generating" },
+                expectedResult: true,
+                description: "Should show proof card"
+            },
+            {
+                name: "Standalone proof (with workflow ID but not started)",
+                data: { proof_id: "proof_456", workflowId: "wf_789", status: "generating" },
+                expectedResult: true,
+                description: "Should show proof card because workflow not in workflowStates"
+            },
+            {
+                name: "Workflow proof (workflow started)",
+                data: { proof_id: "proof_abc", workflowId: "wf_active", status: "generating" },
+                setupWorkflow: "wf_active",
+                expectedResult: false,
+                description: "Should NOT show proof card because workflow is active"
+            },
+            {
+                name: "Proof with workflow_id format",
+                data: { proof_id: "proof_def", workflow_id: "wf_snake", status: "generating" },
+                expectedResult: true,
+                description: "Should show proof card (snake_case field)"
+            },
+            {
+                name: "Proof with additional_context workflow",
+                data: { 
+                    proof_id: "proof_ghi", 
+                    additional_context: { workflow_id: "wf_context" },
+                    status: "generating" 
+                },
+                expectedResult: true,
+                description: "Should show proof card (nested workflow ID)"
+            }
+        ];
+
+        // Run tests
+        const resultsDiv = document.getElementById('results');
+        
+        testCases.forEach((testCase, index) => {
+            // Setup
+            if (testCase.setupWorkflow) {
+                workflowManager.workflowStates.set(testCase.setupWorkflow, {});
+            }
+
+            // Run test
+            const result = shouldShowProofCard(testCase.data);
+            const passed = result === testCase.expectedResult;
+
+            // Display result
+            const testDiv = document.createElement('div');
+            testDiv.className = 'test-case';
+            testDiv.innerHTML = `
+                <h3>Test ${index + 1}: ${testCase.name}</h3>
+                <p class="info">Data: ${JSON.stringify(testCase.data)}</p>
+                <p class="info">Expected: ${testCase.expectedResult ? "Show card" : "Hide card"}</p>
+                <p class="info">Actual: ${result ? "Show card" : "Hide card"}</p>
+                <p class="${passed ? 'pass' : 'fail'}">
+                    ${passed ? '✓ PASS' : '✗ FAIL'}: ${testCase.description}
+                </p>
+            `;
+            resultsDiv.appendChild(testDiv);
+
+            // Cleanup
+            if (testCase.setupWorkflow) {
+                workflowManager.workflowStates.delete(testCase.setupWorkflow);
+            }
+        });
+
+        // Add summary
+        const summary = document.createElement('div');
+        summary.className = 'test-case';
+        summary.innerHTML = '<h2>Summary</h2><p class="info">All tests verify that proof cards are shown for standalone proofs and hidden only for active workflows.</p>';
+        resultsDiv.appendChild(summary);
+    </script>
+</body>
+</html>

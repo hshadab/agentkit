@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Direct Parser Test</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: monospace;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #0f0;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #0f0;
+            border-radius: 5px;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        pre {
+            background: #000;
+            padding: 10px;
+            overflow-x: auto;
+        }
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0c0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Direct zkEngine Parser Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Controls</h2>
+        <button onclick="testSimulatedProof()">Test with Simulated Proof</button>
+        <button onclick="testRealProof()">Test with Real zkEngine Output</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="results"></div>
+    </div>
+    
+    <script src="/static/parsers/nova/zkengine-calldata-parser.js"></script>
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toISOString();
+            const line = document.createElement('div');
+            line.className = type;
+            line.textContent = `[${timestamp}] ${message}`;
+            resultsDiv.appendChild(line);
+        }
+        
+        function clearResults() {
+            resultsDiv.innerHTML = '';
+        }
+        
+        async function testSimulatedProof() {
+            log('=== Testing with Simulated Proof ===', 'info');
+            
+            try {
+                // Create a simulated proof similar to zkEngine output
+                const proofSize = 1024; // 1KB proof
+                const proofBytes = new Uint8Array(proofSize);
+                
+                // Fill with pattern that includes valid field elements
+                // Each field element is 32 bytes
+                const numFieldElements = Math.floor(proofSize / 32);
+                log(`Creating ${numFieldElements} field elements`, 'info');
+                
+                for (let i = 0; i < numFieldElements; i++) {
+                    const start = i * 32;
+                    // Create a valid field element pattern
+                    for (let j = 0; j < 32; j++) {
+                        proofBytes[start + j] = (i + j) % 256;
+                    }
+                }
+                
+                // Convert to base64
+                let binaryString = '';
+                for (let i = 0; i < proofBytes.length; i++) {
+                    binaryString += String.fromCharCode(proofBytes[i]);
+                }
+                const base64Proof = btoa(binaryString);
+                
+                const proofData = {
+                    proof_data: base64Proof,
+                    public_inputs: {
+                        execution_z0: ["5050", "5050"],
+                        IC_i: ["1", "2", "3"]
+                    }
+                };
+                
+                log(`Created proof data: ${base64Proof.length} chars (base64)`, 'success');
+                
+                // Test the parser
+                const parser = new ZKEngineCalldataParser();
+                const components = parser.parseZKEngineProof(proofData);
+                
+                if (components) {
+                    log('✅ Successfully parsed proof components!', 'success');
+                    log(`Components extracted:`, 'info');
+                    
+                    // Log each component
+                    for (const [key, value] of Object.entries(components)) {
+                        if (Array.isArray(value)) {
+                            log(`  ${key}: [${value.length} elements]`, 'info');
+                        } else {
+                            log(`  ${key}: ${JSON.stringify(value)}`, 'info');
+                        }
+                    }
+                    
+                    // Test formatting
+                    const formatted = parser.formatForIoTeXContract(components, "5050", "5050");
+                    if (formatted) {
+                        log('✅ Successfully formatted for IoTeX contract!', 'success');
+                        
+                        // Show sample of formatted data
+                        log('Sample formatted values:', 'info');
+                        log(`  i_z0_zi[0]: ${formatted.i_z0_zi[0]}`, 'info');
+                        log(`  i_z0_zi[1]: ${formatted.i_z0_zi[1]}`, 'info');
+                        log(`  i_z0_zi[2]: ${formatted.i_z0_zi[2]}`, 'info');
+                        log(`  pA[0]: ${formatted.pA[0]}`, 'info');
+                        
+                        // Verify all components are hex strings
+                        let allValid = true;
+                        for (const [key, value] of Object.entries(formatted)) {
+                            if (Array.isArray(value)) {
+                                const checkArray = (arr) => {
+                                    for (const elem of arr) {
+                                        if (Array.isArray(elem)) {
+                                            checkArray(elem);
+                                        } else if (typeof elem !== 'string' || !elem.startsWith('0x')) {
+                                            log(`❌ Invalid format in ${key}: ${elem}`, 'error');
+                                            allValid = false;
+                                        }
+                                    }
+                                };
+                                checkArray(value);
+                            }
+                        }
+                        
+                        if (allValid) {
+                            log('✅ All components properly formatted as hex strings!', 'success');
+                        }
+                    }
+                } else {
+                    log('❌ Failed to parse proof components', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+        
+        async function testRealProof() {
+            log('=== Testing with Real zkEngine Output ===', 'info');
+            
+            try {
+                // This would be actual proof data from zkEngine
+                // For now, we'll create a more realistic simulation
+                
+                // Real zkEngine proofs are larger and have specific structure
+                const realProofSize = 4096; // 4KB - more realistic size
+                const proofBytes = new Uint8Array(realProofSize);
+                
+                // Simulate bincode serialization structure
+                let offset = 0;
+                
+                // Number of steps (u64 little-endian)
+                const numSteps = 10n;
+                for (let i = 0; i < 8; i++) {
+                    proofBytes[offset++] = Number((numSteps >> BigInt(i * 8)) & 0xffn);
+                }
+                
+                // Add field elements (32 bytes each)
+                const numFieldElements = 30; // Enough for all components
+                for (let i = 0; i < numFieldElements; i++) {
+                    for (let j = 0; j < 32; j++) {
+                        // Create more realistic field element values
+                        proofBytes[offset++] = Math.floor(Math.random() * 256);
+                    }
+                }
+                
+                // Fill rest with zeros
+                while (offset < realProofSize) {
+                    proofBytes[offset++] = 0;
+                }
+                
+                // Convert to base64
+                let binaryString = '';
+                for (let i = 0; i < proofBytes.length; i++) {
+                    binaryString += String.fromCharCode(proofBytes[i]);
+                }
+                const base64Proof = btoa(binaryString);
+                
+                const proofData = {
+                    proof_data: base64Proof,
+                    public_inputs: {
+                        execution_z0: ["5080", "5020"], // Different coordinates
+                        IC_i: ["1", "2", "3"],
+                        ops_z0: ["0", "0"]
+                    }
+                };
+                
+                log(`Created realistic proof: ${base64Proof.length} chars (base64)`, 'success');
+                
+                // Test the parser
+                const parser = new ZKEngineCalldataParser();
+                const components = parser.parseZKEngineProof(proofData);
+                
+                if (components) {
+                    log('✅ Successfully parsed real proof format!', 'success');
+                    
+                    // Test formatting with actual coordinates
+                    const formatted = parser.formatForIoTeXContract(components, "5080", "5020");
+                    if (formatted) {
+                        log('✅ Successfully formatted for IoTeX contract!', 'success');
+                        
+                        // Show the coordinates were properly set
+                        log('Coordinates in proof:', 'info');
+                        log(`  X: ${formatted.i_z0_zi[0]}`, 'info');
+                        log(`  Y: ${formatted.i_z0_zi[1]}`, 'info');
+                        log(`  Within proximity: ${formatted.i_z0_zi[2]}`, 'info');
+                    }
+                } else {
+                    log('❌ Failed to parse real proof format', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+        
+        // Auto-run simulated test on load
+        window.addEventListener('load', () => {
+            log('Page loaded. Click buttons to run tests.', 'info');
+        });
+    </script>
+</body>
+</html>

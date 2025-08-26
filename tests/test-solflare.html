@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Solflare Integration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0f0f23;
+            color: #e0e0e0;
+        }
+        .wallet-status {
+            padding: 20px;
+            background: #1a1a2e;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #2a2a3e;
+        }
+        .connected {
+            border-color: #10b981;
+        }
+        .disconnected {
+            border-color: #ef4444;
+        }
+        button {
+            padding: 10px 20px;
+            background: #9333ea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #7c3aed;
+        }
+        button:disabled {
+            background: #4a4a5a;
+            cursor: not-allowed;
+        }
+        .wallet-info {
+            font-family: monospace;
+            font-size: 14px;
+            word-break: break-all;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        .info { color: #3b82f6; }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            background: #2a2a3e;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌟 Solflare Wallet Integration Test</h1>
+    
+    <div class="wallet-status disconnected" id="walletStatus">
+        <h3>Wallet Status</h3>
+        <div id="walletInfo">Not connected</div>
+    </div>
+    
+    <div>
+        <button onclick="detectWallets()">🔍 Detect Wallets</button>
+        <button onclick="connectSolflare()">🔗 Connect Solflare</button>
+        <button onclick="disconnect()">❌ Disconnect</button>
+        <button onclick="getBalance()" disabled id="balanceBtn">💰 Get Balance</button>
+        <button onclick="testTransaction()" disabled id="txBtn">📤 Test Transaction</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script>
+        let provider = null;
+        let publicKey = null;
+        let connection = null;
+        
+        // Initialize connection to devnet
+        connection = new solanaWeb3.Connection('https://api.devnet.solana.com', 'confirmed');
+        
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${type}`;
+            resultDiv.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            resultsDiv.appendChild(resultDiv);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+        
+        async function detectWallets() {
+            addResult('🔍 Detecting available Solana wallets...', 'info');
+            
+            const wallets = [];
+            
+            // Check for Solflare
+            if (window.solflare && window.solflare.isSolflare) {
+                wallets.push('Solflare ✅');
+                addResult('✅ Solflare detected!', 'success');
+            } else {
+                addResult('❌ Solflare not detected', 'error');
+            }
+            
+            // Check for Phantom
+            if (window.solana && window.solana.isPhantom) {
+                wallets.push('Phantom');
+                addResult('✅ Phantom detected', 'success');
+            }
+            
+            // Check for Backpack
+            if (window.backpack && window.backpack.solana) {
+                wallets.push('Backpack');
+                addResult('✅ Backpack detected', 'success');
+            }
+            
+            if (wallets.length === 0) {
+                addResult('⚠️ No Solana wallets detected. Please install Solflare from: https://solflare.com', 'warning');
+            } else {
+                addResult(`Found ${wallets.length} wallet(s): ${wallets.join(', ')}`, 'info');
+            }
+        }
+        
+        async function connectSolflare() {
+            try {
+                if (!window.solflare) {
+                    addResult('❌ Solflare not found. Please install from: https://solflare.com', 'error');
+                    window.open('https://chrome.google.com/webstore/detail/solflare-wallet/bhhhlbepdkbapadjdnnojkbgioiodbic', '_blank');
+                    return;
+                }
+                
+                addResult('🔗 Connecting to Solflare...', 'info');
+                
+                provider = window.solflare;
+                
+                // Connect to the wallet
+                const resp = await provider.connect();
+                publicKey = resp.publicKey || provider.publicKey;
+                
+                if (!publicKey) {
+                    throw new Error('Failed to get public key from wallet');
+                }
+                
+                addResult(`✅ Connected to Solflare!`, 'success');
+                addResult(`Wallet address: ${publicKey.toString()}`, 'info');
+                
+                // Update UI
+                updateWalletStatus(true, publicKey.toString());
+                
+                // Check network
+                const network = await provider.request({ method: 'solana_network' }).catch(() => null);
+                if (network) {
+                    addResult(`Network: ${network}`, 'info');
+                    if (network !== 'devnet') {
+                        addResult('⚠️ Please switch to Devnet in your Solflare wallet', 'warning');
+                    }
+                }
+                
+                // Enable buttons
+                document.getElementById('balanceBtn').disabled = false;
+                document.getElementById('txBtn').disabled = false;
+                
+            } catch (error) {
+                console.error('Connection error:', error);
+                addResult(`❌ Failed to connect: ${error.message}`, 'error');
+                updateWalletStatus(false);
+            }
+        }
+        
+        async function disconnect() {
+            try {
+                if (provider && provider.disconnect) {
+                    await provider.disconnect();
+                }
+                
+                provider = null;
+                publicKey = null;
+                
+                addResult('❌ Disconnected from wallet', 'info');
+                updateWalletStatus(false);
+                
+                // Disable buttons
+                document.getElementById('balanceBtn').disabled = true;
+                document.getElementById('txBtn').disabled = true;
+                
+            } catch (error) {
+                addResult(`Error disconnecting: ${error.message}`, 'error');
+            }
+        }
+        
+        async function getBalance() {
+            if (!publicKey || !connection) {
+                addResult('❌ Not connected to wallet', 'error');
+                return;
+            }
+            
+            try {
+                addResult('💰 Fetching balance...', 'info');
+                
+                const balance = await connection.getBalance(publicKey);
+                const solBalance = balance / solanaWeb3.LAMPORTS_PER_SOL;
+                
+                addResult(`Balance: ${solBalance} SOL`, 'success');
+                
+                if (solBalance === 0) {
+                    addResult('⚠️ Your wallet has 0 SOL. Get test SOL from: https://solfaucet.com', 'warning');
+                }
+                
+            } catch (error) {
+                addResult(`❌ Failed to get balance: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testTransaction() {
+            if (!publicKey || !provider) {
+                addResult('❌ Not connected to wallet', 'error');
+                return;
+            }
+            
+            try {
+                addResult('📤 Creating test transaction...', 'info');
+                
+                // Create a simple transfer to self
+                const transaction = new solanaWeb3.Transaction().add(
+                    solanaWeb3.SystemProgram.transfer({
+                        fromPubkey: publicKey,
+                        toPubkey: publicKey,
+                        lamports: 1, // 0.000000001 SOL
+                    })
+                );
+                
+                // Get recent blockhash
+                const { blockhash } = await connection.getLatestBlockhash();
+                transaction.recentBlockhash = blockhash;
+                transaction.feePayer = publicKey;
+                
+                addResult('🔐 Requesting signature from Solflare...', 'info');
+                
+                // Sign and send transaction
+                const signed = await provider.signAndSendTransaction(transaction);
+                
+                addResult(`✅ Transaction sent! Signature: ${signed.signature}`, 'success');
+                addResult(`View on explorer: https://explorer.solana.com/tx/${signed.signature}?cluster=devnet`, 'info');
+                
+                // Wait for confirmation
+                addResult('⏳ Waiting for confirmation...', 'info');
+                const confirmation = await connection.confirmTransaction(signed.signature);
+                
+                if (confirmation.value.err) {
+                    throw new Error('Transaction failed: ' + JSON.stringify(confirmation.value.err));
+                }
+                
+                addResult('✅ Transaction confirmed!', 'success');
+                
+            } catch (error) {
+                console.error('Transaction error:', error);
+                addResult(`❌ Transaction failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function updateWalletStatus(connected, address = null) {
+            const statusDiv = document.getElementById('walletStatus');
+            const infoDiv = document.getElementById('walletInfo');
+            
+            if (connected) {
+                statusDiv.className = 'wallet-status connected';
+                infoDiv.innerHTML = `
+                    <div class="success">✅ Connected to Solflare</div>
+                    <div class="wallet-info">Address: ${address}</div>
+                    <div class="info">Network: Devnet</div>
+                `;
+            } else {
+                statusDiv.className = 'wallet-status disconnected';
+                infoDiv.innerHTML = 'Not connected';
+            }
+        }
+        
+        // Auto-detect wallets on load
+        window.addEventListener('load', () => {
+            addResult('🚀 Solflare Integration Test Ready', 'info');
+            detectWallets();
+        });
+    </script>
+</body>
+</html>

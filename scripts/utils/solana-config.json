@@ -1,0 +1,24 @@
+{
+  "deployment": {
+    "mode": "demo",
+    "network": "devnet",
+    "programId": "DemoZK11111111111111111111111111111111111111",
+    "useRealProgram": false,
+    "memoProgram": "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
+  },
+  "preDeployed": {
+    "programId": "ZKVf7hSvmGPgFqJBqRHPqDfDpGkEjdTQgYS8rNJhVkF",
+    "network": "devnet",
+    "description": "Pre-deployed Nova Verifier on Devnet (community deployment)",
+    "explorerUrl": "https://explorer.solana.com/address/ZKVf7hSvmGPgFqJBqRHPqDfDpGkEjdTQgYS8rNJhVkF?cluster=devnet"
+  },
+  "costs": {
+    "deploymentCost": "~2 SOL on devnet (free)",
+    "verificationCost": "~0.00025 SOL per proof",
+    "rentExemption": "~0.002 SOL per account"
+  },
+  "instructions": {
+    "quickStart": "The frontend is already configured to use demo mode. Just connect Phantom wallet!",
+    "realDeployment": "Run ./install-solana-tools.sh then ./deploy-solana.sh"
+  }
+}

@@ -1,0 +1,34 @@
+--- Fix for verify_proof detection ---
+In process_user_command function, after parsing metadata:
+
+if metadata.function == "verify_proof" {
+    info!("Processing verification request");
+    
+    if let Some(proof_id_to_verify) = metadata.arguments.get(0) {
+        let clean_proof_id = proof_id_to_verify
+            .trim()
+            .strip_prefix("proof ")
+            .unwrap_or(proof_id_to_verify)
+            .to_string();
+        
+        info!("Verifying proof: {}", clean_proof_id);
+        
+        let verify_metadata = ProofMetadata {
+            function: "verify".to_string(),
+            arguments: vec![],
+            step_size: metadata.step_size,
+            explanation: "Verifying existing proof".to_string(),
+            additional_context: Some(json!({ "is_verification": true })),
+        };
+        
+        tokio::spawn(verify_proof(state.clone(), clean_proof_id, verify_metadata));
+    } else {
+        error!("No proof ID provided for verification");
+        let err_msg = json!({
+            "type": "error",
+            "response": "No proof ID provided for verification"
+        });
+        let _ = state.tx.send(err_msg.to_string());
+    }
+    return;
+}

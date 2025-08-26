@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Phantom Ethereum</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>Test Phantom Ethereum Provider</h1>
+    
+    <button onclick="testPhantom()">Test Phantom Connection</button>
+    <button onclick="testTransaction()">Test Simple Transaction</button>
+    
+    <div id="results" style="margin-top: 20px; white-space: pre-wrap; font-family: monospace;"></div>
+    
+    <script>
+        const log = (msg, isError = false) => {
+            const div = document.getElementById('results');
+            div.innerHTML += (isError ? '❌ ' : '✅ ') + msg + '\n';
+            console.log(msg);
+        };
+        
+        async function testPhantom() {
+            try {
+                if (!window.ethereum) {
+                    log('No Ethereum provider found', true);
+                    return;
+                }
+                
+                log('Ethereum provider found');
+                log('Is Phantom: ' + (window.ethereum.isPhantom ? 'Yes' : 'No'));
+                
+                // Request accounts
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                log('Connected accounts: ' + accounts.join(', '));
+                
+                // Check chain ID
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                log('Chain ID: ' + chainId + ' (decimal: ' + parseInt(chainId, 16) + ')');
+                
+                // Get balance
+                const balance = await window.ethereum.request({
+                    method: 'eth_getBalance',
+                    params: [accounts[0], 'latest']
+                });
+                log('Balance: ' + parseInt(balance, 16) / 1e18 + ' ETH');
+                
+                // Test web3.js compatibility
+                const web3 = new Web3(window.ethereum);
+                const web3Accounts = await web3.eth.getAccounts();
+                log('Web3.js accounts: ' + web3Accounts.join(', '));
+                
+            } catch (error) {
+                log('Error: ' + error.message, true);
+                console.error(error);
+            }
+        }
+        
+        async function testTransaction() {
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                
+                // Simple self-transfer
+                const txParams = {
+                    from: accounts[0],
+                    to: accounts[0],
+                    value: '0x0', // 0 ETH
+                    gas: '0x5208', // 21000
+                    gasPrice: '0x3b9aca00' // 1 gwei
+                };
+                
+                log('Sending transaction: ' + JSON.stringify(txParams, null, 2));
+                
+                const txHash = await window.ethereum.request({
+                    method: 'eth_sendTransaction',
+                    params: [txParams]
+                });
+                
+                log('Transaction sent! Hash: ' + txHash);
+                
+            } catch (error) {
+                log('Transaction error: ' + error.message, true);
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>

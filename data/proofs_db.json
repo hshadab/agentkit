@@ -1,0 +1,2103 @@
+{
+  "proof_ai_prediction_1753129303374": {
+    "file_path": "./proofs/proof_ai_prediction_1753129303374/proof.bin",
+    "id": "proof_ai_prediction_1753129303374",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_94768a53-b367-4806-bc0e-5d542a986de9"
+      },
+      "arguments": [
+        "12345",
+        "1347440205",
+        "999",
+        "1753129303",
+        "100"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_ai_content",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.415470267,
+      "proof_size": 19038604,
+      "time_ms": 15415
+    },
+    "status": "complete",
+    "timestamp": "2025-07-21T20:21:58.799638716+00:00"
+  },
+  "proof_ai_prediction_1753133082722": {
+    "file_path": "./proofs/proof_ai_prediction_1753133082722/proof.bin",
+    "id": "proof_ai_prediction_1753133082722",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_abca8851-69c8-4f9a-a5ad-68d6f860004c"
+      },
+      "arguments": [
+        "12345",
+        "1347440205",
+        "999",
+        "1753133082",
+        "100"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_ai_content",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.522851572,
+      "proof_size": 19038604,
+      "time_ms": 16522
+    },
+    "status": "complete",
+    "timestamp": "2025-07-21T21:24:59.268224484+00:00"
+  },
+  "proof_ai_prediction_1753144493105": {
+    "file_path": "./proofs/proof_ai_prediction_1753144493105/proof.bin",
+    "id": "proof_ai_prediction_1753144493105",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_381d97d5-436b-4aaa-bb0d-3c16f96ccdf0"
+      },
+      "arguments": [
+        "12345",
+        "1347440205",
+        "999",
+        "1753144493",
+        "100"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_ai_content",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.266547783,
+      "proof_size": 19038604,
+      "time_ms": 16266
+    },
+    "status": "complete",
+    "timestamp": "2025-07-22T00:35:09.398968899+00:00"
+  },
+  "proof_ai_prediction_1753145819566": {
+    "file_path": "./proofs/proof_ai_prediction_1753145819566/proof.bin",
+    "id": "proof_ai_prediction_1753145819566",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_00794cb3-7706-4c90-a482-b2154b8c6743"
+      },
+      "arguments": [
+        "12345",
+        "1347440205",
+        "999",
+        "1753145819",
+        "100"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_ai_content",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.335341552,
+      "proof_size": 19038604,
+      "time_ms": 16335
+    },
+    "status": "complete",
+    "timestamp": "2025-07-22T00:57:15.912819893+00:00"
+  },
+  "proof_ai_prediction_1753243102717": {
+    "file_path": "./proofs/proof_ai_prediction_1753243102717/proof.bin",
+    "id": "proof_ai_prediction_1753243102717",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_6a718c52-f4a1-4383-a4bf-a52d2d174b13"
+      },
+      "arguments": [
+        "12345",
+        "1347440205",
+        "999",
+        "1753243102",
+        "100"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_ai_content",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.796836618,
+      "proof_size": 19038604,
+      "time_ms": 13796
+    },
+    "status": "complete",
+    "timestamp": "2025-07-23T03:58:36.535752990+00:00"
+  },
+  "proof_ai_prediction_1753277074576": {
+    "file_path": "./proofs/proof_ai_prediction_1753277074576/proof.bin",
+    "id": "proof_ai_prediction_1753277074576",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_9fe6729d-d410-41e9-91b8-3f52da732e58"
+      },
+      "arguments": [
+        "12345",
+        "1347440205",
+        "999",
+        "1753277074",
+        "100"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_ai_content",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.169715712,
+      "proof_size": 19038604,
+      "time_ms": 14169
+    },
+    "status": "complete",
+    "timestamp": "2025-07-23T13:24:48.766627089+00:00"
+  },
+  "proof_ai_prediction_1753471499900": {
+    "file_path": "./proofs/proof_ai_prediction_1753471499900/proof.bin",
+    "id": "proof_ai_prediction_1753471499900",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_9cad7b87-2238-45df-a26b-cdc3c55fb665"
+      },
+      "arguments": [
+        "12345",
+        "1347440205",
+        "999",
+        "1753471499",
+        "100"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_ai_content",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.188960225,
+      "proof_size": 19038604,
+      "time_ms": 15188
+    },
+    "status": "complete",
+    "timestamp": "2025-07-25T19:25:15.091961776+00:00"
+  },
+  "proof_ai_prediction_1753494443349": {
+    "file_path": "./proofs/proof_ai_prediction_1753494443349/proof.bin",
+    "id": "proof_ai_prediction_1753494443349",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1addd3c5-21ad-491d-890f-b309d7a66d49"
+      },
+      "arguments": [
+        "12345",
+        "1347440205",
+        "999",
+        "1753494443",
+        "100"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_ai_content",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.533559543,
+      "proof_size": 19038604,
+      "time_ms": 13533
+    },
+    "status": "complete",
+    "timestamp": "2025-07-26T01:47:36.885233152+00:00"
+  },
+  "proof_ai_prediction_1753666166121": {
+    "file_path": "./proofs/proof_ai_prediction_1753666166121/proof.bin",
+    "id": "proof_ai_prediction_1753666166121",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753666164"
+      },
+      "arguments": [
+        "12345",
+        "1347440205",
+        "999",
+        "1753666166",
+        "100"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_ai_content",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.239409323,
+      "proof_size": 19038604,
+      "time_ms": 15239
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T01:29:41.367271718+00:00"
+  },
+  "proof_ai_prediction_1753668064906": {
+    "file_path": "./proofs/proof_ai_prediction_1753668064906/proof.bin",
+    "id": "proof_ai_prediction_1753668064906",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753668063"
+      },
+      "arguments": [
+        "12345",
+        "1347440205",
+        "999",
+        "1753668064",
+        "100"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_ai_content",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.919743665,
+      "proof_size": 19038604,
+      "time_ms": 14919
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T02:01:19.829326390+00:00"
+  },
+  "proof_ai_prediction_1753757486406": {
+    "file_path": "./proofs/proof_ai_prediction_1753757486406/proof.bin",
+    "id": "proof_ai_prediction_1753757486406",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753757484"
+      },
+      "arguments": [
+        "12345",
+        "1347440205",
+        "999",
+        "1753757486",
+        "100"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_ai_content",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.021000298,
+      "proof_size": 19038604,
+      "time_ms": 15021
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T02:51:41.450884440+00:00"
+  },
+  "proof_device_proximity_1753668503745": {
+    "file_path": "./proofs/proof_device_proximity_1753668503745/proof.bin",
+    "id": "proof_device_proximity_1753668503745",
+    "metadata": {
+      "additional_context": "Testing real zkEngine proximity proof",
+      "arguments": [
+        "DEV789",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Device proximity proof for DEV789",
+      "function": "prove_device_proximity",
+      "step_size": 10
+    },
+    "metrics": {
+      "error": "Error: WasmiError\n",
+      "generation_time_secs": 12.221526453,
+      "time_ms": 12221
+    },
+    "status": "failed",
+    "timestamp": "2025-07-28T02:08:35.972903066+00:00"
+  },
+  "proof_device_proximity_1753668532489": {
+    "file_path": "./proofs/proof_device_proximity_1753668532489/proof.bin",
+    "id": "proof_device_proximity_1753668532489",
+    "metadata": {
+      "additional_context": "Testing real zkEngine proximity proof",
+      "arguments": [
+        "123456",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Device proximity proof for DEV789",
+      "function": "prove_device_proximity",
+      "step_size": 10
+    },
+    "metrics": {
+      "error": "Error: WasmiError\n",
+      "generation_time_secs": 9.483292504,
+      "time_ms": 9483
+    },
+    "status": "failed",
+    "timestamp": "2025-07-28T02:09:01.985794517+00:00"
+  },
+  "proof_device_proximity_1753668578616": {
+    "file_path": "./proofs/proof_device_proximity_1753668578616/proof.bin",
+    "id": "proof_device_proximity_1753668578616",
+    "metadata": {
+      "additional_context": "Testing real zkEngine proximity proof",
+      "arguments": [
+        "123456",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Device proximity proof for DEV789",
+      "function": "prove_device_proximity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 17.614949406,
+      "proof_size": 12271244,
+      "time_ms": 17614
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T02:09:56.235490127+00:00"
+  },
+  "proof_device_proximity_1753668712814": {
+    "file_path": "./proofs/proof_device_proximity_1753668712814/proof.bin",
+    "id": "proof_device_proximity_1753668712814",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753668710"
+      },
+      "arguments": [
+        "DEV123",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "error": "Error: AnyhowError\n\nCaused by:\n    failed to parse function argument DEV123 at index 0 as i32\n",
+      "generation_time_secs": 10.476605591,
+      "time_ms": 10476
+    },
+    "status": "failed",
+    "timestamp": "2025-07-28T02:12:03.306086618+00:00"
+  },
+  "proof_device_proximity_1753669360550": {
+    "file_path": "./proofs/proof_device_proximity_1753669360550/proof.bin",
+    "id": "proof_device_proximity_1753669360550",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753669358"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.456722876,
+      "proof_size": 19038604,
+      "time_ms": 15456
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T02:22:56.026173299+00:00"
+  },
+  "proof_device_proximity_1753669756091": {
+    "file_path": "./proofs/proof_device_proximity_1753669756091/proof.bin",
+    "id": "proof_device_proximity_1753669756091",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753669752"
+      },
+      "arguments": [
+        "940344",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 16.223669039,
+      "proof_size": 19038604,
+      "time_ms": 16223
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T02:29:32.320529809+00:00"
+  },
+  "proof_device_proximity_1753669868881": {
+    "file_path": "./proofs/proof_device_proximity_1753669868881/proof.bin",
+    "id": "proof_device_proximity_1753669868881",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753669864"
+      },
+      "arguments": [
+        "940344",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.560281824,
+      "proof_size": 19038604,
+      "time_ms": 14560
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T02:31:23.450161719+00:00"
+  },
+  "proof_device_proximity_1753669939934": {
+    "file_path": "./proofs/proof_device_proximity_1753669939934/proof.bin",
+    "id": "proof_device_proximity_1753669939934",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753669935"
+      },
+      "arguments": [
+        "940344",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.046918085,
+      "proof_size": 19038604,
+      "time_ms": 15046
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T02:32:34.989842812+00:00"
+  },
+  "proof_device_proximity_1753670155189": {
+    "file_path": "./proofs/proof_device_proximity_1753670155189/proof.bin",
+    "id": "proof_device_proximity_1753670155189",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753670150"
+      },
+      "arguments": [
+        "940344",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.938096719,
+      "proof_size": 19038604,
+      "time_ms": 14938
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T02:36:10.131738880+00:00"
+  },
+  "proof_device_proximity_1753670271148": {
+    "file_path": "./proofs/proof_device_proximity_1753670271148/proof.bin",
+    "id": "proof_device_proximity_1753670271148",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753670266"
+      },
+      "arguments": [
+        "940344",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.798971526,
+      "proof_size": 19038604,
+      "time_ms": 14798
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T02:38:05.961536013+00:00"
+  },
+  "proof_device_proximity_1753670426444": {
+    "file_path": "./proofs/proof_device_proximity_1753670426444/proof.bin",
+    "id": "proof_device_proximity_1753670426444",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753670421"
+      },
+      "arguments": [
+        "940344",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.645403116,
+      "proof_size": 19038604,
+      "time_ms": 14645
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T02:40:41.095407991+00:00"
+  },
+  "proof_device_proximity_1753670837062": {
+    "file_path": "./proofs/proof_device_proximity_1753670837062/proof.bin",
+    "id": "proof_device_proximity_1753670837062",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753670832"
+      },
+      "arguments": [
+        "940344",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.191393847,
+      "proof_size": 19038604,
+      "time_ms": 15191
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T02:47:32.259263199+00:00"
+  },
+  "proof_device_proximity_1753670925196": {
+    "file_path": "./proofs/proof_device_proximity_1753670925196/proof.bin",
+    "id": "proof_device_proximity_1753670925196",
+    "metadata": {
+      "additional_context": "Direct proof test",
+      "arguments": [
+        "123456",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Testing device proximity proof",
+      "function": "prove_device_proximity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 18.069011465,
+      "proof_size": 12271244,
+      "time_ms": 18069
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T02:49:03.268595889+00:00"
+  },
+  "proof_device_proximity_1753671125202": {
+    "file_path": "./proofs/proof_device_proximity_1753671125202/proof.bin",
+    "id": "proof_device_proximity_1753671125202",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753671120"
+      },
+      "arguments": [
+        "940344",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.267910709,
+      "proof_size": 19038604,
+      "time_ms": 15267
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T02:52:20.474261941+00:00"
+  },
+  "proof_device_proximity_1753671236228": {
+    "file_path": "./proofs/proof_device_proximity_1753671236228/proof.bin",
+    "id": "proof_device_proximity_1753671236228",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753671232"
+      },
+      "arguments": [
+        "633681",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.234766723,
+      "proof_size": 19038604,
+      "time_ms": 15234
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T02:54:11.466496125+00:00"
+  },
+  "proof_device_proximity_1753671367515": {
+    "file_path": "./proofs/proof_device_proximity_1753671367515/proof.bin",
+    "id": "proof_device_proximity_1753671367515",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753671364"
+      },
+      "arguments": [
+        "940344",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.704020507,
+      "proof_size": 19038604,
+      "time_ms": 14704
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T02:56:22.223518866+00:00"
+  },
+  "proof_device_proximity_1753672444608": {
+    "file_path": "./proofs/proof_device_proximity_1753672444608/proof.bin",
+    "id": "proof_device_proximity_1753672444608",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753672397"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.351836003,
+      "proof_size": 19038604,
+      "time_ms": 15351
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T03:14:19.971300307+00:00"
+  },
+  "proof_device_proximity_1753673054064": {
+    "file_path": "./proofs/proof_device_proximity_1753673054064/proof.bin",
+    "id": "proof_device_proximity_1753673054064",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753673050"
+      },
+      "arguments": [
+        "940344",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.070110019,
+      "proof_size": 19038604,
+      "time_ms": 15070
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T03:24:29.157694337+00:00"
+  },
+  "proof_device_proximity_1753674114992": {
+    "file_path": "./proofs/proof_device_proximity_1753674114992/proof.bin",
+    "id": "proof_device_proximity_1753674114992",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753674072"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.414312531,
+      "proof_size": 19038604,
+      "time_ms": 15414
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T03:42:10.420979919+00:00"
+  },
+  "proof_device_proximity_1753674661727": {
+    "file_path": "./proofs/proof_device_proximity_1753674661727/proof.bin",
+    "id": "proof_device_proximity_1753674661727",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753674622"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.839909314,
+      "proof_size": 19038604,
+      "time_ms": 15839
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T03:51:17.578566597+00:00"
+  },
+  "proof_device_proximity_1753675060680": {
+    "file_path": "./proofs/proof_device_proximity_1753675060680/proof.bin",
+    "id": "proof_device_proximity_1753675060680",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753675022"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.080255425,
+      "proof_size": 19038604,
+      "time_ms": 15080
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T03:57:55.768347192+00:00"
+  },
+  "proof_device_proximity_1753675967442": {
+    "file_path": "./proofs/proof_device_proximity_1753675967442/proof.bin",
+    "id": "proof_device_proximity_1753675967442",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753675920"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.100248769,
+      "proof_size": 19038604,
+      "time_ms": 15100
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T04:13:04.090282151+00:00"
+  },
+  "proof_device_proximity_1753676207786": {
+    "file_path": "./proofs/proof_device_proximity_1753676207786/proof.bin",
+    "id": "proof_device_proximity_1753676207786",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753676174"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.795349684,
+      "proof_size": 19038604,
+      "time_ms": 12795
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T04:17:00.589387092+00:00"
+  },
+  "proof_device_proximity_1753676748550": {
+    "file_path": "./proofs/proof_device_proximity_1753676748550/proof.bin",
+    "id": "proof_device_proximity_1753676748550",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753676687"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.622300988,
+      "proof_size": 19038604,
+      "time_ms": 15622
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T04:26:05.754965627+00:00"
+  },
+  "proof_device_proximity_1753677208418": {
+    "file_path": "./proofs/proof_device_proximity_1753677208418/proof.bin",
+    "id": "proof_device_proximity_1753677208418",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753677170"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.91393561,
+      "proof_size": 19038604,
+      "time_ms": 14913
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T04:33:45.198996966+00:00"
+  },
+  "proof_device_proximity_1753677491124": {
+    "file_path": "./proofs/proof_device_proximity_1753677491124/proof.bin",
+    "id": "proof_device_proximity_1753677491124",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753677434"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.878024127,
+      "proof_size": 19038604,
+      "time_ms": 13878
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T04:38:25.021052640+00:00"
+  },
+  "proof_device_proximity_1753677723324": {
+    "file_path": "./proofs/proof_device_proximity_1753677723324/proof.bin",
+    "id": "proof_device_proximity_1753677723324",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753677626"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.145136477,
+      "proof_size": 19038604,
+      "time_ms": 15145
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T04:42:20.256073511+00:00"
+  },
+  "proof_device_proximity_1753678154202": {
+    "file_path": "./proofs/proof_device_proximity_1753678154202/proof.bin",
+    "id": "proof_device_proximity_1753678154202",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753678108"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.467968074,
+      "proof_size": 19038604,
+      "time_ms": 14467
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T04:49:27.351523363+00:00"
+  },
+  "proof_device_proximity_1753678552919": {
+    "file_path": "./proofs/proof_device_proximity_1753678552919/proof.bin",
+    "id": "proof_device_proximity_1753678552919",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753678514"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.275867918,
+      "proof_size": 19038604,
+      "time_ms": 15275
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T04:56:08.222820929+00:00"
+  },
+  "proof_device_proximity_1753699264371": {
+    "file_path": "./proofs/proof_device_proximity_1753699264371/proof.bin",
+    "id": "proof_device_proximity_1753699264371",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753699183"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.760792885,
+      "proof_size": 19038604,
+      "time_ms": 13760
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T10:41:19.241493859+00:00"
+  },
+  "proof_device_proximity_1753699707919": {
+    "file_path": "./proofs/proof_device_proximity_1753699707919/proof.bin",
+    "id": "proof_device_proximity_1753699707919",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753699646"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.068618592,
+      "proof_size": 19038604,
+      "time_ms": 13068
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T10:48:40.996129752+00:00"
+  },
+  "proof_device_proximity_1753699868680": {
+    "file_path": "./proofs/proof_device_proximity_1753699868680/proof.bin",
+    "id": "proof_device_proximity_1753699868680",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753699863"
+      },
+      "arguments": [
+        "940344",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 11.791065642,
+      "proof_size": 19038604,
+      "time_ms": 11791
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T10:51:20.476426342+00:00"
+  },
+  "proof_device_proximity_1753700861337": {
+    "file_path": "./proofs/proof_device_proximity_1753700861337/proof.bin",
+    "id": "proof_device_proximity_1753700861337",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753666325"
+      },
+      "arguments": [
+        "116921",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 11.495834738,
+      "proof_size": 19038604,
+      "time_ms": 11495
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T11:07:52.840318511+00:00"
+  },
+  "proof_device_proximity_1753700990023": {
+    "file_path": "./proofs/proof_device_proximity_1753700990023/proof.bin",
+    "id": "proof_device_proximity_1753700990023",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753666325"
+      },
+      "arguments": [
+        "116921",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 11.842102054,
+      "proof_size": 19038604,
+      "time_ms": 11842
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T11:10:01.870820503+00:00"
+  },
+  "proof_device_proximity_1753712655028": {
+    "file_path": "./proofs/proof_device_proximity_1753712655028/proof.bin",
+    "id": "proof_device_proximity_1753712655028",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753712616"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 17.348986457,
+      "proof_size": 19038604,
+      "time_ms": 17348
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T14:24:34.403348732+00:00"
+  },
+  "proof_device_proximity_1753714025216": {
+    "file_path": "./proofs/proof_device_proximity_1753714025216/proof.bin",
+    "id": "proof_device_proximity_1753714025216",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753713978"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.559414937,
+      "proof_size": 19038604,
+      "time_ms": 15559
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T14:47:22.864787333+00:00"
+  },
+  "proof_device_proximity_1753714984248": {
+    "file_path": "./proofs/proof_device_proximity_1753714984248/proof.bin",
+    "id": "proof_device_proximity_1753714984248",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753714941"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.621923751,
+      "proof_size": 19038604,
+      "time_ms": 15621
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T15:03:21.810516216+00:00"
+  },
+  "proof_device_proximity_1753716178252": {
+    "file_path": "./proofs/proof_device_proximity_1753716178252/proof.bin",
+    "id": "proof_device_proximity_1753716178252",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753716128"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.933543477,
+      "proof_size": 19038604,
+      "time_ms": 14933
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T15:23:15.276686825+00:00"
+  },
+  "proof_device_proximity_1753718693812": {
+    "file_path": "./proofs/proof_device_proximity_1753718693812/proof.bin",
+    "id": "proof_device_proximity_1753718693812",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753718635"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.342104389,
+      "proof_size": 19038604,
+      "time_ms": 15342
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T16:05:11.193583315+00:00"
+  },
+  "proof_device_proximity_1753719959811": {
+    "file_path": "./proofs/proof_device_proximity_1753719959811/proof.bin",
+    "id": "proof_device_proximity_1753719959811",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753719913"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.775167091,
+      "proof_size": 19038604,
+      "time_ms": 14775
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T16:26:16.783324366+00:00"
+  },
+  "proof_device_proximity_1753720567194": {
+    "file_path": "./proofs/proof_device_proximity_1753720567194/proof.bin",
+    "id": "proof_device_proximity_1753720567194",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753720511"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.115252437,
+      "proof_size": 19038604,
+      "time_ms": 15115
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T16:36:22.313532244+00:00"
+  },
+  "proof_device_proximity_1753724179422": {
+    "file_path": "./proofs/proof_device_proximity_1753724179422/proof.bin",
+    "id": "proof_device_proximity_1753724179422",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753724145"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.452848683,
+      "proof_size": 19038604,
+      "time_ms": 13452
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T17:36:35.167367278+00:00"
+  },
+  "proof_device_proximity_1753725714098": {
+    "file_path": "./proofs/proof_device_proximity_1753725714098/proof.bin",
+    "id": "proof_device_proximity_1753725714098",
+    "metadata": {
+      "additional_context": "Direct proof test",
+      "arguments": [
+        "123456",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Testing device proximity proof",
+      "function": "prove_device_proximity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 17.546193008,
+      "proof_size": 12271244,
+      "time_ms": 17546
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T18:02:13.427388204+00:00"
+  },
+  "proof_device_proximity_1753726617149": {
+    "file_path": "./proofs/proof_device_proximity_1753726617149/proof.bin",
+    "id": "proof_device_proximity_1753726617149",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753726585"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.833054548,
+      "proof_size": 19038604,
+      "time_ms": 12833
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T18:17:09.998081030+00:00"
+  },
+  "proof_device_proximity_1753727578133": {
+    "file_path": "./proofs/proof_device_proximity_1753727578133/proof.bin",
+    "id": "proof_device_proximity_1753727578133",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753727544"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.670586092,
+      "proof_size": 19038604,
+      "time_ms": 13670
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T18:33:13.384222881+00:00"
+  },
+  "proof_device_proximity_1753729198335": {
+    "file_path": "./proofs/proof_device_proximity_1753729198335/proof.bin",
+    "id": "proof_device_proximity_1753729198335",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753729141"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.812221296,
+      "proof_size": 19038604,
+      "time_ms": 12812
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T19:00:11.156409257+00:00"
+  },
+  "proof_device_proximity_1753756291622": {
+    "file_path": "./proofs/proof_device_proximity_1753756291622/proof.bin",
+    "id": "proof_device_proximity_1753756291622",
+    "metadata": {
+      "additional_context": "Direct proof test",
+      "arguments": [
+        "123456",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Testing device proximity proof",
+      "function": "prove_device_proximity",
+      "step_size": 10
+    },
+    "metrics": {
+      "generation_time_secs": 19.233347444,
+      "proof_size": 12271244,
+      "time_ms": 19233
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T02:31:50.891256105+00:00"
+  },
+  "proof_device_proximity_1753757453080": {
+    "file_path": "./proofs/proof_device_proximity_1753757453080/proof.bin",
+    "id": "proof_device_proximity_1753757453080",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753757354"
+      },
+      "arguments": [
+        "998671",
+        "5000",
+        "5000"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.69480327,
+      "proof_size": 19038604,
+      "time_ms": 15694
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T02:51:08.796122868+00:00"
+  },
+  "proof_device_proximity_1753778242864": {
+    "file_path": "./proofs/proof_device_proximity_1753778242864/proof.bin",
+    "id": "proof_device_proximity_1753778242864",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753778190"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.344033096,
+      "proof_size": 19038604,
+      "time_ms": 13344
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T08:37:37.178783530+00:00"
+  },
+  "proof_device_proximity_1753779325012": {
+    "file_path": "./proofs/proof_device_proximity_1753779325012/proof.bin",
+    "id": "proof_device_proximity_1753779325012",
+    "metadata": {
+      "additional_context": {
+        "step_index": 1,
+        "workflow_id": "wf_1753779276"
+      },
+      "arguments": [
+        "117946",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.361293061,
+      "proof_size": 19038604,
+      "time_ms": 13361
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T08:55:39.291435885+00:00"
+  },
+  "proof_kyc_1753144544082": {
+    "file_path": "./proofs/proof_kyc_1753144544082/proof.bin",
+    "id": "proof_kyc_1753144544082",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_7be83541-546b-4943-a7d0-8999ed130de3"
+      },
+      "arguments": [
+        "297212",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.445984508,
+      "proof_size": 19038604,
+      "time_ms": 15445
+    },
+    "status": "complete",
+    "timestamp": "2025-07-22T00:35:59.561419586+00:00"
+  },
+  "proof_kyc_1753145865511": {
+    "file_path": "./proofs/proof_kyc_1753145865511/proof.bin",
+    "id": "proof_kyc_1753145865511",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_7c0ba1b9-dedb-47e3-b592-a79de549f42c"
+      },
+      "arguments": [
+        "618657",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.942897603,
+      "proof_size": 19038604,
+      "time_ms": 15942
+    },
+    "status": "complete",
+    "timestamp": "2025-07-22T00:58:01.472235027+00:00"
+  },
+  "proof_kyc_1753470234978": {
+    "file_path": "./proofs/proof_kyc_1753470234978/proof.bin",
+    "id": "proof_kyc_1753470234978",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_b087b8c3-a968-4a55-959b-b70af5fe7b5e"
+      },
+      "arguments": [
+        "988448",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.064161934,
+      "proof_size": 19038604,
+      "time_ms": 15064
+    },
+    "status": "complete",
+    "timestamp": "2025-07-25T19:04:10.109840919+00:00"
+  },
+  "proof_kyc_1753495539142": {
+    "file_path": "./proofs/proof_kyc_1753495539142/proof.bin",
+    "id": "proof_kyc_1753495539142",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_6b2641fa-a5a3-4eed-8789-844f6bc3f900"
+      },
+      "arguments": [
+        "292639",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.656862037,
+      "proof_size": 19038604,
+      "time_ms": 14656
+    },
+    "status": "complete",
+    "timestamp": "2025-07-26T02:05:53.813114231+00:00"
+  },
+  "proof_kyc_1753495804143": {
+    "file_path": "./proofs/proof_kyc_1753495804143/proof.bin",
+    "id": "proof_kyc_1753495804143",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_f612d113-d388-4323-ad92-b08865423b10"
+      },
+      "arguments": [
+        "557639",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.735910074,
+      "proof_size": 19038604,
+      "time_ms": 14735
+    },
+    "status": "complete",
+    "timestamp": "2025-07-26T02:10:18.899095732+00:00"
+  },
+  "proof_kyc_1753497360535": {
+    "file_path": "./proofs/proof_kyc_1753497360535/proof.bin",
+    "id": "proof_kyc_1753497360535",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_2e625823-4498-42bc-9bd0-bebec1507540"
+      },
+      "arguments": [
+        "114034",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.814877819,
+      "proof_size": 19038604,
+      "time_ms": 14814
+    },
+    "status": "complete",
+    "timestamp": "2025-07-26T02:36:15.367890680+00:00"
+  },
+  "proof_kyc_1753548576261": {
+    "file_path": "./proofs/proof_kyc_1753548576261/proof.bin",
+    "id": "proof_kyc_1753548576261",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_5d9ec5e0-2986-466f-a038-4f529f9a3e71"
+      },
+      "arguments": [
+        "329810",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.209864412,
+      "proof_size": 19038604,
+      "time_ms": 15209
+    },
+    "status": "complete",
+    "timestamp": "2025-07-26T16:49:51.489820431+00:00"
+  },
+  "proof_kyc_1753651471445": {
+    "file_path": "./proofs/proof_kyc_1753651471445/proof.bin",
+    "id": "proof_kyc_1753651471445",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_465f8a07-e326-4a92-ae7c-967ffd74ee63"
+      },
+      "arguments": [
+        "225097",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.214949178,
+      "proof_size": 19038604,
+      "time_ms": 13214
+    },
+    "status": "complete",
+    "timestamp": "2025-07-27T21:24:44.682147567+00:00"
+  },
+  "proof_kyc_1753664777698": {
+    "file_path": "./proofs/proof_kyc_1753664777698/proof.bin",
+    "id": "proof_kyc_1753664777698",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753664775"
+      },
+      "arguments": [
+        "531363",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.080151649,
+      "proof_size": 19038604,
+      "time_ms": 15080
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T01:06:32.785893898+00:00"
+  },
+  "proof_kyc_1753665020670": {
+    "file_path": "./proofs/proof_kyc_1753665020670/proof.bin",
+    "id": "proof_kyc_1753665020670",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753665013"
+      },
+      "arguments": [
+        "774335",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.534128565,
+      "proof_size": 19038604,
+      "time_ms": 14534
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T01:10:35.214406565+00:00"
+  },
+  "proof_kyc_1753665400076": {
+    "file_path": "./proofs/proof_kyc_1753665400076/proof.bin",
+    "id": "proof_kyc_1753665400076",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753665398"
+      },
+      "arguments": [
+        "153742",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 11.662340676,
+      "proof_size": 19038604,
+      "time_ms": 11662
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T01:16:51.742599773+00:00"
+  },
+  "proof_kyc_1753665734468": {
+    "file_path": "./proofs/proof_kyc_1753665734468/proof.bin",
+    "id": "proof_kyc_1753665734468",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753665732"
+      },
+      "arguments": [
+        "488134",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.463800555,
+      "proof_size": 19038604,
+      "time_ms": 14463
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T01:22:28.934121256+00:00"
+  },
+  "proof_kyc_1753665833640": {
+    "file_path": "./proofs/proof_kyc_1753665833640/proof.bin",
+    "id": "proof_kyc_1753665833640",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753665831"
+      },
+      "arguments": [
+        "587307",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.441451598,
+      "proof_size": 19038604,
+      "time_ms": 14441
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T01:24:08.090809145+00:00"
+  },
+  "proof_kyc_1753665880939": {
+    "file_path": "./proofs/proof_kyc_1753665880939/proof.bin",
+    "id": "proof_kyc_1753665880939",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753665879"
+      },
+      "arguments": [
+        "634605",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.124032116,
+      "proof_size": 19038604,
+      "time_ms": 14124
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T01:24:55.075755724+00:00"
+  },
+  "proof_kyc_1753667466924": {
+    "file_path": "./proofs/proof_kyc_1753667466924/proof.bin",
+    "id": "proof_kyc_1753667466924",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753667464"
+      },
+      "arguments": [
+        "220593",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.897691293,
+      "proof_size": 19038604,
+      "time_ms": 14897
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T01:51:21.827335040+00:00"
+  },
+  "proof_kyc_1753756688680": {
+    "file_path": "./proofs/proof_kyc_1753756688680/proof.bin",
+    "id": "proof_kyc_1753756688680",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753756686"
+      },
+      "arguments": [
+        "442437",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.856487237,
+      "proof_size": 19038604,
+      "time_ms": 15856
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T02:38:24.549619572+00:00"
+  },
+  "proof_kyc_1753757329408": {
+    "file_path": "./proofs/proof_kyc_1753757329408/proof.bin",
+    "id": "proof_kyc_1753757329408",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753757327"
+      },
+      "arguments": [
+        "83165",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 17.112473755,
+      "proof_size": 19038604,
+      "time_ms": 17112
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T02:49:06.538874631+00:00"
+  },
+  "proof_kyc_1753757509712": {
+    "file_path": "./proofs/proof_kyc_1753757509712/proof.bin",
+    "id": "proof_kyc_1753757509712",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753757507"
+      },
+      "arguments": [
+        "263470",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 15.652023133,
+      "proof_size": 19038604,
+      "time_ms": 15652
+    },
+    "status": "complete",
+    "timestamp": "2025-07-29T02:52:05.384972521+00:00"
+  },
+  "proof_location_1753135874427": {
+    "file_path": "./proofs/proof_location_1753135874427/proof.bin",
+    "id": "proof_location_1753135874427",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1389cff1-09ee-4fcc-bbae-c3ac6a10ec97"
+      },
+      "arguments": [
+        "1739990226"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_location",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 11.762244982,
+      "proof_size": 19038604,
+      "time_ms": 11762
+    },
+    "status": "complete",
+    "timestamp": "2025-07-21T22:11:26.198918420+00:00"
+  },
+  "proof_location_1753494019019": {
+    "file_path": "./proofs/proof_location_1753494019019/proof.bin",
+    "id": "proof_location_1753494019019",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_92cce32d-0cca-4149-a4e9-c35c81b470e6"
+      },
+      "arguments": [
+        "1739994819"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_location",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 13.145641309,
+      "proof_size": 19038604,
+      "time_ms": 13145
+    },
+    "status": "complete",
+    "timestamp": "2025-07-26T01:40:31.703348264+00:00"
+  },
+  "proof_location_1753494368562": {
+    "file_path": "./proofs/proof_location_1753494368562/proof.bin",
+    "id": "proof_location_1753494368562",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_022fedda-3892-4a73-b2ce-54f95356af35"
+      },
+      "arguments": [
+        "1739994361"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_location",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.602334985,
+      "proof_size": 19038604,
+      "time_ms": 12602
+    },
+    "status": "complete",
+    "timestamp": "2025-07-26T01:46:20.730618675+00:00"
+  },
+  "proof_location_1753495243541": {
+    "file_path": "./proofs/proof_location_1753495243541/proof.bin",
+    "id": "proof_location_1753495243541",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_4389e8e0-0084-407e-86c1-10f3538595b2"
+      },
+      "arguments": [
+        "1739989340"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_location",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 12.372566597,
+      "proof_size": 19038604,
+      "time_ms": 12372
+    },
+    "status": "complete",
+    "timestamp": "2025-07-26T02:00:55.922998464+00:00"
+  },
+  "proof_location_1753666139816": {
+    "file_path": "./proofs/proof_location_1753666139816/proof.bin",
+    "id": "proof_location_1753666139816",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753666138"
+      },
+      "arguments": [
+        "1739995607"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_location",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 14.82305609,
+      "proof_size": 19038604,
+      "time_ms": 14823
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T01:29:14.652509179+00:00"
+  },
+  "test_proof_1753700020402": {
+    "file_path": "./proofs/test_proof_1753700020402/proof.bin",
+    "id": "test_proof_1753700020402",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "test_workflow"
+      },
+      "arguments": [
+        "123456",
+        "5050",
+        "5050"
+      ],
+      "explanation": "Test proof generation",
+      "function": "prove_device_proximity",
+      "step_size": 50
+    },
+    "metrics": {
+      "generation_time_secs": 11.607503081,
+      "proof_size": 19038604,
+      "time_ms": 11607
+    },
+    "status": "complete",
+    "timestamp": "2025-07-28T10:53:52.016888382+00:00"
+  }
+}

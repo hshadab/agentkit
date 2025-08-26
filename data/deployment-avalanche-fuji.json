@@ -1,0 +1,10 @@
+{
+  "network": "avalanche-fuji",
+  "chainId": 43113,
+  "contractAddress": "0xB5e565AF50e1450844118Ea53C638775d2450fBC",
+  "contractName": "AvalancheGroth16Verifier",
+  "deployer": "0xE616B2eC620621797030E0AB1BA38DA68D78351C",
+  "deploymentTime": "2025-07-26T02:17:00.000Z",
+  "explorerUrl": "https://testnet.snowtrace.io/address/0xB5e565AF50e1450844118Ea53C638775d2450fBC",
+  "notes": "Deployed proper Groth16 verifier to fix execution reverted errors"
+}

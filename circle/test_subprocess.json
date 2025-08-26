@@ -1,0 +1,1 @@
+{"description":"Test device registration","steps":[{"type":"register_device","description":"Test device registration"}],"workflow_id":"test_subprocess"}

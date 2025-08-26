@@ -1,0 +1,8 @@
+{
+  "network": "Base Sepolia",
+  "chainId": 84532,
+  "contractAddress": "0x74D68B2481d298F337e62efc50724CbBA68dCF8f",
+  "deploymentTime": "2025-07-19T05:23:42.098Z",
+  "deployer": "0xE616B2eC620621797030E0AB1BA38DA68D78351C",
+  "transactionHash": "0x2427981c1a9778fb729251217b82d041fe4f17682737e2656a376b5c237a5132"
+}

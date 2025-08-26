@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Workflow Update Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .status { margin: 10px 0; }
+        .connected { color: #4ade80; }
+        .disconnected { color: #ef4444; }
+        .message {
+            background: #2a2a2a;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .workflow-update { border-left: 3px solid #3b82f6; }
+        .step-update { border-left: 3px solid #f59e0b; }
+        .completed { border-left: 3px solid #10b981; }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover { background: #2563eb; }
+    </style>
+</head>
+<body>
+    <h1>Workflow Update Test</h1>
+    <div class="status" id="status">Disconnected</div>
+    <button onclick="testWorkflow()">Test Workflow</button>
+    <button onclick="clearMessages()">Clear</button>
+    <div id="messages"></div>
+
+    <script>
+        let ws = null;
+
+        function connect() {
+            ws = new WebSocket('ws://localhost:8001/ws');
+            
+            ws.onopen = () => {
+                document.getElementById('status').textContent = 'Connected';
+                document.getElementById('status').className = 'status connected';
+                addMessage('Connected to WebSocket server', 'info');
+            };
+            
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    
+                    if (data.type === 'workflow_started') {
+                        addMessage(`WORKFLOW STARTED: ${data.workflowId}`, 'workflow-update');
+                        if (data.steps) {
+                            data.steps.forEach((step, i) => {
+                                addMessage(`  Step ${i+1}: ${step.action} - ${step.status}`, 'info');
+                            });
+                        }
+                    } else if (data.type === 'workflow_step_update') {
+                        addMessage(`STEP UPDATE: ${data.stepId} → ${data.updates?.status}`, 'step-update');
+                    } else if (data.type === 'workflow_completed') {
+                        addMessage(`WORKFLOW COMPLETED: ${data.success ? 'SUCCESS' : 'FAILED'}`, 'completed');
+                    } else {
+                        addMessage(`${data.type}: ${JSON.stringify(data)}`, 'info');
+                    }
+                } catch (e) {
+                    addMessage(`Raw: ${event.data}`, 'info');
+                }
+            };
+            
+            ws.onerror = (error) => {
+                addMessage('WebSocket error', 'error');
+            };
+            
+            ws.onclose = () => {
+                document.getElementById('status').textContent = 'Disconnected';
+                document.getElementById('status').className = 'status disconnected';
+                setTimeout(connect, 3000);
+            };
+        }
+
+        function testWorkflow() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const command = 'Generate KYC proof then verify it';
+                addMessage(`Sending workflow: ${command}`, 'info');
+                ws.send(JSON.stringify({
+                    type: 'execute_workflow',
+                    command: command
+                }));
+            } else {
+                alert('Not connected to WebSocket');
+            }
+        }
+
+        function addMessage(msg, type = 'info') {
+            const messages = document.getElementById('messages');
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function clearMessages() {
+            document.getElementById('messages').innerHTML = '';
+        }
+
+        // Connect on load
+        connect();
+    </script>
+</body>
+</html>

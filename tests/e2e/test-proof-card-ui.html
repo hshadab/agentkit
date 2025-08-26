@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Proof Card UI Updates</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #c4b5fd;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 40px 0;
+        }
+        .test-btn {
+            background: #6B7CFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-btn:hover {
+            background: #5a6cdd;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(107, 124, 255, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(107, 124, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Proof Card UI Test</h1>
+        
+        <div class="test-section">
+            <h2>What's New:</h2>
+            <ul>
+                <li>✅ Function name displayed prominently (e.g., "KYC PROOF", "AI CONTENT PROOF")</li>
+                <li>✅ Darker color palette matching Verifiable Agent Kit branding</li>
+                <li>✅ Status badge on second line - no overlap</li>
+                <li>✅ Pulsating animation on "GENERATING" status</li>
+                <li>✅ Glass morphism effect with proper shadows</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test Proof Generation:</h2>
+            <button class="test-btn" onclick="testKYC()">Generate KYC Proof</button>
+            <button class="test-btn" onclick="testLocation()">Generate Location Proof</button>
+            <button class="test-btn" onclick="testAI()">Generate AI Content Proof</button>
+            
+            <div id="status" class="status" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Visual Changes:</h2>
+            <p><strong>Proof Cards:</strong></p>
+            <ul>
+                <li>Background: Dark gradient (rgba(25,25,35,0.9) to rgba(30,30,40,0.85))</li>
+                <li>Function name: Large, uppercase, purple text</li>
+                <li>Status badge: Pulsating when generating</li>
+                <li>Content area: Dark background with subtle border</li>
+            </ul>
+            
+            <p><strong>Layout:</strong></p>
+            <ul>
+                <li>Header uses column layout - no text overlap</li>
+                <li>Function name on first line</li>
+                <li>"Proof Generation" + status badge on second line</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.style.display = 'block';
+            statusDiv.innerHTML = message;
+            statusDiv.style.background = type === 'success' ? 
+                'rgba(16, 185, 129, 0.1)' : 
+                'rgba(107, 124, 255, 0.1)';
+        }
+        
+        async function testKYC() {
+            showStatus('Sending KYC proof request...');
+            try {
+                const response = await fetch('http://localhost:8001/api/workflow/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        steps: [{ type: 'kyc', action: 'generate_proof', person: 'Alice' }]
+                    })
+                });
+                const result = await response.json();
+                showStatus(`✅ KYC proof initiated! Check the main UI to see:<br>
+                    • "KYC PROOF" as the title<br>
+                    • Dark gradient background<br>
+                    • Pulsating "GENERATING" badge`, 'success');
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testLocation() {
+            showStatus('Sending Location proof request...');
+            try {
+                const response = await fetch('http://localhost:8001/api/workflow/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        steps: [{ type: 'location', action: 'generate_proof', location: 'NYC' }]
+                    })
+                });
+                const result = await response.json();
+                showStatus(`✅ Location proof initiated! Check the main UI to see:<br>
+                    • "LOCATION PROOF" as the title<br>
+                    • Dark gradient background<br>
+                    • Pulsating "GENERATING" badge`, 'success');
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAI() {
+            showStatus('Sending AI Content proof request...');
+            try {
+                const response = await fetch('http://localhost:8001/api/workflow/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        steps: [{ type: 'ai_content', action: 'generate_proof' }]
+                    })
+                });
+                const result = await response.json();
+                showStatus(`✅ AI Content proof initiated! Check the main UI to see:<br>
+                    • "AI CONTENT PROOF" as the title<br>
+                    • Dark gradient background<br>
+                    • Pulsating "GENERATING" badge`, 'success');
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Startup Test - No Auto Connect</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #fff;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .error { background-color: rgba(255, 107, 107, 0.2); color: #ff6b6b; }
+        .success { background-color: rgba(81, 207, 102, 0.2); color: #51cf66; }
+        .info { background-color: rgba(116, 192, 252, 0.2); color: #74c0fc; }
+        .warning { background-color: rgba(255, 193, 7, 0.2); color: #ffc107; }
+    </style>
+</head>
+<body>
+    <h1>Startup Test - Auto Connect Disabled</h1>
+    <p>This test verifies that the BlockchainVerifier doesn't automatically connect to blockchains on startup.</p>
+    
+    <div id="logs"></div>
+
+    <script type="module">
+        const logDiv = document.getElementById('logs');
+        let errorCount = 0;
+        let connectAttempts = [];
+
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            console.log(`[${type}] ${message}`);
+        }
+
+        // Override console.error to catch MetaMask errors
+        const originalError = console.error;
+        console.error = function(...args) {
+            const errorStr = args.join(' ');
+            if (errorStr.includes('MetaMask') || errorStr.includes('RPC Error') || errorStr.includes('selected network')) {
+                errorCount++;
+                log(`MetaMask Error Detected: ${errorStr}`, 'error');
+            }
+            originalError.apply(console, args);
+        };
+
+        // Monitor ethereum provider requests
+        if (window.ethereum) {
+            const originalRequest = window.ethereum.request;
+            window.ethereum.request = async function(args) {
+                if (args.method === 'wallet_switchEthereumChain') {
+                    connectAttempts.push({
+                        method: args.method,
+                        chainId: args.params?.[0]?.chainId,
+                        time: new Date().toISOString()
+                    });
+                    log(`Chain switch attempt detected: ${args.params?.[0]?.chainId}`, 'warning');
+                }
+                return originalRequest.apply(this, arguments);
+            };
+        }
+
+        log('Starting test...', 'info');
+
+        // Load the blockchain verifier module
+        import('./static/js/blockchain/blockchain-verifier.js').then(module => {
+            log('BlockchainVerifier module loaded', 'success');
+            
+            // Wait a bit to see if any auto-connect attempts happen
+            setTimeout(() => {
+                if (errorCount === 0 && connectAttempts.length === 0) {
+                    log('✅ SUCCESS: No MetaMask errors or auto-connect attempts detected!', 'success');
+                    log('The BlockchainVerifier is not automatically connecting on startup.', 'success');
+                } else {
+                    log(`❌ FAILURE: Detected ${errorCount} errors and ${connectAttempts.length} connection attempts`, 'error');
+                    if (connectAttempts.length > 0) {
+                        log('Connection attempts:', 'error');
+                        connectAttempts.forEach(attempt => {
+                            log(`  - ${attempt.method} to ${attempt.chainId} at ${attempt.time}`, 'error');
+                        });
+                    }
+                }
+            }, 3000);
+        }).catch(err => {
+            log(`Failed to load module: ${err.message}`, 'error');
+        });
+
+        // Also test with the main app
+        log('Loading main app components...', 'info');
+        
+        // Create a test that mimics the main app initialization
+        import('./static/js/core/config.js').then(() => {
+            log('Config loaded', 'success');
+            return import('./static/js/core/utils.js');
+        }).then(() => {
+            log('Utils loaded', 'success');
+            // The blockchain verifier should already be loaded, so no more errors
+        }).catch(err => {
+            log(`Error loading app components: ${err.message}`, 'error');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "network": "iotex-testnet",
+  "deploymentTime": "2025-08-01T10:14:30.906Z",
+  "contracts": {
+    "proximityNovaDeciderSimple": {
+      "address": "0x6059bc16BEfd67E955d097d2e1fe8A87CC65ec24",
+      "type": "ProximityNovaDeciderSimple",
+      "version": "Simplified (focuses on proximity validation)"
+    },
+    "deviceVerifierV3": {
+      "address": "0xD8032F5C2233ee47C7ea72C05D6008c361244e5c",
+      "type": "IoTeXDeviceVerifierV3",
+      "novaDecider": "0x6059bc16BEfd67E955d097d2e1fe8A87CC65ec24",
+      "initialFunding": "2.0 IOTX"
+    }
+  },
+  "deployer": "0xE616B2eC620621797030E0AB1BA38DA68D78351C"
+}

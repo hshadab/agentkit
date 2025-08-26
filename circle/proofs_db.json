@@ -1,0 +1,155 @@
+{
+  "3342933c-a09c-46fc-8565-8795cbdf4cf9": {
+    "file_path": "./proofs/3342933c-a09c-46fc-8565-8795cbdf4cf9/proof.bin",
+    "id": "3342933c-a09c-46fc-8565-8795cbdf4cf9",
+    "metadata": {
+      "arguments": [
+        "12345",
+        "1"
+      ],
+      "function": "main",
+      "step_size": 50,
+      "wasm_path": "/home/hshadab/agentkit/zkengine/example_wasms/prove_kyc.wat"
+    },
+    "metrics": {
+      "file_hash": "466c577f8bf0cccaeda198922e19b297883d9a1fa22fb5f9de0e30db464fd51d",
+      "file_size_mb": 18.156627655029297,
+      "generation_time_secs": 12.161847586,
+      "peak_memory_mb": null
+    },
+    "status": "complete",
+    "timestamp": "2025-06-18T14:40:37.999170628Z"
+  },
+  "591bea9f-ed3b-4f9b-acbf-8d8d1e0aa208": {
+    "file_path": "./proofs/591bea9f-ed3b-4f9b-acbf-8d8d1e0aa208/proof.bin",
+    "id": "591bea9f-ed3b-4f9b-acbf-8d8d1e0aa208",
+    "metadata": {
+      "arguments": [
+        "0"
+      ],
+      "function": "main",
+      "step_size": 50,
+      "wasm_path": "/home/hshadab/agentkit/zkengine/example_wasms/prove_kyc_simple.wat"
+    },
+    "metrics": {
+      "file_hash": "59be7ba6c7ebd8153d5109cc92986f567a3b5e685016c47be60f09b27fb0b88c",
+      "file_size_mb": 18.156627655029297,
+      "generation_time_secs": 14.275733788,
+      "peak_memory_mb": null
+    },
+    "status": "complete",
+    "timestamp": "2025-06-18T15:27:30.656584436Z"
+  },
+  "8e529d85-2c3e-482e-afd1-fed107888cfa": {
+    "file_path": "./proofs/8e529d85-2c3e-482e-afd1-fed107888cfa/proof.bin",
+    "id": "8e529d85-2c3e-482e-afd1-fed107888cfa",
+    "metadata": {
+      "arguments": [
+        "0"
+      ],
+      "function": "main",
+      "step_size": 50,
+      "wasm_path": "/home/hshadab/agentkit/zkengine/example_wasms/prove_kyc_simple.wat"
+    },
+    "metrics": {
+      "file_hash": "2e91da67cd45d1b0a89c47a58d9c50c93e794314e7df21c1343f40414a21e135",
+      "file_size_mb": 18.156627655029297,
+      "generation_time_secs": 14.045585475,
+      "peak_memory_mb": null
+    },
+    "status": "complete",
+    "timestamp": "2025-06-18T15:23:43.466637443Z"
+  },
+  "d12257ca-f765-49bc-9cc0-d6b3347089ab": {
+    "file_path": "./proofs/d12257ca-f765-49bc-9cc0-d6b3347089ab/proof.bin",
+    "id": "d12257ca-f765-49bc-9cc0-d6b3347089ab",
+    "metadata": {
+      "arguments": [
+        "0"
+      ],
+      "function": "main",
+      "step_size": 50,
+      "wasm_path": "/home/hshadab/agentkit/zkengine/example_wasms/prove_kyc_simple.wat"
+    },
+    "metrics": {
+      "file_hash": "894323191577c9449a13f077edb977f8045ea6f2958a5b70ff1d6862ae3be8b0",
+      "file_size_mb": 18.156627655029297,
+      "generation_time_secs": 13.861008875,
+      "peak_memory_mb": null
+    },
+    "status": "complete",
+    "timestamp": "2025-06-18T15:33:43.072483068Z"
+  },
+  "proof_kyc_1753663661844": {
+    "file_path": "./proofs/proof_kyc_1753663661844/proof.bin",
+    "id": "proof_kyc_1753663661844",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753663658"
+      },
+      "arguments": [
+        "415508",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "error": "Error: Wasm not found: ./zkengine_binary/kyc_compliance_real.wasm\n",
+      "generation_time_secs": 0.036439516,
+      "time_ms": 36
+    },
+    "status": "failed",
+    "timestamp": "2025-07-28T00:47:41.886436526+00:00"
+  },
+  "proof_kyc_1753664218007": {
+    "file_path": "./proofs/proof_kyc_1753664218007/proof.bin",
+    "id": "proof_kyc_1753664218007",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753664215"
+      },
+      "arguments": [
+        "971671",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "error": "Error: Wasm not found: ./zkengine_binary/kyc_compliance_real.wasm\n",
+      "generation_time_secs": 0.011439955,
+      "time_ms": 11
+    },
+    "status": "failed",
+    "timestamp": "2025-07-28T00:56:58.025027688+00:00"
+  },
+  "proof_kyc_1753664558475": {
+    "file_path": "./proofs/proof_kyc_1753664558475/proof.bin",
+    "id": "proof_kyc_1753664558475",
+    "metadata": {
+      "additional_context": {
+        "step_index": 0,
+        "workflow_id": "wf_1753664555"
+      },
+      "arguments": [
+        "312140",
+        "1"
+      ],
+      "explanation": "Zero-knowledge proof generation",
+      "function": "prove_kyc",
+      "step_size": 50
+    },
+    "metrics": {
+      "error": "Error: Wasm not found: ./zkengine_binary/kyc_compliance_real.wasm\n",
+      "generation_time_secs": 0.011152374,
+      "time_ms": 11
+    },
+    "status": "failed",
+    "timestamp": "2025-07-28T01:02:38.499170316+00:00"
+  }
+}

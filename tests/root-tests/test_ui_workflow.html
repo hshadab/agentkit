@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Workflow UI Test</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        #test-results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            font-family: monospace;
+        }
+        .success { color: #51cf66; }
+        .error { color: #ff6b6b; }
+        .info { color: #74c0fc; }
+    </style>
+</head>
+<body>
+    <h1>Workflow UI Test</h1>
+    <button onclick="checkWorkflows()">Check Workflow Display</button>
+    <div id="test-results"></div>
+    
+    <script>
+        async function checkWorkflows() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<div class="info">Checking workflow display...</div>';
+            
+            // Open the main UI in a new window
+            const uiWindow = window.open('http://localhost:8000', '_blank');
+            
+            results.innerHTML += '<div class="info">Main UI opened in new window</div>';
+            results.innerHTML += '<div class="info">Please check if you see:</div>';
+            results.innerHTML += '<div>1. Workflow cards in the main UI</div>';
+            results.innerHTML += '<div>2. Step progress indicators</div>';
+            results.innerHTML += '<div>3. Proof generation status</div>';
+            
+            // Also check if workflow manager is loaded
+            setTimeout(() => {
+                if (window.WorkflowManager) {
+                    results.innerHTML += '<div class="success">✓ WorkflowManager loaded</div>';
+                } else {
+                    results.innerHTML += '<div class="error">✗ WorkflowManager not found</div>';
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

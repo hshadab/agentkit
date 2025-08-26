@@ -1,0 +1,398 @@
+{
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "recordId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "integrityScore",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "rewardAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "IntegrityVerified",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "recordId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "accessor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "integrityVerified",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "RecordAccessed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "recordId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "provider",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "RecordCreated",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "INTEGRITY_REWARD",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "accessLogs",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "accessor",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "verified",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "claimRewards",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "patientId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "recordHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "patientAddress",
+          "type": "address"
+        }
+      ],
+      "name": "createMedicalRecord",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "recordId",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "recordId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "limit",
+          "type": "uint256"
+        }
+      ],
+      "name": "getAccessHistory",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "accessor",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "timestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "verified",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct MedicalRecordsIntegrity.AccessLog[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        }
+      ],
+      "name": "getPatientRecords",
+      "outputs": [
+        {
+          "internalType": "bytes32[]",
+          "name": "",
+          "type": "bytes32[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "recordId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getRecord",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "recordHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "creationTimestamp",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "provider",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "accessCount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "integrityScore",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "medicalRecords",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "recordHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "creationTimestamp",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "provider",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "exists",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "accessCount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "integrityScore",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "patientRecords",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "providerRewards",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "recordId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes",
+          "name": "zkProof",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "currentHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "verifyIntegrity",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
+    }
+  ],
+  "bytecode": "0x6080604052348015600e575f5ffd5b50610e1f8061001c5f395ff3fe60806040526004361061009d575f3560e01c8063491257881161006257806349125788146101a057806394f0df61146101bf578063a6b59fc0146101de578063abb8d7fe14610224578063acf8af3e1461024f578063ee26c3531461026e575f5ffd5b806318bd4847146100a8578063213681cd146100dd5780632c942df8146101365780632d29ad131461015e578063372500ab1461018a575f5ffd5b366100a457005b5f5ffd5b3480156100b3575f5ffd5b506100c76100c2366004610b3c565b610318565b6040516100d49190610b5c565b60405180910390f35b3480156100e8575f5ffd5b506100fc6100f7366004610b9e565b610381565b6040805196875260208701959095526001600160a01b039384169486019490945291166060840152608083015260a082015260c0016100d4565b348015610141575f5ffd5b5061015066038d7ea4c6800081565b6040519081526020016100d4565b348015610169575f5ffd5b5061017d610178366004610bb5565b610473565b6040516100d49190610bd5565b348015610195575f5ffd5b5061019e6105e0565b005b3480156101ab575f5ffd5b5061019e6101ba366004610c44565b6106cd565b3480156101ca575f5ffd5b506101506101d9366004610d0a565b6108e7565b3480156101e9575f5ffd5b506101fd6101f8366004610bb5565b610912565b604080516001600160a01b03909416845260208401929092521515908201526060016100d4565b34801561022f575f5ffd5b5061015061023e366004610b3c565b60036020525f908152604090205481565b34801561025a575f5ffd5b50610150610269366004610d32565b61095d565b348015610279575f5ffd5b506102d5610288366004610b9e565b5f60208190529081526040902080546001820154600283015460038401546004850154600590950154939492936001600160a01b039283169392821692600160a01b90920460ff16919087565b6040805197885260208801969096526001600160a01b03948516958701959095529290911660608501521515608084015260a083015260c082015260e0016100d4565b6001600160a01b0381165f9081526002602090815260409182902080548351818402810184019094528084526060939283018282801561037557602002820191905f5260205f20905b815481526020019060010190808311610361575b50505050509050919050565b5f81815260208181526040808320815160e0810183528154815260018201549381019390935260028101546001600160a01b039081169284019290925260038101549182166060840152600160a01b90910460ff16151560808301819052600482015460a084015260059091015460c083015282918291829182918291906104435760405162461bcd60e51b815260206004820152601060248201526f149958dbdc99081b9bdd08199bdd5b9960821b60448201526064015b60405180910390fd5b805160208201516040830151606084015160a085015160c090950151939c929b5090995097509195509350915050565b5f828152600160209081526040808320805482518185028101850190935280835260609493849084015b828210156104f6575f848152602090819020604080516060810182526003860290920180546001600160a01b031683526001808201548486015260029091015460ff16151591830191909152908352909201910161049d565b5050505090508281511161050b5790506105da565b5f8367ffffffffffffffff81111561052557610525610c30565b60405190808252806020026020018201604052801561056e57816020015b604080516060810182525f80825260208083018290529282015282525f199092019101816105435790505b5090505f84835161057f9190610d78565b90505f5b858110156105d357836105968284610d8b565b815181106105a6576105a6610d9e565b60200260200101518382815181106105c0576105c0610d9e565b6020908102919091010152600101610583565b5090925050505b92915050565b335f90815260036020526040902054806106335760405162461bcd60e51b81526020600482015260146024820152734e6f207265776172647320617661696c61626c6560601b604482015260640161043a565b335f818152600360205260408082208290555190919083908381818185875af1925050503d805f8114610681576040519150601f19603f3d011682016040523d82523d5f602084013e610686565b606091505b50509050806106c95760405162461bcd60e51b815260206004820152600f60248201526e151c985b9cd9995c8819985a5b1959608a1b604482015260640161043a565b5050565b5f8381526020819052604090206003810154600160a01b900460ff166107285760405162461bcd60e51b815260206004820152601060248201526f149958dbdc99081b9bdd08199bdd5b9960821b604482015260640161043a565b80545f85815260016020818152604080842081516060810183523381524281850190815296891492810183815282548087018455928752938620905160039092020180546001600160a01b0319166001600160a01b03909216919091178155945192850192909255516002909301805460ff191693151593909317909255600483018054916107b683610db2565b91905055508015610881576064826005015410156107e557600582018054905f6107df83610db2565b91905055505b60018201546107f79062278d00610d8b565b42111561087c5760028201546001600160a01b03165f908152600360205260408120805466038d7ea4c680009290610830908490610d8b565b909155505060058201546040805191825266038d7ea4c68000602083015286917fd0d571d9f0b5c44871a95020f27642c5470300df103d7e88812ee31cdd85307f910160405180910390a25b6108a2565b6005820154156108a2576002826005015461089c9190610dca565b60058301555b604080518215158152426020820152339187917fc54b9bbda957e42b388f28c4ccb232df7fbd5298ff96e2bdcff6589f3353af24910160405180910390a35050505050565b6002602052815f5260405f208181548110610900575f80fd5b905f5260205f20015f91509150505481565b6001602052815f5260405f20818154811061092b575f80fd5b5f9182526020909120600390910201805460018201546002909201546001600160a01b03909116935090915060ff1683565b604080516020810185905290810183905233606090811b6bffffffffffffffffffffffff1916908201524260748201525f9060940160408051808303601f1901815291815281516020928301205f81815292839052912060030154909150600160a01b900460ff1615610a0a5760405162461bcd60e51b81526020600482015260156024820152745265636f726420616c72656164792065786973747360581b604482015260640161043a565b6040805160e081018252848152426020808301828152338486018181526001600160a01b0389811660608801818152600160808a018181525f60a08c01818152606460c08e019081528f8352828c528e83209d518e5599518d85015596516002808e0180549289166001600160a01b031990931692909217909155935160038d01805493511515600160a01b026001600160a81b0319909416919097161791909117909455935160048a0155945160059098019790975586815292845286832080549182018155835292909120909101859055925191929184917fae64bf209eaebf419b459bc7ab0a0b7045bbe5b079ec2b6c4bb5d9f38209157691610b1291815260200190565b60405180910390a49392505050565b80356001600160a01b0381168114610b37575f5ffd5b919050565b5f60208284031215610b4c575f5ffd5b610b5582610b21565b9392505050565b602080825282518282018190525f918401906040840190835b81811015610b93578351835260209384019390920191600101610b75565b509095945050505050565b5f60208284031215610bae575f5ffd5b5035919050565b5f5f60408385031215610bc6575f5ffd5b50508035926020909101359150565b602080825282518282018190525f918401906040840190835b81811015610b9357835180516001600160a01b031684526020808201518186015260409182015115159185019190915290930192606090920191600101610bee565b634e487b7160e01b5f52604160045260245ffd5b5f5f5f60608486031215610c56575f5ffd5b83359250602084013567ffffffffffffffff811115610c73575f5ffd5b8401601f81018613610c83575f5ffd5b803567ffffffffffffffff811115610c9d57610c9d610c30565b604051601f8201601f19908116603f0116810167ffffffffffffffff81118282101715610ccc57610ccc610c30565b604052818152828201602001881015610ce3575f5ffd5b816020840160208301375f9181016020019190915293969395505050506040919091013590565b5f5f60408385031215610d1b575f5ffd5b610d2483610b21565b946020939093013593505050565b5f5f5f60608486031215610d44575f5ffd5b8335925060208401359150610d5b60408501610b21565b90509250925092565b634e487b7160e01b5f52601160045260245ffd5b818103818111156105da576105da610d64565b808201808211156105da576105da610d64565b634e487b7160e01b5f52603260045260245ffd5b5f60018201610dc357610dc3610d64565b5060010190565b5f82610de457634e487b7160e01b5f52601260045260245ffd5b50049056fea2646970667358221220e2fa3664491631ccf49e90f902823fc63aae352bd9375eb424bebf23f34cea2764736f6c634300081e0033"
+}

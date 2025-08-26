@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Phantom Ethereum Direct</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>Test Phantom Ethereum Provider</h1>
+    <button onclick="testPhantom()">Test Phantom</button>
+    <button onclick="testTransaction()">Test Transaction</button>
+    <pre id="output"></pre>
+
+    <script>
+        const output = document.getElementById('output');
+        
+        async function log(msg) {
+            output.textContent += msg + '\n';
+            console.log(msg);
+        }
+
+        async function testPhantom() {
+            try {
+                if (!window.phantom?.ethereum) {
+                    await log('Phantom not found');
+                    return;
+                }
+                
+                await log('Phantom found, testing basic calls...');
+                
+                // Test 1: Get accounts
+                try {
+                    const accounts = await window.phantom.ethereum.request({ method: 'eth_requestAccounts' });
+                    await log('Accounts: ' + accounts);
+                } catch (e) {
+                    await log('ERROR getting accounts: ' + e.message);
+                }
+                
+                // Test 2: Get chain ID
+                try {
+                    const chainId = await window.phantom.ethereum.request({ method: 'eth_chainId' });
+                    await log('Chain ID: ' + chainId);
+                } catch (e) {
+                    await log('ERROR getting chain ID: ' + e.message);
+                }
+                
+                // Test 3: Initialize Web3
+                try {
+                    const web3 = new Web3(window.phantom.ethereum);
+                    await log('Web3 initialized');
+                    
+                    // Test Web3 calls
+                    const networkId = await web3.eth.net.getId();
+                    await log('Network ID via Web3: ' + networkId);
+                } catch (e) {
+                    await log('ERROR with Web3: ' + e.message);
+                }
+                
+            } catch (error) {
+                await log('FATAL ERROR: ' + error.message);
+            }
+        }
+        
+        async function testTransaction() {
+            try {
+                const web3 = new Web3(window.phantom.ethereum);
+                const accounts = await web3.eth.getAccounts();
+                
+                // Simple transfer transaction
+                const tx = {
+                    from: accounts[0],
+                    to: accounts[0], // Send to self
+                    value: '0', // 0 ETH
+                    gas: 21000
+                };
+                
+                await log('Sending test transaction...');
+                const receipt = await web3.eth.sendTransaction(tx);
+                await log('Transaction sent: ' + receipt.transactionHash);
+                
+            } catch (error) {
+                await log('Transaction ERROR: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

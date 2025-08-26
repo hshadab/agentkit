@@ -1,0 +1,16 @@
+[package]
+name = "simple-zk-verifier"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+solana-program = "1.17.0"
+borsh = "0.10.3"
+borsh-derive = "0.10.3"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "simple_zk_verifier"
+
+[features]
+no-entrypoint = []

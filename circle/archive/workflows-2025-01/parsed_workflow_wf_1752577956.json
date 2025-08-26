@@ -1,0 +1,17 @@
+{
+  "description": "Verification History",
+  "steps": [
+    {
+      "type": "list_proofs",
+      "description": "List existing proofs",
+      "index": 0
+    },
+    {
+      "type": "process_with_ai",
+      "request": "explain",
+      "context": "verification history",
+      "description": "Process AI request: explain about Verification History",
+      "index": 1
+    }
+  ]
+}

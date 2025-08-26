@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contract Access Test</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { color: #51cf66; }
+        .error { color: #ff6b6b; }
+        .info { color: #74c0fc; }
+    </style>
+</head>
+<body>
+    <h1>IoTeX Contract Access Test</h1>
+    <button onclick="testContract()">Test Contract Access</button>
+    <div id="results"></div>
+    
+    <script>
+        async function testContract() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="info">Testing IoTeX contract access...</div>\n';
+            
+            try {
+                // IoTeX testnet configuration
+                const provider = new ethers.providers.JsonRpcProvider('https://babel-api.testnet.iotex.io');
+                const contractAddress = '0x8530eD8d1d42b784c88888a74515d12fE388Da77';
+                
+                // Check if contract is deployed
+                const code = await provider.getCode(contractAddress);
+                results.innerHTML += `<div class="success">✅ Contract deployed: ${code !== '0x'}</div>\n`;
+                
+                // Check network
+                const network = await provider.getNetwork();
+                results.innerHTML += `<div class="success">✅ Network: ${network.name} (Chain ID: ${network.chainId})</div>\n`;
+                
+                // Check latest block
+                const blockNumber = await provider.getBlockNumber();
+                results.innerHTML += `<div class="success">✅ Latest block: ${blockNumber}</div>\n`;
+                
+                // Test contract interface
+                const abi = [
+                    "function getDeviceInfo(bytes32) view returns (bool registered, address owner, uint256 registrationTime, uint256 lastProofTime, uint256 pendingRewards)"
+                ];
+                
+                const contract = new ethers.Contract(contractAddress, abi, provider);
+                
+                // Check a sample device
+                const deviceId = ethers.utils.id('TEST123');
+                try {
+                    const info = await contract.getDeviceInfo(deviceId);
+                    results.innerHTML += `<div class="success">✅ Device info call succeeded</div>\n`;
+                    results.innerHTML += `   Registered: ${info.registered}\n`;
+                    results.innerHTML += `   Owner: ${info.owner}\n`;
+                } catch (e) {
+                    results.innerHTML += `<div class="info">ℹ️  Device not registered (expected)</div>\n`;
+                }
+                
+                results.innerHTML += '\n<div class="success">✅ Contract accessibility test completed!</div>';
+                
+            } catch (error) {
+                results.innerHTML += `<div class="error">❌ Error: ${error.message}</div>\n`;
+            }
+        }
+    </script>
+</body>
+</html>

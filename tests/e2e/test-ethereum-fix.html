@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Ethereum Verification Fix</title>
+</head>
+<body>
+    <h1>Test Ethereum Verification Fix</h1>
+    <p>This tests the fixed SNARK generation for Ethereum verification.</p>
+    
+    <h2>Steps:</h2>
+    <ol>
+        <li>Generate a new proof</li>
+        <li>Try Ethereum verification (should now work with real SNARK)</li>
+    </ol>
+    
+    <h2>Instructions:</h2>
+    <p>1. Open the main application at <a href="http://localhost:8000" target="_blank">http://localhost:8000</a></p>
+    <p>2. Generate a new proof (e.g., "Generate KYC proof")</p>
+    <p>3. Click "Verify on Ethereum"</p>
+    <p>4. Check if SNARK generation succeeds (watch the logs below)</p>
+    
+    <h2>Server Logs:</h2>
+    <iframe src="/rust_server.log" width="100%" height="400" style="border: 1px solid #ccc;"></iframe>
+    
+    <h2>Status:</h2>
+    <div style="background: #f0f0f0; padding: 20px; border-radius: 8px;">
+        <h3>✅ Fixed Issues:</h3>
+        <ul>
+            <li>SNARK input types (all must be strings)</li>
+            <li>Simplified publicInputs to avoid complex structures</li>
+            <li>Added timeout handling in wrapper script</li>
+            <li>Better error messages in UI</li>
+        </ul>
+        
+        <h3>🔧 Current Setup:</h3>
+        <ul>
+            <li>SNARK generation timeout: 20 seconds (in wrapper)</li>
+            <li>Rust timeout: removed (using wrapper script)</li>
+            <li>Circuit: ProofOfProof (Groth16)</li>
+            <li>Fallback: SHA256-based proof when SNARK fails</li>
+        </ul>
+    </div>
+</body>
+</html>

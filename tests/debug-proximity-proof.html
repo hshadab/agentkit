@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Proximity Proof</title>
+    <script>
+        // Set up debug logging
+        window.debugLog = function(msg, level) {
+            console.log(`[${level || 'info'}] ${msg}`);
+        };
+    </script>
+    <script src="/static/parsers/nova/zkengine-calldata-parser.js"></script>
+    <script src="/static/parsers/nova/nova-proof-formatter.js"></script>
+    <script src="/static/parsers/nova/nova-proof-parser.js"></script>
+</head>
+<body>
+    <h1>Debug Proximity Proof Parsing</h1>
+    <p>Check console for detailed output</p>
+    <button onclick="testWithRealProofData()">Test with Real Proof Data</button>
+    <pre id="output"></pre>
+    
+    <script>
+        async function testWithRealProofData() {
+            console.log('=== TESTING WITH REAL PROOF DATA ===');
+            
+            // Simulate the proof data structure from zkEngine
+            // In reality, this would come from the WebSocket message
+            const simulatedProofData = {
+                proof_data: "", // This will be filled with actual data
+                public_inputs: {
+                    execution_z0: ["5050", "5050"],
+                    IC_i: ["1", "2", "3"],
+                    ops_z0: ["0", "0"]
+                },
+                metadata: {
+                    function: "prove_device_proximity",
+                    arguments: ["117946", "5050", "5050"]
+                }
+            };
+            
+            // Create a large binary proof similar to what zkEngine produces
+            // Real proof is ~19MB, but we'll use a smaller test size
+            const proofSize = 4096; // 4KB for testing
+            const proofBytes = new Uint8Array(proofSize);
+            
+            // Fill with realistic binary data
+            // zkEngine proofs start with specific patterns
+            let offset = 0;
+            
+            // Number of steps (u64 little-endian) - 10 steps
+            const numSteps = 10n;
+            for (let i = 0; i < 8; i++) {
+                proofBytes[offset++] = Number((numSteps >> BigInt(i * 8)) & 0xffn);
+            }
+            
+            // Add field elements (32 bytes each)
+            for (let i = 0; i < 30; i++) { // 30 field elements
+                for (let j = 0; j < 32; j++) {
+                    // Create non-zero field elements
+                    proofBytes[offset++] = (i * 32 + j + 1) % 256;
+                }
+            }
+            
+            // Fill rest with pattern
+            while (offset < proofSize) {
+                proofBytes[offset] = offset % 256;
+                offset++;
+            }
+            
+            // Convert to base64 as zkEngine does
+            let binaryString = '';
+            for (let i = 0; i < proofBytes.length; i++) {
+                binaryString += String.fromCharCode(proofBytes[i]);
+            }
+            simulatedProofData.proof_data = btoa(binaryString);
+            
+            console.log('Created test proof data:');
+            console.log('- Binary size:', proofSize, 'bytes');
+            console.log('- Base64 size:', simulatedProofData.proof_data.length, 'chars');
+            console.log('- First 100 chars of base64:', simulatedProofData.proof_data.substring(0, 100));
+            
+            // Test the formatter (which uses the parser)
+            const formatter = new NovaProofFormatter();
+            console.log('\nCalling formatDeviceProximityProof...');
+            
+            const formatted = formatter.formatDeviceProximityProof('DEV123', 5050, 5050, simulatedProofData);
+            
+            if (formatted) {
+                console.log('\n✅ Formatting successful!');
+                console.log('Formatted proof structure:');
+                console.log('- i_z0_zi:', formatted.i_z0_zi);
+                console.log('- i_z0_zi[0] (x):', formatted.i_z0_zi[0]);
+                console.log('- i_z0_zi[1] (y):', formatted.i_z0_zi[1]);
+                console.log('- i_z0_zi[2] (result):', formatted.i_z0_zi[2]);
+                console.log('- U_i_cmW_U_i_cmE length:', formatted.U_i_cmW_U_i_cmE.length);
+                console.log('- pA:', formatted.pA);
+                console.log('- pB dimensions:', formatted.pB.length, 'x', formatted.pB[0].length);
+                
+                // Check if it's using placeholder data
+                const isPlaceholder = formatted.i_z0_zi[0].includes('13a013a0') || 
+                                    formatted.U_i_cmW_U_i_cmE[0].includes('DEV123');
+                
+                if (isPlaceholder) {
+                    console.log('\n⚠️ WARNING: Using placeholder data - will fail verification!');
+                } else {
+                    console.log('\n✅ Using parsed data from proof!');
+                }
+                
+                // Display in output
+                document.getElementById('output').textContent = JSON.stringify(formatted, null, 2);
+            } else {
+                console.log('\n❌ Formatting failed!');
+            }
+        }
+    </script>
+</body>
+</html>

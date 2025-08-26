@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IoTeX Verifier Simple Test</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <style>
+        body {
+            background: #1a1a1a;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        .success { background: rgba(81, 207, 102, 0.2); color: #51cf66; }
+        .error { background: rgba(255, 107, 107, 0.2); color: #ff6b6b; }
+        .info { background: rgba(116, 192, 252, 0.2); color: #74c0fc; }
+        button {
+            background: #7c3aed;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #6d28d9; }
+    </style>
+</head>
+<body>
+    <h1>🔧 IoTeX Verifier Simple Test</h1>
+    
+    <h2>Quick Contract Check</h2>
+    <button onclick="checkContract()">Check Contract</button>
+    <div id="contract-status"></div>
+    
+    <h2>Generate & Verify Proof</h2>
+    <button onclick="generateAndVerify()">Generate Device Proof & Verify</button>
+    <div id="proof-status"></div>
+    
+    <script>
+        const contractAddress = '0x5967d15c7a6fD3ef7F1f309e766f35252a9de10d';
+        
+        async function checkContract() {
+            const statusDiv = document.getElementById('contract-status');
+            statusDiv.innerHTML = '<div class="info">Checking contract...</div>';
+            
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    throw new Error('MetaMask not detected');
+                }
+                
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                
+                // Check network
+                const network = await provider.getNetwork();
+                statusDiv.innerHTML += `<div class="info">Network: ${network.name} (Chain ID: ${network.chainId})</div>`;
+                
+                if (network.chainId !== 4690) {
+                    statusDiv.innerHTML += '<div class="error">Wrong network! Switching to IoTeX...</div>';
+                    
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0x1252' }]
+                        });
+                    } catch (e) {
+                        if (e.code === 4902) {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: '0x1252',
+                                    chainName: 'IoTeX Testnet',
+                                    nativeCurrency: { name: 'IOTX', symbol: 'IOTX', decimals: 18 },
+                                    rpcUrls: ['https://babel-api.testnet.iotex.io'],
+                                    blockExplorerUrls: ['https://testnet.iotexscan.io']
+                                }]
+                            });
+                        }
+                    }
+                }
+                
+                // Check contract
+                const code = await provider.getCode(contractAddress);
+                if (code !== '0x') {
+                    statusDiv.innerHTML += '<div class="success">✅ Contract found at ' + contractAddress + '</div>';
+                    statusDiv.innerHTML += '<div class="info">Contract size: ' + ((code.length - 2) / 2) + ' bytes</div>';
+                } else {
+                    statusDiv.innerHTML += '<div class="error">❌ No contract at address</div>';
+                }
+                
+                // Check balance
+                const signer = provider.getSigner();
+                const address = await signer.getAddress();
+                const balance = await provider.getBalance(address);
+                statusDiv.innerHTML += '<div class="info">Your balance: ' + ethers.utils.formatEther(balance) + ' IOTX</div>';
+                
+            } catch (error) {
+                statusDiv.innerHTML += '<div class="error">❌ ' + error.message + '</div>';
+            }
+        }
+        
+        async function generateAndVerify() {
+            const statusDiv = document.getElementById('proof-status');
+            statusDiv.innerHTML = '<div class="info">Starting proof generation...</div>';
+            
+            try {
+                // Send request to chat API
+                const deviceId = 'WEBTEST_' + Date.now();
+                const message = `Generate device proximity proof for IoT device ${deviceId} at coordinates x=1234, y=5678 and verify on IoTeX`;
+                
+                statusDiv.innerHTML += '<div class="info">Device: ' + deviceId + '</div>';
+                statusDiv.innerHTML += '<div class="info">Sending request to backend...</div>';
+                
+                const response = await fetch('http://localhost:8002/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Backend request failed: ' + response.status);
+                }
+                
+                const result = await response.json();
+                statusDiv.innerHTML += '<div class="success">✅ Request sent successfully</div>';
+                
+                if (result.workflow_id) {
+                    statusDiv.innerHTML += '<div class="info">Workflow ID: ' + result.workflow_id + '</div>';
+                    statusDiv.innerHTML += '<div class="info">Check the main UI for progress!</div>';
+                } else {
+                    statusDiv.innerHTML += '<div class="info">Response: ' + JSON.stringify(result).substring(0, 200) + '...</div>';
+                }
+                
+                // Check proof history after delay
+                setTimeout(async () => {
+                    try {
+                        const historyRes = await fetch('http://localhost:8001/api/v1/proof-history');
+                        if (historyRes.ok) {
+                            const history = await historyRes.json();
+                            const iotexProofs = history.filter(p => p.blockchain === 'iotex' || p.blockchain === 'IoTeX');
+                            
+                            if (iotexProofs.length > 0) {
+                                const latest = iotexProofs[iotexProofs.length - 1];
+                                statusDiv.innerHTML += '<div class="success">Found IoTeX proof!</div>';
+                                statusDiv.innerHTML += '<div class="info">Status: ' + latest.status + '</div>';
+                                if (latest.transactionHash) {
+                                    statusDiv.innerHTML += '<div class="success">Transaction: ' + latest.transactionHash + '</div>';
+                                    statusDiv.innerHTML += '<div class="info"><a href="https://testnet.iotexscan.io/tx/' + latest.transactionHash + '" target="_blank">View on Explorer</a></div>';
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.error('History check error:', e);
+                    }
+                }, 15000);
+                
+            } catch (error) {
+                statusDiv.innerHTML += '<div class="error">❌ ' + error.message + '</div>';
+            }
+        }
+        
+        // Auto-check on load
+        window.addEventListener('load', () => {
+            setTimeout(checkContract, 1000);
+        });
+    </script>
+</body>
+</html>

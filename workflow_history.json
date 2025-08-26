@@ -1,0 +1,362 @@
+{
+  "wf_f7749cc7-1f85-488a-8deb-34b6be625903": {
+    "id": "wf_f7749cc7-1f85-488a-8deb-34b6be625903",
+    "description": "Create medical record for patient 12345 and verify integrity",
+    "steps": [
+      {
+        "type": "create_medical_record",
+        "patient_id": "12345",
+        "record_hash": "0xabc123def456789",
+        "description": "Create medical record for patient 12345",
+        "index": 0
+      },
+      {
+        "type": "commit_to_avalanche",
+        "record_type": "medical_record",
+        "record_id": "0xabc123def456789",
+        "description": "Record medical record hash on Avalanche",
+        "index": 1
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "medical_integrity",
+        "person": "patient_12345",
+        "description": "Generate medical integrity proof",
+        "index": 2
+      },
+      {
+        "type": "verify_on_avalanche",
+        "blockchain": "avalanche",
+        "proof_type": "medical_integrity",
+        "person": "patient_12345",
+        "description": "Verify medical integrity on Avalanche",
+        "index": 3
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-29T19:19:11.068Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_61c16832-5f1c-442c-b36f-b9f9152f181b": {
+    "id": "wf_61c16832-5f1c-442c-b36f-b9f9152f181b",
+    "description": "Create medical record for patient 12345 and verify integrity",
+    "steps": [
+      {
+        "type": "create_medical_record",
+        "patient_id": "12345",
+        "record_hash": "0xabc123def456789",
+        "description": "Create medical record for patient 12345",
+        "index": 0
+      },
+      {
+        "type": "commit_to_avalanche",
+        "record_type": "medical_record",
+        "record_id": "0xabc123def456789",
+        "description": "Record medical record hash on Avalanche",
+        "index": 1
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "medical_integrity",
+        "person": "patient_12345",
+        "description": "Generate medical integrity proof",
+        "index": 2
+      },
+      {
+        "type": "verify_on_avalanche",
+        "blockchain": "avalanche",
+        "proof_type": "medical_integrity",
+        "person": "patient_12345",
+        "description": "Verify medical integrity on Avalanche",
+        "index": 3
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-29T19:21:55.279Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_e81f1643-88e8-4470-83ef-bd904a005eb8": {
+    "id": "wf_e81f1643-88e8-4470-83ef-bd904a005eb8",
+    "description": "Create medical record for patient 12345 and verify integrity",
+    "steps": [
+      {
+        "type": "create_medical_record",
+        "patient_id": "12345",
+        "record_hash": "0xabc123def456789",
+        "description": "Create medical record for patient 12345",
+        "index": 0
+      },
+      {
+        "type": "commit_to_avalanche",
+        "record_type": "medical_record",
+        "record_id": "0xabc123def456789",
+        "description": "Record medical record hash on Avalanche",
+        "index": 1
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "medical_integrity",
+        "person": "patient_12345",
+        "description": "Generate medical integrity proof",
+        "index": 2
+      },
+      {
+        "type": "verify_on_avalanche",
+        "blockchain": "avalanche",
+        "proof_type": "medical_integrity",
+        "person": "patient_12345",
+        "description": "Verify medical integrity on Avalanche",
+        "index": 3
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-29T19:26:43.484Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_facb1bb7-d138-4fab-ab66-158824b885a7": {
+    "id": "wf_facb1bb7-d138-4fab-ab66-158824b885a7",
+    "description": "Create medical record for patient 12345 and verify integrity",
+    "steps": [
+      {
+        "type": "create_medical_record",
+        "patient_id": "12345",
+        "record_hash": "0xabc123def456789",
+        "description": "Create medical record for patient 12345",
+        "index": 0
+      },
+      {
+        "type": "commit_to_avalanche",
+        "record_type": "medical_record",
+        "record_id": "0xabc123def456789",
+        "description": "Record medical record hash on Avalanche",
+        "index": 1
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "medical_integrity",
+        "person": "patient_12345",
+        "description": "Generate medical integrity proof",
+        "index": 2
+      },
+      {
+        "type": "verify_on_avalanche",
+        "blockchain": "avalanche",
+        "proof_type": "medical_integrity",
+        "person": "patient_12345",
+        "description": "Verify medical integrity on Avalanche",
+        "index": 3
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-29T19:45:54.630Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_87d8f5c4-05dd-4abf-80d4-117462a7dcaa": {
+    "id": "wf_87d8f5c4-05dd-4abf-80d4-117462a7dcaa",
+    "description": "Create medical record for patient 12345 and verify integrity",
+    "steps": [
+      {
+        "type": "create_medical_record",
+        "patient_id": "12345",
+        "record_hash": "0xabc123def456789",
+        "description": "Create medical record for patient 12345",
+        "index": 0
+      },
+      {
+        "type": "commit_to_avalanche",
+        "record_type": "medical_record",
+        "record_id": "0xabc123def456789",
+        "description": "Record medical record hash on Avalanche",
+        "index": 1
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "medical_integrity",
+        "person": "patient_12345",
+        "description": "Generate medical integrity proof",
+        "index": 2
+      },
+      {
+        "type": "verify_on_avalanche",
+        "blockchain": "avalanche",
+        "proof_type": "medical_integrity",
+        "person": "patient_12345",
+        "description": "Verify medical integrity on Avalanche",
+        "index": 3
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-29T19:46:12.452Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_281aa288-724c-44a4-9d81-6e3c43a3ae80": {
+    "id": "wf_281aa288-724c-44a4-9d81-6e3c43a3ae80",
+    "description": "Create medical record for patient 12345 and verify integrity",
+    "steps": [
+      {
+        "type": "create_medical_record",
+        "patient_id": "12345",
+        "record_hash": "0xabc123def456789",
+        "description": "Create medical record for patient 12345",
+        "index": 0
+      },
+      {
+        "type": "commit_to_avalanche",
+        "record_type": "medical_record",
+        "record_id": "0xabc123def456789",
+        "description": "Record medical record hash on Avalanche",
+        "index": 1
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "medical_integrity",
+        "person": "patient_12345",
+        "description": "Generate medical integrity proof",
+        "index": 2
+      },
+      {
+        "type": "verify_on_avalanche",
+        "blockchain": "avalanche",
+        "proof_type": "medical_integrity",
+        "person": "patient_12345",
+        "description": "Verify medical integrity on Avalanche",
+        "index": 3
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-29T19:51:31.182Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_cf22ebf4-5def-4996-bac8-76e89ae7df03": {
+    "id": "wf_cf22ebf4-5def-4996-bac8-76e89ae7df03",
+    "description": "Create medical record for patient 12345 and verify integrity",
+    "steps": [
+      {
+        "type": "create_medical_record",
+        "patient_id": "12345",
+        "record_hash": "0xabc123def456789",
+        "description": "Create medical record for patient 12345",
+        "index": 0
+      },
+      {
+        "type": "commit_to_avalanche",
+        "record_type": "medical_record",
+        "record_id": "0xabc123def456789",
+        "description": "Record medical record hash on Avalanche",
+        "index": 1
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "medical_integrity",
+        "person": "patient_12345",
+        "description": "Generate medical integrity proof",
+        "index": 2
+      },
+      {
+        "type": "verify_on_avalanche",
+        "blockchain": "avalanche",
+        "proof_type": "medical_integrity",
+        "person": "patient_12345",
+        "description": "Verify medical integrity on Avalanche",
+        "index": 3
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-29T19:57:07.979Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_9025cf11-5db4-4fc7-aa47-1aac1be58ee3": {
+    "id": "wf_9025cf11-5db4-4fc7-aa47-1aac1be58ee3",
+    "description": "Create medical record for patient 12345 and verify integrity",
+    "steps": [
+      {
+        "type": "create_medical_record",
+        "patient_id": "12345",
+        "record_hash": "0xabc123def456789",
+        "description": "Create medical record for patient 12345",
+        "index": 0
+      },
+      {
+        "type": "commit_to_avalanche",
+        "record_type": "medical_record",
+        "record_id": "0xabc123def456789",
+        "description": "Record medical record hash on Avalanche",
+        "index": 1
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "medical_integrity",
+        "person": "patient_12345",
+        "description": "Generate medical integrity proof",
+        "index": 2
+      },
+      {
+        "type": "verify_on_avalanche",
+        "blockchain": "avalanche",
+        "proof_type": "medical_integrity",
+        "person": "patient_12345",
+        "description": "Verify medical integrity on Avalanche",
+        "index": 3
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-29T20:56:39.276Z",
+    "completedSteps": [],
+    "results": {}
+  },
+  "wf_57f62b7a-8016-4ebe-a2b6-9fee942a9cdc": {
+    "id": "wf_57f62b7a-8016-4ebe-a2b6-9fee942a9cdc",
+    "description": "Create medical record for patient 12345 and verify integrity",
+    "steps": [
+      {
+        "type": "create_medical_record",
+        "patient_id": "12345",
+        "record_hash": "0xabc123def456789",
+        "description": "Create medical record for patient 12345",
+        "index": 0
+      },
+      {
+        "type": "commit_to_avalanche",
+        "record_type": "medical_record",
+        "record_id": "0xabc123def456789",
+        "description": "Record medical record hash on Avalanche",
+        "index": 1
+      },
+      {
+        "type": "generate_proof",
+        "proof_type": "medical_integrity",
+        "person": "patient_12345",
+        "description": "Generate medical integrity proof",
+        "index": 2
+      },
+      {
+        "type": "verify_on_avalanche",
+        "blockchain": "avalanche",
+        "proof_type": "medical_integrity",
+        "person": "patient_12345",
+        "description": "Verify medical integrity on Avalanche",
+        "index": 3
+      }
+    ],
+    "currentStep": 0,
+    "status": "created",
+    "createdAt": "2025-07-29T21:06:00.135Z",
+    "completedSteps": [],
+    "results": {}
+  }
+}

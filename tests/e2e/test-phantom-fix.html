@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Phantom Connection Fix</title>
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script src="solana-verifier.js"></script>
+</head>
+<body>
+    <h1>Test Phantom Connection Fix</h1>
+    <p>This tests the improved Phantom connection flow without redundant messages.</p>
+    
+    <h2>Connection Status</h2>
+    <div id="status">Not connected</div>
+    
+    <h2>Actions</h2>
+    <button onclick="testConnect()">Test Connection</button>
+    <button onclick="testReconnect()">Test Reconnection</button>
+    <button onclick="testSimultaneous()">Test Simultaneous Connections</button>
+    <button onclick="disconnect()">Disconnect</button>
+    
+    <h2>Results</h2>
+    <div id="results" style="white-space: pre-wrap; font-family: monospace; background: #f5f5f5; padding: 10px; margin-top: 10px;"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        const status = document.getElementById('status');
+        
+        function log(message) {
+            const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+            results.textContent += `[${timestamp}] ${message}\n`;
+        }
+        
+        async function testConnect() {
+            log('Testing initial connection...');
+            const result = await window.solanaVerifier.connect();
+            log(`Connection result: ${JSON.stringify(result, null, 2)}`);
+            updateStatus();
+        }
+        
+        async function testReconnect() {
+            log('Testing reconnection (should be fast if already connected)...');
+            const result = await window.solanaVerifier.connect();
+            log(`Reconnection result: ${JSON.stringify(result, null, 2)}`);
+            updateStatus();
+        }
+        
+        async function testSimultaneous() {
+            log('Testing simultaneous connection attempts...');
+            const promises = [
+                window.solanaVerifier.connect(),
+                window.solanaVerifier.connect(),
+                window.solanaVerifier.connect()
+            ];
+            
+            const results = await Promise.all(promises);
+            results.forEach((result, i) => {
+                log(`Attempt ${i + 1}: ${JSON.stringify(result, null, 2)}`);
+            });
+            updateStatus();
+        }
+        
+        async function disconnect() {
+            log('Disconnecting...');
+            await window.solanaVerifier.disconnect();
+            log('Disconnected');
+            updateStatus();
+        }
+        
+        function updateStatus() {
+            if (window.solanaVerifier.isConnected) {
+                status.textContent = `Connected: ${window.solanaVerifier.wallet?.toString() || 'Unknown'}`;
+                status.style.color = 'green';
+            } else {
+                status.textContent = 'Not connected';
+                status.style.color = 'red';
+            }
+        }
+        
+        // Update status on load
+        window.addEventListener('load', () => {
+            setTimeout(updateStatus, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "systemProgram": "SySTEM1eSU2p4BGQfQpimFEWWSC1XDFeun3Nqzz3rT7",
+  "accountCompressionProgram": "compr6CUsB5m2jS4Y3831ztGSTnDpnKJTKS95d64XVq",
+  "noopProgram": "noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV",
+  "merkleTreePubkey": "BBQzjKreGzKpcpfCtHpTDfJnYfeiq1DAetGiXGEQio4m",
+  "nullifierQueuePubkey": "5Ck1qLvJXqmFAUphXG39qF5qUHVWKBRWBJZKPPpgVJth",
+  "cpiContextAccount": "G6oSVbQ5NYQ5LWcf6mwJtqPAaNuTGkPBTfqvvFW5Vw1F",
+  "groupPda": "DC4gcVqf7Eqb8GBKGJrQKcU6eKH4ALDrXRXcL5XKfEWP",
+  "maxDepth": 26,
+  "maxBufferSize": 2048,
+  "canopyDepth": 10,
+  "rpcEndpoint": "https://devnet.helius-rpc.com?api-key=b230c14f-7bf7-4a45-b10a-fc413d06d2fa",
+  "compressionEndpoint": "https://devnet.helius-rpc.com?api-key=b230c14f-7bf7-4a45-b10a-fc413d06d2fa"
+}

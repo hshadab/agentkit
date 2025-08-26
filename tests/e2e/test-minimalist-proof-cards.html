@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Minimalist Proof Cards</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 { color: #c4b5fd; }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        .section {
+            background: rgba(20, 20, 20, 0.6);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(107, 124, 255, 0.1);
+        }
+        h2 { 
+            color: #a78bfa; 
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        ul {
+            line-height: 1.8;
+            color: #d1d5db;
+        }
+        .btn {
+            background: #6B7CFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #5a6cdd;
+        }
+        .code {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Minimalist Proof Card Design Updates</h1>
+        
+        <div class="comparison">
+            <div class="section">
+                <h2>✅ What's Fixed</h2>
+                <ul>
+                    <li><strong>No more "UNKNOWN PROOF"</strong> - Properly extracts proof type</li>
+                    <li><strong>Consistent dark theme</strong> - All proof cards use same gradient</li>
+                    <li><strong>Thinner borders</strong> - 0.5px instead of 1px</li>
+                    <li><strong>Reduced padding</strong> - 14px instead of 20px</li>
+                    <li><strong>Smaller buttons</strong> - 11px font, 6px padding</li>
+                    <li><strong>Compact header</strong> - Less vertical spacing</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>🎯 Design Changes</h2>
+                <ul>
+                    <li><strong>Card padding:</strong> 14px 16px (was 20px)</li>
+                    <li><strong>Border:</strong> 0.5px (was 1px)</li>
+                    <li><strong>Max width:</strong> 680px (was 700px)</li>
+                    <li><strong>Shadow:</strong> Softer, more subtle</li>
+                    <li><strong>Function name:</strong> 16px (was 18px)</li>
+                    <li><strong>Action buttons:</strong> Smaller, more minimal</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="section" style="margin-top: 30px;">
+            <h2>🧪 Test Different Proof Types</h2>
+            <p>Click to generate proofs and see the proper names:</p>
+            <button class="btn" onclick="testProof('kyc')">Generate KYC Proof</button>
+            <button class="btn" onclick="testProof('location')">Generate Location Proof</button>
+            <button class="btn" onclick="testProof('ai_content')">Generate AI Content Proof</button>
+            
+            <div id="status" style="margin-top: 20px;"></div>
+        </div>
+        
+        <div class="section" style="margin-top: 20px;">
+            <h2>📐 CSS Updates Applied</h2>
+            <div class="code">
+/* Proof card - more minimal */
+.proof-card {
+    padding: 14px 16px;      /* Reduced from 20px */
+    border: 0.5px solid;      /* Thinner border */
+    max-width: 680px;         /* Slightly narrower */
+    box-shadow: 0 2px 12px;   /* Softer shadow */
+}
+
+/* Card content - subtle background */
+.proof-card .card-content {
+    padding: 10px 12px;       /* Compact padding */
+    border: 0.5px solid;      /* Minimal border */
+}
+
+/* Action buttons - smaller */
+.action-btn {
+    padding: 6px 12px;        /* Reduced from 8px 14px */
+    font-size: 11px;          /* Smaller text */
+    border: 0.5px solid;      /* Thinner border */
+}
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        async function testProof(type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<p>✅ Sending ${type.toUpperCase()} proof request...</p>`;
+            
+            try {
+                const response = await fetch('http://localhost:8001/api/workflow/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        steps: [{ 
+                            type: type, 
+                            action: 'generate_proof',
+                            person: type === 'kyc' ? 'Alice' : undefined,
+                            location: type === 'location' ? 'NYC' : undefined
+                        }]
+                    })
+                });
+                
+                statusDiv.innerHTML += `
+                    <p>✅ Check the main UI to see:</p>
+                    <ul>
+                        <li>"${type.replace('_', ' ').toUpperCase()} PROOF" as the title (not "UNKNOWN PROOF")</li>
+                        <li>Dark gradient background</li>
+                        <li>Minimal borders and padding</li>
+                        <li>Smaller action buttons</li>
+                    </ul>
+                `;
+            } catch (error) {
+                statusDiv.innerHTML = `<p>❌ Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
