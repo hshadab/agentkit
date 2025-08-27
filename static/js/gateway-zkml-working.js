@@ -38,11 +38,6 @@ window.executeGatewayZKMLWorkflow = async function(amount) {
                         <div style="font-size: 18px; color: #10b981; font-weight: 600;" id="gateway-balance-${workflowId}">Checking...</div>
                         <div style="font-size: 10px; color: #9ca3af; margin-top: 4px;" id="gateway-total-${workflowId}"></div>
                     </div>
-                    <div style="margin-top: 8px;">
-                        <a href="https://sepolia.etherscan.io/token/0x1c7d4b196cb0c7b01d743fbc6116a902379c7238?a=${userAddress}" target="_blank" class="gateway-verification-link" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer; text-decoration: none; display: inline-block; margin-right: 8px;">
-                            🔗 Verify Wallet Balance
-                        </a>
-                    </div>
                 </div>
                 <div>
                     <div style="font-size: 10px; color: #06b6d4; font-weight: 600;">&lt;500ms transfers</div>
@@ -719,10 +714,10 @@ window.executeGatewayZKMLWorkflow = async function(amount) {
                     });
                 }
                 
-                // No fees to reserve - the 2.000001 is the minimum transfer amount, not a fee
-                const MIN_TRANSFER = 2.000001;
+                // Each chain needs: 2 USDC transfer + 2.001 USDC fee
+                const PER_CHAIN = 2 + 2.001; // 4.001 USDC per chain
                 const NUM_CHAINS = 3; // Ethereum, Avalanche, and Base
-                const minRequired = MIN_TRANSFER * NUM_CHAINS;
+                const minRequired = PER_CHAIN * NUM_CHAINS; // 12.003 USDC total
                 const canTransfer = totalBalance >= minRequired;
                 
                 const balanceEl = document.getElementById(`gateway-balance-${workflowId}`);

@@ -254,7 +254,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                                 <div style="font-size: 11px;">
                                     <span style="color: #8b9aff;">${transfer.icon} ${transfer.chain}</span>
                                     <span style="color: ${statusColor}; margin-left: 8px;">
-                                        ${transfer.success ? `2.00 USDC` : transfer.errorMessage || 'Failed'} ${statusIcon}
+                                        ${transfer.success ? `2 USDC` : transfer.errorMessage || 'Failed'} ${statusIcon}
                                     </span>
                                 </div>
                                 <div style="font-size: 10px;" data-transfer-id="${transfer.transferId || ''}">
@@ -304,8 +304,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             }
             
             // Convert amount to USDC units (6 decimals)
-            // For testnet: transfer small amount
-            const value = "10000"; // 0.01 USDC transfer
+            const value = Math.floor(parseFloat(amount) * 1000000).toString(); // 2 USDC transfer
             
             // Helper function to convert to bytes32
             const toBytes32 = (addr) => {
@@ -505,11 +504,6 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                             <div style="font-size: 18px; color: #10b981; font-weight: 600;" id="gateway-balance-${wfId}">Checking...</div>
                             <div style="font-size: 10px; color: #9ca3af; margin-top: 4px;" id="gateway-total-${wfId}"></div>
                         </div>
-                        <div style="margin-top: 8px;">
-                            <a href="https://sepolia.etherscan.io/token/0x1c7d4b196cb0c7b01d743fbc6116a902379c7238?a=${userAddress}" target="_blank" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer; text-decoration: none; display: inline-block;">
-                                🔗 Verify Wallet Balance
-                            </a>
-                        </div>
                     </div>
                     <div>
                         <div style="font-size: 10px; color: #06b6d4; font-weight: 600;">&lt;500ms transfers</div>
@@ -601,15 +595,15 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                 const totalBalance = data.balances.reduce((sum, b) => sum + parseFloat(b.balance), 0);
                 const balanceEl = document.getElementById(`gateway-balance-${wfId}`);
                 if (balanceEl) {
-                    balanceEl.textContent = `${totalBalance.toFixed(2)} USDC (Gateway)`;
+                    balanceEl.textContent = `${totalBalance.toFixed(2)} USDC`;
                     
-                    // Check if sufficient for transfers (2.002 USDC per chain × 3)
-                    const requiredBalance = 6.006;
+                    // Check if sufficient for transfers (2 USDC + 2.001 fee per chain × 3)
+                    const requiredBalance = 12.003; // 4.001 per chain × 3
                     if (totalBalance < requiredBalance) {
                         balanceEl.style.color = '#ef4444';
                         const totalEl = document.getElementById(`gateway-total-${wfId}`);
                         if (totalEl) {
-                            totalEl.textContent = `⚠️ Insufficient Gateway balance (need ${requiredBalance.toFixed(2)} USDC)`;
+                            totalEl.textContent = `⚠️ Insufficient balance (need ${requiredBalance.toFixed(2)} USDC total)`;
                             totalEl.style.color = '#fbbf24';
                         }
                     }
