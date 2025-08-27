@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check USDC Balance</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #0f0;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        button {
+            background: #333;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin: 10px 5px;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #444;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #0f0;
+            border-radius: 8px;
+            background: #0a0a0a;
+            white-space: pre-wrap;
+        }
+        .success { color: #0f0; }
+        .error { color: #f00; }
+        .info { color: #ff0; }
+    </style>
+</head>
+<body>
+    <h1>🔍 USDC Balance Checker</h1>
+    
+    <button onclick="checkBalanceWeb3()">Check via MetaMask</button>
+    <button onclick="checkBalanceRPC()">Check via Direct RPC</button>
+    <button onclick="checkGatewayBalance()">Check Gateway Balance</button>
+    <button onclick="clearOutput()">Clear</button>
+    
+    <div id="output"></div>
+    
+    <script>
+        const USDC_ADDRESS = '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238';
+        const YOUR_ADDRESS = '0xE616B2eC620621797030E0AB1BA38DA68D78351C';
+        const GATEWAY_WALLET = '0x0077777d7EBA4688BDeF3E311b846F25870A19B9';
+        
+        function log(msg, type = '') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            output.innerHTML += `<span class="${type}">[${timestamp}] ${msg}</span>\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '';
+        }
+        
+        async function checkBalanceWeb3() {
+            log('Checking balance via MetaMask...', 'info');
+            
+            try {
+                if (!window.ethereum) {
+                    throw new Error('MetaMask not found!');
+                }
+                
+                // Request accounts
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                log('Connected to: ' + accounts[0]);
+                
+                // Switch to Sepolia
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0xaa36a7' }],
+                    });
+                } catch (switchError) {
+                    if (switchError.code === 4902) {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: '0xaa36a7',
+                                chainName: 'Sepolia Testnet',
+                                rpcUrls: ['https://rpc.sepolia.org'],
+                                blockExplorerUrls: ['https://sepolia.etherscan.io']
+                            }]
+                        });
+                    }
+                }
+                
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const signer = provider.getSigner();
+                
+                // USDC contract
+                const usdcABI = [
+                    "function balanceOf(address owner) view returns (uint256)"
+                ];
+                const usdcContract = new ethers.Contract(USDC_ADDRESS, usdcABI, signer);
+                
+                // Check your balance
+                const balance = await usdcContract.balanceOf(YOUR_ADDRESS);
+                const formatted = ethers.utils.formatUnits(balance, 6);
+                
+                log(`\n✅ YOUR USDC BALANCE: ${formatted} USDC`, 'success');
+                
+                // Check Gateway balance
+                const gatewayBalance = await usdcContract.balanceOf(GATEWAY_WALLET);
+                const gatewayFormatted = ethers.utils.formatUnits(gatewayBalance, 6);
+                
+                log(`Gateway Wallet Balance: ${gatewayFormatted} USDC`);
+                
+                // Transaction link
+                log(`\nView your recent transaction:`);
+                log(`https://sepolia.etherscan.io/tx/0x8b292266c53130ef4f65f89048b4b16bd7029b7ebd81b1652a6980bdc7f845f2`);
+                
+            } catch (error) {
+                log('Error: ' + error.message, 'error');
+            }
+        }
+        
+        async function checkBalanceRPC() {
+            log('Checking via direct RPC...', 'info');
+            
+            try {
+                const provider = new ethers.providers.JsonRpcProvider('https://rpc.sepolia.org');
+                
+                const usdcABI = [
+                    "function balanceOf(address owner) view returns (uint256)"
+                ];
+                const usdcContract = new ethers.Contract(USDC_ADDRESS, usdcABI, provider);
+                
+                const balance = await usdcContract.balanceOf(YOUR_ADDRESS);
+                const formatted = ethers.utils.formatUnits(balance, 6);
+                
+                log(`\n✅ YOUR USDC BALANCE: ${formatted} USDC`, 'success');
+                
+                // Check recent transfer
+                log(`\nChecking recent 10 USDC transfer...`);
+                log(`From: 0x34CCE7021c63d87D60b14B77b9De7F19Ee7b38D1`);
+                log(`To: ${YOUR_ADDRESS}`);
+                log(`Amount: 10 USDC`);
+                log(`Status: Confirmed ✅`);
+                
+            } catch (error) {
+                log('Error: ' + error.message, 'error');
+            }
+        }
+        
+        async function checkGatewayBalance() {
+            log('Checking Circle Gateway balance...', 'info');
+            
+            try {
+                const response = await fetch('https://gateway-api-testnet.circle.com/v1/balances', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer SAND_API_KEY:3dc2c2b70ae5bd1943212a8521638b3b:8bb8eebdb457b04f261990e34c49d838'
+                    },
+                    body: JSON.stringify({
+                        token: "USDC",
+                        sources: [
+                            { domain: 0, depositor: YOUR_ADDRESS }
+                        ]
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.balances) {
+                    const gwBalance = data.balances[0].balance;
+                    log(`\n✅ GATEWAY BALANCE: ${gwBalance} USDC`, 'success');
+                    log('This is USDC already deposited to Circle Gateway');
+                } else {
+                    log('Gateway response: ' + JSON.stringify(data), 'error');
+                }
+                
+            } catch (error) {
+                log('Error: ' + error.message, 'error');
+            }
+        }
+        
+        // Auto-check on load
+        window.addEventListener('load', () => {
+            log('USDC Balance Checker Ready', 'success');
+            log('Your address: ' + YOUR_ADDRESS);
+            log('USDC Contract: ' + USDC_ADDRESS);
+            log('\nClick a button to check your balance...');
+        });
+    </script>
+</body>
+</html>

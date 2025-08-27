@@ -30,11 +30,11 @@ AgentKit is a production-ready verifiable AI agent system that combines:
 
 ### 3. Circle Gateway Integration
 - **Purpose**: Multi-chain USDC transfers with zkML authorization
-- **Minimum Transfer**: 2.000001 USDC per chain
-- **Supported Testnet Domains**:
-  - Domain 0: Ethereum Sepolia
-  - Domain 1: Avalanche Fuji  
-  - Domain 6: Base Sepolia
+- **Minimum Transfer**: 2.00 USDC per chain (4.00 total for 2 chains)
+- **Supported Cross-Chain Transfers**:
+  - Ethereum → Base Sepolia (Domain 0 → 6)
+  - Ethereum → Avalanche Fuji (Domain 0 → 1)
+  - **Note**: Same-domain transfers not allowed (e.g., Ethereum → Ethereum)
 - **Implementation**: EIP-712 programmatic signing
 - **Gateway Wallet**: `0x0077777d7EBA4688BDeF3E311b846F25870A19B9`
 - **Transfer Status Polling**:
@@ -46,7 +46,7 @@ AgentKit is a production-ready verifiable AI agent system that combines:
 ### 4. Web Interface
 - **Port**: 8000
 - **Main Page**: http://localhost:8000/index-clean.html (SES-safe)
-- **Balance**: 14.78 USDC in Gateway (can run 2 workflows)
+- **Balance**: 14.78 USDC in Gateway (can run 3 workflows at 4.00 USDC each)
 
 ## How to Start Services
 

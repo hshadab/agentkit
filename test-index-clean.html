@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Index Clean</title>
+</head>
+<body>
+    <h1>Testing Index Clean</h1>
+    <p>Open the browser console to test proof generation functions.</p>
+    
+    <button onclick="testKYC()">Test KYC Proof</button>
+    <button onclick="testAI()">Test AI Content Proof</button>
+    <button onclick="testLocation()">Test Location Proof</button>
+    <button onclick="testWorkflow()">Test KYC Transfer Workflow</button>
+    
+    <iframe src="http://localhost:8000/index-clean.html" width="100%" height="600" id="cleanFrame"></iframe>
+    
+    <script>
+        function testKYC() {
+            const frame = document.getElementById('cleanFrame').contentWindow;
+            frame.sendMessage('Prove KYC compliance');
+        }
+        
+        function testAI() {
+            const frame = document.getElementById('cleanFrame').contentWindow;
+            frame.sendMessage('Prove AI content authenticity');
+        }
+        
+        function testLocation() {
+            const frame = document.getElementById('cleanFrame').contentWindow;
+            frame.sendMessage('Prove location: NYC (40.7°, -74.0°)');
+        }
+        
+        function testWorkflow() {
+            const frame = document.getElementById('cleanFrame').contentWindow;
+            frame.sendMessage('Send 0.1 USDC to Alice on Ethereum if KYC compliant');
+        }
+    </script>
+</body>
+</html>

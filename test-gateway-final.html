@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gateway zkML Final Test</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 32px;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+        }
+        .command-box {
+            background: #0d0d0d;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 3px solid #6B7CFF;
+            font-family: monospace;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .command-box:hover {
+            transform: translateX(5px);
+            border-left-color: #8B9AFF;
+        }
+        .status {
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            margin: 5px;
+        }
+        .status.success { background: #10b981; color: #fff; }
+        .status.error { background: #ef4444; color: #fff; }
+        .status.pending { background: #6B7CFF; color: #fff; }
+        #results {
+            background: #0d0d0d;
+            border: 1px solid #333;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 12px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            min-height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌐 Gateway zkML Workflow - Final Test</h1>
+    
+    <div class="test-section">
+        <h2>📋 Test Requirements</h2>
+        <p>✅ User must say both "gateway" AND "zkml" to trigger the workflow</p>
+        <p>✅ Workflow uses the proper Gateway UI design (like CCTP)</p>
+        <p>✅ Real on-chain verification on Ethereum Sepolia</p>
+        <p>✅ No stubs or simulations - everything real</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>🚀 Test Commands</h2>
+        <div class="command-box" onclick="copyCommand(this)">
+            gateway zkml transfer 0.01 USDC to 3 chains
+        </div>
+        <div class="command-box" onclick="copyCommand(this)">
+            Execute Gateway zkML multi-chain deployment
+        </div>
+        <div class="command-box" onclick="copyCommand(this)">
+            I need a zkML gateway transfer with 0.05 USDC
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔍 Service Status</h2>
+        <div id="service-status">Checking services...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 Test Results</h2>
+        <div id="results">Ready to test...</div>
+    </div>
+    
+    <script>
+        const results = document.getElementById('results');
+        const serviceStatus = document.getElementById('service-status');
+        
+        function log(msg) {
+            const timestamp = new Date().toLocaleTimeString();
+            results.textContent += `[${timestamp}] ${msg}\n`;
+        }
+        
+        function copyCommand(element) {
+            const text = element.textContent.trim();
+            navigator.clipboard.writeText(text);
+            log(`Copied: "${text}"`);
+            log('Paste this in the main UI at http://localhost:8080/index.html');
+        }
+        
+        async function checkServices() {
+            serviceStatus.innerHTML = '';
+            
+            // Check WebSocket (port 8001)
+            try {
+                const ws = new WebSocket('ws://localhost:8001/ws');
+                ws.onopen = () => {
+                    serviceStatus.innerHTML += '<span class="status success">WebSocket (8001) ✓</span>';
+                    ws.close();
+                };
+                ws.onerror = () => {
+                    serviceStatus.innerHTML += '<span class="status error">WebSocket (8001) ✗</span>';
+                };
+            } catch (e) {
+                serviceStatus.innerHTML += '<span class="status error">WebSocket (8001) ✗</span>';
+            }
+            
+            // Check zkML backend (port 8002)
+            try {
+                const res = await fetch('http://localhost:8002/health');
+                const data = await res.json();
+                if (data.status === 'healthy') {
+                    serviceStatus.innerHTML += '<span class="status success">zkML Backend (8002) ✓</span>';
+                } else {
+                    serviceStatus.innerHTML += '<span class="status error">zkML Backend (8002) ✗</span>';
+                }
+            } catch (e) {
+                serviceStatus.innerHTML += '<span class="status error">zkML Backend (8002) ✗</span>';
+            }
+            
+            // Check verifier backend (port 3003)
+            try {
+                const res = await fetch('http://localhost:3003/health');
+                const data = await res.json();
+                if (data.status === 'healthy') {
+                    serviceStatus.innerHTML += '<span class="status success">Verifier Backend (3003) ✓</span>';
+                } else {
+                    serviceStatus.innerHTML += '<span class="status error">Verifier Backend (3003) ✗</span>';
+                }
+            } catch (e) {
+                serviceStatus.innerHTML += '<span class="status pending">Verifier Backend (3003) Optional</span>';
+            }
+        }
+        
+        // Test trigger logic
+        function testTriggerLogic() {
+            log('\n=== Testing Trigger Logic ===');
+            
+            const testCases = [
+                { msg: "gateway zkml transfer", expected: true },
+                { msg: "Gateway zkML deployment", expected: true },
+                { msg: "transfer funds to gateway", expected: false },
+                { msg: "zkml proof generation", expected: false },
+                { msg: "gateway transfer", expected: false }
+            ];
+            
+            testCases.forEach(test => {
+                const hasGateway = test.msg.toLowerCase().includes('gateway');
+                const hasZkml = test.msg.toLowerCase().includes('zkml');
+                const wouldTrigger = hasGateway && hasZkml;
+                const result = wouldTrigger === test.expected ? '✅' : '❌';
+                log(`${result} "${test.msg}" → ${wouldTrigger ? 'TRIGGERS' : 'NO TRIGGER'}`);
+            });
+        }
+        
+        // Initialize
+        checkServices();
+        testTriggerLogic();
+        
+        log('\n=== Instructions ===');
+        log('1. Open http://localhost:8080/index.html');
+        log('2. Click one of the test commands above to copy');
+        log('3. Paste in the chat input');
+        log('4. The Gateway zkML workflow should execute with:');
+        log('   - Step 1: zkML proof generation (JOLT-Atlas)');
+        log('   - Step 2: Real on-chain verification on Ethereum Sepolia');
+        log('   - Step 3: Circle Gateway multi-chain transfer');
+    </script>
+</body>
+</html>

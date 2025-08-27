@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Gateway zkML</title>
+</head>
+<body>
+    <h1>Testing Gateway zkML Workflow</h1>
+    <button onclick="testWorkflow()">Test Gateway Workflow</button>
+    <div id="result"></div>
+    
+    <script>
+        async function testWorkflow() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                // Test Step 2: Real on-chain verification
+                const response = await fetch('http://localhost:3003/zkml/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: 'test_session_' + Date.now(),
+                        proof: { proofData: '0x1234' },
+                        network: 'sepolia',
+                        useRealChain: true,
+                        inputs: [3, 10, 1, 5]
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    resultDiv.innerHTML = `
+                        <h2>✅ Real On-Chain Verification Success!</h2>
+                        <p>Transaction: ${result.txHash}</p>
+                        <p>Block: ${result.blockNumber}</p>
+                        <p>Gas Used: ${result.gasUsed}</p>
+                        <p><a href="https://sepolia.etherscan.io/tx/${result.txHash}" target="_blank">View on Etherscan</a></p>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<p>❌ Verification failed</p>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p>❌ Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

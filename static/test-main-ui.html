@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Main UI Module Loading</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <style>
+        body { background: #0a0a0a; color: #fff; font-family: sans-serif; padding: 40px; }
+        .status { padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .success { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; }
+        .error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; }
+        .pending { background: rgba(251, 191, 36, 0.2); border: 1px solid #fbbf24; }
+        pre { background: #111; padding: 10px; border-radius: 5px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>Testing Main UI Module Loading</h1>
+    
+    <div id="test-results"></div>
+    
+    <script type="module">
+        const results = document.getElementById('test-results');
+        
+        function addResult(message, type = 'pending') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+        
+        async function runTests() {
+            addResult('Starting tests...', 'pending');
+            
+            try {
+                // Test 1: Import the module
+                addResult('Test 1: Importing GatewayWorkflowManager...', 'pending');
+                const { GatewayWorkflowManager } = await import('./js/ui/gateway-workflow-manager-v4.js?v=' + Date.now());
+                addResult('✅ Test 1 PASSED: Module imported successfully', 'success');
+                
+                // Test 2: Check if class exists
+                addResult('Test 2: Checking if GatewayWorkflowManager is a class...', 'pending');
+                if (typeof GatewayWorkflowManager === 'function') {
+                    addResult('✅ Test 2 PASSED: GatewayWorkflowManager is a valid class', 'success');
+                } else {
+                    throw new Error('GatewayWorkflowManager is not a function/class');
+                }
+                
+                // Test 3: Try to instantiate
+                addResult('Test 3: Creating instance of GatewayWorkflowManager...', 'pending');
+                const stubUiManager = {
+                    addMessage: () => {},
+                    showToast: () => {}
+                };
+                const stubWsManager = {
+                    connected: true,
+                    on: () => {},
+                    send: () => {}
+                };
+                
+                const manager = new GatewayWorkflowManager(stubUiManager, stubWsManager);
+                addResult('✅ Test 3 PASSED: Instance created successfully', 'success');
+                
+                // Test 4: Check methods exist
+                addResult('Test 4: Checking if key methods exist...', 'pending');
+                const requiredMethods = [
+                    'initialize',
+                    'createGatewayWorkflowCard',
+                    'executeRealGatewayTransfer',
+                    'getRealGatewayBalance'
+                ];
+                
+                const missingMethods = requiredMethods.filter(method => typeof manager[method] !== 'function');
+                
+                if (missingMethods.length === 0) {
+                    addResult('✅ Test 4 PASSED: All required methods exist', 'success');
+                } else {
+                    throw new Error(`Missing methods: ${missingMethods.join(', ')}`);
+                }
+                
+                // Test 5: Initialize
+                addResult('Test 5: Initializing manager...', 'pending');
+                await manager.initialize();
+                addResult('✅ Test 5 PASSED: Manager initialized successfully', 'success');
+                
+                // Summary
+                addResult('<h2>✅ ALL TESTS PASSED!</h2><p>The main UI should now work properly. Try refreshing http://localhost:8000 and typing "gateway zkml transfer $0.01"</p>', 'success');
+                
+                // Show how to use in console
+                addResult(`<h3>Test in Browser Console:</h3><pre>
+// After refreshing main page, check:
+window.gatewayManager
+// Should show the initialized manager object
+
+// If undefined, force reload:
+location.reload(true)</pre>`, 'pending');
+                
+            } catch (error) {
+                addResult(`❌ Test Failed: ${error.message}<br><pre>${error.stack}</pre>`, 'error');
+                addResult('<p>Try these fixes:<br>1. Clear browser cache completely<br>2. Open in incognito/private window<br>3. Use standalone page instead</p>', 'error');
+            }
+        }
+        
+        runTests();
+    </script>
+</body>
+</html>

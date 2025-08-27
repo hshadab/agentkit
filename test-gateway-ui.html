@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gateway zkML Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+        }
+        button {
+            background: #004400;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: monospace;
+            margin: 10px;
+        }
+        button:hover {
+            background: #006600;
+        }
+        #output {
+            background: #000;
+            padding: 20px;
+            border: 1px solid #00ff00;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            min-height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gateway zkML Workflow Test</h1>
+    <p>Testing real on-chain Ethereum verification for Step 2</p>
+    
+    <button onclick="testWorkflow()">Test Gateway zkML Workflow</button>
+    
+    <div id="output">Ready...</div>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(msg, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : '📝';
+            output.innerHTML += `[${timestamp}] ${prefix} ${msg}\n`;
+        }
+        
+        async function testWorkflow() {
+            log('Starting Gateway zkML workflow test...', 'info');
+            
+            try {
+                // Step 1: Generate zkML proof
+                log('Step 1: Generating zkML proof for cross-chain transfer...', 'info');
+                
+                const proofResponse = await fetch('http://localhost:8002/zkml/prove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        agentId: 'test-agent-' + Date.now(),
+                        agentType: 'transfer-assistant',
+                        amount: 0.01,
+                        operation: 'gateway-transfer',
+                        riskScore: 0.2
+                    })
+                });
+                
+                const proofData = await proofResponse.json();
+                const sessionId = proofData.sessionId;
+                log(`Proof session: ${sessionId}`, 'info');
+                log('Waiting for proof generation (5-10 seconds)...', 'info');
+                
+                // Poll for proof status
+                let attempts = 0;
+                let status = null;
+                
+                while (attempts < 20) {
+                    await new Promise(r => setTimeout(r, 1000));
+                    
+                    const statusResponse = await fetch(`http://localhost:8002/zkml/status/${sessionId}`);
+                    status = await statusResponse.json();
+                    
+                    if (status.status === 'completed') {
+                        log('zkML proof generated successfully!', 'success');
+                        log(`  Model: ${status.proof.model}`, 'info');
+                        log(`  Generation time: ${status.proof.generationTime}s`, 'info');
+                        break;
+                    } else if (status.status === 'failed') {
+                        throw new Error('Proof generation failed: ' + status.error);
+                    }
+                    
+                    attempts++;
+                }
+                
+                if (!status || status.status !== 'completed') {
+                    throw new Error('Proof generation timed out');
+                }
+                
+                // Step 2: Real on-chain verification
+                log('\nStep 2: Performing REAL on-chain verification on Ethereum Sepolia...', 'info');
+                
+                const verifyResponse = await fetch('http://localhost:3003/zkml/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: sessionId,
+                        proof: status.proof.proofData,
+                        network: 'sepolia',
+                        useRealChain: true,
+                        inputs: [3, 10, 1, 5]
+                    })
+                });
+                
+                const verification = await verifyResponse.json();
+                
+                if (verification.verified) {
+                    log('On-chain verification successful!', 'success');
+                    log(`  Network: ${verification.network}`, 'info');
+                    log(`  Transaction: ${verification.txHash}`, 'info');
+                    log(`  Block: ${verification.blockNumber}`, 'info');
+                    log(`  Gas used: ${verification.gasUsed}`, 'info');
+                    log(`  Contract: ${verification.contractAddress}`, 'info');
+                    
+                    const explorerUrl = `https://sepolia.etherscan.io/tx/${verification.txHash}`;
+                    log(`\nView on Etherscan: ${explorerUrl}`, 'success');
+                    
+                    // Add clickable link
+                    output.innerHTML += `<a href="${explorerUrl}" target="_blank" style="color: #00ffff;">🔗 Open in Etherscan</a>\n`;
+                } else {
+                    throw new Error('Verification failed');
+                }
+                
+                log('\nGateway zkML workflow complete! ✨', 'success');
+                log('Step 3 (Circle Gateway transfer) would execute here in production', 'info');
+                
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test backend connectivity on load
+        async function testBackend() {
+            try {
+                const response = await fetch('http://localhost:8002/health');
+                if (response.ok) {
+                    log('zkML backend is running ✅', 'success');
+                }
+            } catch (e) {
+                log('zkML backend not available - start with: node api/zkml-backend.js', 'error');
+            }
+            
+            try {
+                const response = await fetch('http://localhost:3003/health');
+                if (response.ok) {
+                    log('Verifier backend is running ✅', 'success');
+                }
+            } catch (e) {
+                log('Verifier backend not available - start with: node api/zkml-verifier-backend.js', 'error');
+            }
+        }
+        
+        testBackend();
+    </script>
+</body>
+</html>

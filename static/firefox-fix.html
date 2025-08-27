@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Firefox Fix - Gateway zkML</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 36px;
+        }
+        .fix-box {
+            background: #1a1a1a;
+            border: 2px solid #6B7CFF;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+        .code-box {
+            background: #000;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 20px 0;
+            white-space: pre;
+        }
+        button {
+            background: #6B7CFF;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px;
+        }
+        button:hover {
+            background: #8B9AFF;
+        }
+        .success {
+            color: #10b981;
+            font-weight: bold;
+        }
+        .warning {
+            color: #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+            padding: 10px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🦊 Firefox Gateway zkML Fix</h1>
+    
+    <div class="fix-box">
+        <h2>Immediate Solution</h2>
+        <p class="success">✅ Use this working standalone page:</p>
+        <button onclick="window.location.href='http://localhost:8000/gateway-zkml-standalone.html'">
+            Open Working Gateway zkML Page
+        </button>
+        <p>This page bypasses all cache issues and works immediately!</p>
+    </div>
+    
+    <div class="fix-box">
+        <h2>Fix for Main Page</h2>
+        <p>To fix the main page at http://localhost:8000:</p>
+        
+        <ol>
+            <li><strong>Clear Firefox Cache Completely:</strong>
+                <ul>
+                    <li>Press <code>Ctrl+Shift+Delete</code></li>
+                    <li>Select only "Cache"</li>
+                    <li>Time range: "Everything"</li>
+                    <li>Click "Clear Now"</li>
+                </ul>
+            </li>
+            <li><strong>Force Reload:</strong>
+                <ul>
+                    <li>Go to http://localhost:8000</li>
+                    <li>Press <code>Ctrl+Shift+R</code> to force reload</li>
+                </ul>
+            </li>
+            <li><strong>Test:</strong>
+                <ul>
+                    <li>Type: <code>gateway zkml transfer $0.01</code></li>
+                </ul>
+            </li>
+        </ol>
+        
+        <div class="warning">
+            <strong>⚠️ Still not working?</strong> Firefox has extremely aggressive caching. 
+            Use the standalone page above or open in a Private Window (<code>Ctrl+Shift+P</code>).
+        </div>
+    </div>
+    
+    <div class="fix-box">
+        <h2>Console Fix (Advanced)</h2>
+        <p>Paste this in the browser console (F12) on the main page:</p>
+        <div class="code-box" id="console-code">// Load the fix directly
+fetch('./js/ui/gateway-zkml-direct.js?v=' + Date.now())
+  .then(r => r.text())
+  .then(code => {
+    eval(code);
+    console.log('✅ Gateway zkML loaded! Type: gateway zkml transfer $0.01');
+  })
+  .catch(e => console.error('Failed:', e));</div>
+        <button onclick="copyCode()">📋 Copy Code</button>
+    </div>
+    
+    <script>
+        function copyCode() {
+            const code = document.getElementById('console-code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Code copied! Paste it in the browser console (F12)');
+            }).catch(() => {
+                alert('Please select and copy the code manually');
+            });
+        }
+    </script>
+</body>
+</html>

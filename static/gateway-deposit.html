@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deposit USDC to Circle Gateway</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 12px 0;
+            font-weight: 600;
+        }
+        .status.info { background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; }
+        .status.success { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; }
+        .status.error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; }
+        .status.warning { background: rgba(251, 191, 36, 0.2); border: 1px solid #fbbf24; }
+        
+        button {
+            background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 8px 4px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .step {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+            border-left: 4px solid #3b82f6;
+        }
+        .step.completed {
+            border-left-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        .step.active {
+            border-left-color: #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+        }
+        
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .balance-display {
+            background: linear-gradient(45deg, #059669, #10b981);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            text-align: center;
+        }
+        
+        .tx-link {
+            color: #60a5fa;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .tx-link:hover {
+            color: #93c5fd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏦 Deposit USDC to Circle Gateway</h1>
+        <p>Fix the locked funds issue by properly depositing your 10 USDC to Gateway</p>
+        
+        <div class="status info">
+            <strong>Current Status:</strong> You have 10 USDC in wallet + 6 USDC locked in Gateway<br>
+            <strong>Goal:</strong> Deposit some USDC to Gateway to make it "available" for transfers
+        </div>
+        
+        <div class="balance-display">
+            <div id="balanceInfo">Connect wallet to check balances...</div>
+        </div>
+        
+        <div class="step" id="step1">
+            <h3>Step 1: Connect MetaMask</h3>
+            <p>Connect to Sepolia testnet and verify your wallet</p>
+            <button id="connectBtn" onclick="connectWallet()">Connect MetaMask</button>
+            <div id="walletInfo"></div>
+        </div>
+        
+        <div class="step" id="step2">
+            <h3>Step 2: Check USDC Balance</h3>
+            <p>Verify you have the 10 USDC from the recent transaction</p>
+            <button id="checkBalanceBtn" onclick="checkUSDCBalance()" disabled>Check USDC Balance</button>
+            <div id="balanceDetails"></div>
+        </div>
+        
+        <div class="step" id="step3">
+            <h3>Step 3: Approve Gateway</h3>
+            <p>Allow Gateway contract to spend your USDC</p>
+            <button id="approveBtn" onclick="approveGateway()" disabled>Approve Gateway</button>
+            <div id="approveStatus"></div>
+        </div>
+        
+        <div class="step" id="step4">
+            <h3>Step 4: Deposit to Gateway</h3>
+            <p>Deposit USDC to Gateway to make it "available" for transfers</p>
+            <input type="number" id="depositAmount" placeholder="Amount (e.g., 2.0)" value="2.0" 
+                   style="padding: 8px; border-radius: 4px; border: 1px solid #374151; background: #1f2937; color: white; margin-right: 8px;">
+            <button id="depositBtn" onclick="depositToGateway()" disabled>Deposit to Gateway</button>
+            <div id="depositStatus"></div>
+        </div>
+        
+        <div class="step" id="step5">
+            <h3>Step 5: Verify Available Balance</h3>
+            <p>Check that Gateway shows "available" balance for transfers</p>
+            <button id="verifyBtn" onclick="verifyGatewayBalance()" disabled>Check Gateway Balance</button>
+            <div id="verifyStatus"></div>
+        </div>
+        
+        <div id="finalStatus"></div>
+    </div>
+
+    <script>
+        // Wait for ethers to load
+        window.addEventListener('load', function() {
+            if (typeof ethers === 'undefined') {
+                document.getElementById('walletInfo').innerHTML = `
+                    <div class="status error">❌ Error: Ethers library failed to load. Please refresh the page.</div>
+                `;
+                console.error('Ethers library not loaded');
+                return;
+            }
+            console.log('✅ Ethers library loaded successfully');
+        });
+        
+        // Configuration
+        const CONFIG = {
+            USDC_ADDRESS: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238', // USDC on Sepolia
+            GATEWAY_WALLET: '0x0077777d7EBA4688BDeF3E311b846F25870A19B9', // Circle Gateway
+            SEPOLIA_CHAIN_ID: '0xaa36a7', // 11155111 in hex
+            API_KEY: 'SAND_API_KEY:3dc2c2b70ae5bd1943212a8521638b3b:8bb8eebdb457b04f261990e34c49d838'
+        };
+        
+        // USDC Contract ABI (minimal)
+        const USDC_ABI = [
+            "function balanceOf(address owner) view returns (uint256)",
+            "function allowance(address owner, address spender) view returns (uint256)",
+            "function approve(address spender, uint256 amount) returns (bool)",
+            "function transfer(address to, uint256 amount) returns (bool)"
+        ];
+        
+        // Gateway ABI (minimal - we'll use USDC transfer to Gateway address)
+        const GATEWAY_ABI = [
+            "function deposit(address token, uint256 amount, address depositor) returns (bool)"
+        ];
+        
+        let provider, signer, userAddress, usdcContract;
+        
+        async function connectWallet() {
+            try {
+                if (typeof ethers === 'undefined') {
+                    throw new Error('Ethers library not loaded. Please refresh the page.');
+                }
+                if (!window.ethereum) {
+                    throw new Error('MetaMask not found');
+                }
+                
+                // Request account access
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                userAddress = accounts[0];
+                
+                // Switch to Sepolia
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: CONFIG.SEPOLIA_CHAIN_ID }],
+                    });
+                } catch (switchError) {
+                    // Chain not added, add it
+                    if (switchError.code === 4902) {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: CONFIG.SEPOLIA_CHAIN_ID,
+                                chainName: 'Sepolia Testnet',
+                                rpcUrls: ['https://rpc.sepolia.org'],
+                                blockExplorerUrls: ['https://sepolia.etherscan.io']
+                            }]
+                        });
+                    }
+                }
+                
+                // Initialize provider and contracts
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                usdcContract = new ethers.Contract(CONFIG.USDC_ADDRESS, USDC_ABI, signer);
+                
+                document.getElementById('walletInfo').innerHTML = `
+                    <div class="status success">
+                        ✅ Connected: <code>${userAddress}</code><br>
+                        Network: Sepolia Testnet
+                    </div>
+                `;
+                document.getElementById('step1').classList.add('completed');
+                document.getElementById('step2').classList.add('active');
+                document.getElementById('checkBalanceBtn').disabled = false;
+                
+                updateBalanceDisplay();
+                
+            } catch (error) {
+                document.getElementById('walletInfo').innerHTML = `
+                    <div class="status error">❌ ${error.message}</div>
+                `;
+            }
+        }
+        
+        async function checkUSDCBalance() {
+            try {
+                const balance = await usdcContract.balanceOf(userAddress);
+                const balanceFormatted = ethers.utils.formatUnits(balance, 6);
+                
+                document.getElementById('balanceDetails').innerHTML = `
+                    <div class="status success">
+                        💰 USDC Balance: <strong>${balanceFormatted} USDC</strong><br>
+                        ${balanceFormatted >= 1 ? '✅ Sufficient balance for deposit' : '❌ Need more USDC'}
+                    </div>
+                `;
+                
+                if (parseFloat(balanceFormatted) >= 1) {
+                    document.getElementById('step2').classList.add('completed');
+                    document.getElementById('step3').classList.add('active');
+                    document.getElementById('approveBtn').disabled = false;
+                }
+                
+                updateBalanceDisplay();
+                
+            } catch (error) {
+                document.getElementById('balanceDetails').innerHTML = `
+                    <div class="status error">❌ ${error.message}</div>
+                `;
+            }
+        }
+        
+        async function approveGateway() {
+            try {
+                document.getElementById('approveStatus').innerHTML = `
+                    <div class="status info">⏳ Requesting approval...</div>
+                `;
+                
+                // Approve large amount (like 1000 USDC) to avoid future approvals
+                const approveAmount = ethers.utils.parseUnits("1000", 6);
+                const tx = await usdcContract.approve(CONFIG.GATEWAY_WALLET, approveAmount);
+                
+                document.getElementById('approveStatus').innerHTML = `
+                    <div class="status info">
+                        ⏳ Transaction pending...<br>
+                        <a href="https://sepolia.etherscan.io/tx/${tx.hash}" target="_blank" class="tx-link">View on Etherscan</a>
+                    </div>
+                `;
+                
+                await tx.wait();
+                
+                document.getElementById('approveStatus').innerHTML = `
+                    <div class="status success">
+                        ✅ Gateway approved!<br>
+                        <a href="https://sepolia.etherscan.io/tx/${tx.hash}" target="_blank" class="tx-link">View on Etherscan</a>
+                    </div>
+                `;
+                
+                document.getElementById('step3').classList.add('completed');
+                document.getElementById('step4').classList.add('active');
+                document.getElementById('depositBtn').disabled = false;
+                
+            } catch (error) {
+                document.getElementById('approveStatus').innerHTML = `
+                    <div class="status error">❌ ${error.message}</div>
+                `;
+            }
+        }
+        
+        async function depositToGateway() {
+            try {
+                const amount = document.getElementById('depositAmount').value;
+                if (!amount || parseFloat(amount) <= 0) {
+                    throw new Error('Please enter a valid amount');
+                }
+                
+                document.getElementById('depositStatus').innerHTML = `
+                    <div class="status info">⏳ Depositing ${amount} USDC to Gateway...</div>
+                `;
+                
+                // For Circle Gateway, we transfer USDC directly to the Gateway wallet
+                // This should trigger the deposit mechanism
+                const depositAmount = ethers.utils.parseUnits(amount, 6);
+                const tx = await usdcContract.transfer(CONFIG.GATEWAY_WALLET, depositAmount);
+                
+                document.getElementById('depositStatus').innerHTML = `
+                    <div class="status info">
+                        ⏳ Deposit transaction pending...<br>
+                        <a href="https://sepolia.etherscan.io/tx/${tx.hash}" target="_blank" class="tx-link">View on Etherscan</a>
+                    </div>
+                `;
+                
+                await tx.wait();
+                
+                document.getElementById('depositStatus').innerHTML = `
+                    <div class="status success">
+                        ✅ Deposited ${amount} USDC to Gateway!<br>
+                        <a href="https://sepolia.etherscan.io/tx/${tx.hash}" target="_blank" class="tx-link">View on Etherscan</a><br>
+                        <small>⏳ Wait 30 seconds for Gateway to process the deposit...</small>
+                    </div>
+                `;
+                
+                document.getElementById('step4').classList.add('completed');
+                document.getElementById('step5').classList.add('active');
+                
+                // Wait before enabling verify button
+                setTimeout(() => {
+                    document.getElementById('verifyBtn').disabled = false;
+                }, 5000);
+                
+                updateBalanceDisplay();
+                
+            } catch (error) {
+                document.getElementById('depositStatus').innerHTML = `
+                    <div class="status error">❌ ${error.message}</div>
+                `;
+            }
+        }
+        
+        async function verifyGatewayBalance() {
+            try {
+                document.getElementById('verifyStatus').innerHTML = `
+                    <div class="status info">⏳ Checking Gateway balance...</div>
+                `;
+                
+                // Call Circle Gateway API to check balance
+                const response = await fetch('https://gateway-api-testnet.circle.com/v1/balances', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${CONFIG.API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        token: "USDC",
+                        sources: [
+                            { domain: 0, depositor: userAddress }
+                        ]
+                    })
+                });
+                
+                if (response.ok) {
+                    const balanceData = await response.json();
+                    const sepoliaBalance = balanceData.balances?.find(b => b.domain === 0);
+                    
+                    if (sepoliaBalance) {
+                        const deposited = parseFloat(sepoliaBalance.balance || 0);
+                        const available = parseFloat(sepoliaBalance.available || 0);
+                        
+                        const statusHtml = `
+                            <div class="status ${available > 0 ? 'success' : 'warning'}">
+                                💰 Gateway Balance:<br>
+                                Deposited: <strong>${deposited.toFixed(6)} USDC</strong><br>
+                                Available: <strong>${available.toFixed(6)} USDC</strong><br>
+                                ${available > 0 ? '✅ Ready for transfers!' : '⚠️ Still processing or needs manual activation'}
+                            </div>
+                        `;
+                        
+                        document.getElementById('verifyStatus').innerHTML = statusHtml;
+                        
+                        if (available > 0) {
+                            document.getElementById('step5').classList.add('completed');
+                            document.getElementById('finalStatus').innerHTML = `
+                                <div class="status success">
+                                    <h3>🎉 SUCCESS! Gateway is Ready</h3>
+                                    <p>You now have <strong>${available.toFixed(6)} USDC available</strong> in Gateway for transfers!</p>
+                                    <p>The 0.01 USDC transfers should now work properly.</p>
+                                </div>
+                            `;
+                        } else {
+                            document.getElementById('finalStatus').innerHTML = `
+                                <div class="status warning">
+                                    <h3>⏳ Deposit Processing</h3>
+                                    <p>The deposit was successful but funds are still being processed.</p>
+                                    <p>Try checking again in a few minutes, or use the Circle faucet as backup.</p>
+                                    <button onclick="window.open('https://faucet.circle.com/', '_blank')">🚰 Open Circle Faucet</button>
+                                </div>
+                            `;
+                        }
+                    }
+                } else {
+                    throw new Error(`API error: ${response.status}`);
+                }
+                
+            } catch (error) {
+                document.getElementById('verifyStatus').innerHTML = `
+                    <div class="status error">❌ ${error.message}</div>
+                `;
+            }
+        }
+        
+        async function updateBalanceDisplay() {
+            if (!userAddress || !usdcContract) return;
+            
+            try {
+                const balance = await usdcContract.balanceOf(userAddress);
+                const balanceFormatted = ethers.utils.formatUnits(balance, 6);
+                
+                document.getElementById('balanceInfo').innerHTML = `
+                    <strong>Wallet:</strong> ${balanceFormatted} USDC<br>
+                    <small>Address: ${userAddress}</small>
+                `;
+            } catch (error) {
+                document.getElementById('balanceInfo').innerHTML = 'Error loading balance';
+            }
+        }
+        
+        // Auto-connect if already connected
+        window.addEventListener('load', async () => {
+            if (window.ethereum && window.ethereum.selectedAddress) {
+                await connectWallet();
+            }
+        });
+    </script>
+</body>
+</html>

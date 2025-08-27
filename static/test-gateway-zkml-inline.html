@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Gateway zkML Inline</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .test-section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+        }
+        button {
+            background: #6B7CFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        button:hover {
+            background: #8B9AFF;
+        }
+        #messages {
+            background: #000;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            min-height: 400px;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Gateway zkML Inline Handler</h1>
+    
+    <div class="test-section">
+        <h2>Direct Test</h2>
+        <p>This tests the inline handler directly without module loading.</p>
+        
+        <button onclick="testDirect()">Test Direct Execution</button>
+        <button onclick="testWithMessage()">Test Message Handler</button>
+        
+        <div id="messages"></div>
+    </div>
+    
+    <!-- Load the inline handler directly -->
+    <script src="./js/ui/gateway-zkml-inline.js"></script>
+    
+    <script>
+        function testDirect() {
+            console.log('Testing direct execution...');
+            if (window.GatewayZKMLHandler) {
+                window.GatewayZKMLHandler.executeWorkflow('0.01');
+                console.log('✅ Direct execution started');
+            } else {
+                console.error('❌ Handler not loaded');
+                alert('Handler not loaded! Check console.');
+            }
+        }
+        
+        function testWithMessage() {
+            console.log('Testing message handler...');
+            const message = 'gateway zkml transfer $0.01';
+            
+            if (window.handleUserMessage) {
+                window.handleUserMessage(message);
+                console.log('✅ Message handler triggered');
+            } else {
+                console.error('❌ Message handler not found');
+                alert('Message handler not found! Check console.');
+            }
+        }
+        
+        // Check if handler loaded
+        setTimeout(() => {
+            if (window.GatewayZKMLHandler) {
+                document.getElementById('messages').innerHTML = 
+                    '<p class="success">✅ Gateway zkML Handler loaded successfully!</p>' +
+                    '<p>You can now test the workflow using the buttons above.</p>';
+            } else {
+                document.getElementById('messages').innerHTML = 
+                    '<p class="error">❌ Handler failed to load. Check browser console.</p>';
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

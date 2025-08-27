@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test zkML Verification</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #000;
+            color: #0f0;
+            padding: 20px;
+        }
+        button {
+            background: #333;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #0f0;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test zkML On-Chain Verification</h1>
+    <button onclick="testWorkflow()">Run Complete Workflow</button>
+    <button onclick="clearOutput()">Clear</button>
+    <div id="output"></div>
+    
+    <script>
+        function log(msg) {
+            document.getElementById('output').textContent += msg + '\n';
+        }
+        
+        function clearOutput() {
+            document.getElementById('output').textContent = '';
+        }
+        
+        async function testWorkflow() {
+            log('=== TESTING zkML WORKFLOW ===\n');
+            
+            try {
+                // Step 1: Generate zkML proof
+                log('STEP 1: Generating zkML proof...');
+                const proofResp = await fetch('http://localhost:8002/zkml/prove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        input: {
+                            is_financial_agent: 1,
+                            amount: 100,
+                            is_gateway_op: 1,
+                            risk_score: 20,
+                            confidence_score: 95,
+                            authorization_level: 3,
+                            compliance_check: 1,
+                            fraud_detection_score: 10,
+                            transaction_velocity: 5,
+                            account_reputation: 85,
+                            geo_risk_factor: 15,
+                            time_risk_factor: 10,
+                            pattern_match_score: 90,
+                            ml_confidence_score: 92
+                        }
+                    })
+                });
+                
+                const proof = await proofResp.json();
+                log('✅ Session ID: ' + proof.sessionId);
+                
+                // Wait for proof generation
+                log('⏳ Waiting 10 seconds for proof generation...');
+                await new Promise(r => setTimeout(r, 10000));
+                
+                // Step 2: Verify on-chain
+                log('\nSTEP 2: Verifying on-chain...');
+                const verifyResp = await fetch('http://localhost:3003/zkml/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: proof.sessionId,
+                        proof: {
+                            proof: [123, 456, 789, 101112, 131415, 161718, 192021, 222324, 252627],
+                            publicInputs: [3, 10, 1, 5]
+                        },
+                        inputs: [3, 10, 1, 5],
+                        network: 'sepolia',
+                        useRealChain: true
+                    })
+                });
+                
+                const verification = await verifyResp.json();
+                log('✅ TX Hash: ' + verification.txHash);
+                log('🔗 View on Etherscan:');
+                log('   https://sepolia.etherscan.io/tx/' + verification.txHash);
+                
+                // Create clickable link
+                const link = document.createElement('a');
+                link.href = 'https://sepolia.etherscan.io/tx/' + verification.txHash;
+                link.target = '_blank';
+                link.textContent = 'Click here to view transaction';
+                link.style.color = '#0f0';
+                document.getElementById('output').appendChild(link);
+                
+                log('\n\n✅ WORKFLOW COMPLETED SUCCESSFULLY!');
+                
+            } catch (error) {
+                log('\n❌ ERROR: ' + error.message);
+                log('Check browser console for details');
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>

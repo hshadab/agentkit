@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SES-Safe Gateway zkML Test</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: #000; 
+            color: #fff; 
+            padding: 20px;
+        }
+        #messages { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+        }
+        .message { 
+            margin: 20px 0; 
+        }
+        .message.assistant { 
+            text-align: left; 
+        }
+        .workflow-card { 
+            background: #1a1a1a; 
+            border: 1px solid #333; 
+            border-radius: 16px; 
+            padding: 20px; 
+            margin: 20px 0; 
+        }
+        .card-header { 
+            padding-bottom: 16px; 
+            border-bottom: 1px solid #333; 
+            margin-bottom: 16px; 
+        }
+        .card-header-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 8px; 
+        }
+        .card-title { 
+            color: #8b9aff; 
+            font-size: 14px; 
+            font-weight: 600; 
+        }
+        .workflow-status { 
+            padding: 4px 12px; 
+            border-radius: 6px; 
+            font-size: 11px; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+        }
+        .workflow-status.in-progress { 
+            background: rgba(251, 191, 36, 0.2); 
+            color: #fbbf24; 
+            border: 1px solid rgba(251, 191, 36, 0.3); 
+        }
+        .workflow-status.completed { 
+            background: rgba(16, 185, 129, 0.2); 
+            color: #10b981; 
+            border: 1px solid rgba(16, 185, 129, 0.3); 
+        }
+        .gateway-unified-balance { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 16px; 
+            background: rgba(107, 124, 255, 0.05); 
+            border: 1px solid rgba(107, 124, 255, 0.15); 
+            border-radius: 8px; 
+            margin: 16px 0; 
+        }
+        .workflow-step { 
+            margin-bottom: 12px; 
+            padding: 12px; 
+            background: rgba(50, 50, 50, 0.3); 
+            border: 1px solid rgba(107, 124, 255, 0.2); 
+            border-radius: 8px; 
+        }
+        .workflow-step.complete { 
+            background: rgba(16, 185, 129, 0.05); 
+            border-color: rgba(16, 185, 129, 0.3); 
+        }
+        .workflow-step-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; 
+        }
+        .step-status { 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 11px; 
+            font-weight: 600; 
+        }
+        .step-status.executing { 
+            background: rgba(251, 191, 36, 0.2); 
+            color: #fbbf24; 
+            border: 1px solid rgba(251, 191, 36, 0.3); 
+        }
+        .step-status.complete { 
+            background: rgba(16, 185, 129, 0.2); 
+            color: #10b981; 
+            border: 1px solid rgba(16, 185, 129, 0.3); 
+        }
+        button { 
+            background: #8b9aff; 
+            color: #000; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 8px; 
+            font-size: 14px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            margin: 20px 0; 
+        }
+        button:hover { 
+            background: #7a8cff; 
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; color: #8b9aff;">SES-Safe Gateway zkML Test</h1>
+    
+    <div style="text-align: center;">
+        <button onclick="testWorkflow()">Execute Gateway zkML Workflow</button>
+        <button onclick="clearMessages()">Clear</button>
+    </div>
+    
+    <div id="messages"></div>
+    
+    <!-- Load ethers first -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    
+    <!-- Load SES-safe Gateway zkML -->
+    <script src="js/gateway-zkml-ses-safe.js"></script>
+    
+    <script>
+        // No concat, no complex operations, pure SES-safe
+        window.DEMO_PRIVATE_KEY = 'c3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+        
+        function testWorkflow() {
+            console.log('Testing SES-Safe Gateway zkML Workflow');
+            if (window.executeGatewayZKMLWorkflow) {
+                window.executeGatewayZKMLWorkflow('0.01');
+            } else {
+                alert('Gateway zkML workflow function not loaded!');
+            }
+        }
+        
+        function clearMessages() {
+            const messages = document.getElementById('messages');
+            if (messages) {
+                messages.innerHTML = '';
+            }
+        }
+        
+        console.log('SES-Safe test page loaded');
+    </script>
+</body>
+</html>

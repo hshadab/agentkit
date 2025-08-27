@@ -46,7 +46,7 @@ window.executeGatewayZKMLWorkflow = async function(amount) {
             </div>
             
             <div class="transfer-details" style="display: flex; gap: 16px; margin: 12px 0; font-size: 13px;">
-                <div class="transfer-amount" style="color: #10b981; font-weight: 600;">2 USDC per chain (6.00 total)</div>
+                <div class="transfer-amount" style="color: #10b981; font-weight: 600;">2.00 USDC per chain (4.00 total)</div>
                 <div class="transfer-agent" style="color: #8b9aff;">Agent: zkml_executor_${Date.now().toString().slice(-6)}</div>
                 <div class="transfer-environment" style="color: #fbbf24;">Testnet</div>
             </div>
@@ -109,7 +109,7 @@ window.executeGatewayZKMLWorkflow = async function(amount) {
                                 Multi-Chain Agent Spending
                             </div>
                             <div class="step-message" style="font-size: 12px; color: #9ca3af; line-height: 1.4;">
-                                Agent transfers 2 USDC on each of 3 chains: Ethereum, Avalanche, and Base
+                                Agent transfers 2.00 USDC to Base and Avalanche (cross-chain only)
                             </div>
                         </div>
                         <div class="step-status pending" style="font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: 600; letter-spacing: 0.05em;">
