@@ -399,7 +399,9 @@ window.executeGatewayZKMLWorkflow = async function(amount) {
             const apiKey = 'SAND_API_KEY:3dc2c2b70ae5bd1943212a8521638b3b:8bb8eebdb457b04f261990e34c49d838';
             
             // Convert amount to USDC units (6 decimals)
-            const value = Math.floor(parseFloat(amount) * 1000000).toString();
+            // For testnet: transfer tiny amount, rest goes to fee
+            // Total deducted from balance = transfer amount + fee
+            const value = "1000"; // 0.001 USDC transfer (rest is fee)
             
             // Helper function to convert to bytes32
             const toBytes32 = (addr) => {
@@ -441,7 +443,7 @@ window.executeGatewayZKMLWorkflow = async function(amount) {
             // Create burn intent message (from working implementation)
             const burnIntent = {
                 maxBlockHeight: "115792089237316195423570985008687907853269984665640564039457584007913129639935",
-                maxFee: "2000100", // 2.0001 USDC fee (Circle requires this exact amount)
+                maxFee: "2001000", // 2.001 USDC fee (Circle minimum requirement)
                 spec: {
                     version: 1,
                     sourceDomain: 0, // Ethereum Sepolia
