@@ -241,8 +241,8 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             
             const content = document.getElementById('gateway-step-content-gateway_transfer');
             if (content) {
-                let html = '<div style="font-size: 12px; color: #fbbf24;">⏳ Gateway transfers processing...</div>';
-                html += '<div style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">';
+                let html = '<div style="font-size: 12px; color: #fbbf24; margin-bottom: 12px;">⏳ Gateway transfers processing...</div>';
+                html += '<div style="display: flex; flex-direction: column; gap: 8px;">';
                 
                 transfers.forEach(transfer => {
                     const statusIcon = transfer.success ? '⏳' : '⚠️';
@@ -304,7 +304,9 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             }
             
             // Convert amount to USDC units (6 decimals)
-            const value = Math.floor(parseFloat(amount) * 1000000).toString();
+            // For testnet: transfer tiny amount, rest goes to fee
+            // Total deducted from balance = transfer amount + fee
+            const value = "1000"; // 0.001 USDC transfer (rest is fee)
             
             // Helper function to convert to bytes32
             const toBytes32 = (addr) => {
@@ -346,7 +348,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             // Create burn intent message
             const burnIntent = {
                 maxBlockHeight: "115792089237316195423570985008687907853269984665640564039457584007913129639935",
-                maxFee: "2000100", // 2.0001 USDC fee (Circle requires this exact amount)
+                maxFee: "2001000", // 2.001 USDC fee (Circle minimum requirement)
                 spec: {
                     version: 1,
                     sourceDomain: 0, // Ethereum Sepolia
@@ -694,8 +696,8 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             const content = document.getElementById('gateway-step-content-zkml_proof');
             if (content) {
                 content.innerHTML = `
-                    <div style="font-size: 12px; color: #10b981;">✅ Proof generated</div>
-                    <div style="font-size: 11px; color: #8b9aff; margin-top: 4px;">Session: ${sessionId}</div>
+                    <div style="font-size: 12px; color: #10b981; margin-bottom: 8px;">✅ Proof generated</div>
+                    <div style="font-size: 11px; color: #8b9aff;">Session: ${sessionId}</div>
                 `;
             }
         }
@@ -738,13 +740,13 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             if (content) {
                 const shortHash = `${txHash.substring(0, 10)}...${txHash.substring(txHash.length - 8)}`;
                 content.innerHTML = `
-                    <div style="font-size: 12px; color: #10b981;">✅ Verified on-chain</div>
-                    <div style="margin-top: 4px;">
+                    <div style="font-size: 12px; color: #10b981; margin-bottom: 8px;">✅ Verified on-chain</div>
+                    <div style="margin-bottom: 6px;">
                         <a href="https://sepolia.etherscan.io/tx/${txHash}" target="_blank" style="color: #8b9aff; font-size: 11px; text-decoration: none;">
                             🔗 ${shortHash}
                         </a>
                     </div>
-                    <div style="margin-top: 4px;">
+                    <div>
                         <a href="https://sepolia.etherscan.io/address/0x70928d56Ee88CA586cBE2Ee4cF97Ae2fcc2cA944" target="_blank" style="color: #9ca3af; font-size: 10px; text-decoration: none;">
                             📄 View Verifier Contract
                         </a>
