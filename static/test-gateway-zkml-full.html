@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gateway zkML Full Test - With Transfer Links</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+        }
+        .workflow-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+        }
+        .step {
+            background: #111;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 3px solid #333;
+        }
+        .step.completed { border-left-color: #10b981; }
+        .step.in-progress { border-left-color: #fbbf24; }
+        .step.failed { border-left-color: #ef4444; }
+        .tx-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 6px;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+        .tx-link a {
+            color: #8B9AFF;
+            text-decoration: none;
+        }
+        .tx-link a:hover {
+            text-decoration: underline;
+        }
+        button {
+            background: #6B7CFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #8B9AFF;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .status-badge.success { background: #10b981; }
+        .status-badge.pending { background: #fbbf24; color: #000; }
+        .status-badge.failed { background: #ef4444; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Gateway zkML Full Workflow Test</h1>
+    
+    <div class="workflow-card">
+        <h2>Complete Gateway zkML Workflow with Transaction Links</h2>
+        <p>This test simulates the full Gateway workflow including all 3 USDC transfer links.</p>
+        
+        <button onclick="runFullWorkflow()">Run Complete Workflow</button>
+        
+        <div id="workflow-steps">
+            <div class="step" id="step1">
+                <strong>Step 1: zkML Inference (14-parameter model)</strong>
+                <div id="step1-content">Ready to start...</div>
+            </div>
+            
+            <div class="step" id="step2">
+                <strong>Step 2: On-Chain Verification</strong>
+                <div id="step2-content">Waiting for Step 1...</div>
+            </div>
+            
+            <div class="step" id="step3">
+                <strong>Step 3: Gateway Transfers (3 chains)</strong>
+                <div id="step3-content">Waiting for Step 2...</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="workflow-card">
+        <h2>Expected Results</h2>
+        <p>When the workflow completes successfully, you should see:</p>
+        <ul>
+            <li>✅ Step 1: zkML proof with 14 parameters</li>
+            <li>✅ Step 2: Ethereum Sepolia verification transaction link</li>
+            <li>✅ Step 3: Three USDC transfer transaction links:
+                <ul>
+                    <li>🔷 Ethereum Sepolia transfer</li>
+                    <li>🟦 Base Sepolia transfer</li>
+                    <li>🔺 Avalanche Fuji transfer</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    
+    <script>
+        function updateStep(stepId, status, content) {
+            const step = document.getElementById(stepId);
+            step.className = 'step ' + status;
+            document.getElementById(stepId + '-content').innerHTML = content;
+        }
+        
+        async function runFullWorkflow() {
+            console.log('Starting full Gateway zkML workflow...');
+            
+            try {
+                // Step 1: zkML Proof Generation
+                updateStep('step1', 'in-progress', 'Generating 14-parameter zkML proof...');
+                
+                const proofResp = await fetch('http://localhost:8002/zkml/prove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        agentId: 'ui-test-full',
+                        agentType: 'financial',
+                        amount: 0.01,
+                        operation: 'gateway_transfer',
+                        riskScore: 0.2
+                    })
+                });
+                
+                const proof = await proofResp.json();
+                console.log('Proof session:', proof.sessionId);
+                
+                // Wait for proof
+                await new Promise(r => setTimeout(r, 8000));
+                
+                const statusResp = await fetch(`http://localhost:8002/zkml/status/${proof.sessionId}`);
+                const status = await statusResp.json();
+                
+                const paramCount = status.proof?.proofData?.publicInputs?.length || 0;
+                updateStep('step1', 'completed', `
+                    ✅ zkML proof generated<br>
+                    Model: ${status.proof?.model}<br>
+                    Parameters: ${paramCount}<br>
+                    Decision: ${status.proof?.proofData?.decision || 'ALLOW'}
+                `);
+                
+                // Step 2: On-Chain Verification
+                updateStep('step2', 'in-progress', 'Performing on-chain verification...');
+                
+                const verifyResp = await fetch('http://localhost:3003/zkml/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: proof.sessionId,
+                        proof: status.proof?.proofData || {},
+                        network: 'sepolia',
+                        useRealChain: true,
+                        inputs: status.proof?.proofData?.publicInputs || []
+                    })
+                });
+                
+                const verification = await verifyResp.json();
+                
+                if (verification.txHash) {
+                    const etherscanUrl = `https://sepolia.etherscan.io/tx/${verification.txHash}`;
+                    updateStep('step2', 'completed', `
+                        ✅ On-chain verification successful<br>
+                        <div class="tx-link">
+                            <span>🔷 Ethereum Sepolia</span>
+                            <a href="${etherscanUrl}" target="_blank">View TX →</a>
+                        </div>
+                        Block: ${verification.blockNumber}<br>
+                        Gas Used: ${verification.gasUsed}
+                    `);
+                } else {
+                    updateStep('step2', 'failed', '❌ Verification failed');
+                    return;
+                }
+                
+                // Step 3: Gateway Transfers (Simulated with real transaction format)
+                updateStep('step3', 'in-progress', 'Executing Gateway transfers...');
+                
+                // Simulate Gateway transfer results
+                // In production, these would come from actual Circle Gateway API calls
+                const gatewayTransfers = [
+                    {
+                        chain: 'Ethereum Sepolia',
+                        icon: '🔷',
+                        txHash: '0x' + Math.random().toString(36).substring(2) + Date.now().toString(36),
+                        explorer: 'https://sepolia.etherscan.io',
+                        amount: 0.01
+                    },
+                    {
+                        chain: 'Base Sepolia',
+                        icon: '🟦',
+                        txHash: '0x' + Math.random().toString(36).substring(2) + Date.now().toString(36),
+                        explorer: 'https://sepolia.basescan.org',
+                        amount: 0.01
+                    },
+                    {
+                        chain: 'Avalanche Fuji',
+                        icon: '🔺',
+                        txHash: '0x' + Math.random().toString(36).substring(2) + Date.now().toString(36),
+                        explorer: 'https://testnet.snowtrace.io',
+                        amount: 0.01
+                    }
+                ];
+                
+                // Display transfer results
+                const transferHtml = gatewayTransfers.map(transfer => `
+                    <div class="tx-link">
+                        <span>${transfer.icon} ${transfer.chain}</span>
+                        <span style="flex: 1;">$${transfer.amount} USDC</span>
+                        <a href="${transfer.explorer}/tx/${transfer.txHash}" target="_blank">View TX →</a>
+                    </div>
+                `).join('');
+                
+                updateStep('step3', 'completed', `
+                    ✅ Gateway transfers completed<br>
+                    Total: $0.03 USDC across 3 chains<br>
+                    ${transferHtml}
+                    <div style="margin-top: 10px; font-size: 11px; color: #9ca3af;">
+                        Note: In production, these would be real Circle Gateway transfers.<br>
+                        The UI workflow manager handles EIP-712 signing and API submission.
+                    </div>
+                `);
+                
+                console.log('✅ Full workflow completed successfully!');
+                console.log('Gateway transfers:', gatewayTransfers);
+                
+            } catch (error) {
+                console.error('Workflow error:', error);
+                alert('Error: ' + error.message + '\n\nMake sure backend services are running.');
+            }
+        }
+    </script>
+</body>
+</html>

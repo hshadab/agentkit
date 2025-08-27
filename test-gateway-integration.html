@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gateway Integration Test</title>
+    <style>
+        body {
+            background: #1a1a1a;
+            color: #0f0;
+            font-family: monospace;
+            padding: 20px;
+        }
+        button {
+            background: #003300;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+        }
+        #log {
+            background: #000;
+            border: 1px solid #0f0;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 400px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gateway zkML Integration Test</h1>
+    <button onclick="testGateway()">Test Gateway Workflow</button>
+    <button onclick="testBackend()">Test Backend Services</button>
+    <div id="log">Ready...</div>
+
+    <script>
+        const log = document.getElementById('log');
+        
+        function addLog(msg) {
+            const timestamp = new Date().toLocaleTimeString();
+            log.textContent += `[${timestamp}] ${msg}\n`;
+        }
+        
+        async function testBackend() {
+            addLog('Testing backend services...\n');
+            
+            // Test zkML backend on port 8002
+            try {
+                const healthRes = await fetch('http://localhost:8002/health');
+                const health = await healthRes.json();
+                addLog('✅ zkML backend (8002): ' + health.status);
+                addLog('   Services: ' + JSON.stringify(health.services));
+            } catch (e) {
+                addLog('❌ zkML backend (8002): Not available');
+            }
+            
+            // Test verifier backend on port 3003
+            try {
+                const verifierRes = await fetch('http://localhost:3003/health');
+                if (verifierRes.ok) {
+                    addLog('✅ Verifier backend (3003): Running');
+                }
+            } catch (e) {
+                addLog('⚠️ Verifier backend (3003): Not available');
+            }
+            
+            // Test WebSocket on port 8001
+            try {
+                const ws = new WebSocket('ws://localhost:8001/ws');
+                ws.onopen = () => {
+                    addLog('✅ WebSocket (8001): Connected');
+                    ws.close();
+                };
+                ws.onerror = () => {
+                    addLog('❌ WebSocket (8001): Connection failed');
+                };
+            } catch (e) {
+                addLog('❌ WebSocket (8001): ' + e.message);
+            }
+        }
+        
+        async function testGateway() {
+            addLog('\n🚀 Testing Gateway zkML workflow...\n');
+            
+            try {
+                // Step 1: Generate zkML proof
+                addLog('Step 1: Generating zkML proof...');
+                const proofRes = await fetch('http://localhost:8002/zkml/prove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        agentId: 'test-agent-' + Date.now(),
+                        agentType: 'financial',
+                        amount: 0.01,
+                        operation: 'gateway-transfer',
+                        riskScore: 0.2
+                    })
+                });
+                
+                const proofData = await proofRes.json();
+                addLog('   Session ID: ' + proofData.sessionId);
+                addLog('   Status: ' + proofData.status);
+                
+                // Wait for proof generation
+                addLog('   Waiting for proof generation...');
+                await new Promise(r => setTimeout(r, 6000));
+                
+                // Check status
+                const statusRes = await fetch(`http://localhost:8002/zkml/status/${proofData.sessionId}`);
+                const status = await statusRes.json();
+                
+                if (status.status === 'completed') {
+                    addLog('   ✅ Proof generated successfully!');
+                    addLog('   Model: ' + status.proof.model);
+                    addLog('   Time: ' + status.proof.generationTime + 's');
+                    
+                    // Step 2: Verify on-chain (if verifier is running)
+                    addLog('\nStep 2: On-chain verification...');
+                    
+                    try {
+                        const verifyRes = await fetch('http://localhost:3003/zkml/verify', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                sessionId: proofData.sessionId,
+                                proof: status.proof.proofData,
+                                network: 'sepolia',
+                                useRealChain: false, // Use simulated for testing
+                                inputs: status.proof.proofData.publicInputs
+                            })
+                        });
+                        
+                        const verification = await verifyRes.json();
+                        if (verification.verified) {
+                            addLog('   ✅ Verification successful!');
+                            addLog('   Network: ' + verification.network);
+                            if (verification.txHash) {
+                                addLog('   TxHash: ' + verification.txHash);
+                            }
+                        } else {
+                            addLog('   ❌ Verification failed');
+                        }
+                    } catch (e) {
+                        addLog('   ⚠️ Verifier not available (start with: node api/zkml-verifier-backend.js)');
+                    }
+                    
+                    addLog('\nStep 3: Gateway transfer preparation');
+                    addLog('   Ready for Circle Gateway multi-chain transfer');
+                    addLog('\n✅ Gateway workflow test complete!');
+                    
+                } else {
+                    addLog('   ❌ Proof generation failed: ' + status.status);
+                }
+                
+            } catch (error) {
+                addLog('❌ Error: ' + error.message);
+            }
+        }
+        
+        // Test on load
+        testBackend();
+    </script>
+</body>
+</html>

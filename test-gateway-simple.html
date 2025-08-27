@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gateway zkML Simple Test</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #6B7CFF;
+            border-bottom: 2px solid #6B7CFF;
+            padding-bottom: 10px;
+        }
+        .test-commands {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .command {
+            background: #0d0d0d;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 3px solid #6B7CFF;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .command:hover {
+            background: #1a1a1a;
+            transform: translateX(5px);
+        }
+        .trigger { border-left-color: #0f0; }
+        .no-trigger { border-left-color: #f00; }
+        button {
+            background: #6B7CFF;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 6px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #8B9AFF;
+        }
+        #result {
+            background: #0d0d0d;
+            border: 1px solid #333;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 100px;
+            white-space: pre-wrap;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌐 Gateway zkML Simple Test</h1>
+    
+    <div class="test-commands">
+        <h3>✅ Commands that WILL trigger Gateway zkML workflow:</h3>
+        <div class="command trigger" onclick="testCommand(this.textContent)">
+            gateway zkml transfer 0.05 USDC to 3 chains
+        </div>
+        <div class="command trigger" onclick="testCommand(this.textContent)">
+            Execute Gateway zkML multi-chain deployment
+        </div>
+        <div class="command trigger" onclick="testCommand(this.textContent)">
+            I need a zkML gateway transfer
+        </div>
+    </div>
+    
+    <div class="test-commands">
+        <h3>❌ Commands that will NOT trigger (missing gateway or zkml):</h3>
+        <div class="command no-trigger" onclick="testCommand(this.textContent)">
+            transfer 0.05 USDC to multiple chains
+        </div>
+        <div class="command no-trigger" onclick="testCommand(this.textContent)">
+            gateway transfer without zkml
+        </div>
+        <div class="command no-trigger" onclick="testCommand(this.textContent)">
+            zkml proof for transfer
+        </div>
+    </div>
+    
+    <div>
+        <button onclick="testBackends()">Test Backend Services</button>
+        <button onclick="testFullWorkflow()">Run Full Gateway zkML Test</button>
+    </div>
+    
+    <div id="result">Ready for testing...</div>
+    
+    <script>
+        const result = document.getElementById('result');
+        
+        function log(msg) {
+            const timestamp = new Date().toLocaleTimeString();
+            result.textContent += `[${timestamp}] ${msg}\n`;
+        }
+        
+        function testCommand(command) {
+            result.textContent = '';
+            log('Testing: "' + command + '"');
+            
+            const lower = command.toLowerCase();
+            const hasGateway = lower.includes('gateway');
+            const hasZkml = lower.includes('zkml');
+            
+            log('Has "gateway": ' + (hasGateway ? '✅' : '❌'));
+            log('Has "zkml": ' + (hasZkml ? '✅' : '❌'));
+            
+            if (hasGateway && hasZkml) {
+                log('\n✅ WILL TRIGGER Gateway zkML workflow');
+                
+                // Parse amount and chains
+                const amount = parseFloat((command.match(/(\d+(?:\.\d+)?)\s*usdc/i) || ['', '0.01'])[1]);
+                const chains = parseInt((command.match(/(\d+)\s*chains?/i) || ['', '3'])[1]);
+                
+                log(`Parsed: ${amount} USDC × ${chains} chains = ${amount * chains} USDC total`);
+            } else {
+                log('\n❌ Will NOT trigger - will go through normal WebSocket/OpenAI');
+            }
+        }
+        
+        async function testBackends() {
+            result.textContent = '';
+            log('Testing backend services...\n');
+            
+            // Test zkML backend
+            try {
+                const res = await fetch('http://localhost:8002/health');
+                const data = await res.json();
+                log('✅ zkML Backend (8002): ' + data.status);
+            } catch (e) {
+                log('❌ zkML Backend (8002): Not available');
+            }
+            
+            // Test verifier backend
+            try {
+                const res = await fetch('http://localhost:3003/health');
+                const data = await res.json();
+                log('✅ Verifier Backend (3003): ' + data.status);
+            } catch (e) {
+                log('❌ Verifier Backend (3003): Not available');
+            }
+        }
+        
+        async function testFullWorkflow() {
+            result.textContent = '';
+            log('🚀 Running full Gateway zkML workflow test...\n');
+            
+            try {
+                // Step 1: Generate zkML proof
+                log('Step 1: Generating zkML proof...');
+                const proofRes = await fetch('http://localhost:8002/zkml/prove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        agentId: 'test-' + Date.now(),
+                        agentType: 'financial',
+                        amount: 0.01,
+                        operation: 'gateway-transfer',
+                        riskScore: 0.2
+                    })
+                });
+                
+                const proof = await proofRes.json();
+                log('Session: ' + proof.sessionId);
+                
+                // Wait and check status
+                log('Waiting 6 seconds for proof generation...');
+                await new Promise(r => setTimeout(r, 6000));
+                
+                const statusRes = await fetch(`http://localhost:8002/zkml/status/${proof.sessionId}`);
+                const status = await statusRes.json();
+                
+                if (status.status === 'completed') {
+                    log('✅ Proof generated in ' + status.proof.generationTime + 's');
+                    
+                    // Step 2: Verify on-chain
+                    log('\nStep 2: Verifying on Ethereum Sepolia...');
+                    const verifyRes = await fetch('http://localhost:3003/zkml/verify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            sessionId: proof.sessionId,
+                            proof: status.proof.proofData,
+                            network: 'sepolia',
+                            useRealChain: true,
+                            inputs: status.proof.proofData.publicInputs
+                        })
+                    });
+                    
+                    const verification = await verifyRes.json();
+                    if (verification.verified) {
+                        log('✅ Verified on-chain!');
+                        log('Transaction: ' + verification.txHash);
+                        log('View on Etherscan: https://sepolia.etherscan.io/tx/' + verification.txHash);
+                    } else {
+                        log('❌ Verification failed');
+                    }
+                } else {
+                    log('❌ Proof generation failed');
+                }
+                
+            } catch (error) {
+                log('❌ Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

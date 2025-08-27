@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gateway zkML - Debug Transaction Links</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 32px;
+            margin-bottom: 30px;
+        }
+        .debug-section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+        }
+        .debug-section h2 {
+            color: #8B9AFF;
+            margin-top: 0;
+        }
+        .code-output {
+            background: #000;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+        button {
+            background: #6B7CFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #8B9AFF;
+            transform: translateY(-2px);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            margin: 0 5px;
+        }
+        .status-badge.success { background: #10b981; }
+        .status-badge.error { background: #ef4444; }
+        .status-badge.warning { background: #fbbf24; }
+        .link-display {
+            background: rgba(107, 124, 255, 0.1);
+            border: 1px solid #6B7CFF;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        .link-display a {
+            color: #8B9AFF;
+            text-decoration: none;
+        }
+        .link-display a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Gateway zkML - Debug Transaction Links</h1>
+    
+    <div class="debug-section">
+        <h2>🧪 Test 1: Direct Verification Backend Test</h2>
+        <button onclick="testVerificationBackend()">Test Verifier Backend</button>
+        <div id="verifier-output" class="code-output">Click button to test...</div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>🧪 Test 2: zkML Proof Status</h2>
+        <button onclick="testZKMLProof()">Generate & Check zkML Proof</button>
+        <div id="zkml-output" class="code-output">Click button to test...</div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>🧪 Test 3: Full Workflow Simulation</h2>
+        <button onclick="simulateFullWorkflow()">Simulate Complete Workflow</button>
+        <div id="workflow-output" class="code-output">Click button to test...</div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>📊 Console Monitor</h2>
+        <p>Open browser console (F12) to see detailed logs when running the workflow in the main UI.</p>
+        <p>Look for these log patterns:</p>
+        <div class="code-output">
+🔗 Generating verification link for Step 2
+💸 Generating transfer links for Step 3
+📝 Updating step content
+        </div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>🔗 Expected Links</h2>
+        <div class="link-display">
+            <strong>Step 2 - On-Chain Verification:</strong><br>
+            Example: <a href="https://sepolia.etherscan.io/tx/0xc25b7b675469f5a7fdd34a5ab3509b628bf0851e590f827f929d4ddb0e501d76" target="_blank">
+                https://sepolia.etherscan.io/tx/0xc25b7b...
+            </a>
+        </div>
+        <div class="link-display">
+            <strong>Step 3 - Gateway Transfers:</strong><br>
+            Ethereum: <a href="https://sepolia.etherscan.io/tx/0x..." target="_blank">View TX</a><br>
+            Base: <a href="https://sepolia.basescan.org/tx/0x..." target="_blank">View TX</a><br>
+            Avalanche: <a href="https://testnet.snowtrace.io/tx/0x..." target="_blank">View TX</a>
+        </div>
+    </div>
+    
+    <script>
+        function log(elementId, msg) {
+            const el = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            el.textContent += `[${timestamp}] ${msg}\n`;
+            el.scrollTop = el.scrollHeight;
+        }
+        
+        async function testVerificationBackend() {
+            const output = 'verifier-output';
+            document.getElementById(output).textContent = '';
+            log(output, 'Testing verifier backend on port 3003...\n');
+            
+            try {
+                // Test verification
+                const res = await fetch('http://localhost:3003/zkml/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: 'debug-test-' + Date.now(),
+                        proof: { data: 'test' },
+                        network: 'sepolia',
+                        useRealChain: true,
+                        inputs: [3, 10, 1, 5]
+                    })
+                });
+                
+                const data = await res.json();
+                log(output, 'Verification Response:');
+                log(output, JSON.stringify(data, null, 2));
+                
+                if (data.txHash) {
+                    log(output, '\n✅ Transaction Hash: ' + data.txHash);
+                    log(output, '🔗 View on Etherscan: https://sepolia.etherscan.io/tx/' + data.txHash);
+                } else {
+                    log(output, '❌ No transaction hash in response');
+                }
+                
+            } catch (error) {
+                log(output, '❌ Error: ' + error.message);
+            }
+        }
+        
+        async function testZKMLProof() {
+            const output = 'zkml-output';
+            document.getElementById(output).textContent = '';
+            log(output, 'Testing zkML proof generation...\n');
+            
+            try {
+                // Start proof
+                const proofRes = await fetch('http://localhost:8002/zkml/prove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        agentId: 'debug-test',
+                        agentType: 'financial',
+                        amount: 0.01,
+                        operation: 'gateway_transfer'
+                    })
+                });
+                
+                const proof = await proofRes.json();
+                log(output, 'Session ID: ' + proof.sessionId);
+                
+                // Wait and check status
+                log(output, 'Waiting 6 seconds for proof generation...');
+                await new Promise(r => setTimeout(r, 6000));
+                
+                const statusRes = await fetch(`http://localhost:8002/zkml/status/${proof.sessionId}`);
+                const status = await statusRes.json();
+                
+                log(output, '\nProof Status:');
+                log(output, JSON.stringify({
+                    status: status.status,
+                    model: status.proof?.model,
+                    realProof: status.proof?.realProof,
+                    joltBinary: status.proof?.joltBinary,
+                    paramCount: status.proof?.proofData?.publicInputs?.length
+                }, null, 2));
+                
+                if (status.proof?.realProof) {
+                    log(output, '\n✅ Using REAL JOLT proof generation');
+                } else {
+                    log(output, '\n⚠️ Using simulated proof (real JOLT not available)');
+                }
+                
+            } catch (error) {
+                log(output, '❌ Error: ' + error.message);
+            }
+        }
+        
+        async function simulateFullWorkflow() {
+            const output = 'workflow-output';
+            document.getElementById(output).textContent = '';
+            log(output, 'Simulating full Gateway zkML workflow...\n');
+            
+            try {
+                // Step 1: zkML Proof
+                log(output, '=== STEP 1: zkML Proof Generation ===');
+                const proofRes = await fetch('http://localhost:8002/zkml/prove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        agentId: 'workflow-test',
+                        agentType: 'financial',
+                        amount: 0.01,
+                        operation: 'gateway_transfer'
+                    })
+                });
+                const proof = await proofRes.json();
+                log(output, 'Session: ' + proof.sessionId);
+                
+                await new Promise(r => setTimeout(r, 6000));
+                
+                const statusRes = await fetch(`http://localhost:8002/zkml/status/${proof.sessionId}`);
+                const status = await statusRes.json();
+                log(output, 'Proof Status: ' + status.status);
+                log(output, 'Real Proof: ' + (status.proof?.realProof ? 'YES' : 'NO'));
+                
+                // Step 2: On-chain Verification
+                log(output, '\n=== STEP 2: On-Chain Verification ===');
+                const verifyRes = await fetch('http://localhost:3003/zkml/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: proof.sessionId,
+                        proof: status.proof?.proofData || {},
+                        network: 'sepolia',
+                        useRealChain: true,
+                        inputs: [3, 10, 1, 5]
+                    })
+                });
+                
+                const verification = await verifyRes.json();
+                if (verification.txHash) {
+                    log(output, '✅ Verification TX: ' + verification.txHash);
+                    log(output, '🔗 Etherscan: https://sepolia.etherscan.io/tx/' + verification.txHash);
+                } else {
+                    log(output, '❌ No verification transaction');
+                }
+                
+                // Step 3: Gateway Transfer (simulated)
+                log(output, '\n=== STEP 3: Gateway Transfer ===');
+                log(output, 'In real workflow, this would execute Circle Gateway transfers');
+                log(output, 'Expected transaction links for:');
+                log(output, '  • Ethereum Sepolia');
+                log(output, '  • Base Sepolia');
+                log(output, '  • Avalanche Fuji');
+                
+            } catch (error) {
+                log(output, '❌ Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

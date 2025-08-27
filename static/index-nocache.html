@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="-1">
+    <title>Novanet - Verifiable Agent Kit (No Cache)</title>
+    
+    <script>
+        // AGGRESSIVE FIREFOX CACHE BUSTER
+        const FORCE_VERSION = Date.now();
+        console.log('🔥 FORCE VERSION:', FORCE_VERSION);
+        
+        // Clear all caches in Firefox
+        if ('caches' in window) {
+            caches.keys().then(names => {
+                names.forEach(name => caches.delete(name));
+            });
+        }
+    </script>
+    
+    <style>
+        body { 
+            background: #0a0a0a; 
+            color: #fff; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 40px;
+        }
+        .redirect-notice {
+            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 600px;
+            margin: 100px auto;
+        }
+        h1 { font-size: 32px; margin-bottom: 20px; }
+        p { font-size: 18px; margin: 20px 0; }
+        .loading { animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+    <div class="redirect-notice">
+        <h1>🔄 Clearing Firefox Cache...</h1>
+        <p class="loading">Loading fresh version of the application...</p>
+        <p>Redirecting in 2 seconds...</p>
+    </div>
+    
+    <script>
+        // Force clear Firefox cache and redirect to standalone version
+        setTimeout(() => {
+            // Use the standalone version which we know works
+            const timestamp = Date.now();
+            window.location.replace('/static/gateway-zkml-standalone.html?v=' + timestamp + '&nocache=true&firefox=true');
+        }, 2000);
+    </script>
+</body>
+</html>

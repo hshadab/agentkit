@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gateway Trigger Test</title>
+    <style>
+        body {
+            background: #1a1a1a;
+            color: #0f0;
+            font-family: monospace;
+            padding: 20px;
+        }
+        .test {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #333;
+        }
+        .pass { background: #003300; }
+        .fail { background: #330000; }
+    </style>
+</head>
+<body>
+    <h1>Gateway zkML Trigger Test</h1>
+    <p>Testing that Gateway workflow ONLY triggers when both "gateway" AND "zkml" are present</p>
+    
+    <div id="results"></div>
+    
+    <script type="module">
+        import { GatewayWorkflowManager } from './js/ui/gateway-workflow-manager-v3.js';
+        
+        const results = document.getElementById('results');
+        
+        const testCases = [
+            // Should NOT trigger (missing one or both keywords)
+            { message: "I need to transfer funds to multiple chains", shouldTrigger: false },
+            { message: "Execute a multi-chain deployment", shouldTrigger: false },
+            { message: "Gateway transfer to Base", shouldTrigger: false },
+            { message: "zkML proof for transfer", shouldTrigger: false },
+            { message: "Send USDC with gateway", shouldTrigger: false },
+            { message: "Use zkml for verification", shouldTrigger: false },
+            
+            // SHOULD trigger (has both keywords)
+            { message: "Gateway zkML transfer to multiple chains", shouldTrigger: true },
+            { message: "Execute Gateway zkML multi-chain deployment", shouldTrigger: true },
+            { message: "I need a zkML Gateway transfer", shouldTrigger: true },
+            { message: "Use gateway with zkml proof", shouldTrigger: true },
+            { message: "zkml gateway for cross-chain", shouldTrigger: true },
+            { message: "GATEWAY ZKML transfer", shouldTrigger: true }, // Test case insensitive
+        ];
+        
+        let passed = 0;
+        let failed = 0;
+        
+        testCases.forEach(test => {
+            const isGateway = GatewayWorkflowManager.isGatewayCommand(test.message);
+            const pass = isGateway === test.shouldTrigger;
+            
+            if (pass) passed++;
+            else failed++;
+            
+            const div = document.createElement('div');
+            div.className = `test ${pass ? 'pass' : 'fail'}`;
+            div.innerHTML = `
+                <strong>${pass ? '✅ PASS' : '❌ FAIL'}</strong><br>
+                Message: "${test.message}"<br>
+                Expected: ${test.shouldTrigger ? 'TRIGGER' : 'NO TRIGGER'}<br>
+                Got: ${isGateway ? 'TRIGGER' : 'NO TRIGGER'}
+            `;
+            results.appendChild(div);
+        });
+        
+        const summary = document.createElement('div');
+        summary.style.marginTop = '20px';
+        summary.style.fontSize = '18px';
+        summary.innerHTML = `
+            <h2>Summary</h2>
+            Passed: ${passed}/${testCases.length}<br>
+            Failed: ${failed}/${testCases.length}<br>
+            ${failed === 0 ? '✅ All tests passed!' : '❌ Some tests failed'}
+        `;
+        results.appendChild(summary);
+    </script>
+</body>
+</html>

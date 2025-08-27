@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Verifiable Agent Kit - Gateway</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="css/main.css?v=20250826">
+    <script src="./js/lib/ethers.umd.min.js"></script>
+</head>
+<body>
+    <div class="sidebar">
+        <h3>Sample Queries</h3>
+        <div class="info-box">
+            Click on any example below to try it out.
+        </div>
+        <div class="example-category">
+            <h4>🌐 Circle Gateway (zkML)</h4>
+            <div class="example-item" onclick="sendQuery(this.textContent)">I need to transfer funds to multiple chains</div>
+            <div class="example-item" onclick="sendQuery(this.textContent)">Execute a multi-chain deployment</div>
+            <div class="example-item" onclick="sendQuery(this.textContent)">Cross-chain agent for high-value transfers</div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="header">
+            <h1>
+                <img src="./img/logo-novanet.svg" alt="Novanet" style="height: 32px; margin-right: 12px; vertical-align: middle;">
+                <span>Verifiable Agent Kit</span>
+            </h1>
+            <div id="connection-status" class="status disconnected">
+                <div class="status-dot"></div>
+                <span class="status-text">Disconnected</span>
+            </div>
+        </div>
+
+        <div class="messages-container">
+            <div id="messages"></div>
+        </div>
+
+        <div class="input-container">
+            <div class="input-wrapper">
+                <input type="text" id="user-input" placeholder="Type your message here..." autofocus>
+                <button id="send-button">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="./js/lib/web3.min.js"></script>
+    <script src="./js/lib/snarkjs.min.js"></script>
+    <script src="./js/lib/solana-web3.min.js"></script>
+    
+    <script type="module">
+        console.log('Loading Gateway interface...');
+        
+        // Import the modules
+        import { config } from './js/core/config.js';
+        import { WebSocketManager } from './js/ui/websocket-manager.js';
+        import { UIManager } from './js/ui/ui-manager.js';
+        import { GatewayWorkflowManager } from './js/ui/gateway-workflow-manager-v3.js';
+        
+        // Make them global
+        window.config = config;
+        
+        const wsManager = new WebSocketManager();
+        const uiManager = new UIManager();
+        const gatewayManager = new GatewayWorkflowManager();
+        
+        // Initialize when ready
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('Initializing Gateway UI...');
+            
+            // Initialize managers
+            uiManager.init();
+            await gatewayManager.initialize();
+            
+            // Connect WebSocket
+            wsManager.connect();
+            
+            // Update status
+            const statusEl = document.getElementById('connection-status');
+            const statusText = statusEl.querySelector('.status-text');
+            const statusDot = statusEl.querySelector('.status-dot');
+            
+            wsManager.onConnectionChange = (connected) => {
+                if (connected) {
+                    statusEl.className = 'status connected';
+                    statusText.textContent = 'Connected';
+                } else {
+                    statusEl.className = 'status disconnected';
+                    statusText.textContent = 'Disconnected';
+                }
+            };
+            
+            // Handle send button
+            const sendButton = document.getElementById('send-button');
+            const userInput = document.getElementById('user-input');
+            const messagesDiv = document.getElementById('messages');
+            
+            async function handleSend() {
+                const query = userInput.value.trim();
+                if (!query) return;
+                
+                userInput.value = '';
+                
+                // Add user message
+                const userMsg = document.createElement('div');
+                userMsg.className = 'message user-message';
+                userMsg.innerHTML = `<div class="message-content">${query}</div>`;
+                messagesDiv.appendChild(userMsg);
+                
+                // Check if it's a Gateway command
+                if (gatewayManager.isGatewayCommand(query)) {
+                    console.log('Gateway command detected');
+                    
+                    // Create assistant message container
+                    const assistantMsg = document.createElement('div');
+                    assistantMsg.className = 'message assistant-message';
+                    assistantMsg.innerHTML = '<div class="message-content"></div>';
+                    messagesDiv.appendChild(assistantMsg);
+                    
+                    const contentDiv = assistantMsg.querySelector('.message-content');
+                    
+                    try {
+                        await gatewayManager.handleGatewayCommand(query, (update) => {
+                            if (typeof update === 'string') {
+                                contentDiv.innerHTML = update;
+                            } else if (update.element) {
+                                contentDiv.appendChild(update.element);
+                            }
+                        });
+                    } catch (error) {
+                        contentDiv.innerHTML = `Error: ${error.message}`;
+                    }
+                } else {
+                    // Send via WebSocket
+                    wsManager.send({
+                        message: query,
+                        timestamp: Date.now()
+                    });
+                }
+                
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+            
+            sendButton.addEventListener('click', handleSend);
+            userInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                }
+            });
+            
+            // Handle sample query clicks
+            window.sendQuery = function(query) {
+                userInput.value = query;
+                handleSend();
+            };
+            
+            console.log('Gateway UI ready');
+        });
+    </script>
+</body>
+</html>

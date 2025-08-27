@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gateway zkML - Verification Requirements Test</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 36px;
+            margin-bottom: 30px;
+        }
+        .critical-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid #ef4444;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        .critical-box h2 {
+            color: #ef4444;
+            margin-top: 0;
+        }
+        .success-box {
+            background: rgba(16, 185, 129, 0.1);
+            border: 2px solid #10b981;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        .success-box h2 {
+            color: #10b981;
+            margin-top: 0;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .test-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 20px;
+            border-radius: 12px;
+        }
+        .test-card h3 {
+            color: #8B9AFF;
+            margin-top: 0;
+        }
+        .command {
+            background: #0d0d0d;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+            cursor: pointer;
+            border: 2px solid #6B7CFF;
+            transition: all 0.3s;
+        }
+        .command:hover {
+            background: #1a1a1a;
+            transform: translateX(5px);
+        }
+        .status-indicator {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 5px;
+        }
+        .status-indicator.success { background: #10b981; }
+        .status-indicator.error { background: #ef4444; }
+        .status-indicator.pending { background: #6B7CFF; }
+        #test-output {
+            background: #0d0d0d;
+            border: 1px solid #333;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 12px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .link-btn {
+            background: #6B7CFF;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin: 5px;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+        .link-btn:hover {
+            background: #8B9AFF;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <h1>🔐 Gateway zkML - Verification Requirements Test</h1>
+    
+    <div class="critical-box">
+        <h2>⚠️ CRITICAL REQUIREMENTS</h2>
+        <ul>
+            <li><strong>Step 3 will NOT proceed without real on-chain verification</strong></li>
+            <li>If zkML backend is down → Workflow fails (no bypass)</li>
+            <li>If verification fails → Gateway transfer blocked</li>
+            <li>Must have real transaction hash from Step 2 before Step 3 starts</li>
+        </ul>
+    </div>
+    
+    <div class="success-box">
+        <h2>✅ What's Fixed</h2>
+        <ul>
+            <li><strong>CORS Error:</strong> Backend properly configured with CORS headers</li>
+            <li><strong>14-Parameter Model:</strong> Using full sentiment analysis with all 14 inputs</li>
+            <li><strong>Verification Enforcement:</strong> Step 3 requires txHash from Step 2</li>
+            <li><strong>No Bypass:</strong> Removed demo bypass - real verification required</li>
+        </ul>
+    </div>
+    
+    <div class="test-grid">
+        <div class="test-card">
+            <h3>🧪 Test 1: Normal Flow</h3>
+            <p>All services running, should complete all 3 steps</p>
+            <div class="command" onclick="copyCommand('gateway zkml transfer 0.01 USDC')">
+                gateway zkml transfer 0.01 USDC
+            </div>
+            <p>Expected: ✅ All steps complete with real TX links</p>
+        </div>
+        
+        <div class="test-card">
+            <h3>🧪 Test 2: Backend Check</h3>
+            <p>Verify 14-parameter model is active</p>
+            <button onclick="testBackend()" class="link-btn">Test zkML Backend</button>
+            <p>Should show: 14 parameters in model</p>
+        </div>
+        
+        <div class="test-card">
+            <h3>🧪 Test 3: Service Status</h3>
+            <p>Check all required services</p>
+            <div>
+                zkML Backend (8002): <span id="zkml-status" class="status-indicator pending">Checking...</span><br>
+                Verifier (3003): <span id="verifier-status" class="status-indicator pending">Checking...</span><br>
+                Main UI (8080): <span id="ui-status" class="status-indicator pending">Checking...</span>
+            </div>
+        </div>
+        
+        <div class="test-card">
+            <h3>🧪 Test 4: Verification Flow</h3>
+            <p>Trace the verification requirements</p>
+            <button onclick="traceVerification()" class="link-btn">Trace Flow</button>
+            <p>Shows: Step dependencies and gates</p>
+        </div>
+    </div>
+    
+    <div>
+        <h3>Quick Links:</h3>
+        <a href="http://localhost:8080/index.html" target="_blank" class="link-btn">🌐 Main UI</a>
+        <a href="http://localhost:8002/health" target="_blank" class="link-btn">🤖 zkML Health</a>
+        <a href="http://localhost:3003/health" target="_blank" class="link-btn">🔐 Verifier Health</a>
+        <a href="https://sepolia.etherscan.io/address/0x70928d56Ee88CA586cBE2Ee4cF97Ae2fcc2cA944" target="_blank" class="link-btn">📋 Contract</a>
+    </div>
+    
+    <div id="test-output">Test output will appear here...</div>
+    
+    <script>
+        const output = document.getElementById('test-output');
+        
+        function log(msg, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'success' ? '✅' : 
+                          type === 'error' ? '❌' : 
+                          type === 'warning' ? '⚠️' : '📝';
+            output.textContent += `[${timestamp}] ${prefix} ${msg}\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function copyCommand(cmd) {
+            navigator.clipboard.writeText(cmd);
+            log(`Copied: "${cmd}"`, 'success');
+            log('Paste in main UI to test the workflow');
+        }
+        
+        async function checkServices() {
+            // Check zkML backend
+            try {
+                const zkRes = await fetch('http://localhost:8002/health');
+                const zkData = await zkRes.json();
+                if (zkData.status === 'healthy') {
+                    document.getElementById('zkml-status').className = 'status-indicator success';
+                    document.getElementById('zkml-status').textContent = 'Running';
+                    log('zkML Backend: Healthy', 'success');
+                }
+            } catch (e) {
+                document.getElementById('zkml-status').className = 'status-indicator error';
+                document.getElementById('zkml-status').textContent = 'Down';
+                log('zkML Backend: Not available', 'error');
+            }
+            
+            // Check verifier
+            try {
+                const verRes = await fetch('http://localhost:3003/health');
+                const verData = await verRes.json();
+                if (verData.status === 'healthy') {
+                    document.getElementById('verifier-status').className = 'status-indicator success';
+                    document.getElementById('verifier-status').textContent = 'Running';
+                    log('Verifier: Healthy', 'success');
+                }
+            } catch (e) {
+                document.getElementById('verifier-status').className = 'status-indicator error';
+                document.getElementById('verifier-status').textContent = 'Down';
+                log('Verifier: Not available', 'error');
+            }
+            
+            // Check UI
+            try {
+                const uiRes = await fetch('http://localhost:8080/index.html');
+                if (uiRes.ok) {
+                    document.getElementById('ui-status').className = 'status-indicator success';
+                    document.getElementById('ui-status').textContent = 'Running';
+                    log('Main UI: Available', 'success');
+                }
+            } catch (e) {
+                document.getElementById('ui-status').className = 'status-indicator error';
+                document.getElementById('ui-status').textContent = 'Down';
+                log('Main UI: Not available', 'error');
+            }
+        }
+        
+        async function testBackend() {
+            log('\n=== Testing zkML Backend ===', 'info');
+            
+            try {
+                // Start proof generation
+                const proofRes = await fetch('http://localhost:8002/zkml/prove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        agentId: 'verification-test',
+                        agentType: 'financial',
+                        amount: 0.01,
+                        operation: 'gateway_transfer',
+                        riskScore: 0.2
+                    })
+                });
+                
+                const proof = await proofRes.json();
+                log(`Proof session: ${proof.sessionId}`, 'success');
+                
+                // Wait and check
+                setTimeout(async () => {
+                    const statusRes = await fetch(`http://localhost:8002/zkml/status/${proof.sessionId}`);
+                    const status = await statusRes.json();
+                    
+                    if (status.status === 'completed') {
+                        log(`Proof completed in ${status.proof.generationTime}s`, 'success');
+                        log(`Model: ${status.proof.model}`, 'info');
+                        log(`Parameters: ${status.proof.proofData.publicInputs.length} inputs`, 'info');
+                        
+                        if (status.proof.proofData.publicInputs.length === 14) {
+                            log('✅ CORRECT: Using 14-parameter sentiment model', 'success');
+                        } else {
+                            log(`❌ WRONG: Expected 14 parameters, got ${status.proof.proofData.publicInputs.length}`, 'error');
+                        }
+                        
+                        log(`Inputs: [${status.proof.proofData.publicInputs.slice(0, 5).join(', ')}...]`, 'info');
+                    } else {
+                        log(`Proof status: ${status.status}`, 'warning');
+                    }
+                }, 6000);
+                
+            } catch (error) {
+                log(`Backend test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function traceVerification() {
+            log('\n=== Verification Flow Trace ===', 'info');
+            log('Step 1: zkML Proof Generation', 'info');
+            log('  → Generates 14-parameter sentiment analysis proof', 'info');
+            log('  → Must complete successfully', 'info');
+            log('', 'info');
+            log('Step 2: On-Chain Verification', 'info');
+            log('  → Submits proof to Ethereum Sepolia', 'info');
+            log('  → Contract: 0x70928d56Ee88CA586cBE2Ee4cF97Ae2fcc2cA944', 'info');
+            log('  → Must return txHash', 'info');
+            log('', 'info');
+            log('GATE: Verification Check', 'warning');
+            log('  → if (!zkmlResponse.verification.txHash) FAIL', 'warning');
+            log('  → Step 3 blocked without txHash', 'warning');
+            log('', 'info');
+            log('Step 3: Gateway Transfer', 'info');
+            log('  → Only proceeds with valid txHash from Step 2', 'info');
+            log('  → Executes multi-chain USDC transfers', 'info');
+        }
+        
+        // Initialize
+        checkServices();
+        log('Gateway zkML Verification Test Ready', 'success');
+        log('All services must be running for workflow to complete', 'warning');
+    </script>
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gateway zkML Complete Integration Test</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 36px;
+            margin-bottom: 30px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 25px;
+            border-radius: 12px;
+        }
+        .section h2 {
+            color: #8B9AFF;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        .test-item {
+            background: #0d0d0d;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 3px solid #6B7CFF;
+            font-family: monospace;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 8px;
+        }
+        .test-item:hover {
+            transform: translateX(5px);
+            border-left-color: #8B9AFF;
+            background: #1a1a1a;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .status-badge.success { background: #10b981; }
+        .status-badge.error { background: #ef4444; }
+        .status-badge.pending { background: #6B7CFF; }
+        .status-badge.warning { background: #fbbf24; }
+        #test-results {
+            background: #0d0d0d;
+            border: 1px solid #333;
+            padding: 20px;
+            border-radius: 12px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 13px;
+            min-height: 300px;
+            max-height: 500px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .link-button {
+            display: inline-block;
+            background: #6B7CFF;
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        .link-button:hover {
+            background: #8B9AFF;
+            transform: translateY(-2px);
+        }
+        .info-box {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .warning-box {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .code-block {
+            background: #000;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌐 Gateway zkML Complete Integration Test</h1>
+    
+    <div class="grid">
+        <div class="section">
+            <h2>✅ Test Requirements</h2>
+            
+            <div class="info-box">
+                <strong>Trigger Condition:</strong><br>
+                User must say both "gateway" AND "zkml" to trigger the workflow
+            </div>
+            
+            <div class="warning-box">
+                <strong>Backend Services Required:</strong><br>
+                • zkML Backend (Port 8002) - <span id="zkml-status" class="status-badge pending">Checking...</span><br>
+                • Verifier Backend (Port 3003) - <span id="verifier-status" class="status-badge pending">Checking...</span><br>
+                • Main UI (Port 8080) - <span id="ui-status" class="status-badge pending">Checking...</span>
+            </div>
+            
+            <h3 style="margin-top: 20px; color: #8B9AFF;">✨ What Should Happen:</h3>
+            <ol style="line-height: 1.8; margin-left: 20px;">
+                <li><strong>Step 1:</strong> JOLT-Atlas proof generation (real backend)</li>
+                <li><strong>Step 2:</strong> On-chain verification on Ethereum Sepolia with transaction link</li>
+                <li><strong>Step 3:</strong> Multi-chain transfers with real Circle Gateway API</li>
+            </ol>
+        </div>
+        
+        <div class="section">
+            <h2>🚀 Test Commands</h2>
+            
+            <h3 style="color: #10b981; margin-bottom: 15px;">✅ Commands that WILL trigger:</h3>
+            <div class="test-item" onclick="copyToClipboard(this.textContent.trim())">
+                gateway zkml transfer 0.01 USDC to 3 chains
+            </div>
+            <div class="test-item" onclick="copyToClipboard(this.textContent.trim())">
+                Execute Gateway zkML multi-chain deployment
+            </div>
+            <div class="test-item" onclick="copyToClipboard(this.textContent.trim())">
+                I need a zkML gateway transfer with 0.05 USDC
+            </div>
+            
+            <h3 style="color: #ef4444; margin-top: 20px; margin-bottom: 15px;">❌ Commands that will NOT trigger:</h3>
+            <div class="test-item" style="border-left-color: #ef4444;" onclick="copyToClipboard(this.textContent.trim())">
+                gateway transfer funds (missing zkml)
+            </div>
+            <div class="test-item" style="border-left-color: #ef4444;" onclick="copyToClipboard(this.textContent.trim())">
+                zkml proof generation (missing gateway)
+            </div>
+        </div>
+    </div>
+    
+    <div class="section" style="margin-top: 20px;">
+        <h2>🔗 Quick Links</h2>
+        <div>
+            <a href="http://localhost:8080/index.html" target="_blank" class="link-button">🌐 Open Main UI</a>
+            <a href="http://localhost:8002/health" target="_blank" class="link-button">🤖 Check zkML Backend</a>
+            <a href="http://localhost:3003/health" target="_blank" class="link-button">🔐 Check Verifier Backend</a>
+            <a href="https://sepolia.etherscan.io/address/0x70928d56Ee88CA586cBE2Ee4cF97Ae2fcc2cA944" target="_blank" class="link-button">📋 View Verifier Contract</a>
+        </div>
+    </div>
+    
+    <div class="section" style="margin-top: 20px;">
+        <h2>📊 Test Results</h2>
+        <div id="test-results">Initializing tests...</div>
+    </div>
+    
+    <script>
+        const results = document.getElementById('test-results');
+        
+        function log(msg, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'success' ? '✅' : 
+                          type === 'error' ? '❌' : 
+                          type === 'warning' ? '⚠️' : '📝';
+            results.textContent += `[${timestamp}] ${prefix} ${msg}\n`;
+            results.scrollTop = results.scrollHeight;
+        }
+        
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+            log(`Copied: "${text}"`, 'success');
+            log('Now paste this in the main UI at http://localhost:8080/index.html', 'info');
+        }
+        
+        async function checkServices() {
+            log('Checking backend services...', 'info');
+            
+            // Check zkML backend (8002)
+            try {
+                const zkRes = await fetch('http://localhost:8002/health');
+                const zkData = await zkRes.json();
+                if (zkData.status === 'healthy') {
+                    document.getElementById('zkml-status').className = 'status-badge success';
+                    document.getElementById('zkml-status').textContent = 'Running';
+                    log('zkML Backend (8002): Healthy', 'success');
+                } else {
+                    throw new Error('Not healthy');
+                }
+            } catch (e) {
+                document.getElementById('zkml-status').className = 'status-badge error';
+                document.getElementById('zkml-status').textContent = 'Not Running';
+                log('zkML Backend (8002): Not available', 'error');
+            }
+            
+            // Check verifier backend (3003)
+            try {
+                const verRes = await fetch('http://localhost:3003/health');
+                const verData = await verRes.json();
+                if (verData.status === 'healthy') {
+                    document.getElementById('verifier-status').className = 'status-badge success';
+                    document.getElementById('verifier-status').textContent = 'Running';
+                    log('Verifier Backend (3003): Healthy', 'success');
+                } else {
+                    throw new Error('Not healthy');
+                }
+            } catch (e) {
+                document.getElementById('verifier-status').className = 'status-badge warning';
+                document.getElementById('verifier-status').textContent = 'Optional';
+                log('Verifier Backend (3003): Not available (optional)', 'warning');
+            }
+            
+            // Check main UI (8080)
+            try {
+                const uiRes = await fetch('http://localhost:8080/index.html');
+                if (uiRes.ok) {
+                    document.getElementById('ui-status').className = 'status-badge success';
+                    document.getElementById('ui-status').textContent = 'Running';
+                    log('Main UI (8080): Available', 'success');
+                } else {
+                    throw new Error('Not available');
+                }
+            } catch (e) {
+                document.getElementById('ui-status').className = 'status-badge error';
+                document.getElementById('ui-status').textContent = 'Not Running';
+                log('Main UI (8080): Not available', 'error');
+            }
+        }
+        
+        async function testWorkflowIntegration() {
+            log('\n=== Testing Gateway zkML Workflow Integration ===', 'info');
+            
+            // Test zkML proof generation
+            try {
+                log('Testing zkML proof generation...', 'info');
+                const proofRes = await fetch('http://localhost:8002/zkml/prove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        agentId: 'test-' + Date.now(),
+                        agentType: 'financial',
+                        amount: 0.01,
+                        operation: 'gateway_transfer'
+                    })
+                });
+                
+                const proof = await proofRes.json();
+                if (proof.sessionId) {
+                    log(`Proof session started: ${proof.sessionId}`, 'success');
+                    
+                    // Wait and check status
+                    setTimeout(async () => {
+                        const statusRes = await fetch(`http://localhost:8002/zkml/status/${proof.sessionId}`);
+                        const status = await statusRes.json();
+                        if (status.status === 'completed') {
+                            log(`Proof generated in ${status.proof.generationTime}s`, 'success');
+                            log(`Proof size: ~${status.proof.proofSize}`, 'info');
+                        } else {
+                            log('Proof still generating...', 'warning');
+                        }
+                    }, 6000);
+                }
+            } catch (e) {
+                log(`zkML proof test failed: ${e.message}`, 'error');
+            }
+            
+            // Test verifier contract info
+            try {
+                log('\nChecking verifier contract...', 'info');
+                const infoRes = await fetch('http://localhost:3003/zkml/verifier-info/sepolia');
+                const info = await infoRes.json();
+                if (info.isDeployed) {
+                    log(`Verifier deployed at: ${info.verifierAddress}`, 'success');
+                } else {
+                    log('Verifier not deployed', 'warning');
+                }
+            } catch (e) {
+                log(`Verifier check failed: ${e.message}`, 'error');
+            }
+        }
+        
+        // Initialize tests
+        checkServices();
+        setTimeout(testWorkflowIntegration, 1000);
+        
+        log('\n=== Instructions ===', 'info');
+        log('1. Click a test command above to copy it', 'info');
+        log('2. Open http://localhost:8080/index.html', 'info');
+        log('3. Paste the command in the chat input', 'info');
+        log('4. Watch the Gateway zkML workflow execute with real data!', 'success');
+    </script>
+</body>
+</html>

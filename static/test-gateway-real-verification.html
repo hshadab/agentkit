@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gateway zkML Workflow - Real Verification</title>
+    <style>
+        body {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 20px 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+        
+        #workflow-container {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Gateway zkML Workflow with Real Verification</h1>
+            <p>This demonstrates the existing zkML workflow with real on-chain verification for Step 2</p>
+        </div>
+        
+        <div style="text-align: center;">
+            <button class="button" onclick="startGatewayWorkflow()">
+                🚀 Start Gateway zkML Workflow
+            </button>
+        </div>
+        
+        <div id="workflow-container"></div>
+    </div>
+    
+    <!-- Load the Gateway Workflow Manager -->
+    <script type="module">
+        import { WebSocketManager } from './js/utils/websocket-manager.js';
+        import { UIManager } from './js/ui/ui-manager.js';
+        import { GatewayWorkflowManager } from './js/ui/gateway-workflow-manager-v3.js';
+        
+        // Initialize managers
+        const wsManager = new WebSocketManager('ws://localhost:8001');
+        const uiManager = new UIManager();
+        const gatewayManager = new GatewayWorkflowManager(uiManager, wsManager);
+        
+        // Make function globally available
+        window.startGatewayWorkflow = async function() {
+            console.log('🚀 Starting Gateway zkML Workflow with Real Verification');
+            
+            // Create workflow container if it doesn't exist
+            const container = document.getElementById('workflow-container');
+            if (!container.querySelector('.workflow-card')) {
+                // Create workflow data
+                const workflowData = {
+                    workflow_id: `gateway_${Date.now()}`,
+                    type: 'gateway',
+                    agentId: 'test_agent_001',
+                    amount: '0.01',
+                    testnet: true,
+                    unifiedBalance: 'Loading...',
+                    balanceBreakdown: 'Fetching from Circle API...'
+                };
+                
+                // Create workflow card
+                const card = gatewayManager.createGatewayWorkflowCard(workflowData);
+                container.appendChild(card);
+            }
+            
+            // Start the zkML proof generation and verification flow
+            try {
+                const result = await gatewayManager.generateZKMLProof('test_agent_001', 10);
+                
+                if (result.authorized) {
+                    console.log('✅ Agent authorized! Proceeding with Gateway transfers...');
+                    
+                    // Step 3 would normally execute Gateway transfers
+                    // For this test, we'll just update the UI
+                    gatewayManager.updateStepStatus('gateway_transfer', 'in_progress');
+                    
+                    setTimeout(() => {
+                        gatewayManager.updateStepStatus('gateway_transfer', 'completed');
+                        console.log('✅ Gateway transfers completed!');
+                    }, 3000);
+                } else {
+                    console.log('❌ Agent not authorized by zkML verification');
+                }
+            } catch (error) {
+                console.error('Error in workflow:', error);
+            }
+        };
+        
+        // Connect WebSocket
+        wsManager.connect();
+        
+        console.log('✅ Gateway Workflow Manager loaded and ready');
+        console.log('📋 Contract: 0x70928d56Ee88CA586cBE2Ee4cF97Ae2fcc2cA944');
+        console.log('🌐 Network: Ethereum Sepolia');
+    </script>
+</body>
+</html>

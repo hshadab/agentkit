@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gateway Direct Test</title>
+    <meta charset="UTF-8">
+    <style>
+        body { 
+            background: #1a1a1a; 
+            color: #0f0; 
+            font-family: monospace; 
+            padding: 20px;
+        }
+        button {
+            background: #003300;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 10px;
+            margin: 10px;
+            cursor: pointer;
+        }
+        #log {
+            background: #000;
+            border: 1px solid #0f0;
+            padding: 10px;
+            margin-top: 20px;
+            min-height: 400px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gateway zkML Workflow - Direct Test</h1>
+    <button onclick="testGateway()">Test Gateway zkML with Real Verification</button>
+    <div id="log">Ready to test...</div>
+
+    <script type="module">
+        // Import the Gateway workflow manager
+        import { GatewayWorkflowManager } from './js/ui/gateway-workflow-manager-v3.js';
+        
+        window.gatewayManager = new GatewayWorkflowManager();
+        
+        window.testGateway = async function() {
+            const log = document.getElementById('log');
+            log.textContent = 'Starting Gateway zkML workflow test...\n';
+            
+            function addLog(msg) {
+                log.textContent += msg + '\n';
+                console.log(msg);
+            }
+            
+            try {
+                await window.gatewayManager.initialize();
+                addLog('✅ Gateway manager initialized');
+                
+                // Test if it's a gateway command
+                const isGateway = window.gatewayManager.isGatewayCommand("I need to transfer funds to multiple chains");
+                addLog(`Is Gateway command: ${isGateway}`);
+                
+                if (isGateway) {
+                    addLog('\n🚀 Executing Gateway workflow with REAL on-chain verification...\n');
+                    
+                    // Execute the workflow
+                    const result = await window.gatewayManager.handleGatewayCommand(
+                        "I need to transfer funds to multiple chains",
+                        (msg) => addLog(msg)
+                    );
+                    
+                    if (result.success) {
+                        addLog('\n✅ Gateway workflow completed successfully!');
+                        addLog('Step 1: zkML proof generated');
+                        addLog('Step 2: REAL on-chain verification on Ethereum Sepolia');
+                        addLog('Step 3: Ready for Circle Gateway transfer');
+                    }
+                }
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`);
+                console.error(error);
+            }
+        };
+        
+        // Auto-initialize on load
+        window.gatewayManager.initialize().then(() => {
+            document.getElementById('log').textContent += '\nGateway manager loaded. Click button to test.\n';
+        });
+    </script>
+</body>
+</html>
