@@ -346,7 +346,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             // Create burn intent message
             const burnIntent = {
                 maxBlockHeight: "115792089237316195423570985008687907853269984665640564039457584007913129639935",
-                maxFee: "2000001", // 2.000001 USDC fee
+                maxFee: "2000100", // 2.0001 USDC fee (Circle requires this exact amount)
                 spec: {
                     version: 1,
                     sourceDomain: 0, // Ethereum Sepolia
@@ -502,6 +502,11 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                             <div style="font-size: 18px; color: #10b981; font-weight: 600;" id="gateway-balance-${wfId}">Checking...</div>
                             <div style="font-size: 10px; color: #9ca3af; margin-top: 4px;" id="gateway-total-${wfId}"></div>
                         </div>
+                        <div style="margin-top: 8px;">
+                            <a href="https://sepolia.etherscan.io/token/0x1c7d4b196cb0c7b01d743fbc6116a902379c7238?a=${userAddress}" target="_blank" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer; text-decoration: none; display: inline-block;">
+                                🔗 Verify Wallet Balance
+                            </a>
+                        </div>
                     </div>
                     <div>
                         <div style="font-size: 10px; color: #06b6d4; font-weight: 600;">&lt;500ms transfers</div>
@@ -517,12 +522,12 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                 
                 <div class="workflow-steps-container">
                     <!-- Step 1: zkML Proof -->
-                    <div class="workflow-step gateway-step executing" id="step1-${wfId}" data-step-id="zkml_proof">
+                    <div class="workflow-step gateway-step executing" id="step1-${wfId}" data-step-id="zkml_proof" style="margin-bottom: 12px;">
                         <div class="workflow-step-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <div class="step-details">
                                 <div class="step-title" style="font-size: 11px; color: #8b9aff; font-weight: 600;">STEP 1 OF 3</div>
                                 <div class="step-name" style="font-size: 14px; color: #ffffff;">zkML Inference Proof</div>
-                                <div class="step-message" style="font-size: 12px; color: #9ca3af;">Generating JOLT-Atlas proof (~10s)</div>
+                                <div class="step-message" style="font-size: 12px; color: #9ca3af;">Generating JOLT-Atlas proof of correct model execution</div>
                             </div>
                             <div class="step-status executing">EXECUTING</div>
                         </div>
@@ -532,7 +537,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                     </div>
                     
                     <!-- Step 2: On-Chain Verification -->
-                    <div class="workflow-step gateway-step pending" id="step2-${wfId}" data-step-id="onchain_verify">
+                    <div class="workflow-step gateway-step pending" id="step2-${wfId}" data-step-id="onchain_verify" style="margin-bottom: 12px;">
                         <div class="workflow-step-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <div class="step-details">
                                 <div class="step-title" style="font-size: 11px; color: #8b9aff; font-weight: 600;">STEP 2 OF 3</div>
@@ -545,7 +550,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                     </div>
                     
                     <!-- Step 3: Gateway Transfers -->
-                    <div class="workflow-step gateway-step pending" id="step3-${wfId}" data-step-id="gateway_transfer">
+                    <div class="workflow-step gateway-step pending" id="step3-${wfId}" data-step-id="gateway_transfer" style="margin-bottom: 12px;">
                         <div class="workflow-step-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <div class="step-details">
                                 <div class="step-title" style="font-size: 11px; color: #8b9aff; font-weight: 600;">STEP 3 OF 3</div>
@@ -737,6 +742,11 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                     <div style="margin-top: 4px;">
                         <a href="https://sepolia.etherscan.io/tx/${txHash}" target="_blank" style="color: #8b9aff; font-size: 11px; text-decoration: none;">
                             🔗 ${shortHash}
+                        </a>
+                    </div>
+                    <div style="margin-top: 4px;">
+                        <a href="https://sepolia.etherscan.io/address/0x70928d56Ee88CA586cBE2Ee4cF97Ae2fcc2cA944" target="_blank" style="color: #9ca3af; font-size: 10px; text-decoration: none;">
+                            📄 View Verifier Contract
                         </a>
                     </div>
                 `;

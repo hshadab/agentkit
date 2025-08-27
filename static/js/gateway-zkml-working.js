@@ -441,7 +441,7 @@ window.executeGatewayZKMLWorkflow = async function(amount) {
             // Create burn intent message (from working implementation)
             const burnIntent = {
                 maxBlockHeight: "115792089237316195423570985008687907853269984665640564039457584007913129639935",
-                maxFee: "2000001", // 2.000001 USDC fee (required by Circle)
+                maxFee: "2000100", // 2.0001 USDC fee (Circle requires this exact amount)
                 spec: {
                     version: 1,
                     sourceDomain: 0, // Ethereum Sepolia
