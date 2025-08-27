@@ -368,10 +368,10 @@ window.executeGatewayZKMLWorkflow = async function(amount) {
     async function executeGatewayTransfers(amount, wfId) {
         updateStep3InProgress(wfId);
         
+        // Can't transfer from Ethereum to Ethereum (same domain)
         const chains = [
-            { name: 'Ethereum Sepolia', icon: '⟠', domain: 0, contract: '0x0022222ABE238Cc2C7Bb1f21003F0a260052475B', explorerUrl: 'https://sepolia.etherscan.io/tx/' },
-            { name: 'Avalanche Fuji', icon: '🔺', domain: 1, contract: '0x0022222ABE238Cc2C7Bb1f21003F0a260052475B', explorerUrl: 'https://testnet.snowtrace.io/tx/' },
-            { name: 'Base Sepolia', icon: '🔵', domain: 6, contract: '0x0022222ABE238Cc2C7Bb1f21003F0a260052475B', explorerUrl: 'https://sepolia.basescan.org/tx/' }
+            { name: 'Base Sepolia', icon: '🔵', domain: 6, contract: '0x0022222ABE238Cc2C7Bb1f21003F0a260052475B', explorerUrl: 'https://sepolia.basescan.org/tx/' },
+            { name: 'Avalanche Fuji', icon: '🔺', domain: 1, contract: '0x0022222ABE238Cc2C7Bb1f21003F0a260052475B', explorerUrl: 'https://testnet.snowtrace.io/tx/' }
         ];
         
         const transfers = [];
