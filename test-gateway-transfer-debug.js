@@ -13,12 +13,11 @@ async function testGatewayTransfer() {
         return '0x' + cleaned.padStart(64, '0');
     };
     
-    // EIP-712 domain - must match Gateway contract exactly
+    // EIP-712 domain - Circle Gateway only needs name and version
     const domain = {
         name: "GatewayWallet",
-        version: "1",
-        chainId: 11155111, // Sepolia
-        verifyingContract: "0x0077777d7EBA4688BDeF3E311b846F25870A19B9" // Gateway Wallet address
+        version: "1"
+        // DON'T include chainId or verifyingContract - causes signature mismatch
     };
     
     // EIP-712 types
@@ -78,12 +77,12 @@ async function testGatewayTransfer() {
     const signature = await wallet._signTypedData(domain, types, message);
     console.log('Signature generated:', signature.substring(0, 20) + '...');
     
-    // Create request body
+    // Create request body - MUST use exact signed values
     const requestBody = [{
         burnIntent: {
-            maxBlockHeight: burnIntent.maxBlockHeight,
-            maxFee: burnIntent.maxFee,
-            spec: burnIntent.spec
+            maxBlockHeight: message.maxBlockHeight.toString(),
+            maxFee: message.maxFee.toString(),
+            spec: message.spec
         },
         signature: signature
     }];
