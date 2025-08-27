@@ -60,7 +60,7 @@ async function testGatewayTransfer() {
             destinationRecipient: toBytes32(userAddress), // Send to self
             sourceSigner: toBytes32(userAddress),
             destinationCaller: toBytes32('0x0000000000000000000000000000000000000000'),
-            value: "10000", // 0.01 USDC
+            value: "2000000", // 2.00 USDC
             salt: toBytes32('0x' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16).padStart(64, '0')),
             hookData: "0x"
         }

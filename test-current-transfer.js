@@ -63,7 +63,7 @@ async function testTransfer() {
                 destinationRecipient: toBytes32(wallet.address),
                 sourceSigner: toBytes32(wallet.address),
                 destinationCaller: toBytes32("0x0000000000000000000000000000000000000000"),
-                value: ethers.BigNumber.from("2000000"), // 2 USDC
+                value: ethers.BigNumber.from("2000000"), // 2.00 USDC
                 salt: toBytes32('0x' + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16).padStart(64, '0')),
                 hookData: "0x"
             }
@@ -75,7 +75,10 @@ async function testTransfer() {
             burnIntent: {
                 maxBlockHeight: message.maxBlockHeight.toString(),
                 maxFee: message.maxFee.toString(),
-                spec: message.spec
+                spec: {
+                    ...message.spec,
+                    value: message.spec.value.toString()
+                }
             },
             signature: signature
         }];
