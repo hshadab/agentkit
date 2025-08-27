@@ -175,8 +175,9 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
     async function executeMultiChainTransferWithPolling(amount, privateKey, userAddress, wfId) {
         updateStep3InProgress(wfId);
         
+        // Note: Can't transfer from Ethereum to Ethereum (same domain)
+        // Only cross-chain transfers are allowed
         const chains = [
-            { name: 'Ethereum', domain: 0, icon: '⟠' },
             { name: 'Base', domain: 6, icon: '🔷' },
             { name: 'Avalanche', domain: 1, icon: '🔺' }
         ];
@@ -511,7 +512,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                 </div>
                 
                 <div class="transfer-details" style="display: flex; gap: 16px; margin: 12px 0; font-size: 13px;">
-                    <div class="transfer-amount" style="color: #10b981; font-weight: 600;">2 USDC per chain (6.00 total)</div>
+                    <div class="transfer-amount" style="color: #10b981; font-weight: 600;">2 USDC per chain (4.00 total)</div>
                     <div class="transfer-agent" style="color: #8b9aff;">Agent: zkml_executor_${Date.now().toString().slice(-6)}</div>
                     <div class="transfer-environment" style="color: #fbbf24;">Testnet</div>
                 </div>
@@ -551,7 +552,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                             <div class="step-details">
                                 <div class="step-title" style="font-size: 11px; color: #8b9aff; font-weight: 600;">STEP 3 OF 3</div>
                                 <div class="step-name" style="font-size: 14px; color: #ffffff;">Multi-Chain Agent Spending</div>
-                                <div class="step-message" style="font-size: 12px; color: #9ca3af;">Agent transfers 2 USDC on each chain</div>
+                                <div class="step-message" style="font-size: 12px; color: #9ca3af;">Agent transfers 2 USDC to Base and Avalanche</div>
                             </div>
                             <div class="step-status pending">AWAITING</div>
                         </div>
@@ -596,8 +597,8 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                 if (balanceEl) {
                     balanceEl.textContent = `${totalBalance.toFixed(2)} USDC`;
                     
-                    // Check if sufficient for transfers (2 USDC + 2.001 fee per chain × 3)
-                    const requiredBalance = 12.003; // 4.001 per chain × 3
+                    // Check if sufficient for transfers (2 USDC + 2.001 fee per chain × 2)
+                    const requiredBalance = 8.002; // 4.001 per chain × 2
                     if (totalBalance < requiredBalance) {
                         balanceEl.style.color = '#ef4444';
                         const totalEl = document.getElementById(`gateway-total-${wfId}`);
