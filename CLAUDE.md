@@ -37,6 +37,11 @@ AgentKit is a production-ready verifiable AI agent system that combines:
   - Domain 6: Base Sepolia
 - **Implementation**: EIP-712 programmatic signing
 - **Gateway Wallet**: `0x0077777d7EBA4688BDeF3E311b846F25870A19B9`
+- **Transfer Status Polling**:
+  - Polls every 5 minutes for pending transfers
+  - Stores transfers in localStorage key: `gateway_pending_transfers`
+  - Maximum 24 polling attempts (2 hours)
+  - Updates UI with real tx hash when settlement completes
 
 ### 4. Web Interface
 - **Port**: 8000
@@ -256,6 +261,11 @@ Circle Gateway API
 - ✅ Fixed balance display and calculations
 - ✅ Removed all fake/demo transaction hashes
 - ✅ Updated to real minimum amounts (2.000001 USDC)
+- ✅ **NEW: Transfer Status Polling System**
+  - Polls Circle Gateway every 5 minutes for transfer status
+  - Stores pending transfers in localStorage
+  - Updates UI with real tx hashes when transfers complete
+  - Maximum 2-hour polling window per transfer
 
 ## Contact & Support
 - GitHub: https://github.com/hshadab/agentkit
