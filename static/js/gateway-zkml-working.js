@@ -399,9 +399,8 @@ window.executeGatewayZKMLWorkflow = async function(amount) {
             const apiKey = 'SAND_API_KEY:3dc2c2b70ae5bd1943212a8521638b3b:8bb8eebdb457b04f261990e34c49d838';
             
             // Convert amount to USDC units (6 decimals)
-            // For testnet: transfer tiny amount, rest goes to fee
-            // Total deducted from balance = transfer amount + fee
-            const value = "1000"; // 0.001 USDC transfer (rest is fee)
+            // For testnet: transfer small amount
+            const value = "10000"; // 0.01 USDC transfer
             
             // Helper function to convert to bytes32
             const toBytes32 = (addr) => {
@@ -409,10 +408,12 @@ window.executeGatewayZKMLWorkflow = async function(amount) {
                 return '0x' + cleaned.padStart(64, '0');
             };
             
-            // EIP-712 domain
+            // EIP-712 domain - must match Gateway contract exactly
             const domain = {
                 name: "GatewayWallet",
-                version: "1"
+                version: "1",
+                chainId: 11155111, // Sepolia
+                verifyingContract: "0x0077777d7EBA4688BDeF3E311b846F25870A19B9" // Gateway Wallet
             };
             
             // EIP-712 types
