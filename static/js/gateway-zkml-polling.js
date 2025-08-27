@@ -618,14 +618,28 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                 })
             });
             
+            if (!response.ok) {
+                console.error('zkML proof request failed:', response.status, response.statusText);
+                return null;
+            }
+            
             const data = await response.json();
-            if (data.proof && data.sessionId) {
+            console.log('zkML proof response:', data);
+            
+            // The backend returns sessionId with status
+            if (data.sessionId && (data.status === 'generating' || data.status === 'completed')) {
+                // Wait a bit for proof to generate
+                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
                 updateStep1Complete(wfId, data.sessionId);
                 return data.sessionId;
             }
             return null;
         } catch (error) {
             console.error('zkML proof generation failed:', error);
+            // Could be CORS or network error
+            if (error.message.includes('Failed to fetch')) {
+                console.error('Cannot reach zkML backend at http://localhost:8002. Is it running?');
+            }
             return null;
         }
     }
