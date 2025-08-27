@@ -362,7 +362,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                         '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238'
                     ),
                     sourceDepositor: toBytes32(userAddress),
-                    destinationRecipient: toBytes32('0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb'),
+                    destinationRecipient: toBytes32(userAddress), // Send to self for testing
                     sourceSigner: toBytes32(userAddress),
                     destinationCaller: toBytes32('0x0000000000000000000000000000000000000000'),
                     value: value,
@@ -600,8 +600,20 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                 const totalBalance = data.balances.reduce((sum, b) => sum + parseFloat(b.balance), 0);
                 const balanceEl = document.getElementById(`gateway-balance-${wfId}`);
                 if (balanceEl) {
-                    balanceEl.textContent = `${totalBalance.toFixed(2)} USDC`;
+                    balanceEl.textContent = `${totalBalance.toFixed(2)} USDC (Gateway)`;
+                    
+                    // Check if sufficient for transfers (2.002 USDC per chain × 3)
+                    const requiredBalance = 6.006;
+                    if (totalBalance < requiredBalance) {
+                        balanceEl.style.color = '#ef4444';
+                        const totalEl = document.getElementById(`gateway-total-${wfId}`);
+                        if (totalEl) {
+                            totalEl.textContent = `⚠️ Insufficient Gateway balance (need ${requiredBalance.toFixed(2)} USDC)`;
+                            totalEl.style.color = '#fbbf24';
+                        }
+                    }
                 }
+                return totalBalance;
             }
         } catch (error) {
             console.error('Failed to check balance:', error);

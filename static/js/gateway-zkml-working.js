@@ -457,7 +457,7 @@ window.executeGatewayZKMLWorkflow = async function(amount) {
                         '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238' // Ethereum Sepolia USDC (default)
                     ),
                     sourceDepositor: toBytes32(userAddress),
-                    destinationRecipient: toBytes32('0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb'), // Demo recipient
+                    destinationRecipient: toBytes32(userAddress), // Send to self for testing
                     sourceSigner: toBytes32(userAddress),
                     destinationCaller: toBytes32('0x0000000000000000000000000000000000000000'),
                     value: value,
