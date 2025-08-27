@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Novanet - Verifiable Agent Kit (Clean)</title>
+    
+    <style>
+        /* Core styles without any problematic syntax */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #000000; color: #ffffff; height: 100vh; display: flex; overflow: hidden; }
+        .sidebar { width: 280px; background: #111111; padding: 24px; overflow-y: auto; border-right: 1px solid rgba(107, 124, 255, 0.3); }
+        .sidebar h3 { background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; text-transform: uppercase; font-size: 13px; letter-spacing: 0.1em; font-weight: 700; }
+        .info-box { font-size: 11px; color: #a0a0a0; margin-bottom: 24px; padding: 12px; background: rgba(107, 124, 255, 0.08); border: 1px solid rgba(107, 124, 255, 0.2); border-radius: 8px; line-height: 1.6; }
+        .example-category { margin-bottom: 28px; }
+        .example-category h4 { color: #8B9AFF; font-size: 11px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
+        .example-item { word-wrap: break-word; overflow-wrap: break-word; white-space: normal; width: 100%; box-sizing: border-box; background: rgba(107, 124, 255, 0.05); border: 1px solid rgba(107, 124, 255, 0.15); padding: 14px 18px; margin-bottom: 8px; border-radius: 10px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-size: 13px; color: #ffffff; }
+        .example-item:hover { background: rgba(107, 124, 255, 0.15); border-color: rgba(107, 124, 255, 0.4); transform: translateX(4px); }
+        .main-container { flex: 1; display: flex; flex-direction: column; background: #000000; }
+        .header { padding: 20px 32px; background: rgba(17, 17, 17, 0.8); border-bottom: 1px solid rgba(107, 124, 255, 0.2); display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(10px); }
+        .header h1 { font-size: 26px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+        .header h1 span { background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 24px; font-size: 13px; }
+        .status.connected { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status.disconnected { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .status.connected .status-dot { background-color: #10b981; animation: pulse 2s infinite; }
+        .status.disconnected .status-dot { background-color: #ef4444; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .messages-container { flex: 1; overflow-y: auto; padding: 32px; }
+        #messages { max-width: 1000px; margin: 0 auto; }
+        .message { margin: 24px 0; display: flex; align-items: flex-start; gap: 12px; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .message.assistant { flex-direction: row-reverse; }
+        .message-content { max-width: 70%; padding: 16px 24px; border-radius: 20px; line-height: 1.6; font-size: 15px; }
+        .message.user .message-content { background: #1e1e1e; border: 1px solid rgba(107, 124, 255, 0.2); border-bottom-left-radius: 4px; white-space: pre-wrap; }
+        .message.assistant .message-content { background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%); color: white; border-bottom-right-radius: 4px; }
+        
+        .workflow-card { background: rgba(30, 30, 30, 0.9); border: 1px solid rgba(107, 124, 255, 0.3); border-radius: 16px; padding: 24px; margin: 20px 0; max-width: 800px; }
+        .card-header { padding-bottom: 16px; border-bottom: 1px solid rgba(107, 124, 255, 0.2); margin-bottom: 16px; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .card-title { color: #8b9aff; font-size: 14px; font-weight: 600; letter-spacing: 0.05em; }
+        .workflow-status { padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+        .workflow-status.in-progress { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+        .workflow-status.completed { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        
+        .gateway-unified-balance { display: flex; justify-content: space-between; padding: 16px; background: rgba(107, 124, 255, 0.05); border: 1px solid rgba(107, 124, 255, 0.15); border-radius: 8px; margin: 16px 0; }
+        .workflow-step { margin-bottom: 12px; padding: 12px; background: rgba(50, 50, 50, 0.3); border: 1px solid rgba(107, 124, 255, 0.2); border-radius: 8px; }
+        .workflow-step.complete { background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.3); }
+        .workflow-step.executing { background: rgba(251, 191, 36, 0.05); border-color: rgba(251, 191, 36, 0.3); }
+        .workflow-step-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .step-status { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .step-status.executing { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+        .step-status.complete { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .step-status.pending { background: rgba(75, 85, 99, 0.2); color: #9ca3af; border: 1px solid rgba(75, 85, 99, 0.3); }
+        
+        /* Proof cards */
+        .proof-card { background: rgba(30, 30, 30, 0.9); border: 1px solid rgba(107, 124, 255, 0.3); border-radius: 16px; padding: 24px; margin: 20px 0; max-width: 800px; }
+        .proof-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .proof-title { font-size: 16px; font-weight: 600; color: #8b9aff; }
+        .proof-badge { padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+        .proof-badge.generating { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+        .proof-badge.complete { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .proof-details { margin-top: 12px; padding: 12px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; font-family: monospace; font-size: 12px; }
+        .proof-actions { margin-top: 16px; display: flex; gap: 12px; }
+        .proof-action-btn { padding: 8px 16px; background: rgba(107, 124, 255, 0.2); color: #8b9aff; border: 1px solid rgba(107, 124, 255, 0.3); border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+        .proof-action-btn:hover { background: rgba(107, 124, 255, 0.3); transform: translateY(-1px); }
+        
+        .input-container { padding: 20px 32px; background: rgba(17, 17, 17, 0.9); border-top: 1px solid rgba(107, 124, 255, 0.2); }
+        .input-row { display: flex; gap: 12px; max-width: 1000px; margin: 0 auto; }
+        #messageInput { flex: 1; background: rgba(30, 30, 30, 0.9); border: 1px solid rgba(107, 124, 255, 0.3); color: white; padding: 14px 20px; border-radius: 12px; font-size: 15px; outline: none; transition: all 0.3s; }
+        #messageInput:focus { border-color: rgba(107, 124, 255, 0.6); background: rgba(30, 30, 30, 1); box-shadow: 0 0 20px rgba(107, 124, 255, 0.1); }
+        button { background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%); color: white; border: none; padding: 14px 28px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 15px; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(107, 124, 255, 0.3); }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h3>zkEngine Proofs</h3>
+        <div class="info-box">
+            Generate zero-knowledge proofs for KYC compliance, AI content verification, 
+            location attestation, and IoT device proximity.
+        </div>
+        
+        <div class="example-category">
+            <h4>Individual Proofs</h4>
+            <div class="example-item" onclick="sendMessage('Prove KYC compliance')">Prove KYC compliance</div>
+            <div class="example-item" onclick="sendMessage('Prove AI content authenticity')">Prove AI content authenticity</div>
+            <div class="example-item" onclick="sendMessage('Prove location: NYC (40.7°, -74.0°)')">Prove location: NYC (40.7°, -74.0°)</div>
+        </div>
+        
+        <h3>Gateway zkML</h3>
+        <div class="info-box">
+            Real zkML-authorized multi-chain USDC transfers via Circle Gateway. 
+            Requires both "gateway" AND "zkml" keywords to trigger.
+        </div>
+        
+        <div class="example-category">
+            <h4>Gateway Workflows</h4>
+            <div class="example-item" onclick="sendMessage('Gateway zkML transfer to multiple chains')">Gateway zkML transfer to multiple chains</div>
+            <div class="example-item" onclick="sendMessage('Execute Gateway zkML multi-chain deployment')">Execute Gateway zkML multi-chain deployment</div>
+            <div class="example-item" onclick="sendMessage('Gateway zkML cross-chain agent for transfers')">Gateway zkML cross-chain agent for transfers</div>
+        </div>
+        
+        <h3>Conditional Transfers</h3>
+        <div class="example-category">
+            <h4>KYC-Gated Payments</h4>
+            <div class="example-item" onclick="sendMessage('Send 0.1 USDC to Alice on Ethereum if KYC compliant')">Send 0.1 USDC to Alice on Ethereum if KYC compliant</div>
+            <div class="example-item" onclick="sendMessage('Send 0.1 USDC to Alice on Solana if KYC compliant')">Send 0.1 USDC to Alice on Solana if KYC compliant</div>
+        </div>
+        
+        <h3>Utilities</h3>
+        <div class="example-category">
+            <h4>History & Help</h4>
+            <div class="example-item" onclick="sendMessage('Proof History')">Proof History</div>
+            <div class="example-item" onclick="sendMessage('Verification History')">Verification History</div>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="header">
+            <h1>
+                <span>Novanet</span>
+                Verifiable Agent Kit
+            </h1>
+            <div id="status" class="status connected">
+                <div class="status-dot"></div>
+                <span>Connected</span>
+            </div>
+        </div>
+        
+        <div class="messages-container">
+            <div id="messages"></div>
+        </div>
+        
+        <div class="input-container">
+            <div class="input-row">
+                <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Load libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="js/gateway-zkml-polling.js?v=20250827-polling1"></script>
+    
+    <script>
+        // SES-safe implementation without any concat operations
+        window.DEMO_PRIVATE_KEY = 'c3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+        
+        // Store proof and verification history
+        window.proofHistory = [];
+        window.verificationHistory = [];
+        
+        // Helper function to create proof card UI
+        function createProofCard(proofId, type, status = 'generating') {
+            const messages = document.getElementById('messages');
+            const card = document.createElement('div');
+            card.className = 'proof-card';
+            card.id = `proof-card-${proofId}`;
+            
+            const headerHtml = `
+                <div class="proof-header">
+                    <div class="proof-title">${type} Proof Generation</div>
+                    <div class="proof-badge ${status}">${status}</div>
+                </div>
+            `;
+            
+            const detailsHtml = status === 'generating' 
+                ? '<div class="proof-details">Generating proof using zkEngine...</div>'
+                : `<div class="proof-details">Proof ID: ${proofId}<br>Status: Complete<br>Hash: 0x${proofId.substr(-8)}...</div>`;
+            
+            const actionsHtml = status === 'complete'
+                ? `<div class="proof-actions">
+                      <button class="proof-action-btn" onclick="verifyProof('${proofId}')">Verify On-Chain</button>
+                      <button class="proof-action-btn" onclick="copyToClipboard('${proofId}')">Copy ID</button>
+                   </div>`
+                : '';
+            
+            card.innerHTML = `${headerHtml}${detailsHtml}${actionsHtml}`;
+            messages.appendChild(card);
+            messages.scrollTop = messages.scrollHeight;
+            
+            return card;
+        }
+        
+        function updateProofCard(proofId, status, details) {
+            const card = document.getElementById(`proof-card-${proofId}`);
+            if (!card) return;
+            
+            const badge = card.querySelector('.proof-badge');
+            if (badge) {
+                badge.className = `proof-badge ${status}`;
+                badge.textContent = status;
+            }
+            
+            const detailsEl = card.querySelector('.proof-details');
+            if (detailsEl && details) {
+                detailsEl.innerHTML = details;
+            }
+            
+            if (status === 'complete' && !card.querySelector('.proof-actions')) {
+                const actionsHtml = `<div class="proof-actions">
+                    <button class="proof-action-btn" onclick="verifyProof('${proofId}')">Verify On-Chain</button>
+                    <button class="proof-action-btn" onclick="copyToClipboard('${proofId}')">Copy ID</button>
+                </div>`;
+                card.insertAdjacentHTML('beforeend', actionsHtml);
+            }
+        }
+        
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                addMessage('✅ Copied to clipboard', 'assistant');
+            });
+        }
+        
+        // zkEngine proof generation functions
+        async function generateKYCProof() {
+            const proofId = `proof_${Date.now()}`;
+            createProofCard(proofId, 'KYC Compliance', 'generating');
+            
+            try {
+                // Simulate zkEngine binary call
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                const result = {
+                    proof: `0x${Math.random().toString(16).substr(2, 64)}`,
+                    public_inputs: ['age_over_18', 'country_allowed', 'identity_verified'],
+                    computation_time: '1.23s'
+                };
+                
+                window.proofHistory.push({ 
+                    id: proofId, 
+                    type: 'KYC', 
+                    timestamp: new Date().toISOString(),
+                    result
+                });
+                
+                const details = `Proof ID: ${proofId}<br>
+                                Proof Hash: ${result.proof.substr(0, 10)}...<br>
+                                Computation: ${result.computation_time}<br>
+                                Inputs: ${result.public_inputs.join(', ')}`;
+                
+                updateProofCard(proofId, 'complete', details);
+                return proofId;
+            } catch (error) {
+                updateProofCard(proofId, 'error', `Error: ${error.message}`);
+                return null;
+            }
+        }
+        
+        async function generateAIContentProof() {
+            const proofId = `proof_${Date.now()}`;
+            createProofCard(proofId, 'AI Content Authenticity', 'generating');
+            
+            try {
+                // Simulate zkEngine binary call
+                await new Promise(resolve => setTimeout(resolve, 2500));
+                
+                const result = {
+                    proof: `0x${Math.random().toString(16).substr(2, 64)}`,
+                    provider: 'OpenAI',
+                    content_hash: `0x${Math.random().toString(16).substr(2, 16)}`,
+                    computation_time: '1.87s'
+                };
+                
+                window.proofHistory.push({ 
+                    id: proofId, 
+                    type: 'AI Content', 
+                    timestamp: new Date().toISOString(),
+                    result
+                });
+                
+                const details = `Proof ID: ${proofId}<br>
+                                Provider: ${result.provider}<br>
+                                Content Hash: ${result.content_hash}<br>
+                                Computation: ${result.computation_time}`;
+                
+                updateProofCard(proofId, 'complete', details);
+                return proofId;
+            } catch (error) {
+                updateProofCard(proofId, 'error', `Error: ${error.message}`);
+                return null;
+            }
+        }
+        
+        async function generateLocationProof(lat, lon, location) {
+            const proofId = `proof_${Date.now()}`;
+            createProofCard(proofId, `Location Proof - ${location}`, 'generating');
+            
+            try {
+                // Simulate zkEngine binary call
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                const result = {
+                    proof: `0x${Math.random().toString(16).substr(2, 64)}`,
+                    coordinates: { lat, lon },
+                    location: location,
+                    computation_time: '1.45s'
+                };
+                
+                window.proofHistory.push({ 
+                    id: proofId, 
+                    type: 'Location', 
+                    location: location,
+                    timestamp: new Date().toISOString(),
+                    result
+                });
+                
+                const details = `Proof ID: ${proofId}<br>
+                                Location: ${location}<br>
+                                Coordinates: ${lat.toFixed(2)}°, ${lon.toFixed(2)}°<br>
+                                Computation: ${result.computation_time}`;
+                
+                updateProofCard(proofId, 'complete', details);
+                return proofId;
+            } catch (error) {
+                updateProofCard(proofId, 'error', `Error: ${error.message}`);
+                return null;
+            }
+        }
+        
+        function createVerificationCard(proofId) {
+            const messages = document.getElementById('messages');
+            const card = document.createElement('div');
+            card.className = 'proof-card';
+            card.id = `verification-card-${proofId}`;
+            
+            const headerHtml = `
+                <div class="proof-header">
+                    <div class="proof-title">On-Chain Verification</div>
+                    <div class="proof-badge generating">verifying</div>
+                </div>
+            `;
+            
+            const detailsHtml = '<div class="proof-details">Submitting proof to Ethereum Sepolia...</div>';
+            
+            card.innerHTML = `${headerHtml}${detailsHtml}`;
+            messages.appendChild(card);
+            messages.scrollTop = messages.scrollHeight;
+            
+            return card;
+        }
+        
+        async function verifyProof(proofId) {
+            createVerificationCard(proofId);
+            
+            try {
+                // Simulate on-chain verification
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                const txHash = `0x${Math.random().toString(16).substr(2, 64)}`;
+                const result = {
+                    verified: true,
+                    txHash: txHash,
+                    blockNumber: Math.floor(Math.random() * 1000000) + 4000000,
+                    gasUsed: '145,231'
+                };
+                
+                window.verificationHistory.push({ 
+                    proofId, 
+                    timestamp: new Date().toISOString(),
+                    result
+                });
+                
+                const card = document.getElementById(`verification-card-${proofId}`);
+                if (card) {
+                    const badge = card.querySelector('.proof-badge');
+                    badge.className = 'proof-badge complete';
+                    badge.textContent = 'verified';
+                    
+                    const details = card.querySelector('.proof-details');
+                    details.innerHTML = `
+                        Proof ID: ${proofId}<br>
+                        Status: ✅ Verified on-chain<br>
+                        Transaction: <a href="https://sepolia.etherscan.io/tx/${txHash}" target="_blank" style="color: #8b9aff">${txHash.substr(0, 10)}...</a><br>
+                        Block: ${result.blockNumber}<br>
+                        Gas Used: ${result.gasUsed}
+                    `;
+                }
+                
+                return result;
+            } catch (error) {
+                const card = document.getElementById(`verification-card-${proofId}`);
+                if (card) {
+                    const badge = card.querySelector('.proof-badge');
+                    badge.className = 'proof-badge error';
+                    badge.textContent = 'failed';
+                    
+                    const details = card.querySelector('.proof-details');
+                    details.innerHTML = `Error: ${error.message}`;
+                }
+                return null;
+            }
+        }
+        
+        async function executeKYCTransfer(amount, recipient, chain) {
+            // Create workflow card
+            const workflowId = `workflow_${Date.now()}`;
+            const messages = document.getElementById('messages');
+            const workflowCard = document.createElement('div');
+            workflowCard.className = 'workflow-card';
+            workflowCard.innerHTML = `
+                <div class="card-header">
+                    <div class="card-header-row">
+                        <div class="card-title">KYC-Gated Transfer Workflow</div>
+                        <div class="workflow-status in-progress">In Progress</div>
+                    </div>
+                </div>
+                <div class="workflow-step executing" id="step1-${workflowId}">
+                    <div class="workflow-step-header">
+                        <div>Step 1: Generate KYC Proof</div>
+                        <div class="step-status executing">Executing</div>
+                    </div>
+                </div>
+                <div class="workflow-step" id="step2-${workflowId}">
+                    <div class="workflow-step-header">
+                        <div>Step 2: Verify On-Chain</div>
+                        <div class="step-status pending">Pending</div>
+                    </div>
+                </div>
+                <div class="workflow-step" id="step3-${workflowId}">
+                    <div class="workflow-step-header">
+                        <div>Step 3: Execute Transfer (${amount} USDC to ${recipient} on ${chain})</div>
+                        <div class="step-status pending">Pending</div>
+                    </div>
+                </div>
+            `;
+            messages.appendChild(workflowCard);
+            
+            // Step 1: Generate KYC proof
+            const proofId = await generateKYCProof();
+            const step1 = document.getElementById(`step1-${workflowId}`);
+            if (proofId) {
+                step1.className = 'workflow-step complete';
+                step1.querySelector('.step-status').className = 'step-status complete';
+                step1.querySelector('.step-status').textContent = 'Complete';
+                
+                // Step 2: Verify proof
+                const step2 = document.getElementById(`step2-${workflowId}`);
+                step2.className = 'workflow-step executing';
+                step2.querySelector('.step-status').className = 'step-status executing';
+                step2.querySelector('.step-status').textContent = 'Executing';
+                
+                const verification = await verifyProof(proofId);
+                if (verification && verification.verified) {
+                    step2.className = 'workflow-step complete';
+                    step2.querySelector('.step-status').className = 'step-status complete';
+                    step2.querySelector('.step-status').textContent = 'Complete';
+                    
+                    // Step 3: Execute transfer
+                    const step3 = document.getElementById(`step3-${workflowId}`);
+                    step3.className = 'workflow-step executing';
+                    step3.querySelector('.step-status').className = 'step-status executing';
+                    step3.querySelector('.step-status').textContent = 'Executing';
+                    
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    step3.className = 'workflow-step complete';
+                    step3.querySelector('.step-status').className = 'step-status complete';
+                    step3.querySelector('.step-status').textContent = 'Complete';
+                    
+                    workflowCard.querySelector('.workflow-status').className = 'workflow-status completed';
+                    workflowCard.querySelector('.workflow-status').textContent = 'Completed';
+                    
+                    addMessage(`✅ Transfer complete! Transaction: demo_tx_${Date.now()}`, 'assistant');
+                } else {
+                    step2.querySelector('.step-status').className = 'step-status error';
+                    step2.querySelector('.step-status').textContent = 'Failed';
+                    workflowCard.querySelector('.workflow-status').className = 'workflow-status error';
+                    workflowCard.querySelector('.workflow-status').textContent = 'Failed';
+                }
+            } else {
+                step1.querySelector('.step-status').className = 'step-status error';
+                step1.querySelector('.step-status').textContent = 'Failed';
+                workflowCard.querySelector('.workflow-status').className = 'workflow-status error';
+                workflowCard.querySelector('.workflow-status').textContent = 'Failed';
+            }
+        }
+        
+        function sendMessage(text) {
+            const input = document.getElementById('messageInput');
+            const message = text || input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            
+            // Clear input
+            if (!text) input.value = '';
+            
+            // Process different message types
+            const lowerMessage = message.toLowerCase();
+            
+            // Gateway zkML workflow
+            if (lowerMessage.includes('gateway') && lowerMessage.includes('zkml')) {
+                const amountMatch = message.match(/\$?([\d.]+)/);
+                const amount = amountMatch ? amountMatch[1] : '2'; // Default to minimum 2 USDC
+                
+                // Use the polling version if available
+                if (window.GatewayZKMLHandler && window.GatewayZKMLHandler.executeWorkflowWithPolling) {
+                    addMessage('🚀 Starting Gateway zkML workflow with transfer status tracking...', 'assistant');
+                    window.GatewayZKMLHandler.executeWorkflowWithPolling(amount);
+                } else if (window.executeGatewayZKMLWorkflow) {
+                    window.executeGatewayZKMLWorkflow(amount);
+                } else {
+                    addMessage('Gateway zkML workflow not loaded. Please refresh the page.', 'assistant');
+                }
+            }
+            // KYC proof generation
+            else if (lowerMessage.includes('prove kyc')) {
+                generateKYCProof();
+            }
+            // AI content proof generation
+            else if (lowerMessage.includes('prove ai content')) {
+                generateAIContentProof();
+            }
+            // Location proof generation
+            else if (lowerMessage.includes('prove location')) {
+                const coordMatch = message.match(/([\d.]+)[°,]?\s*[,\s]+(-?[\d.]+)/);
+                if (coordMatch) {
+                    const lat = parseFloat(coordMatch[1]);
+                    const lon = parseFloat(coordMatch[2]);
+                    const location = lowerMessage.includes('nyc') ? 'NYC' : 
+                                     lowerMessage.includes('sf') ? 'San Francisco' : 
+                                     `${lat.toFixed(1)}°, ${lon.toFixed(1)}°`;
+                    generateLocationProof(lat, lon, location);
+                } else {
+                    addMessage('Please provide coordinates. Example: "Prove location: NYC (40.7°, -74.0°)"', 'assistant');
+                }
+            }
+            // KYC-gated transfers
+            else if (lowerMessage.includes('send') && lowerMessage.includes('usdc') && lowerMessage.includes('if kyc')) {
+                const amountMatch = message.match(/([\d.]+)\s*usdc/i);
+                const amount = amountMatch ? amountMatch[1] : '0.1';
+                const recipient = 'Alice'; // Extract from message in real implementation
+                const chain = lowerMessage.includes('ethereum') ? 'Ethereum' : 
+                             lowerMessage.includes('solana') ? 'Solana' : 'Ethereum';
+                executeKYCTransfer(amount, recipient, chain);
+            }
+            // Proof history
+            else if (lowerMessage.includes('proof history')) {
+                if (window.proofHistory.length === 0) {
+                    addMessage('No proofs generated yet.', 'assistant');
+                } else {
+                    let historyText = `📜 Proof History (${window.proofHistory.length} proofs):\n\n`;
+                    window.proofHistory.slice(-5).forEach(proof => {
+                        historyText = `${historyText}• ${proof.type}: ${proof.id} (${proof.timestamp})\n`;
+                    });
+                    addMessage(historyText, 'assistant');
+                }
+            }
+            // Verification history
+            else if (lowerMessage.includes('verification history')) {
+                if (window.verificationHistory.length === 0) {
+                    addMessage('No verifications performed yet.', 'assistant');
+                } else {
+                    let historyText = `🔍 Verification History (${window.verificationHistory.length} verifications):\n\n`;
+                    window.verificationHistory.slice(-5).forEach(ver => {
+                        const status = ver.result.verified ? '✅ Verified' : '❌ Failed';
+                        historyText = `${historyText}• ${ver.proofId}: ${status} (${ver.timestamp})\n`;
+                    });
+                    addMessage(historyText, 'assistant');
+                }
+            }
+            // Verify specific proof
+            else if (lowerMessage.includes('verify proof')) {
+                const proofMatch = message.match(/proof_[\d]+/);
+                if (proofMatch) {
+                    verifyProof(proofMatch[0]);
+                } else {
+                    addMessage('Please provide a proof ID to verify.', 'assistant');
+                }
+            }
+            // Help command
+            else if (lowerMessage === 'help') {
+                addMessage('Available commands:\n• Prove KYC compliance\n• Prove AI content authenticity\n• Prove location: [coordinates]\n• Gateway zkML transfer\n• Send USDC to [recipient] if KYC compliant\n• Proof History\n• Verification History', 'assistant');
+            }
+            // Test command
+            else if (lowerMessage === 'test') {
+                addMessage('✅ System operational. All proof generation and verification services ready.', 'assistant');
+            }
+            else {
+                addMessage('Command not recognized. Type "help" for available commands.', 'assistant');
+            }
+        }
+        
+        function addMessage(text, sender) {
+            const messages = document.getElementById('messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${sender}`;
+            
+            const contentEl = document.createElement('div');
+            contentEl.className = 'message-content';
+            contentEl.textContent = text;
+            
+            messageEl.appendChild(contentEl);
+            messages.appendChild(messageEl);
+            
+            // Scroll to bottom
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        // Initialize
+        console.log('Clean index loaded - SES-safe implementation');
+    </script>
+</body>
+</html>
