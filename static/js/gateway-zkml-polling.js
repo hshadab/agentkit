@@ -312,12 +312,11 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                 return '0x' + cleaned.padStart(64, '0');
             };
             
-            // EIP-712 domain - must match Gateway contract exactly
+            // EIP-712 domain - Circle Gateway only needs name and version
             const domain = {
                 name: "GatewayWallet",
-                version: "1",
-                chainId: 11155111, // Sepolia
-                verifyingContract: "0x0077777d7EBA4688BDeF3E311b846F25870A19B9" // Gateway Wallet
+                version: "1"
+                // DON'T include chainId or verifyingContract - causes signature mismatch
             };
             
             // EIP-712 types
@@ -388,12 +387,12 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                 throw signError;
             }
             
-            // Create signed burn intent
+            // Create signed burn intent - MUST use exact signed values
             const signedBurnIntent = {
                 burnIntent: {
-                    maxBlockHeight: burnIntent.maxBlockHeight,
-                    maxFee: burnIntent.maxFee,
-                    spec: burnIntent.spec
+                    maxBlockHeight: message.maxBlockHeight.toString(),
+                    maxFee: message.maxFee.toString(),
+                    spec: message.spec  // Use the exact spec from the signed message
                 },
                 signature: signature
             };
