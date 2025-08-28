@@ -11,14 +11,18 @@ AgentKit is a production-ready verifiable AI agent system that combines:
 ## 🎯 Key Technical Components
 
 ### 1. zkML System (JOLT-Atlas)
-- **Model**: 14-parameter sentiment analysis model (REAL, not simulated)
-- **Framework**: JOLT-Atlas with recursive SNARKs
+- **Model**: LLM Decision Proof Model (14 parameters)
+  - 5 Input verification params (prompt hash, rules, temperature, etc.)
+  - 5 Decision process params (confidence scores, attention weights)
+  - 4 Output validation params (format, amount, recipient, decision)
+- **Framework**: JOLT-Atlas with recursive SNARKs and lookup tables
 - **Backend Port**: 8002
 - **Proof Time**: 10-15 seconds
+- **Purpose**: Proves LLM agent correctly authorized USDC spending
 - **Endpoints**:
-  - POST `/zkml/prove` - Generate zkML proof with 14 parameters
+  - POST `/zkml/prove` - Generate LLM Decision Proof
   - GET `/zkml/status/:sessionId` - Check proof status
-- **File**: `api/zkml-backend.js`
+- **File**: `api/zkml-llm-decision-backend.js`
 
 ### 2. On-Chain Verifier (Nova SNARK)
 - **Backend Port**: 3003 
@@ -51,11 +55,11 @@ AgentKit is a production-ready verifiable AI agent system that combines:
 ## How to Start Services
 
 ```bash
-# 1. Start zkML backend (14-parameter model)
-node api/zkml-backend.js
+# 1. Start LLM Decision Proof backend (JOLT-Atlas)
+node api/zkml-llm-decision-backend.js
 
-# 2. Start verifier backend  
-node api/zkml-verifier-backend.js
+# 2. Start LLM verifier backend  
+node api/zkml-llm-verifier-backend.js
 
 # 3. Start web server (with no-cache)
 python3 serve-no-cache.py
