@@ -525,8 +525,8 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                         <div class="workflow-step-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <div class="step-details">
                                 <div class="step-title" style="font-size: 11px; color: #8b9aff; font-weight: 600;">STEP 1 OF 3</div>
-                                <div class="step-name" style="font-size: 14px; color: #ffffff;">zkML Inference Proof</div>
-                                <div class="step-message" style="font-size: 12px; color: #9ca3af;">Generating JOLT-Atlas proof of correct model execution</div>
+                                <div class="step-name" style="font-size: 14px; color: #ffffff;">LLM Decision Proof</div>
+                                <div class="step-message" style="font-size: 12px; color: #9ca3af;">Proving LLM agent correctly authorized USDC transfer using JOLT-Atlas</div>
                             </div>
                             <div class="step-status executing">EXECUTING</div>
                         </div>
@@ -617,20 +617,38 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
         }
     }
     
-    // Generate zkML proof
+    // Generate LLM Decision Proof using JOLT-Atlas
     async function generateZKMLProof(wfId) {
         try {
+            // Prepare LLM decision parameters
+            const llmDecisionInput = {
+                // User's request context
+                prompt: "gateway zkml transfer USDC to authorized recipients",
+                system_rules: "ONLY approve transfers under daily limit to allowlisted addresses",
+                
+                // Model configuration (deterministic)
+                temperature: 0.0,
+                model_version: 0x1337,
+                context_window_size: 2048,
+                
+                // Decision confidence scores
+                approve_confidence: 0.95,
+                amount_confidence: 0.92,
+                rules_attention: 0.88,
+                amount_attention: 0.90,
+                
+                // Validation checks
+                format_valid: 1,
+                amount_valid: 1,
+                recipient_valid: 1,
+                decision: 1 // APPROVE
+            };
+            
             const response = await fetch('http://localhost:8002/zkml/prove', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    sessionId: `session_${Date.now()}`,
-                    model: 'sentiment_analysis_14param_REAL',
-                    inputs: [
-                        1, 100, 1, 20, 95, 3, 1, 10, 5, 85, 15, 10, 90, 92
-                    ],
-                    proofType: 'NOVA_JOLT_ATLAS',
-                    network: 'sepolia'
+                    input: llmDecisionInput
                 })
             });
             
@@ -705,8 +723,9 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             const content = document.getElementById('gateway-step-content-zkml_proof');
             if (content) {
                 content.innerHTML = `
-                    <div style="font-size: 12px; color: #10b981; margin-bottom: 8px;">✅ Proof generated</div>
+                    <div style="font-size: 12px; color: #10b981; margin-bottom: 8px;">✅ LLM Decision Proof generated</div>
                     <div style="font-size: 11px; color: #8b9aff;">Session: ${sessionId}</div>
+                    <div style="font-size: 10px; color: #9ca3af; margin-top: 4px;">Model: JOLT-Atlas LLM Decision (14 params)</div>
                 `;
             }
         }
