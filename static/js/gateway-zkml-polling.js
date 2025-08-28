@@ -224,7 +224,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
         return transfers;
     }
     
-    // Updated UI function to show pending states
+    // Updated UI function to show completed with pending settlement
     function updateStep3CompleteWithPolling(wfId, transfers, amount) {
         const step3 = document.getElementById(`step3-${wfId}`);
         if (step3) {
@@ -233,21 +233,22 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             
             const statusBadge = step3.querySelector('.step-status');
             if (statusBadge) {
-                statusBadge.textContent = 'PROCESSING';
-                statusBadge.className = 'step-status processing';
-                statusBadge.style.background = 'rgba(251, 191, 36, 0.2)';
-                statusBadge.style.color = '#fbbf24';
-                statusBadge.style.border = '1px solid rgba(251, 191, 36, 0.3)';
+                // Show as COMPLETED even while polling
+                statusBadge.textContent = 'COMPLETED';
+                statusBadge.className = 'step-status complete';
+                statusBadge.style.background = 'rgba(16, 185, 129, 0.2)';
+                statusBadge.style.color = '#10b981';
+                statusBadge.style.border = '1px solid rgba(16, 185, 129, 0.3)';
             }
             
             const content = document.getElementById('gateway-step-content-gateway_transfer');
             if (content) {
-                let html = '<div style="font-size: 12px; color: #fbbf24; margin-bottom: 12px;">⏳ Gateway transfers processing...</div>';
+                let html = '<div style="font-size: 12px; color: #10b981; margin-bottom: 12px;">✅ Gateway transfers accepted!</div>';
                 html += '<div style="display: flex; flex-direction: column; gap: 8px;">';
                 
                 transfers.forEach(transfer => {
-                    const statusIcon = transfer.success ? '⏳' : '⚠️';
-                    const statusColor = transfer.success ? '#fbbf24' : '#ef4444';
+                    const statusIcon = transfer.success ? '✅' : '⚠️';
+                    const statusColor = transfer.success ? '#10b981' : '#ef4444';
                     
                     html += `
                         <div style="padding: 8px; background: rgba(0, 0, 0, 0.2); border-radius: 4px;">
@@ -255,12 +256,12 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                                 <div style="font-size: 11px;">
                                     <span style="color: #8b9aff;">${transfer.icon} ${transfer.chain}</span>
                                     <span style="color: ${statusColor}; margin-left: 8px;">
-                                        ${transfer.success ? `2 USDC` : transfer.errorMessage || 'Failed'} ${statusIcon}
+                                        ${transfer.success ? `2.00 USDC` : transfer.errorMessage || 'Failed'} ${statusIcon}
                                     </span>
                                 </div>
                                 <div style="font-size: 10px;" data-transfer-id="${transfer.transferId || ''}">
                                     ${transfer.success ? 
-                                        `<span style="color: #fbbf24;">⏳ Pending</span>` : 
+                                        `<span style="color: #10b981;" id="transfer-status-${transfer.transferId}">✓ Accepted</span>` : 
                                         `<span style="color: #ef4444;">Failed</span>`
                                     }
                                 </div>
@@ -273,15 +274,53 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                 
                 // Add polling status indicator
                 html += `
-                    <div style="margin-top: 12px; padding: 8px; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.2); border-radius: 4px;">
-                        <div style="font-size: 10px; color: #fbbf24;">
-                            🔄 Checking transfer status every 5 minutes...
+                    <div style="margin-top: 12px; padding: 8px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 4px;">
+                        <div style="font-size: 10px; color: #10b981;">
+                            🎯 Settlement Status: Pending blockchain confirmation
                         </div>
                         <div style="font-size: 9px; color: #9ca3af; margin-top: 4px;">
-                            Circle Gateway batches transfers for efficiency. Settlement typically takes 15-30 minutes.
+                            Transaction hashes will appear here once settled (~15-30 minutes)
+                        </div>
+                        <div id="polling-status-${wfId}" style="font-size: 9px; color: #8b9aff; margin-top: 4px;">
+                            🔄 Checking for updates...
                         </div>
                     </div>
                 `;
+                
+                // Add attestation display if available
+                const attestations = transfers.filter(t => t.attestation).map(t => t.attestation);
+                if (attestations.length > 0) {
+                    html += `
+                        <div style="margin-top: 12px; border: 1px solid rgba(139, 154, 255, 0.2); border-radius: 4px; overflow: hidden;">
+                            <div style="padding: 8px; background: rgba(139, 154, 255, 0.05); cursor: pointer;" 
+                                 onclick="toggleAttestations('${wfId}')">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 10px; color: #8b9aff; font-weight: 600;">
+                                        🔐 Circle Attestations (${attestations.length})
+                                    </span>
+                                    <span id="attestation-toggle-${wfId}" style="font-size: 10px; color: #8b9aff;">
+                                        ▼ Click to expand
+                                    </span>
+                                </div>
+                            </div>
+                            <div id="attestation-content-${wfId}" style="display: none; padding: 8px; background: rgba(0, 0, 0, 0.3);">
+                                ${attestations.map((att, i) => `
+                                    <div style="margin-bottom: 8px;">
+                                        <div style="font-size: 9px; color: #8b9aff; margin-bottom: 4px;">
+                                            Attestation ${i + 1}:
+                                        </div>
+                                        <div style="font-family: monospace; font-size: 8px; color: #9ca3af; 
+                                                    word-break: break-all; background: rgba(0, 0, 0, 0.5); 
+                                                    padding: 4px; border-radius: 2px; max-height: 100px; 
+                                                    overflow-y: auto;">
+                                            ${att}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
                 
                 content.innerHTML = html;
             }
@@ -820,6 +859,43 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
     document.addEventListener('DOMContentLoaded', function() {
         loadPendingTransfers();
     });
+    
+    // Update transfer UI when status changes
+    function updateTransferUI(transferData) {
+        const element = document.getElementById(`transfer-status-${transferData.transferId}`);
+        if (element) {
+            if (transferData.status === 'completed' && transferData.txHash) {
+                // Show transaction link
+                const explorerUrl = getExplorerUrl(transferData.chain, transferData.txHash);
+                element.innerHTML = `<a href="${explorerUrl}" target="_blank" style="color: #10b981; text-decoration: none;">✅ ${transferData.txHash.substring(0, 8)}...</a>`;
+                
+                // Update polling status
+                const pollingStatus = document.getElementById(`polling-status-${transferData.workflowId}`);
+                if (pollingStatus) {
+                    pollingStatus.innerHTML = '✅ Settlement confirmed!';
+                    pollingStatus.style.color = '#10b981';
+                }
+            } else if (transferData.status === 'failed') {
+                element.innerHTML = '<span style="color: #ef4444;">❌ Failed</span>';
+            }
+        }
+    }
+    
+    // Toggle attestation visibility
+    window.toggleAttestations = function(wfId) {
+        const content = document.getElementById(`attestation-content-${wfId}`);
+        const toggle = document.getElementById(`attestation-toggle-${wfId}`);
+        
+        if (content) {
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                if (toggle) toggle.textContent = '▲ Click to collapse';
+            } else {
+                content.style.display = 'none';
+                if (toggle) toggle.textContent = '▼ Click to expand';
+            }
+        }
+    };
     
     // Clean up on page unload
     window.addEventListener('beforeunload', function() {
