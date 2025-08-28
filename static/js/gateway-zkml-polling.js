@@ -722,22 +722,28 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
         updateStep2InProgress(wfId);
         
         try {
-            const response = await fetch('http://localhost:3003/zkml/verify', {
+            // First get the proof from zkML backend
+            const proofResponse = await fetch(`http://localhost:8002/zkml/proof/${sessionId}`);
+            if (!proofResponse.ok) {
+                throw new Error('Failed to get proof');
+            }
+            const proofData = await proofResponse.json();
+            
+            // Then verify it on-chain
+            const response = await fetch('http://localhost:3003/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    sessionId: sessionId,
-                    proof: { proof: [], publicInputs: [] },
-                    inputs: [3, 10, 1, 5],
-                    network: 'sepolia',
-                    useRealChain: true
+                    proof: proofData.proof,
+                    publicSignals: proofData.publicSignals,
+                    sessionId: sessionId
                 })
             });
             
             const data = await response.json();
-            if (data.verified && data.txHash) {
-                updateStep2Complete(wfId, data.txHash);
-                return { success: true, txHash: data.txHash };
+            if (data.success && data.transactionHash) {
+                updateStep2Complete(wfId, { txHash: data.transactionHash, explorer: data.explorer });
+                return { success: true, txHash: data.transactionHash };
             }
             return { success: false };
         } catch (error) {
@@ -791,7 +797,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
     }
     
     // Update step 2 complete
-    function updateStep2Complete(wfId, txHash) {
+    function updateStep2Complete(wfId, verifyResult) {
         const step2 = document.getElementById(`step2-${wfId}`);
         if (step2) {
             step2.classList.remove('executing');
@@ -805,11 +811,13 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             
             const content = document.getElementById('gateway-step-content-onchain_verify');
             if (content) {
-                const shortHash = `${txHash.substring(0, 10)}...${txHash.substring(txHash.length - 8)}`;
+                const txHash = verifyResult.txHash || verifyResult;
+                const shortHash = typeof txHash === 'string' ? `${txHash.substring(0, 10)}...${txHash.substring(txHash.length - 8)}` : '';
+                const explorerUrl = verifyResult.explorer || `https://sepolia.etherscan.io/tx/${txHash}`;
                 content.innerHTML = `
                     <div style="font-size: 12px; color: #10b981; margin-bottom: 8px;">✅ Verified on-chain</div>
                     <div style="margin-bottom: 6px;">
-                        <a href="https://sepolia.etherscan.io/tx/${txHash}" target="_blank" style="color: #8b9aff; font-size: 11px; text-decoration: none;">
+                        <a href="${explorerUrl}" target="_blank" style="color: #8b9aff; font-size: 11px; text-decoration: none;">
                             🔗 ${shortHash}
                         </a>
                     </div>
