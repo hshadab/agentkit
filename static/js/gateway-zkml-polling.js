@@ -411,14 +411,16 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             const responseData = await response.json();
             console.log('Gateway response for', chain.name, ':', responseData);
             
-            if (response.ok && responseData.transfers && responseData.transfers.length > 0) {
-                const transfer = responseData.transfers[0];
+            if (response.ok && (responseData.transferId || (responseData.transfers && responseData.transfers.length > 0))) {
+                // Handle both response formats
+                const transferId = responseData.transferId || responseData.transfers[0].transferId;
+                const attestation = responseData.attestation || responseData.transfers[0].attestation;
                 return {
                     chain: chain.name,
                     icon: chain.icon,
                     success: true,
-                    transferId: transfer.transferId,
-                    attestation: transfer.attestation,
+                    transferId: transferId,
+                    attestation: attestation,
                     realTransfer: true
                 };
             } else {
