@@ -1,11 +1,8 @@
-# Circle Gateway zkML Integration
+# Circle Gateway Integration
 
-## 🚀 Production-Ready zkML + Circle Gateway System
+## Overview
 
-This directory contains the **world's first production implementation** combining:
-- **zkML (Zero-Knowledge Machine Learning)** for verifiable AI decisions
-- **On-chain proof verification** using Nova SNARKs
-- **Circle's Cross-Chain Transfer Protocol** for instant USDC transfers
+This directory contains AgentKit's integration with Circle Gateway for programmatic multi-chain USDC transfers. AI agents can autonomously manage assets across blockchains with cryptographic attestations.
 
 ## 🔬 Technical Architecture
 
