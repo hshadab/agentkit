@@ -1,20 +1,13 @@
-# zkML System Documentation - REAL JOLT-Atlas Implementation
+# zkML System Documentation
 
-## ✅ Status: 100% REAL Proof Generation (Updated 2025-08-29)
+## Overview
 
-AgentKit's zkML (Zero-Knowledge Machine Learning) system now uses **REAL JOLT-Atlas proofs** with actual Rust binary execution. No more simulations or fake delays!
+AgentKit's zkML (Zero-Knowledge Machine Learning) system uses JOLT-Atlas proofs with Rust binary execution for cryptographic proof generation that AI agents made correct decisions without revealing private model weights or user data.
 
-## 🚀 What's New
+## 🚀 Key Features
 
-### Before (Simulated)
-- ❌ 10-second `setTimeout()` delay
-- ❌ Random bytes with `crypto.randomBytes()`
-- ❌ No actual computation
-- ❌ Fake proof structure
-
-### Now (REAL)
-- ✅ ~500ms actual Rust computation
-- ✅ Real JOLT-Atlas binary execution
+- ✅ ~500ms Rust computation
+- ✅ JOLT-Atlas binary execution
 - ✅ Structured proofs with "JOLT" header
 - ✅ All 14 parameters validated
 - ✅ Cryptographically secure proofs
@@ -78,9 +71,9 @@ Our zkML system proves that an LLM agent:
 }
 ```
 
-## 🔬 How REAL JOLT-Atlas Proves LLM Execution
+## 🔬 How JOLT-Atlas Proves LLM Execution
 
-### The Implementation
+### Implementation
 
 1. **Rust Binary Execution**
    ```bash
@@ -152,7 +145,7 @@ Response:
 GET http://localhost:8002/zkml/status/{sessionId}
 ```
 
-Response (REAL):
+Response:
 ```json
 {
   "status": "completed",
@@ -176,13 +169,13 @@ Response (REAL):
 User: "Send $50 to Bob at 0x742d35Cc..."
 ```
 
-### Step 2: REAL Rust Execution
+### Step 2: Rust Execution
 ```bash
-🚀 Starting REAL JOLT-Atlas proof generation...
+🚀 Starting JOLT-Atlas proof generation...
    Using Rust binary: jolt-atlas/target/release/llm_prover
    Command: ./llm_prover --prompt-hash 937164686 ...
    ✅ Parsed proof from stdout
-✅ REAL JOLT-Atlas proof generated in 507ms
+✅ JOLT-Atlas proof generated in 507ms
    Decision: APPROVE
    Confidence: 93%
    Risk Score: 7%
@@ -211,7 +204,7 @@ proof_bytes: [
 
 ```mermaid
 graph LR
-    A[REAL JOLT Proof] --> B[Submit to Contract]
+    A[JOLT Proof] --> B[Submit to Contract]
     B --> C{Verify Proof}
     C -->|Valid| D[Store Decision Hash]
     C -->|Invalid| E[Reject]
@@ -221,12 +214,12 @@ graph LR
 
 ## 🚀 Performance Metrics
 
-| Metric | Old (Fake) | New (REAL) | Improvement |
-|--------|------------|------------|-------------|
-| Proof Generation | 10,000ms | ~500ms | **20x faster** |
-| Proof Type | Random bytes | Structured JOLT | **Real crypto** |
-| Binary Used | None | Rust `llm_prover` | **Native speed** |
-| CPU Usage | ~0% (sleep) | ~100% (compute) | **Actual work** |
+| Metric | Value | Description |
+|--------|-------|-------------|
+| Proof Generation | ~500ms | Fast cryptographic computation |
+| Proof Type | Structured JOLT | Verifiable proof format |
+| Binary Used | Rust `llm_prover` | Native performance |
+| CPU Usage | ~100% | Intensive computation during proof generation |
 
 ## 🔧 Building from Source
 
@@ -258,13 +251,13 @@ curl -X POST http://localhost:8002/zkml/prove \
 
 ### Quick Test
 ```bash
-# Generate a real proof
-node test-real-workflow.js
+# Generate a proof
+node archive/tests/test-real-workflow.js
 ```
 
 Expected output:
 ```
-✅ REAL Proof Generated!
+✅ Proof Generated!
   Decision: ALLOW
   Confidence: 93%
   Risk Score: 7%
@@ -275,7 +268,7 @@ Expected output:
 ### UI Integration Test
 ```bash
 # Open in browser
-http://localhost:8000/test-ui-integration.html
+http://localhost:8000/archive/tests/test-ui-integration.html
 ```
 
 ## 🔐 Security Notes
@@ -298,16 +291,16 @@ http://localhost:8000/test-ui-integration.html
 - [a16z JOLT](https://github.com/a16z/jolt)
 - [Recursive SNARKs](https://eprint.iacr.org/2019/1021.pdf)
 
-## 🎯 Key Achievement
+## 🎯 Key Features
 
-**We've successfully replaced the simulated zkML system with REAL Rust-based proof generation!**
+**Production-ready zkML system with Rust-based proof generation**
 
-- ✅ Real computation (~500ms)
-- ✅ Real parameter validation
-- ✅ Real binary execution
+- ✅ Fast computation (~500ms)
+- ✅ Complete parameter validation
+- ✅ Native binary execution
 - ✅ Seamless UI integration
-- ✅ No breaking changes
+- ✅ Backward compatible
 
 ---
 
-*Last Updated: 2025-08-29 - REAL JOLT-Atlas Integration Complete*
+*Last Updated: 2025-08-29*
