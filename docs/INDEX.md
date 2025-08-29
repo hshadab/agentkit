@@ -1,122 +1,111 @@
 # AgentKit Documentation Index
 
-## 📚 Main Documentation
-
-### Getting Started
+## 🏠 Main Documentation
 - [README](../README.md) - Project overview and quick start
-- [SETUP](../SETUP.md) - Detailed installation guide
-- [ARCHITECTURE](../ARCHITECTURE.md) - System architecture overview
-- [API_DOCUMENTATION](../API_DOCUMENTATION.md) - API reference
+- [CLAUDE.md](../CLAUDE.md) - Developer guide for working with AgentKit
 
-### Configuration & Setup
-- [CONFIGURATION.md](CONFIGURATION.md) - Configuration options
-- [OPENAI_SETUP.md](OPENAI_SETUP.md) - OpenAI API setup
-- [QUICK_WALLET_SETUP.md](QUICK_WALLET_SETUP.md) - Wallet configuration
+## 🎯 Core Technologies
 
-### Integration Guides
+### zkEngine
+- [zkEngine Documentation](../zkengine/README.md) - Rust-based proof generation
+- [WASM Compilation Guide](../zkengine/wasm/README.md) - Browser deployment
 
-#### Blockchain Integrations
-- [AVALANCHE_DEPLOYMENT.md](AVALANCHE_DEPLOYMENT.md) - Avalanche deployment guide
-- [IOTEX_DEVICE_INTEGRATION.md](IOTEX_DEVICE_INTEGRATION.md) - IoTeX integration
-- [IOID_INTEGRATION.md](IOID_INTEGRATION.md) - IoID system integration
-- [SOLFLARE_SETUP.md](SOLFLARE_SETUP.md) - Solflare wallet setup
+### zkML (JOLT-Atlas)
+- [zkML Overview](../zkml/README.md) - Machine learning proofs
+- [14-Parameter Model](../api/zkml-llm-decision-backend.js) - LLM decision proof
 
-#### USDC Transfers
-- [CIRCLE_INTEGRATION_GUIDE.md](CIRCLE_INTEGRATION_GUIDE.md) - Circle API integration
-- [CIRCLE_SETUP_COMPLETE_GUIDE.md](CIRCLE_SETUP_COMPLETE_GUIDE.md) - Complete Circle setup
-- [CIRCLE_WALLET_SETUP.md](CIRCLE_WALLET_SETUP.md) - Circle wallet configuration
-- [GET_TEST_USDC.md](GET_TEST_USDC.md) - Getting test USDC
+### Groth16 Verification
+- [Groth16 Integration](deployment/groth16-deployment.md) - Proof-of-proof system
+- [Contract Deployment](../deployments/groth16-verifier.json) - Sepolia deployment
 
-### Feature Documentation
+## 🌐 Blockchain Integrations
 
-#### AI Predictions
-- [AI_PREDICTION_PROOF_GUIDE.md](AI_PREDICTION_PROOF_GUIDE.md) - AI prediction proofs
-- [AI_PREDICTION_COMMITMENT.md](AI_PREDICTION_COMMITMENT.md) - Commitment mechanism
-- [AI_PREDICTION_BASE_EXAMPLE.md](AI_PREDICTION_BASE_EXAMPLE.md) - Example usage
+### Ethereum & L2s
+- [Base DeFi Integration](AI_PREDICTION_BASE_EXAMPLE.md) - Trading proofs
+- [Deployment Guide](DEPLOY_AI_COMMITMENT_GUIDE.md) - Smart contract deployment
 
-#### Device Proofs (IoT)
-- [DEVICE_PROOF_INTEGRATION_PLAN.md](DEVICE_PROOF_INTEGRATION_PLAN.md) - Device proof integration
-- [PROXIMITY_CIRCUIT_INTEGRATION.md](PROXIMITY_CIRCUIT_INTEGRATION.md) - Proximity circuits
-- [IOT_DEMO_WORKFLOW_STEPS.md](IOT_DEMO_WORKFLOW_STEPS.md) - IoT demo workflow
+### Avalanche
+- [Medical Records Verification](../contracts/MedicalRecordsIntegrity_Avalanche.sol) - Healthcare proofs
+- [Avalanche Deployment](deployment/avalanche-deployment.md) - C-Chain setup
 
-### Technical Documentation
-- [TECHNICAL_ARCHITECTURE.md](TECHNICAL_ARCHITECTURE.md) - Detailed technical architecture
-- [TECHNICAL_SPEC.md](TECHNICAL_SPEC.md) - Technical specifications
-- [REAL_NOVA_INTEGRATION.md](REAL_NOVA_INTEGRATION.md) - Nova proof integration
-- [DEVELOPER_NOTES.md](DEVELOPER_NOTES.md) - Developer guidelines
+### IoTeX
+- [Device Integration](IOTEX_DEVICE_INTEGRATION.md) - IoT device proofs
+- [Proximity Verification](PROXIMITY_CIRCUIT_INTEGRATION.md) - Location proofs
+- [ioID Integration](IOID_INTEGRATION.md) - Identity management
+- [Getting Testnet Tokens](GET_IOTEX_TESTNET_TOKENS.md) - Faucet guide
+
+### Solana
+- [Solana Setup](SOLFLARE_SETUP.md) - Wallet configuration
+- [High-Speed Verification](../api/solana-game-backend.js) - Gaming proofs
+
+## 💰 Circle Integration
+
+### Gateway (Attestation-based)
+- [Gateway Documentation](../circle/gateway/README.md) - Overview
+- [Gateway Integration](../circle/gateway/docs/GATEWAY_INTEGRATION_COMPLETE.md) - Complete guide
+- [Attestation Guide](CIRCLE_GATEWAY_ATTESTATION.md) - Understanding attestations
+
+### CCTP (Cross-Chain Transfer Protocol)
+- [CCTP Overview](../circle/cctp/README.md) - Burn-and-mint transfers
+- [Supported Routes](../circle/cctp/routes.md) - Chain mappings
+
+### Setup & Troubleshooting
+- [Wallet Setup](CIRCLE_WALLET_SETUP.md) - Circle wallet configuration
+- [Troubleshooting](CIRCLE_TROUBLESHOOTING.md) - Common issues
+- [Getting Test USDC](GET_TEST_USDC.md) - Faucet instructions
+
+## 🏗️ Architecture
+
+### System Design
+- [Complete Specification](VERIFIABLE_AGENT_KIT_COMPLETE_SPEC.md) - Full technical spec
+- [Architecture Overview](architecture/) - System diagrams
+- [API Documentation](API_DOCUMENTATION.md) - Endpoint reference
+
+### Configuration
+- [Config Overview](CONFIG_SUMMARY.md) - System configuration
+- [Config Details](CONFIG_README.md) - Configuration guide
+- [Port Configuration](PORT_CONFIGURATION.md) - Service ports
+
+## 🧪 Testing & Development
+
+### Testing Guides
+- [Test Instructions](README_test_instructions.md) - Running tests
+- [Local Verification](LOCAL_VERIFICATION_TEST_GUIDE.md) - Local testing
+- [Device Demo](README_DEVICE_DEMO.md) - IoT device demo
+
+### Development Workflows
+- [Workflow Steps](IOT_DEMO_WORKFLOW_STEPS.md) - IoT demo workflow
+- [Migration Guide](MIGRATION_TO_CLEAN_UI.md) - UI migration
+
+### Status Reports
+- [Cleanup Summary](CLEANUP_SUMMARY_20250729.md) - Repository cleanup
+- [File Reorganization](FILE_REORGANIZATION.md) - Structure changes
+
+## 🔧 Setup & Configuration
+
+### Environment Setup
+- [OpenAI Setup](OPENAI_SETUP.md) - API key configuration
+- [OpenAI Key Setup](OPENAI_KEY_SETUP.md) - Detailed key guide
+- [PTAU Setup](SETUP_PTAU.md) - Powers of Tau ceremony
 
 ### Troubleshooting
-- [TROUBLESHOOTING_COMMON_ISSUES.md](TROUBLESHOOTING_COMMON_ISSUES.md) - Common issues and solutions
-- [CIRCLE_TROUBLESHOOTING.md](CIRCLE_TROUBLESHOOTING.md) - Circle-specific issues
-- [LOCAL_VERIFICATION_TEST_GUIDE.md](LOCAL_VERIFICATION_TEST_GUIDE.md) - Testing verification locally
+- [Coordinate Issues](coordinate-issue-summary.md) - Proximity proof fixes
+- [Proximity Testing](proximity-proof-testing.md) - Testing guide
 
-### Deployment Guides
-- [deployment/ETHEREUM_DEPLOYMENT_GUIDE.md](deployment/ETHEREUM_DEPLOYMENT_GUIDE.md) - Ethereum deployment
-- [deployment/SEPOLIA_DEPLOYMENT_GUIDE.md](deployment/SEPOLIA_DEPLOYMENT_GUIDE.md) - Sepolia testnet
-- [deployment/SOLANA_PLAYGROUND_DEPLOY.md](deployment/SOLANA_PLAYGROUND_DEPLOY.md) - Solana deployment
-- [deploy_to_base.md](deploy_to_base.md) - Base deployment
+## 📚 Additional Resources
 
-### Test Documentation
-- [tests/TEST_RESULTS_SUMMARY.md](tests/TEST_RESULTS_SUMMARY.md) - Test results
-- [tests/CIRCLE_TEST_REPORT.md](tests/CIRCLE_TEST_REPORT.md) - Circle integration tests
-- [tests/TEST_SOLANA_VERIFICATION.md](tests/TEST_SOLANA_VERIFICATION.md) - Solana tests
+### Guides
+- [Getting Started](getting-started/) - Quick start guides
+- [Workflows](workflows/) - Common workflows
+- [Deployment](deployment/) - Deployment guides
 
-### Getting Tokens
-- [GET_IOTEX_TESTNET_TOKENS.md](GET_IOTEX_TESTNET_TOKENS.md) - IoTeX testnet tokens
-- [fund_wallet_guide.md](fund_wallet_guide.md) - General wallet funding
+### Updates
+- [Changelog](CHANGELOG.md) - Version history
+- [Status Reports](status-reports/) - Project status
 
-### Archive
-The `archive/` directory contains historical documentation and migration guides from previous versions. These are kept for reference but may not reflect the current system state.
-
-## 📖 Documentation Structure
-
-```
-docs/
-├── INDEX.md                    # This file
-├── Configuration/              # Setup and configuration guides
-├── Integration Guides/         # Blockchain and API integrations
-├── Feature Documentation/      # Specific feature guides
-├── Technical Documentation/    # Architecture and specs
-├── Troubleshooting/           # Problem-solving guides
-├── deployment/                # Deployment instructions
-├── tests/                     # Test reports and results
-└── archive/                   # Historical documentation
-```
-
-## 🔍 Quick Links by Topic
-
-### For New Users
-1. Start with [SETUP.md](../SETUP.md)
-2. Read [QUICK_WALLET_SETUP.md](QUICK_WALLET_SETUP.md)
-3. Follow [OPENAI_SETUP.md](OPENAI_SETUP.md)
-
-### For Developers
-1. Study [ARCHITECTURE.md](../ARCHITECTURE.md)
-2. Review [API_DOCUMENTATION.md](../API_DOCUMENTATION.md)
-3. Check [DEVELOPER_NOTES.md](DEVELOPER_NOTES.md)
-
-### For Integration
-1. Choose your blockchain guide
-2. Follow USDC setup if needed
-3. Test with local verification
-
-### For Troubleshooting
-1. Check [TROUBLESHOOTING_COMMON_ISSUES.md](TROUBLESHOOTING_COMMON_ISSUES.md)
-2. Review specific integration guides
-3. Check test reports in `tests/`
-
-## 📝 Contributing to Documentation
-
-When adding new documentation:
-1. Place in appropriate category
-2. Update this INDEX.md file
-3. Follow markdown best practices
-4. Include examples where possible
-5. Keep technical accuracy
-
-## 🚀 Latest Updates
-
-- **v5.0**: Added IoTeX integration, reorganized codebase
-- **v4.6**: Avalanche support, improved AI predictions
-- **v4.4**: Base blockchain, Solflare wallet
-- **v4.3**: OpenAI integration, modular architecture
+## 🔗 External Links
+- [GitHub Repository](https://github.com/hshadab/agentkit)
+- [Circle Documentation](https://developers.circle.com)
+- [IoTeX Documentation](https://docs.iotex.io)
+- [Avalanche Documentation](https://docs.avax.network)
+- [Solana Documentation](https://docs.solana.com)
