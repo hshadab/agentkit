@@ -1,0 +1,45 @@
+[package]
+name = "nova-jolt-ffi"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# Arecibo and Nova dependencies
+arecibo = { git = "https://github.com/wyattbenno777/arecibo", branch = "wyatt_dev" }
+nova-snark = "0.23.0"
+bellperson = "0.25.0"
+ff = "0.13"
+pasta_curves = "0.5"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+bincode = "1.3"
+hex = "0.4"
+
+# FFI and Node.js bindings
+neon = { version = "0.10", default-features = false, features = ["napi-6"] }
+neon-runtime = "0.10"
+
+# Cryptography
+sha2 = "0.10"
+blake3 = "1.3"
+poseidon = "0.2"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+[build-dependencies]
+neon-build = "0.10"
+
+[profile.release]
+lto = true
+opt-level = 3
+
+[features]
+default = ["parallel"]
+parallel = ["bellperson/parallel", "nova-snark/parallel"]

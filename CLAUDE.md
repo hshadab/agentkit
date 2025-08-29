@@ -34,7 +34,19 @@ AgentKit is a **universal verifiable AI agent framework** that enables trustless
 - **File**: `api/groth16-verifier-backend.js`
 - **Note**: Uses view function (no gas for queries)
 
-### 4. Multi-Chain Support
+### 4. Nova+JOLT Recursive zkML System
+- **Status**: Simulated (Plan for real Arecibo integration in `nova-jolt/arecibo-integration/`)
+- **Backend Port**: 3005
+- **Location**: `nova-jolt/`
+- **Features**:
+  - Recursive proof accumulation (currently simulated)
+  - Multi-agent consensus
+  - Real-time streaming authorization
+  - 37% gas savings, 64% time reduction
+- **Integration Plan**: See `nova-jolt/arecibo-integration/ARECIBO_INTEGRATION_PLAN.md`
+- **Timeline**: 4-5 weeks to production with real Arecibo Nova
+
+### 5. Multi-Chain Support
 - **Ethereum & L2s**: Base, Arbitrum, Optimism
 - **Avalanche**: Healthcare focus (medical records)
 - **Solana**: High-frequency trading and gaming
@@ -253,6 +265,107 @@ node tests/integration/test-iotex-proximity.js
 - GitHub: https://github.com/hshadab/agentkit
 - Issues: Check browser console first
 - Logs: Check service logs in root directory
+
+## 🎨 UI Integration Plan (index.html → index-clean.html)
+
+### Current State
+- **index.html**: Full-featured with multiple proof types, zkEngine, code editor
+- **index-clean.html**: Clean Gateway zkML demo, SES-safe, working Circle integration
+
+### Integration Phases
+
+#### Phase 1: Backend Consolidation (1 week)
+- Create `api/unified-backend-v2.js` merging all proof endpoints
+- Standardize proof response format across all types
+- Add OpenAI integration for natural language routing
+- Include zkEngine endpoints (KYC, Location, AI Content, Device)
+
+#### Phase 2: Component Library (1 week)
+```
+static/js/components/
+├── ProofCard.js        # Display any proof type
+├── VerificationCard.js # Show verification status
+├── WorkflowProgress.js # Multi-step progress
+├── CodeDisplay.js      # C/WASM/Circom viewer
+└── TransactionCard.js  # Blockchain transactions
+```
+- Maintain SES compliance (no eval/Function)
+- Pre-compiled templates only
+
+#### Phase 3: Feature Integration (2 weeks)
+- **Proof Type Selector**: Dropdown for zkML, KYC, Location, AI, Device, Custom
+- **zkEngine Workflows**: C → WASM compilation visualization
+- **OpenAI Routing**: Natural language → proof type detection
+- **History & Analytics**: localStorage-based proof/verification history
+
+#### Phase 4: Advanced Features (2 weeks)
+- **Multi-chain Support**: Chain selector with appropriate verifiers
+- **File Handling**: Upload C code, paste functionality, export/import
+- **Developer Tools**: Circuit viewer, WASM debugger, gas estimation
+
+#### Phase 5: Polish & Optimization (1 week)
+- Performance: Lazy loading, WASM caching, service workers
+- UX: Guided tutorials, error recovery, keyboard shortcuts
+- Accessibility: ARIA labels, keyboard navigation
+
+### Migration Strategy
+1. Keep `index-clean.html` working during development
+2. Build in `index-next.html` for testing
+3. Feature flag system for gradual rollout
+4. A/B test with subset of users
+5. Final swap when verified
+
+### Priority Order
+1. **Gateway zkML** - Keep as hero feature
+2. **KYC Proofs** - Most requested
+3. **Location Proofs** - IoT use cases
+4. **AI Content** - Trending feature
+5. **Custom Proofs** - Developer audience
+
+### Technical Requirements
+- Maintain SES compliance throughout
+- Progressive enhancement (basic features work without all backends)
+- Responsive design for mobile wallets
+- Cross-browser compatibility
+- Unit/integration/E2E testing
+
+### Timeline: ~7 weeks total
+
+---
+
+## 🔄 Nova+JOLT Arecibo Integration Status
+
+### Current Implementation (Simulated)
+The Nova+JOLT system in `nova-jolt/` currently uses **simulated folding** for demonstration:
+- ✅ Functional API and architecture
+- ✅ Correct workflow and data flow
+- ⚠️ Mock cryptographic operations (not real Nova)
+- ⚠️ Random proof generation (not verifiable)
+
+### Real Arecibo Integration (Planned)
+Full integration plan available at: `nova-jolt/arecibo-integration/ARECIBO_INTEGRATION_PLAN.md`
+
+**Key Differences**:
+| Component | Current (Simulated) | Target (Real Arecibo) |
+|-----------|--------------------|-----------------------|
+| Proof Folding | SHA256 concatenation | Real recursive SNARKs |
+| Verification | Parameter checking | Pairing-based verification |
+| Gas Cost | Estimated | Actual ~300k per verification |
+| Security | None (demo only) | 128-bit cryptographic |
+| Timeline | Working now | 4-5 weeks to implement |
+
+**To implement real Nova**:
+1. Build Rust FFI bindings (`nova-jolt/arecibo-integration/rust-ffi/`)
+2. Generate verifier contracts from Arecibo
+3. Replace mock functions with real Nova calls
+4. Deploy generated verifiers on-chain
+
+**Resources needed**:
+- 1 Rust developer familiar with zkSNARKs
+- 1 Solidity developer for contract integration
+- ~$50k budget for 5-week implementation
+
+See `nova-jolt/arecibo-integration/` for complete implementation guide.
 
 ---
 
