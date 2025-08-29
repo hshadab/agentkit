@@ -151,9 +151,14 @@ app.post('/groth16/workflow', async (req, res) => {
         
         // Generate circuit proof
         console.log('   📝 Generating circuit proof...');
+        
+        // Default values if not provided
+        const finalDecision = decision !== undefined ? decision : 1;
+        const finalConfidence = confidence !== undefined ? confidence : 95;
+        
         const { proof, publicSignals } = await generateCircuitProof(
-            decision || 1,
-            confidence || 95
+            finalDecision,
+            finalConfidence
         );
         
         // Format proof for Solidity
@@ -254,6 +259,7 @@ app.post('/groth16/workflow', async (req, res) => {
         
     } catch (error) {
         console.error('❌ Verification error:', error.message);
+        console.error('   Stack:', error.stack);
         
         // Check specific error types
         if (error.message.includes('Insufficient balance')) {
