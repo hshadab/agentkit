@@ -29,12 +29,14 @@ AgentKit is a **universal verifiable AI agent framework** that enables trustless
   - GET `/zkml/status/:sessionId` - Check proof status
 - **Performance**: 20x faster than previous implementation
 
-### 3. Groth16 Proof-of-Proof Verifier
+### 3. On-Chain JOLT Verifier  
 - **Backend Port**: 3004
-- **Contract**: `0xE2506E6871EAe022608B97d92D5e051210DF684E` on Ethereum Sepolia
-- **Purpose**: Proves zkML proofs are valid (meta-verification)
-- **File**: `api/groth16-verifier-backend.js`
+- **Contract**: `0x1279FEDc2A21Ae16dC6bfE2bE0B89175f98BD308` on Ethereum Sepolia
+- **Purpose**: On-chain verification of JOLT zkML decisions
+- **Circuit**: Simplified (2 params: decision, confidence) for demo
+- **File**: `api/groth16-jolt-backend.js`
 - **Note**: Uses view function (no gas for queries)
+- **Future**: Can be expanded to validate all 14 LLM parameters
 
 ### 4. Multi-Chain Support
 - **Ethereum & L2s**: Base, Arbitrum, Optimism
@@ -71,9 +73,9 @@ agentkit/
 ./start-all-services.sh
 
 # Or individually:
-node api/zkml-llm-decision-backend.js    # Port 8002
-node api/groth16-verifier-backend.js     # Port 3004
-python3 scripts/utils/serve-no-cache.py  # Port 8000
+node api/zkml-llm-decision-backend.js    # Port 8002 - zkML proof generation
+node api/groth16-jolt-backend.js        # Port 3004 - On-chain verification  
+python3 scripts/utils/serve-no-cache.py  # Port 8000 - Web UI
 ```
 
 ### Chain-Specific Services
@@ -149,7 +151,7 @@ User must say: **"gateway"** AND **"zkml"**
 
 | Proof Type | Generation | Verification | Chains |
 |------------|------------|--------------|--------|
-| zkML (JOLT-Atlas) | 10-15s | 2s | All EVM |
+| zkML (JOLT-Atlas) | ~500ms | View function (no gas) | All EVM |
 | Medical Records | 3s | 200k gas | Avalanche |
 | IoT Proximity | 1s | 150k gas | IoTeX |
 | Trading Decision | 2s | 150k gas | Base |
@@ -216,6 +218,14 @@ node tests/integration/test-iotex-proximity.js
 - Keep SES-safe (no dynamic code generation)
 
 ## 📝 Recent Updates
+
+### 2025-08-29 - On-Chain JOLT Verification
+- ✅ Deployed simplified JOLT verifier to Sepolia (0x1279FEDc2A21Ae16dC6bfE2bE0B89175f98BD308)
+- ✅ Created Circom circuit for zkML decision verification
+- ✅ Integrated real on-chain verification into Step 2
+- ✅ Reduced proof time from 10-15s to ~500ms with Rust binary
+- 📝 Note: Using simplified 2-parameter circuit for demo (decision + confidence)
+- 🔮 Future: Can expand to validate all 14 LLM parameters
 
 ### 2025-08-29 - Major Reorganization
 - ✅ Cleaned root directory structure
