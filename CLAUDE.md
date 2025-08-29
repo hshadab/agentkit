@@ -29,13 +29,18 @@ AgentKit is a **universal verifiable AI agent framework** that enables trustless
   - GET `/zkml/status/:sessionId` - Check proof status
 - **Performance**: 20x faster than previous implementation
 
-### 3. On-Chain JOLT Verifier  
+### 3. On-Chain JOLT Verifier (REAL)
 - **Backend Port**: 3004
-- **Contract**: `0x1279FEDc2A21Ae16dC6bfE2bE0B89175f98BD308` on Ethereum Sepolia
-- **Purpose**: On-chain verification of JOLT zkML decisions
+- **Contract**: `0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944` on Ethereum Sepolia
+- **Purpose**: PERMANENT on-chain verification with audit trail
 - **Circuit**: Simplified (2 params: decision, confidence) for demo
-- **File**: `api/groth16-jolt-backend.js`
-- **Note**: Uses view function (no gas for queries)
+- **File**: `api/groth16-jolt-backend-real.js`
+- **Cost**: ~0.0005 ETH per verification (creates permanent record)
+- **Features**: 
+  - Stores verification on-chain permanently
+  - Emits events for audit trail
+  - Returns transaction hash as proof
+  - Prevents double-verification
 - **Future**: Can be expanded to validate all 14 LLM parameters
 
 ### 4. Multi-Chain Support
@@ -73,9 +78,9 @@ agentkit/
 ./start-all-services.sh
 
 # Or individually:
-node api/zkml-llm-decision-backend.js    # Port 8002 - zkML proof generation
-node api/groth16-jolt-backend.js        # Port 3004 - On-chain verification  
-python3 scripts/utils/serve-no-cache.py  # Port 8000 - Web UI
+node api/zkml-llm-decision-backend.js      # Port 8002 - zkML proof generation
+node api/groth16-jolt-backend-real.js     # Port 3004 - REAL on-chain verification (costs gas)
+python3 scripts/utils/serve-no-cache.py    # Port 8000 - Web UI
 ```
 
 ### Chain-Specific Services
@@ -151,7 +156,7 @@ User must say: **"gateway"** AND **"zkml"**
 
 | Proof Type | Generation | Verification | Chains |
 |------------|------------|--------------|--------|
-| zkML (JOLT-Atlas) | ~500ms | View function (no gas) | All EVM |
+| zkML (JOLT-Atlas) | ~500ms | ~365k gas (~0.0005 ETH) | All EVM |
 | Medical Records | 3s | 200k gas | Avalanche |
 | IoT Proximity | 1s | 150k gas | IoTeX |
 | Trading Decision | 2s | 150k gas | Base |
