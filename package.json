@@ -1,5 +1,12 @@
 {
   "dependencies": {
-    "@circle-fin/developer-controlled-wallets": "^8.3.0"
-  }
+    "@circle-fin/developer-controlled-wallets": "^8.3.0",
+    "circomlib": "^2.0.5",
+    "cors": "^2.8.5",
+    "ethers": "^6.15.0",
+    "express": "^5.1.0",
+    "node-fetch": "^3.3.2",
+    "snarkjs": "^0.7.5"
+  },
+  "type": "commonjs"
 }

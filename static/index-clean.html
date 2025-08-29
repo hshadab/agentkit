@@ -146,7 +146,7 @@
     
     <!-- Load libraries -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    <script src="js/gateway-zkml-polling.js?v=20250828-verification-fix"></script>
+    <script src="js/gateway-zkml-polling.js?v=20250828-real-contract"></script>
     
     <script>
         // SES-safe implementation without any concat operations
@@ -502,10 +502,10 @@
                 const amountMatch = message.match(/\$?([\d.]+)/);
                 const amount = amountMatch ? amountMatch[1] : '2'; // Default to minimum 2 USDC
                 
-                // Use the polling version if available
-                if (window.GatewayZKMLHandler && window.GatewayZKMLHandler.executeWorkflowWithPolling) {
-                    addMessage('🚀 Starting Gateway zkML workflow with transfer status tracking...', 'assistant');
-                    window.GatewayZKMLHandler.executeWorkflowWithPolling(amount);
+                // Use the new attestation-based workflow
+                if (window.GatewayZKMLHandler && window.GatewayZKMLHandler.executeWorkflow) {
+                    addMessage('🚀 Starting Gateway zkML workflow with Groth16 verification...', 'assistant');
+                    window.GatewayZKMLHandler.executeWorkflow(amount);
                 } else if (window.executeGatewayZKMLWorkflow) {
                     window.executeGatewayZKMLWorkflow(amount);
                 } else {

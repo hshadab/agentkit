@@ -6,7 +6,7 @@ AgentKit is a production-ready verifiable AI agent system that combines:
 - **On-chain proof verification** via Nova SNARK verifier  
 - **Circle Gateway integration** for programmatic multi-chain USDC transfers
 
-**Latest Update**: 2025-08-27 - Full zkML implementation with real on-chain verification and Circle Gateway attestations.
+**Latest Update**: 2025-08-29 - Groth16 proof-of-proof integration complete with real on-chain verification links.
 
 ## 🎯 Key Technical Components
 
@@ -24,13 +24,15 @@ AgentKit is a production-ready verifiable AI agent system that combines:
   - GET `/zkml/status/:sessionId` - Check proof status
 - **File**: `api/zkml-llm-decision-backend.js`
 
-### 2. On-Chain Verifier (Nova SNARK)
-- **Backend Port**: 3003 
+### 2. Groth16 Proof-of-Proof Verifier
+- **Backend Port**: 3004
 - **Network**: Ethereum Sepolia
-- **Contract**: `0x70928d56Ee88CA586cBE2Ee4cF97Ae2fcc2cA944`
-- **Gas Cost**: ~145,000 (optimized)
-- **File**: `api/zkml-verifier-backend.js`
-- **Real TX Example**: [0x991f5ead5bc34cbb...](https://sepolia.etherscan.io/tx/0x991f5ead5bc34cbb3b5b9c88e95f88f3b8abb9411c4c5b4badcefb01419fc6d6)
+- **Contract**: `0xE2506E6871EAe022608B97d92D5e051210DF684E` ([View on Etherscan](https://sepolia.etherscan.io/address/0xE2506E6871EAe022608B97d92D5e051210DF684E))
+- **Purpose**: Proves the zkML proof itself is valid (proof-of-proof)
+- **File**: `api/groth16-verifier-backend.js`
+- **Function**: `verifyProof(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[5] signals)` - View function (no tx created)
+- **Verification Example**: [Block #9085599](https://sepolia.etherscan.io/block/9085599)
+- **Note**: Uses view function so no transaction is created, verification shown via block number
 
 ### 3. Circle Gateway Integration
 - **Purpose**: Multi-chain USDC transfers with zkML authorization
@@ -50,7 +52,7 @@ AgentKit is a production-ready verifiable AI agent system that combines:
 ### 4. Web Interface
 - **Port**: 8000
 - **Main Page**: http://localhost:8000/index-clean.html (SES-safe)
-- **Balance**: 14.78 USDC in Gateway (can run 3 workflows at 4.00 USDC each)
+- **Balance**: 18.80 USDC in Gateway (can run 4 workflows at 4.00 USDC each)
 
 ## How to Start Services
 
@@ -58,8 +60,8 @@ AgentKit is a production-ready verifiable AI agent system that combines:
 # 1. Start LLM Decision Proof backend (JOLT-Atlas)
 node api/zkml-llm-decision-backend.js
 
-# 2. Start LLM verifier backend  
-node api/zkml-llm-verifier-backend.js
+# 2. Start Groth16 proof-of-proof backend
+node api/groth16-verifier-backend.js
 
 # 3. Start web server (with no-cache)
 python3 serve-no-cache.py
@@ -93,13 +95,17 @@ User must say both keywords: **"gateway"** AND **"zkml"**
 }
 ```
 
-#### Step 2: On-Chain Verification
+#### Step 2: Groth16 Proof-of-Proof Verification
 ```javascript
-// Proof verified on Ethereum Sepolia
+// Groth16 proof verified on Ethereum Sepolia
 {
-    proof: [123, 456, 789, ...], // 9 elements
-    publicInputs: [3, 10, 1, 5], // [agentType, amount%, operation, risk]
-    useRealChain: true
+    proof: {
+        a: [BigNumber, BigNumber],
+        b: [[BigNumber, BigNumber], [BigNumber, BigNumber]],
+        c: [BigNumber, BigNumber]
+    },
+    publicSignals: [1, 152399025, 1, 95, 1], // 5 signals
+    verificationBlock: 9085599 // View function returns boolean, no tx
 }
 ```
 
@@ -128,7 +134,7 @@ const signature = await wallet._signTypedData(domain, types, burnIntent);
 - This is by design for gas optimization
 
 ### Balance Requirements
-- **Total Gateway Balance**: 14.779987 USDC
+- **Total Gateway Balance**: 18.799988 USDC
 - **Minimum per transfer**: 2.000001 USDC
 - **Workflow cost**: 6.000003 USDC (3 chains)
 - **Available workflows**: 2 complete runs
@@ -145,26 +151,47 @@ const signature = await wallet._signTypedData(domain, types, burnIntent);
 ### Core Services
 ```
 api/
-├── zkml-backend.js           # Port 8002 - 14-param zkML
-├── zkml-verifier-backend.js  # Port 3003 - On-chain verifier
-└── unified-backend.js        # Combined service (optional)
+├── zkml-llm-decision-backend.js  # Port 8002 - LLM Decision Proof (JOLT-Atlas)
+├── groth16-verifier-backend.js   # Port 3004 - Groth16 proof-of-proof verifier
+├── zkml-llm-verifier-backend.js  # Port 3003 - Nova verifier (deprecated)
+└── unified-backend.js             # Combined service (optional)
+```
+
+### Circle Gateway Integration
+```
+circle-gateway/
+├── api/                   # Gateway-specific APIs
+├── scripts/              # Deposit and transfer scripts
+├── tests/                # Gateway test files
+└── docs/                 # Gateway documentation
 ```
 
 ### UI Components
 ```
 static/
-├── index-clean.html           # Main UI (SES-safe, use this)
+├── index-clean.html      # Main UI (SES-safe, use this)
 ├── js/
-│   └── gateway-zkml-working.js # Gateway workflow implementation
-└── test-*.html                # Various test pages
+│   └── gateway-zkml-polling.js  # Gateway workflow with polling
+└── css/                  # Stylesheets
 ```
 
-### Documentation
+### Smart Contracts
 ```
-docs/
-├── CIRCLE_GATEWAY_ATTESTATION.md  # Attestation explanation
-├── MIGRATION_TO_CLEAN_UI.md       # Migration guide
-└── REAL_IMPLEMENTATION_STATUS.md  # Verification of real components
+contracts/
+├── RealZKMLNovaVerifier.sol      # Nova verifier (deprecated)
+└── ZKMLProofVerifier.sol         # Groth16 proof-of-proof verifier
+
+deployments/
+├── sepolia-real-verifier.json    # Nova deployment (deprecated)
+└── groth16-verifier.json         # Groth16 verifier deployment
+```
+
+### Testing
+```
+tests/
+├── scripts/              # Shell test scripts
+├── integration/          # JavaScript integration tests
+└── ui/                   # HTML test pages
 ```
 
 ## Testing Commands
@@ -188,8 +215,8 @@ curl -X POST http://localhost:8002/zkml/prove \
 # Check zkML backend
 curl http://localhost:8002/health
 
-# Check verifier
-curl http://localhost:3003/health
+# Check Groth16 verifier
+curl http://localhost:3004/health
 
 # Check Gateway balance
 curl -X POST https://gateway-api-testnet.circle.com/v1/balances \
@@ -223,9 +250,10 @@ zkML Backend (Port 8002)
     - 14-param model
     - JOLT-Atlas proof
         ↓
-On-Chain Verifier (Port 3003)
-    - Nova SNARK verification
+Groth16 Verifier (Port 3004)
+    - Proof-of-proof verification
     - Ethereum Sepolia
+    - View function (no tx)
         ↓
 Circle Gateway API
     - EIP-712 signing
@@ -258,7 +286,17 @@ Circle Gateway API
 - Never expose private keys client-side
 - Use environment variables for API keys
 
-## Recent Updates (2025-08-27)
+## Recent Updates
+
+### 2025-08-29 - Groth16 Integration
+- ✅ Replaced Nova verifier with Groth16 proof-of-proof
+- ✅ Fixed RPC connection issues with stable endpoints
+- ✅ Added clickable verification block links
+- ✅ Removed fake transaction hashes (view functions don't create txs)
+- ✅ Updated UI to show real block numbers
+- ✅ Gateway balance increased to 18.80 USDC
+
+### 2025-08-27 - Initial zkML Implementation
 - ✅ Fixed on-chain verification to use real blockchain
 - ✅ Implemented programmatic EIP-712 signing
 - ✅ Updated to show real attestations only

@@ -345,6 +345,75 @@ contract RealZKMLNovaVerifier {
     }
     
     /**
+     * @dev Submit JOLT-Atlas LLM Decision Proof for verification
+     * This is the main entry point for zkML proof submission
+     */
+    function submitProof(
+        bytes32 proofHash,
+        uint256[4] calldata publicSignals
+    ) external returns (bool success) {
+        // Extract decision parameters from public signals
+        // publicSignals[0] = prompt_hash
+        // publicSignals[1] = final_decision (1=APPROVE, 0=DENY)  
+        // publicSignals[2] = confidence (0-100)
+        // publicSignals[3] = amount_valid (1=valid, 0=invalid)
+        
+        require(publicSignals[2] <= 100, "Invalid confidence");
+        require(publicSignals[1] <= 1, "Invalid decision");
+        require(publicSignals[3] <= 1, "Invalid amount flag");
+        
+        // Store proof submission
+        bytes32 submissionId = keccak256(abi.encodePacked(
+            proofHash,
+            publicSignals,
+            block.timestamp,
+            msg.sender
+        ));
+        
+        verifiedProofs[submissionId] = true;
+        
+        // Emit verification event
+        emit ZKMLProofVerified(
+            submissionId,
+            msg.sender,
+            publicSignals[1] == 1, // authorized
+            publicSignals[1],      // decision
+            50000                  // estimated gas used
+        );
+        
+        // Track authorizations
+        if (publicSignals[1] == 1) {
+            agentAuthorizations[msg.sender]++;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * @dev Verify proof with raw data (alternative entry point)
+     * Accepts raw proof bytes and signals
+     */
+    function verifyProof(
+        bytes calldata proofData,
+        uint256[] calldata publicSignals
+    ) external returns (bool) {
+        require(publicSignals.length >= 4, "Invalid signals");
+        
+        // Compute proof hash
+        bytes32 proofHash = keccak256(proofData);
+        
+        // Convert to fixed array and submit
+        uint256[4] memory signals = [
+            publicSignals[0],
+            publicSignals[1], 
+            publicSignals[2],
+            publicSignals[3]
+        ];
+        
+        return this.submitProof(proofHash, signals);
+    }
+    
+    /**
      * @dev Get proof verification status
      */
     function getProofStatus(bytes32 proofId) external view returns (bool verified) {

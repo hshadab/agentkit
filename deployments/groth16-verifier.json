@@ -1,0 +1,44 @@
+{
+  "address": "0xE2506E6871EAe022608B97d92D5e051210DF684E",
+  "transactionHash": "0xf035809d7ce8ba8ba4584d4d7b06493d0ecbac94a716cfd2df43db182b15704e",
+  "deployer": "0xE616B2eC620621797030E0AB1BA38DA68D78351C",
+  "network": "sepolia",
+  "timestamp": "2025-08-28T16:59:51.568Z",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256[2]",
+          "name": "_pA",
+          "type": "uint256[2]"
+        },
+        {
+          "internalType": "uint256[2][2]",
+          "name": "_pB",
+          "type": "uint256[2][2]"
+        },
+        {
+          "internalType": "uint256[2]",
+          "name": "_pC",
+          "type": "uint256[2]"
+        },
+        {
+          "internalType": "uint256[5]",
+          "name": "_pubSignals",
+          "type": "uint256[5]"
+        }
+      ],
+      "name": "verifyProof",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "type": "Groth16 Proof-of-Proof Verifier"
+}
