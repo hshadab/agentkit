@@ -340,20 +340,9 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                     <div>
                         <div style="font-size: 18px; color: #10b981; font-weight: 600;">
                             💰 Gateway Balance: <span id="gateway-balance-${wfId}">Checking...</span>
-                            <a href="https://sepolia.etherscan.io/address/0x0077777d7EBA4688BDeF3E311b846F25870A19B9#tokentxns" 
-                               target="_blank" 
-                               title="View shared Gateway pool on-chain (999,980 USDC total). Your allocation (18.80) is tracked off-chain by Circle."
-                               onmouseover="this.style.background='rgba(139, 154, 255, 0.2)'; this.style.borderColor='#8b9aff';"
-                               onmouseout="this.style.background='transparent'; this.style.borderColor='#8b9aff';"
-                               style="font-size: 11px; color: #8b9aff; text-decoration: none; margin-left: 10px; border: 1px solid #8b9aff; padding: 2px 6px; border-radius: 4px; transition: all 0.2s; cursor: pointer;">
-                                🔗 View Pool (Shared)
-                            </a>
                         </div>
                         <div style="font-size: 10px; color: #9ca3af; margin-top: 4px;">
-                            Shared Pool: 0x0077777d7EBA4688BDeF3E311b846F25870A19B9
-                            <span style="margin-left: 10px; color: #fbbf24; font-size: 9px;">
-                                (Your allocation tracked by Circle API)
-                            </span>
+                            Wallet: ${userAddress}
                         </div>
                     </div>
                     <div>
