@@ -4,6 +4,16 @@
 
 AgentKit's zkML (Zero-Knowledge Machine Learning) system enables cryptographic proof that AI agents made correct decisions without revealing private model weights or user data.
 
+## 🏗️ Technology Stack
+
+### JOLT-Atlas Framework
+JOLT-Atlas is NovaNet's zkML framework that extends the [a16z JOLT proving system](https://github.com/a16z/jolt) to support ML inference verification from ONNX models. It simplifies zero-knowledge proofs by using primarily lookup arguments rather than complex arithmetic constraints.
+
+- **Base System**: a16z's JOLT (Just One Lookup Table)
+- **Extensions**: NovaNet's modifications for ML verification
+- **Repository**: [github.com/ICME-Lab/jolt-atlas](https://github.com/ICME-Lab/jolt-atlas)
+- **Key Innovation**: Proves ML computations using lookup tables instead of arithmetic circuits
+
 ## 🧠 LLM Decision Proof Model
 
 ### What We Prove
@@ -167,8 +177,109 @@ PROVEN: softmax([2.944, -1.386]) = [0.95, 0.05] ✓
 PROVEN: argmax([0.95, 0.05]) = 0 = APPROVE ✓
 ```
 
-### Step 3: Verification
+### Step 3: On-Chain Verification
 The proof is verified on-chain, creating an immutable record that the AI followed all rules correctly.
+
+## ⛓️ On-Chain Verification Details
+
+### Smart Contract Architecture
+
+#### 1. Primary Verifier Contract
+- **Address**: `0xE2506E6871EAe022608B97d92D5e051210DF684E` (Ethereum Sepolia)
+- **Type**: Groth16 Proof-of-Proof Verifier
+- **Purpose**: Meta-verification that zkML proofs are valid
+- **Gas Cost**: FREE (view function for queries)
+
+#### 2. Verification Process
+```solidity
+// Contract verifies the zkML proof structure
+function verifyZKMLProof(
+    uint256[2] memory a,
+    uint256[2][2] memory b,
+    uint256[2] memory c,
+    uint256[4] memory publicSignals
+) public view returns (bool) {
+    // publicSignals contain:
+    // [0]: Session ID hash
+    // [1]: Decision (1=APPROVE, 0=DENY)
+    // [2]: Confidence score (0-100)
+    // [3]: Model version
+}
+```
+
+#### 3. What Gets Verified On-Chain
+1. **Proof Validity**: Mathematical correctness of the zkML proof
+2. **Model Commitment**: Correct AI model was used (via hash)
+3. **Decision Integrity**: Decision matches the proof output
+4. **Compliance Check**: All rules were evaluated
+
+### Multi-Chain Support
+
+Different chains verify different proof types:
+
+| Chain | Contract Type | Proof Focus | Gas Cost |
+|-------|--------------|-------------|----------|
+| Ethereum | Groth16 Meta-Verifier | zkML Proof-of-Proof | 0 (view) |
+| Base | Trading Verifier | DeFi Decisions | ~150k |
+| Avalanche | Medical Verifier | Healthcare Privacy | ~200k |
+| IoTeX | IoT Verifier | Device Attestation | ~150k |
+| Solana | Game State Verifier | High-Speed Gaming | 5k lamports |
+
+### Verification Flow
+
+```mermaid
+graph LR
+    A[zkML Proof Generated] --> B[Submit to Contract]
+    B --> C{Verify Proof}
+    C -->|Valid| D[Store Decision Hash]
+    C -->|Invalid| E[Reject]
+    D --> F[Emit Event]
+    F --> G[Circle Gateway Approval]
+```
+
+### On-Chain Storage
+
+What gets stored permanently:
+```solidity
+struct VerifiedDecision {
+    bytes32 proofHash;      // Hash of the zkML proof
+    address verifier;       // Who submitted the proof
+    uint256 timestamp;      // When verified
+    uint8 decision;         // APPROVE(1) or DENY(0)
+    uint8 confidence;       // 0-100 confidence score
+    bytes32 modelCommit;    // Model version hash
+}
+```
+
+### Verification Events
+
+The contract emits events for monitoring:
+```solidity
+event ZKMLVerified(
+    bytes32 indexed sessionId,
+    address indexed verifier,
+    uint8 decision,
+    uint8 confidence,
+    uint256 timestamp
+);
+```
+
+### Query Verified Proofs
+
+Anyone can query past verifications:
+```javascript
+// Web3.js example
+const verifiedProof = await contract.methods
+    .getVerifiedProof(sessionId)
+    .call();
+
+console.log({
+    verified: verifiedProof.verified,
+    decision: verifiedProof.decision,
+    confidence: verifiedProof.confidence,
+    timestamp: new Date(verifiedProof.timestamp * 1000)
+});
+```
 
 ## 🚀 Performance
 
