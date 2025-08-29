@@ -10,7 +10,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
         const shortAttestation = attestation.substring(0, 10);
         
         return `
-            <div class="attestation-display" style="margin: 8px 0;">
+            <div class="attestation-display" style="margin: 4px 0;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <span style="color: #10b981;">✅</span>
                     <span style="color: #8b9aff; font-size: 12px;">${chain}:</span>
@@ -21,7 +21,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                         onclick="toggleAttestation('${attestationId}', '${attestation}')"
                         style="background: rgba(107, 124, 255, 0.2); color: #8b9aff; border: 1px solid rgba(107, 124, 255, 0.3); padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 10px;"
                     >
-                        Show More
+                        Show Circle Attestation
                     </button>
                 </div>
                 <div id="${attestationId}-full" style="display: none; margin-top: 8px; padding: 8px; background: rgba(0, 0, 0, 0.3); border-radius: 4px; word-break: break-all; font-family: monospace; font-size: 10px; color: #9ca3af;">
@@ -43,7 +43,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             shortEl.style.display = 'none';
         } else {
             fullEl.style.display = 'none';
-            button.textContent = 'Show More';
+            button.textContent = 'Show Circle Attestation';
             shortEl.style.display = 'inline';
         }
     };
@@ -103,7 +103,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             if (content) {
                 let html = '<div style="font-size: 12px; color: #10b981; margin-bottom: 12px;">✅ Gateway transfers accepted!</div>';
                 html += '<div style="font-size: 11px; color: #9ca3af; margin-bottom: 12px;">Attestations prove transfers are accepted. Settlement occurs in 15-30 minutes.</div>';
-                html += '<div style="display: flex; flex-direction: column; gap: 12px;">';
+                html += '<div style="display: flex; flex-direction: column; gap: 6px;">';
                 
                 transfers.forEach(transfer => {
                     if (transfer.success && transfer.attestation) {
@@ -338,12 +338,8 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                 
                 <div class="gateway-unified-balance">
                     <div>
-                        <div style="font-size: 12px; color: #10b981; font-weight: 600;">💰 Gateway Balance</div>
+                        <div style="font-size: 18px; color: #10b981; font-weight: 600;">💰 Gateway Balance: <span id="gateway-balance-${wfId}">Checking...</span></div>
                         <div style="font-size: 10px; color: #9ca3af; margin-top: 4px;">Wallet: ${userAddress}</div>
-                        <div style="margin-top: 8px;">
-                            <div style="font-size: 18px; color: #10b981; font-weight: 600;" id="gateway-balance-${wfId}">Checking...</div>
-                            <div style="font-size: 10px; color: #9ca3af; margin-top: 4px;" id="gateway-total-${wfId}"></div>
-                        </div>
                     </div>
                     <div>
                         <div style="font-size: 10px; color: #06b6d4; font-weight: 600;">&lt;500ms transfers</div>
@@ -362,9 +358,9 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                     <div class="workflow-step gateway-step executing" id="step1-${wfId}" data-step-id="zkml_proof" style="margin-bottom: 12px;">
                         <div class="workflow-step-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <div class="step-details">
-                                <div class="step-title" style="font-size: 11px; color: #8b9aff; font-weight: 600;">STEP 1 OF 3</div>
-                                <div class="step-name" style="font-size: 14px; color: #ffffff;">LLM Decision Proof</div>
-                                <div class="step-message" style="font-size: 12px; color: #9ca3af;">Proving LLM agent correctly authorized USDC transfer using JOLT-Atlas</div>
+                                <div class="step-title" style="font-size: 11px; color: #8b9aff; font-weight: 600; margin-bottom: 4px;">STEP 1 OF 3</div>
+                                <div class="step-name" style="font-size: 14px; color: #ffffff; margin-bottom: 4px;">JOLT-Atlas zkML</div>
+                                <div class="step-message" style="font-size: 12px; color: #9ca3af; margin-bottom: 8px;">Prove agent correctly executed model for USDC payment</div>
                             </div>
                             <div class="step-status executing">EXECUTING</div>
                         </div>
@@ -377,9 +373,9 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                     <div class="workflow-step gateway-step pending" id="step2-${wfId}" data-step-id="onchain_verify" style="margin-bottom: 12px;">
                         <div class="workflow-step-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <div class="step-details">
-                                <div class="step-title" style="font-size: 11px; color: #8b9aff; font-weight: 600;">STEP 2 OF 3</div>
-                                <div class="step-name" style="font-size: 14px; color: #ffffff;">Groth16 Proof-of-Proof</div>
-                                <div class="step-message" style="font-size: 12px; color: #9ca3af;">Generate Groth16 proof of zkML validity and verify on Ethereum Sepolia</div>
+                                <div class="step-title" style="font-size: 11px; color: #8b9aff; font-weight: 600; margin-bottom: 4px;">STEP 2 OF 3</div>
+                                <div class="step-name" style="font-size: 14px; color: #ffffff; margin-bottom: 4px;">Ethereum On-Chain Verification</div>
+                                <div class="step-message" style="font-size: 12px; color: #9ca3af; margin-bottom: 8px;">Verify zkML proof on chain using Groth16 proof-of-proof</div>
                             </div>
                             <div class="step-status pending">AWAITING</div>
                         </div>
@@ -390,9 +386,9 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                     <div class="workflow-step gateway-step pending" id="step3-${wfId}" data-step-id="gateway_transfer" style="margin-bottom: 12px;">
                         <div class="workflow-step-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <div class="step-details">
-                                <div class="step-title" style="font-size: 11px; color: #8b9aff; font-weight: 600;">STEP 3 OF 3</div>
-                                <div class="step-name" style="font-size: 14px; color: #ffffff;">Multi-Chain Agent Spending</div>
-                                <div class="step-message" style="font-size: 12px; color: #9ca3af;">Agent transfers 2 USDC to Base and Avalanche</div>
+                                <div class="step-title" style="font-size: 11px; color: #8b9aff; font-weight: 600; margin-bottom: 4px;">STEP 3 OF 3</div>
+                                <div class="step-name" style="font-size: 14px; color: #ffffff; margin-bottom: 4px;">Circle Gateway Spending by Authorized Agent</div>
+                                <div class="step-message" style="font-size: 12px; color: #9ca3af; margin-bottom: 8px;">Agent transfers 2 USDC to Base and Avalanche</div>
                             </div>
                             <div class="step-status pending">AWAITING</div>
                         </div>
@@ -435,7 +431,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                 const totalBalance = data.balances.reduce((sum, b) => sum + parseFloat(b.balance), 0);
                 const balanceEl = document.getElementById(`gateway-balance-${wfId}`);
                 if (balanceEl) {
-                    balanceEl.textContent = `${totalBalance.toFixed(2)} USDC`;
+                    balanceEl.textContent = `${totalBalance.toFixed(2)}`;
                     
                     // Check if sufficient for transfers (2 USDC + 2.001 fee per chain × 2)
                     const requiredBalance = 8.002; // 4.001 per chain × 2
@@ -575,7 +571,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             }
             
             const data = await response.json();
-            console.log('Groth16 proof-of-proof verified on-chain at block:', data.blockNumber);
+            console.log('zkML proof verified on Ethereum at block:', data.blockNumber);
             
             if (data.success) {
                 if (data.blockNumber) {
@@ -620,7 +616,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             const content = document.getElementById('gateway-step-content-zkml_proof');
             if (content) {
                 content.innerHTML = `
-                    <div style="font-size: 12px; color: #10b981; margin-bottom: 8px;">✅ LLM Decision Proof generated</div>
+                    <div style="font-size: 12px; color: #10b981; margin-bottom: 8px;">✅ JOLT-Atlas zkML proof generated</div>
                     <div style="font-size: 11px; color: #8b9aff;">Session: ${sessionId}</div>
                     <div style="font-size: 10px; color: #9ca3af; margin-top: 4px;">Model: JOLT-Atlas LLM Decision (14 params)</div>
                 `;
@@ -671,7 +667,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                     const contractUrl = verifyResult.contractUrl || `https://sepolia.etherscan.io/address/${contractAddr}`;
                     
                     content.innerHTML = `
-                        <div style="font-size: 12px; color: #10b981; margin-bottom: 8px;">✅ Groth16 proof-of-proof verified on-chain</div>
+                        <div style="font-size: 12px; color: #10b981; margin-bottom: 8px;">✅ zkML proof verified on Ethereum</div>
                         <div style="margin-bottom: 6px;">
                             <a href="${blockUrl}" target="_blank" style="color: #8b9aff; font-size: 11px; text-decoration: none;">
                                 🔗 Verification Block #${blockNum}
@@ -686,7 +682,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                 } else if (verifyResult.proofGenerated) {
                     // Proof generated but on-chain pending
                     content.innerHTML = `
-                        <div style="font-size: 12px; color: #10b981; margin-bottom: 8px;">✅ Groth16 proof-of-proof generated</div>
+                        <div style="font-size: 12px; color: #10b981; margin-bottom: 8px;">✅ Ethereum verification proof generated</div>
                         <div style="font-size: 11px; color: #fbbf24; margin-bottom: 6px;">
                             ⚠️ On-chain verification pending (network timeout)
                         </div>
