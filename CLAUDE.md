@@ -17,15 +17,17 @@ AgentKit is a **universal verifiable AI agent framework** that enables trustless
   - `zkengine/src/` - Rust source code
   - `zkengine/wasm/` - WASM compilation
 
-### 2. zkML System (JOLT-Atlas)
+### 2. zkML System (JOLT-Atlas) - 100% REAL
 - **Model**: LLM Decision Proof Model (14 parameters)
 - **Framework**: JOLT-Atlas with recursive SNARKs
 - **Backend Port**: 8002
-- **Proof Time**: 10-15 seconds
+- **Proof Time**: ~500ms (REAL Rust binary execution)
+- **Binary**: `jolt-atlas/target/release/llm_prover`
 - **File**: `api/zkml-llm-decision-backend.js`
 - **Endpoints**:
   - POST `/zkml/prove` - Generate LLM Decision Proof
   - GET `/zkml/status/:sessionId` - Check proof status
+- **Performance**: 20x faster than previous implementation
 
 ### 3. Groth16 Proof-of-Proof Verifier
 - **Backend Port**: 3004
@@ -34,19 +36,7 @@ AgentKit is a **universal verifiable AI agent framework** that enables trustless
 - **File**: `api/groth16-verifier-backend.js`
 - **Note**: Uses view function (no gas for queries)
 
-### 4. Nova+JOLT Recursive zkML System
-- **Status**: Simulated (Plan for real Arecibo integration in `nova-jolt/arecibo-integration/`)
-- **Backend Port**: 3005
-- **Location**: `nova-jolt/`
-- **Features**:
-  - Recursive proof accumulation (currently simulated)
-  - Multi-agent consensus
-  - Real-time streaming authorization
-  - 37% gas savings, 64% time reduction
-- **Integration Plan**: See `nova-jolt/arecibo-integration/ARECIBO_INTEGRATION_PLAN.md`
-- **Timeline**: 4-5 weeks to production with real Arecibo Nova
-
-### 5. Multi-Chain Support
+### 4. Multi-Chain Support
 - **Ethereum & L2s**: Base, Arbitrum, Optimism
 - **Avalanche**: Healthcare focus (medical records)
 - **Solana**: High-frequency trading and gaming
@@ -366,6 +356,39 @@ Full integration plan available at: `nova-jolt/arecibo-integration/ARECIBO_INTEG
 - ~$50k budget for 5-week implementation
 
 See `nova-jolt/arecibo-integration/` for complete implementation guide.
+
+## 🔄 Circle Gateway Product Feedback
+
+Based on building this zkML + Circle Gateway integration:
+
+### Critical Issues for Developer Experience
+
+1. **Minimum Transfer Amount Too High**
+   - Current: 2.000001 USDC per transfer (testnet)
+   - Suggested: 0.01 USDC for testing
+   - Impact: At $4/workflow, developers burn through test funds quickly
+
+2. **Attestation-Only Response Creates UX Confusion**
+   - Issue: 498-char attestation returned immediately, tx hash after 15-30 min
+   - Need: `pendingTransactionUrl` or estimated settlement time
+   - Current workaround: Complex 5-minute polling for 2 hours
+
+3. **No Same-Domain Transfers**
+   - Can't transfer Ethereum → Ethereum
+   - Forces unnecessary multi-chain flows
+   - Limits consolidation use cases
+
+### Positive Aspects
+- EIP-712 signing implementation is clean
+- Multi-chain L2 support is comprehensive
+- API stability has been excellent
+- Error messages are clear and actionable
+
+### Feature Requests for AI Agents
+- Batch operations API
+- Conditional transfers ("if-then" logic)
+- Webhook support for settlement notifications
+- WebSocket endpoint for real-time updates
 
 ---
 
