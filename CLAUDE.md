@@ -1,315 +1,259 @@
 # Claude Assistant Guide - AgentKit v2.0
 
 ## Project Overview
-AgentKit is a production-ready verifiable AI agent system that combines:
-- **zkML (Zero-Knowledge Machine Learning)** using JOLT-Atlas framework
-- **On-chain proof verification** via Nova SNARK verifier  
-- **Circle Gateway integration** for programmatic multi-chain USDC transfers
+AgentKit is a **universal verifiable AI agent framework** that enables trustless AI operations across multiple blockchains with cryptographic proof of correct execution. The system combines zkEngine (Rust-based universal proof generation), zkML (JOLT-Atlas), multi-chain verification, and Circle integration for cross-chain asset management.
 
-**Latest Update**: 2025-08-29 - Groth16 proof-of-proof integration complete with real on-chain verification links.
+**Latest Update**: 2025-08-29 - Repository reorganization, broader multi-chain scope, Groth16 integration complete.
 
-## 🎯 Key Technical Components
+## 🎯 Core Technologies Stack
 
-### 1. zkML System (JOLT-Atlas)
+### 1. zkEngine - Universal Proof Generation
+- **Language**: Rust compiled to WASM
+- **Location**: `zkengine/` and `zkengine_binary/`
+- **Proof Types**: 14+ including KYC, location, IoT, medical, trading
+- **Performance**: Sub-second generation for most proofs
+- **Key Files**:
+  - `zkengine_binary/zkEngine` - Main binary
+  - `zkengine/src/` - Rust source code
+  - `zkengine/wasm/` - WASM compilation
+
+### 2. zkML System (JOLT-Atlas)
 - **Model**: LLM Decision Proof Model (14 parameters)
-  - 5 Input verification params (prompt hash, rules, temperature, etc.)
-  - 5 Decision process params (confidence scores, attention weights)
-  - 4 Output validation params (format, amount, recipient, decision)
-- **Framework**: JOLT-Atlas with recursive SNARKs and lookup tables
+- **Framework**: JOLT-Atlas with recursive SNARKs
 - **Backend Port**: 8002
 - **Proof Time**: 10-15 seconds
-- **Purpose**: Proves LLM agent correctly authorized USDC spending
+- **File**: `api/zkml-llm-decision-backend.js`
 - **Endpoints**:
   - POST `/zkml/prove` - Generate LLM Decision Proof
   - GET `/zkml/status/:sessionId` - Check proof status
-- **File**: `api/zkml-llm-decision-backend.js`
 
-### 2. Groth16 Proof-of-Proof Verifier
+### 3. Groth16 Proof-of-Proof Verifier
 - **Backend Port**: 3004
-- **Network**: Ethereum Sepolia
-- **Contract**: `0xE2506E6871EAe022608B97d92D5e051210DF684E` ([View on Etherscan](https://sepolia.etherscan.io/address/0xE2506E6871EAe022608B97d92D5e051210DF684E))
-- **Purpose**: Proves the zkML proof itself is valid (proof-of-proof)
+- **Contract**: `0xE2506E6871EAe022608B97d92D5e051210DF684E` on Ethereum Sepolia
+- **Purpose**: Proves zkML proofs are valid (meta-verification)
 - **File**: `api/groth16-verifier-backend.js`
-- **Function**: `verifyProof(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[5] signals)` - View function (no tx created)
-- **Verification Example**: [Block #9085599](https://sepolia.etherscan.io/block/9085599)
-- **Note**: Uses view function so no transaction is created, verification shown via block number
+- **Note**: Uses view function (no gas for queries)
 
-### 3. Circle Gateway Integration
-- **Purpose**: Multi-chain USDC transfers with zkML authorization
-- **Minimum Transfer**: 2.00 USDC per chain (4.00 total for 2 chains)
-- **Supported Cross-Chain Transfers**:
-  - Ethereum → Base Sepolia (Domain 0 → 6)
-  - Ethereum → Avalanche Fuji (Domain 0 → 1)
-  - **Note**: Same-domain transfers not allowed (e.g., Ethereum → Ethereum)
-- **Implementation**: EIP-712 programmatic signing
-- **Gateway Wallet**: `0x0077777d7EBA4688BDeF3E311b846F25870A19B9`
-- **Transfer Status Polling**:
-  - Polls every 5 minutes for pending transfers
-  - Stores transfers in localStorage key: `gateway_pending_transfers`
-  - Maximum 24 polling attempts (2 hours)
-  - Updates UI with real tx hash when settlement completes
+### 4. Multi-Chain Support
+- **Ethereum & L2s**: Base, Arbitrum, Optimism
+- **Avalanche**: Healthcare focus (medical records)
+- **Solana**: High-frequency trading and gaming
+- **IoTeX**: IoT device verification
+- **Circle Integration**: Gateway and CCTP
 
-### 4. Web Interface
-- **Port**: 8000
-- **Main Page**: http://localhost:8000/index-clean.html (SES-safe)
-- **Balance**: 18.80 USDC in Gateway (can run 4 workflows at 4.00 USDC each)
+## 📁 Project Structure
 
-## How to Start Services
+```
+agentkit/
+├── zkengine/                 # Rust zkEngine core
+├── zkengine_binary/         # Compiled zkEngine binaries
+├── circuits/                # Circom circuits for all proof types
+├── contracts/               # Smart contracts for each chain
+├── circle/                  # Circle integration
+│   ├── gateway/            # Attestation-based transfers
+│   └── cctp/              # Cross-chain transfer protocol
+├── api/                    # Backend services
+├── static/                 # Web UI
+├── tests/                  # Test suites
+│   ├── integration/       # Integration tests
+│   ├── scripts/          # Shell scripts
+│   └── ui/              # UI test pages
+└── examples/              # Usage examples
+```
 
+## 🚀 Starting Services
+
+### Complete Stack
 ```bash
-# 1. Start LLM Decision Proof backend (JOLT-Atlas)
-node api/zkml-llm-decision-backend.js
+# Start all services
+./start-all-services.sh
 
-# 2. Start Groth16 proof-of-proof backend
-node api/groth16-verifier-backend.js
-
-# 3. Start web server (with no-cache)
-python3 serve-no-cache.py
+# Or individually:
+node api/zkml-llm-decision-backend.js    # Port 8002
+node api/groth16-verifier-backend.js     # Port 3004
+python3 scripts/utils/serve-no-cache.py  # Port 8000
 ```
 
-## Gateway zkML Workflow - Technical Details
+### Chain-Specific Services
+```bash
+# Avalanche medical records
+node api/avalanche-medical-backend.js
 
-### Trigger Requirements
-User must say both keywords: **"gateway"** AND **"zkml"**
+# IoTeX device verification
+node api/iotex-device-backend.js
 
-### Three-Step Execution Flow
+# Solana high-speed verification
+node api/solana-game-backend.js
+```
 
-#### Step 1: zkML Proof Generation
+## 🏥 Use Case Examples
+
+### Avalanche - Medical Records
 ```javascript
-// 14-parameter input for sentiment analysis
-{
-    is_financial_agent: 1,
-    amount: 100,
-    is_gateway_op: 1,
-    risk_score: 20,
-    confidence_score: 95,
-    authorization_level: 3,
-    compliance_check: 1,
-    fraud_detection_score: 10,
-    transaction_velocity: 5,
-    account_reputation: 85,
-    geo_risk_factor: 15,
-    time_risk_factor: 10,
-    pattern_match_score: 90,
-    ml_confidence_score: 92
-}
+// Verify medical record without exposing patient data
+const proof = await zkEngine.generateMedicalRecordProof({
+    patientId: "hash(SSN)",
+    diagnosis: "encrypted",
+    timestamp: Date.now()
+});
+// Contract: contracts/MedicalRecordsIntegrity_Avalanche.sol
 ```
 
-#### Step 2: Groth16 Proof-of-Proof Verification
+### IoTeX - IoT Device Proximity
 ```javascript
-// Groth16 proof verified on Ethereum Sepolia
-{
-    proof: {
-        a: [BigNumber, BigNumber],
-        b: [[BigNumber, BigNumber], [BigNumber, BigNumber]],
-        c: [BigNumber, BigNumber]
-    },
-    publicSignals: [1, 152399025, 1, 95, 1], // 5 signals
-    verificationBlock: 9085599 // View function returns boolean, no tx
-}
+// Prove device location without revealing coordinates
+const proof = await zkEngine.generateProximityProof({
+    deviceId: "0xDEVICE",
+    distance: "<100m",
+    timestamp: Date.now()
+});
+// Contract: contracts/IoTeXProximityVerifier.sol
 ```
 
-#### Step 3: Gateway Transfers (EIP-712)
+### Base - DeFi Trading
 ```javascript
-// Programmatic signing for Circle Gateway
-const burnIntent = {
-    maxBlockHeight: MAX_UINT256,
-    maxFee: "2000001",
-    spec: {
-        sourceDomain: 0,
-        destinationDomain: chain.domain,
-        value: "2000001", // 2.000001 USDC minimum
-        // ... other fields
-    }
-}
-const signature = await wallet._signTypedData(domain, types, burnIntent);
+// Prove trading compliance without revealing strategy
+const proof = await zkEngine.generateTradingProof({
+    strategy: "market_neutral",
+    riskLimit: 0.02,
+    leverage: 3
+});
+// Uses Groth16 verifier for Base
 ```
 
-## Important Technical Notes
+## 🔄 Gateway zkML Workflow
 
-### Circle Gateway Attestations
-- Gateway returns **attestations**, not immediate tx hashes
-- Format: 498-character hex proof
-- Settlement: Batched, occurs 15-30 minutes later
-- This is by design for gas optimization
+### Three-Step Process
 
-### Balance Requirements
-- **Total Gateway Balance**: 18.799988 USDC
-- **Minimum per transfer**: 2.000001 USDC
-- **Workflow cost**: 6.000003 USDC (3 chains)
-- **Available workflows**: 2 complete runs
+#### Step 1: JOLT-Atlas zkML
+- Generate proof that AI made correct decision
+- 14 parameters validated
+- ~10 second generation
 
-### Real vs Demo
-- ✅ zkML proofs are REAL (JOLT-Atlas)
-- ✅ On-chain verification is REAL (Ethereum Sepolia)
-- ✅ Gateway attestations are REAL (Circle API)
-- ❌ NO fake transaction hashes shown
-- ❌ NO demo links if something fails
+#### Step 2: Ethereum On-Chain Verification
+- Groth16 proof-of-proof verification
+- View function (no gas cost)
+- Block-level verification
 
-## Files Structure
+#### Step 3: Circle Gateway Spending
+- Programmatic EIP-712 signing
+- Multi-chain USDC transfers
+- Returns attestations (not tx hashes)
 
-### Core Services
-```
-api/
-├── zkml-llm-decision-backend.js  # Port 8002 - LLM Decision Proof (JOLT-Atlas)
-├── groth16-verifier-backend.js   # Port 3004 - Groth16 proof-of-proof verifier
-├── zkml-llm-verifier-backend.js  # Port 3003 - Nova verifier (deprecated)
-└── unified-backend.js             # Combined service (optional)
-```
+### Trigger
+User must say: **"gateway"** AND **"zkml"**
 
-### Circle Gateway Integration
-```
-circle-gateway/
-├── api/                   # Gateway-specific APIs
-├── scripts/              # Deposit and transfer scripts
-├── tests/                # Gateway test files
-└── docs/                 # Gateway documentation
-```
+## 📊 Performance Metrics
 
-### UI Components
-```
-static/
-├── index-clean.html      # Main UI (SES-safe, use this)
-├── js/
-│   └── gateway-zkml-polling.js  # Gateway workflow with polling
-└── css/                  # Stylesheets
-```
+| Proof Type | Generation | Verification | Chains |
+|------------|------------|--------------|--------|
+| zkML (JOLT-Atlas) | 10-15s | 2s | All EVM |
+| Medical Records | 3s | 200k gas | Avalanche |
+| IoT Proximity | 1s | 150k gas | IoTeX |
+| Trading Decision | 2s | 150k gas | Base |
+| Game State | 500ms | 5k lamports | Solana |
 
-### Smart Contracts
-```
-contracts/
-├── RealZKMLNovaVerifier.sol      # Nova verifier (deprecated)
-└── ZKMLProofVerifier.sol         # Groth16 proof-of-proof verifier
+## 💰 Current Balances
 
-deployments/
-├── sepolia-real-verifier.json    # Nova deployment (deprecated)
-└── groth16-verifier.json         # Groth16 verifier deployment
-```
+- **Circle Gateway**: 18.80 USDC
+- **Available Workflows**: 4 complete runs
+- **Cost per Workflow**: 4.00 USDC (2 chains)
 
-### Testing
-```
-tests/
-├── scripts/              # Shell test scripts
-├── integration/          # JavaScript integration tests
-└── ui/                   # HTML test pages
-```
-
-## Testing Commands
+## 🧪 Testing
 
 ### Quick Tests
 ```bash
-# Test 14-parameter model
-./test-14param.sh
+# Test zkML workflow
+./tests/scripts/test-14param.sh
 
-# Test complete UI workflow
-./test-ui-workflow.sh
+# Test Groth16 verification
+node tests/integration/test-groth16-verification.js
 
-# Direct API test
-curl -X POST http://localhost:8002/zkml/prove \
-  -H "Content-Type: application/json" \
-  -d '{"input": {...14 parameters...}}'
+# Test medical records proof
+node tests/integration/test-avalanche-medical.js
+
+# Test IoT proximity
+node tests/integration/test-iotex-proximity.js
 ```
 
-### Verify Services
-```bash
-# Check zkML backend
-curl http://localhost:8002/health
+### UI Testing
+- Main UI: http://localhost:8000/index-clean.html
+- Test pages in `tests/ui/`
 
-# Check Groth16 verifier
-curl http://localhost:3004/health
+## 🔧 Common Issues
 
-# Check Gateway balance
-curl -X POST https://gateway-api-testnet.circle.com/v1/balances \
-  -H "Authorization: Bearer SAND_API_KEY:..." \
-  -d '{"token": "USDC", "sources": [...]}'
-```
+### RPC Connection Issues
+- Primary: `https://eth-sepolia.public.blastapi.io`
+- Fallbacks configured in each backend
 
-## Common Issues & Solutions
+### Balance Issues
+- Minimum: 2.00 USDC per transfer
+- Check Gateway balance, not wallet
 
-### "Insufficient balance" errors
-- Minimum is 2.000001 USDC, not 0.01
-- Check Gateway balance, not wallet balance
-- Use http://localhost:8000/test-usdc-balance.html
+### Verification Failures
+- Ensure all services running
+- Check contract addresses match deployment
 
-### No transaction links in Step 3
-- This is correct! Circle batches transfers
-- Look for attestation instead
-- Real txs appear 15-30 min later
+## 🏗️ Development Guide
 
-### SES/MetaMask errors
-- Use index-clean.html, not index.html
-- All string concatenation removed
-- 100% SES-safe implementation
+### Adding New Proof Types
+1. Create circuit in `circuits/`
+2. Add zkEngine function in `zkengine/src/`
+3. Deploy verifier contract
+4. Add backend endpoint
 
-## Architecture Overview
+### Adding New Chains
+1. Deploy verifier contract to chain
+2. Update `contracts/` with deployment
+3. Add chain config to backends
+4. Test with examples
 
-```
-User Input (Natural Language)
-        ↓
-zkML Backend (Port 8002)
-    - 14-param model
-    - JOLT-Atlas proof
-        ↓
-Groth16 Verifier (Port 3004)
-    - Proof-of-proof verification
-    - Ethereum Sepolia
-    - View function (no tx)
-        ↓
-Circle Gateway API
-    - EIP-712 signing
-    - Multi-chain transfers
-    - Returns attestations
-```
+### Updating UI
+- Main file: `static/js/gateway-zkml-polling.js`
+- Styles: `static/css/`
+- Keep SES-safe (no dynamic code generation)
 
-## For Developers
+## 📝 Recent Updates
 
-### Adding New zkML Models
-1. Extend `api/zkml-backend.js`
-2. Add parameters to model
-3. Deploy new verifier contract
-4. Update verification logic
+### 2025-08-29 - Major Reorganization
+- ✅ Cleaned root directory structure
+- ✅ Reorganized Circle folders (gateway/cctp)
+- ✅ Broadened README scope to all chains
+- ✅ Updated UI text and spacing
+- ✅ Fixed Groth16 RPC stability
 
-### Integrating New Chains
-1. Check Circle Gateway support
-2. Add domain mapping
-3. Update destination token addresses
-4. Test with minimum amounts
+### 2025-08-28 - Groth16 Integration
+- ✅ Replaced Nova with Groth16 proof-of-proof
+- ✅ Added clickable verification links
+- ✅ Fixed view function handling
 
-### Performance Optimization
-- zkML proof: 10-15s (optimized with lookup tables)
-- On-chain: 145k gas (vs 500k traditional)
-- Gateway: <30s for acceptance
+### 2025-08-27 - zkML Implementation
+- ✅ Real on-chain verification
+- ✅ EIP-712 signing implementation
+- ✅ Real attestations from Circle
 
-## Security Notes
-⚠️ **Private key in code for testing only**
-- Production should use MetaMask or backend service
-- Never expose private keys client-side
-- Use environment variables for API keys
+## 🔐 Security Notes
 
-## Recent Updates
+⚠️ **Test Environment Only**
+- Private keys in code for testing
+- Use environment variables in production
+- Never expose keys client-side
+- All circuits need audit before mainnet
 
-### 2025-08-29 - Groth16 Integration
-- ✅ Replaced Nova verifier with Groth16 proof-of-proof
-- ✅ Fixed RPC connection issues with stable endpoints
-- ✅ Added clickable verification block links
-- ✅ Removed fake transaction hashes (view functions don't create txs)
-- ✅ Updated UI to show real block numbers
-- ✅ Gateway balance increased to 18.80 USDC
+## 📚 Additional Documentation
 
-### 2025-08-27 - Initial zkML Implementation
-- ✅ Fixed on-chain verification to use real blockchain
-- ✅ Implemented programmatic EIP-712 signing
-- ✅ Updated to show real attestations only
-- ✅ Fixed balance display and calculations
-- ✅ Removed all fake/demo transaction hashes
-- ✅ Updated to real minimum amounts (2.000001 USDC)
-- ✅ **NEW: Transfer Status Polling System**
-  - Polls Circle Gateway every 5 minutes for transfer status
-  - Stores pending transfers in localStorage
-  - Updates UI with real tx hashes when transfers complete
-  - Maximum 2-hour polling window per transfer
+- [zkEngine Documentation](zkengine/README.md)
+- [Circle Gateway Guide](circle/gateway/README.md)
+- [Circle CCTP Guide](circle/cctp/README.md)
+- [API Reference](docs/API.md)
+- [Deployment Guide](docs/DEPLOYMENT.md)
 
-## Contact & Support
+## 📞 Support
+
 - GitHub: https://github.com/hshadab/agentkit
-- Issues: Check browser console for errors
-- Testing: Use standalone pages if main UI has issues
+- Issues: Check browser console first
+- Logs: Check service logs in root directory
+
+---
+
+*This guide is for developers working on AgentKit. For general documentation, see README.md*
