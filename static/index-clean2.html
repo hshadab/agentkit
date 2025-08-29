@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>AgentKit v2 - Universal Verifiable AI Agent Framework</title>
+    
+    <style>
+        /* Core styles */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #000000; color: #ffffff; height: 100vh; display: flex; overflow: hidden; }
+        
+        /* Sidebar */
+        .sidebar { width: 320px; background: #111111; padding: 24px; overflow-y: auto; border-right: 1px solid rgba(107, 124, 255, 0.3); display: flex; flex-direction: column; }
+        .sidebar h3 { background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; text-transform: uppercase; font-size: 13px; letter-spacing: 0.1em; font-weight: 700; }
+        
+        /* Proof Type Selector */
+        .proof-selector { background: rgba(107, 124, 255, 0.08); border: 1px solid rgba(107, 124, 255, 0.2); border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+        .proof-selector-header { font-size: 12px; color: #8B9AFF; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.1em; }
+        .proof-type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .proof-type-btn { background: rgba(30, 30, 30, 0.9); border: 1px solid rgba(107, 124, 255, 0.15); padding: 12px; border-radius: 8px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #ffffff; }
+        .proof-type-btn:hover { background: rgba(107, 124, 255, 0.15); border-color: rgba(107, 124, 255, 0.4); transform: translateY(-2px); }
+        .proof-type-btn.selected { background: rgba(107, 124, 255, 0.25); border-color: #6B7CFF; }
+        .proof-type-icon { font-size: 18px; }
+        
+        /* Chain Selector */
+        .chain-selector { background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+        .chain-selector-header { font-size: 12px; color: #3b82f6; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.1em; }
+        .chain-list { display: flex; flex-direction: column; gap: 8px; }
+        .chain-item { background: rgba(30, 30, 30, 0.9); border: 1px solid rgba(59, 130, 246, 0.15); padding: 10px; border-radius: 8px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+        .chain-item:hover { background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.4); }
+        .chain-item.selected { background: rgba(59, 130, 246, 0.25); border-color: #3b82f6; }
+        .chain-info { display: flex; align-items: center; gap: 8px; }
+        .chain-icon { font-size: 16px; }
+        .chain-status { width: 8px; height: 8px; border-radius: 50%; background: #10b981; }
+        
+        /* Info boxes */
+        .info-box { font-size: 11px; color: #a0a0a0; margin-bottom: 24px; padding: 12px; background: rgba(107, 124, 255, 0.08); border: 1px solid rgba(107, 124, 255, 0.2); border-radius: 8px; line-height: 1.6; }
+        
+        /* Example categories */
+        .example-category { margin-bottom: 28px; }
+        .example-category h4 { color: #8B9AFF; font-size: 11px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
+        .example-item { word-wrap: break-word; overflow-wrap: break-word; white-space: normal; width: 100%; box-sizing: border-box; background: rgba(107, 124, 255, 0.05); border: 1px solid rgba(107, 124, 255, 0.15); padding: 14px 18px; margin-bottom: 8px; border-radius: 10px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-size: 13px; color: #ffffff; }
+        .example-item:hover { background: rgba(107, 124, 255, 0.15); border-color: rgba(107, 124, 255, 0.4); transform: translateX(4px); }
+        
+        /* Main container */
+        .main-container { flex: 1; display: flex; flex-direction: column; background: #000000; }
+        
+        /* Header */
+        .header { padding: 20px 32px; background: rgba(17, 17, 17, 0.8); border-bottom: 1px solid rgba(107, 124, 255, 0.2); display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(10px); }
+        .header h1 { font-size: 26px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+        .header h1 span { background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 24px; font-size: 13px; }
+        .status.connected { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status.disconnected { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .status.connected .status-dot { background-color: #10b981; animation: pulse 2s infinite; }
+        .status.disconnected .status-dot { background-color: #ef4444; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        
+        /* Messages container */
+        .messages-container { flex: 1; overflow-y: auto; padding: 32px; }
+        #messages { max-width: 1000px; margin: 0 auto; }
+        .message { margin: 24px 0; display: flex; align-items: flex-start; gap: 12px; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .message.assistant { flex-direction: row-reverse; }
+        .message-content { max-width: 70%; padding: 16px 24px; border-radius: 20px; line-height: 1.6; font-size: 15px; }
+        .message.user .message-content { background: #1e1e1e; border: 1px solid rgba(107, 124, 255, 0.2); border-bottom-left-radius: 4px; white-space: pre-wrap; }
+        .message.assistant .message-content { background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%); color: white; border-bottom-right-radius: 4px; }
+        
+        /* Component Cards - From modular components */
+        .proof-card, .verification-card, .workflow-progress, .code-display { 
+            background: rgba(30, 30, 30, 0.9); 
+            border: 1px solid rgba(107, 124, 255, 0.3); 
+            border-radius: 16px; 
+            padding: 24px; 
+            margin: 20px 0; 
+            max-width: 800px; 
+        }
+        
+        /* Proof Card Styles */
+        .proof-header, .verification-header, .workflow-header, .code-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 16px; 
+            padding-bottom: 12px; 
+            border-bottom: 1px solid rgba(107, 124, 255, 0.2); 
+        }
+        .proof-title-row, .verification-title-row, .code-title-row { display: flex; align-items: center; gap: 12px; }
+        .proof-icon, .chain-icon, .code-icon { font-size: 20px; }
+        .proof-title, .verification-title, .workflow-title, .code-title { font-size: 16px; font-weight: 600; color: #8b9aff; }
+        .proof-badge, .verification-badge, .workflow-status { 
+            padding: 6px 12px; 
+            border-radius: 8px; 
+            font-size: 12px; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+        }
+        .proof-badge.generating, .verification-badge.verifying { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+        .proof-badge.complete, .verification-badge.verified { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .proof-badge.error, .verification-badge.failed { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+        
+        /* Metrics */
+        .proof-metrics, .verification-metrics { display: flex; gap: 24px; margin-top: 16px; padding: 12px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; }
+        .metric { display: flex; align-items: center; gap: 8px; }
+        .metric-label { color: #666; font-size: 12px; }
+        .metric-value { color: #fff; font-size: 13px; font-weight: 600; }
+        
+        /* Actions */
+        .proof-actions, .verification-actions, .workflow-actions, .code-actions { 
+            margin-top: 16px; 
+            display: flex; 
+            gap: 12px; 
+            padding-top: 16px; 
+            border-top: 1px solid rgba(107, 124, 255, 0.1); 
+        }
+        .proof-action-btn, .verify-action-btn, .workflow-action-btn, .code-action-btn { 
+            padding: 8px 16px; 
+            background: rgba(107, 124, 255, 0.2); 
+            color: #8b9aff; 
+            border: 1px solid rgba(107, 124, 255, 0.3); 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 13px; 
+            transition: all 0.2s; 
+        }
+        .proof-action-btn:hover, .verify-action-btn:hover, .workflow-action-btn:hover, .code-action-btn:hover { 
+            background: rgba(107, 124, 255, 0.3); 
+            transform: translateY(-1px); 
+        }
+        
+        /* Workflow Timeline */
+        .workflow-timeline { display: flex; justify-content: space-between; margin: 24px 0; position: relative; }
+        .timeline-step { flex: 1; text-align: center; position: relative; }
+        .step-connector { position: absolute; top: 20px; left: 50%; right: -50%; height: 2px; background: rgba(107, 124, 255, 0.2); z-index: 0; }
+        .step-connector.first { left: 50%; }
+        .step-connector.last { display: none; }
+        .timeline-step.complete .step-connector { background: #10b981; }
+        .step-node { width: 40px; height: 40px; margin: 0 auto 8px; background: rgba(107, 124, 255, 0.1); border: 2px solid rgba(107, 124, 255, 0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; }
+        .timeline-step.complete .step-node { background: rgba(16, 185, 129, 0.2); border-color: #10b981; }
+        .timeline-step.executing .step-node { background: rgba(251, 191, 36, 0.2); border-color: #fbbf24; animation: pulse 2s infinite; }
+        .step-label { font-size: 11px; color: #666; }
+        .timeline-step.complete .step-label { color: #10b981; }
+        .timeline-step.executing .step-label { color: #fbbf24; }
+        
+        /* Code Display */
+        .code-container { background: #0d0d0d; border-radius: 8px; overflow: hidden; margin-top: 16px; }
+        .code-wrapper { display: flex; }
+        .line-numbers { background: #1a1a1a; padding: 12px 8px; text-align: right; user-select: none; border-right: 1px solid #333; }
+        .line-numbers span { display: block; color: #666; font-size: 12px; line-height: 20px; font-family: monospace; }
+        .code-content { flex: 1; padding: 12px; overflow-x: auto; }
+        .code-content pre { margin: 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; line-height: 20px; color: #fff; }
+        
+        /* Input container */
+        .input-container { padding: 20px 32px; background: rgba(17, 17, 17, 0.9); border-top: 1px solid rgba(107, 124, 255, 0.2); }
+        .input-row { display: flex; gap: 12px; max-width: 1000px; margin: 0 auto; }
+        #messageInput { flex: 1; background: rgba(30, 30, 30, 0.9); border: 1px solid rgba(107, 124, 255, 0.3); color: white; padding: 14px 20px; border-radius: 12px; font-size: 15px; outline: none; transition: all 0.3s; }
+        #messageInput:focus { border-color: rgba(107, 124, 255, 0.6); background: rgba(30, 30, 30, 1); box-shadow: 0 0 20px rgba(107, 124, 255, 0.1); }
+        
+        /* Buttons */
+        .btn-primary { background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%); color: white; border: none; padding: 14px 28px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 15px; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(107, 124, 255, 0.3); }
+        .btn-secondary { background: rgba(107, 124, 255, 0.2); color: #8b9aff; border: 1px solid rgba(107, 124, 255, 0.3); padding: 14px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 15px; }
+        .btn-secondary:hover { background: rgba(107, 124, 255, 0.3); }
+        
+        /* File handling */
+        .file-actions { display: flex; gap: 8px; }
+        #fileInput { display: none; }
+        
+        /* Paste Modal */
+        .paste-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 800px; background: #111; border: 2px solid #6B7CFF; border-radius: 20px; padding: 24px; z-index: 1000; box-shadow: 0 20px 60px rgba(0,0,0,0.8); }
+        .paste-modal.active { display: block; }
+        .paste-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .paste-modal-title { color: #8B9AFF; font-size: 18px; font-weight: 600; }
+        .paste-close-btn { background: none; border: none; color: #666; font-size: 24px; cursor: pointer; padding: 0; width: 30px; height: 30px; }
+        .paste-close-btn:hover { color: #fff; }
+        .paste-textarea { width: 100%; height: 300px; background: #0d0d0d; border: 1px solid #444; border-radius: 8px; padding: 15px; color: white; font-family: monospace; font-size: 13px; resize: vertical; }
+        .paste-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; }
+        
+        /* Loading states */
+        .spinner { width: 20px; height: 20px; border: 2px solid rgba(107, 124, 255, 0.3); border-top-color: #6B7CFF; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { color: #666; font-size: 13px; margin-left: 8px; }
+        
+        /* Tooltips */
+        .tooltip { position: relative; }
+        .tooltip-text { visibility: hidden; background: #333; color: white; text-align: center; border-radius: 6px; padding: 8px 12px; position: absolute; z-index: 1; bottom: 125%; left: 50%; transform: translateX(-50%); font-size: 12px; white-space: nowrap; }
+        .tooltip:hover .tooltip-text { visibility: visible; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <!-- Proof Type Selector -->
+        <div class="proof-selector">
+            <div class="proof-selector-header">Select Proof Type</div>
+            <div class="proof-type-grid">
+                <div class="proof-type-btn" data-proof-type="zkml" onclick="selectProofType('zkml')">
+                    <span class="proof-type-icon">🤖</span>
+                    <span>zkML</span>
+                </div>
+                <div class="proof-type-btn" data-proof-type="kyc" onclick="selectProofType('kyc')">
+                    <span class="proof-type-icon">🔐</span>
+                    <span>KYC</span>
+                </div>
+                <div class="proof-type-btn" data-proof-type="location" onclick="selectProofType('location')">
+                    <span class="proof-type-icon">📍</span>
+                    <span>Location</span>
+                </div>
+                <div class="proof-type-btn" data-proof-type="ai_content" onclick="selectProofType('ai_content')">
+                    <span class="proof-type-icon">✨</span>
+                    <span>AI Content</span>
+                </div>
+                <div class="proof-type-btn" data-proof-type="device" onclick="selectProofType('device')">
+                    <span class="proof-type-icon">📡</span>
+                    <span>IoT Device</span>
+                </div>
+                <div class="proof-type-btn" data-proof-type="trading" onclick="selectProofType('trading')">
+                    <span class="proof-type-icon">📊</span>
+                    <span>Trading</span>
+                </div>
+                <div class="proof-type-btn" data-proof-type="medical" onclick="selectProofType('medical')">
+                    <span class="proof-type-icon">🏥</span>
+                    <span>Medical</span>
+                </div>
+                <div class="proof-type-btn" data-proof-type="custom" onclick="selectProofType('custom')">
+                    <span class="proof-type-icon">⚙️</span>
+                    <span>Custom</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chain Selector -->
+        <div class="chain-selector">
+            <div class="chain-selector-header">Select Chain</div>
+            <div class="chain-list">
+                <div class="chain-item selected" data-chain="ethereum" onclick="selectChain('ethereum')">
+                    <div class="chain-info">
+                        <span class="chain-icon">⟠</span>
+                        <span>Ethereum Sepolia</span>
+                    </div>
+                    <div class="chain-status"></div>
+                </div>
+                <div class="chain-item" data-chain="base" onclick="selectChain('base')">
+                    <div class="chain-info">
+                        <span class="chain-icon">🔵</span>
+                        <span>Base Sepolia</span>
+                    </div>
+                    <div class="chain-status"></div>
+                </div>
+                <div class="chain-item" data-chain="avalanche" onclick="selectChain('avalanche')">
+                    <div class="chain-info">
+                        <span class="chain-icon">🔺</span>
+                        <span>Avalanche Fuji</span>
+                    </div>
+                    <div class="chain-status"></div>
+                </div>
+                <div class="chain-item" data-chain="iotex" onclick="selectChain('iotex')">
+                    <div class="chain-info">
+                        <span class="chain-icon">🌐</span>
+                        <span>IoTeX Testnet</span>
+                    </div>
+                    <div class="chain-status"></div>
+                </div>
+                <div class="chain-item" data-chain="solana" onclick="selectChain('solana')">
+                    <div class="chain-info">
+                        <span class="chain-icon">☀️</span>
+                        <span>Solana Devnet</span>
+                    </div>
+                    <div class="chain-status"></div>
+                </div>
+            </div>
+        </div>
+        
+        <h3>Quick Examples</h3>
+        <div class="info-box">
+            Click any example to try it. Combine proof types with chains for multi-chain verification.
+        </div>
+        
+        <div class="example-category">
+            <h4>zkEngine Proofs</h4>
+            <div class="example-item" onclick="sendMessage('Prove KYC compliance')">Prove KYC compliance</div>
+            <div class="example-item" onclick="sendMessage('Prove AI content authenticity')">Prove AI content authenticity</div>
+            <div class="example-item" onclick="sendMessage('Prove location: NYC (40.7°, -74.0°)')">Prove location: NYC</div>
+            <div class="example-item" onclick="sendMessage('Prove IoT device proximity')">IoT device proximity</div>
+        </div>
+        
+        <div class="example-category">
+            <h4>Gateway zkML Workflow</h4>
+            <div class="example-item" onclick="sendMessage('gateway zkml workflow for multi-chain USDC transfer')">Full Gateway zkML Demo</div>
+            <div class="example-item" onclick="sendMessage('Generate zkML proof for trading decision')">zkML Trading Proof</div>
+        </div>
+        
+        <div class="example-category">
+            <h4>C → WASM Compilation</h4>
+            <div class="example-item" onclick="sendMessage('Compile C code to WASM')">Compile C to WASM</div>
+            <div class="example-item" onclick="sendMessage('Show zkEngine compilation workflow')">Show Compilation Flow</div>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="header">
+            <h1>🚀 <span>AgentKit v2.0</span></h1>
+            <div class="status connected">
+                <span class="status-dot"></span>
+                <span>All Systems Operational</span>
+            </div>
+        </div>
+        
+        <div class="messages-container">
+            <div id="messages"></div>
+        </div>
+        
+        <div class="input-container">
+            <div class="input-row">
+                <input type="text" id="messageInput" placeholder="Type a command or select an example..." />
+                <div class="file-actions">
+                    <button class="btn-secondary tooltip" onclick="openFileUpload()">
+                        📁
+                        <span class="tooltip-text">Upload File</span>
+                    </button>
+                    <button class="btn-secondary tooltip" onclick="openPasteModal()">
+                        📋
+                        <span class="tooltip-text">Paste Code</span>
+                    </button>
+                </div>
+                <button class="btn-primary" onclick="sendMessage()">Send</button>
+                <input type="file" id="fileInput" accept=".c,.wasm,.wat,.circom,.json" onchange="handleFileUpload(event)" />
+            </div>
+        </div>
+    </div>
+    
+    <!-- Paste Modal -->
+    <div class="paste-modal" id="pasteModal">
+        <div class="paste-modal-header">
+            <h3 class="paste-modal-title">Paste Code</h3>
+            <button class="paste-close-btn" onclick="closePasteModal()">×</button>
+        </div>
+        <textarea class="paste-textarea" id="pasteTextarea" placeholder="Paste your C code, WASM, or Circom circuit here..."></textarea>
+        <div class="paste-actions">
+            <button class="btn-secondary" onclick="closePasteModal()">Cancel</button>
+            <button class="btn-primary" onclick="processPastedCode()">Process Code</button>
+        </div>
+    </div>
+    
+    <!-- Load modular components -->
+    <script src="js/components/ProofCard.js"></script>
+    <script src="js/components/VerificationCard.js"></script>
+    <script src="js/components/WorkflowProgress.js"></script>
+    <script src="js/components/CodeDisplay.js"></script>
+    
+    <!-- Main application logic -->
+    <script>
+        // SES-safe implementation
+        window.DEMO_PRIVATE_KEY = 'c3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+        
+        // Application state
+        const appState = {
+            selectedProofType: 'zkml',
+            selectedChain: 'ethereum',
+            activeWorkflows: {},
+            proofHistory: [],
+            verificationHistory: [],
+            codeCache: {}
+        };
+        
+        // Initialize WebSocket connection
+        let ws = null;
+        function initWebSocket() {
+            ws = new WebSocket('ws://localhost:8001');
+            
+            ws.onopen = function() {
+                console.log('Connected to zkEngine backend');
+                updateConnectionStatus(true);
+            };
+            
+            ws.onmessage = function(event) {
+                handleWebSocketMessage(JSON.parse(event.data));
+            };
+            
+            ws.onerror = function(error) {
+                console.error('WebSocket error:', error);
+                updateConnectionStatus(false);
+            };
+            
+            ws.onclose = function() {
+                console.log('Disconnected from backend');
+                updateConnectionStatus(false);
+                // Attempt reconnection after 3 seconds
+                setTimeout(initWebSocket, 3000);
+            };
+        }
+        
+        // Handle WebSocket messages
+        function handleWebSocketMessage(data) {
+            console.log('Received:', data);
+            
+            if (data.type === 'proof_update') {
+                updateProofCard(data.proofId, data);
+            } else if (data.type === 'verification_update') {
+                updateVerificationCard(data.verificationId, data);
+            } else if (data.type === 'workflow_update') {
+                updateWorkflowProgress(data.workflowId, data);
+            }
+        }
+        
+        // Update connection status
+        function updateConnectionStatus(connected) {
+            const statusElement = document.querySelector('.status');
+            if (connected) {
+                statusElement.className = 'status connected';
+                statusElement.innerHTML = '<span class="status-dot"></span><span>All Systems Operational</span>';
+            } else {
+                statusElement.className = 'status disconnected';
+                statusElement.innerHTML = '<span class="status-dot"></span><span>Reconnecting...</span>';
+            }
+        }
+        
+        // Proof type selection
+        function selectProofType(type) {
+            appState.selectedProofType = type;
+            document.querySelectorAll('.proof-type-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector(`[data-proof-type="${type}"]`).classList.add('selected');
+            
+            // Update examples based on selected type
+            updateExamplesForProofType(type);
+        }
+        
+        // Chain selection
+        function selectChain(chain) {
+            appState.selectedChain = chain;
+            document.querySelectorAll('.chain-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            document.querySelector(`[data-chain="${chain}"]`).classList.add('selected');
+        }
+        
+        // Send message
+        function sendMessage(text) {
+            const input = text || document.getElementById('messageInput').value;
+            if (!input.trim()) return;
+            
+            // Add user message to UI
+            addMessage(input, 'user');
+            
+            // Clear input if from text field
+            if (!text) {
+                document.getElementById('messageInput').value = '';
+            }
+            
+            // Process the message
+            processUserMessage(input);
+        }
+        
+        // Process user message
+        async function processUserMessage(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            // Check for Gateway zkML workflow
+            if (lowerMessage.includes('gateway') && lowerMessage.includes('zkml')) {
+                startGatewayZkMLWorkflow();
+                return;
+            }
+            
+            // Check for proof generation requests
+            if (lowerMessage.includes('prove') || lowerMessage.includes('generate')) {
+                const proofType = detectProofType(lowerMessage);
+                generateProof(proofType, message);
+                return;
+            }
+            
+            // Check for compilation requests
+            if (lowerMessage.includes('compile') && lowerMessage.includes('wasm')) {
+                startCompilationWorkflow();
+                return;
+            }
+            
+            // Check for verification requests
+            if (lowerMessage.includes('verify')) {
+                const proofId = extractProofId(message);
+                if (proofId) {
+                    verifyProof(proofId);
+                    return;
+                }
+            }
+            
+            // Default response
+            addMessage('Processing your request...', 'assistant');
+            
+            // Send to backend for processing
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'user_message',
+                    message: message,
+                    proofType: appState.selectedProofType,
+                    chain: appState.selectedChain
+                }));
+            }
+        }
+        
+        // Detect proof type from message
+        function detectProofType(message) {
+            if (message.includes('kyc')) return 'kyc';
+            if (message.includes('location')) return 'location';
+            if (message.includes('ai') || message.includes('content')) return 'ai_content';
+            if (message.includes('iot') || message.includes('device')) return 'device';
+            if (message.includes('trading')) return 'trading';
+            if (message.includes('medical')) return 'medical';
+            if (message.includes('zkml')) return 'zkml';
+            return appState.selectedProofType;
+        }
+        
+        // Generate proof
+        async function generateProof(type, input) {
+            const proofId = 'proof-' + Date.now();
+            
+            // Add proof card to UI
+            const proofCard = ProofCard.create({
+                type: type,
+                status: 'generating',
+                sessionId: proofId,
+                input: input
+            });
+            
+            addComponentToMessages(proofCard.html);
+            
+            // Simulate proof generation (replace with actual backend call)
+            setTimeout(() => {
+                ProofCard.update(proofCard.cardId, {
+                    status: 'complete',
+                    proof: '0x' + Math.random().toString(16).substr(2, 64),
+                    generation_time: (Math.random() * 10 + 5).toFixed(2),
+                    parameters: 14,
+                    proof_size: Math.floor(Math.random() * 1000 + 500)
+                });
+            }, 3000);
+        }
+        
+        // Verify proof
+        async function verifyProof(proofId) {
+            const verificationId = 'verify-' + Date.now();
+            
+            // Add verification card to UI
+            const verifyCard = VerificationCard.create({
+                chain: appState.selectedChain,
+                status: 'verifying',
+                proofId: proofId
+            });
+            
+            addComponentToMessages(verifyCard.html);
+            
+            // Simulate verification (replace with actual backend call)
+            setTimeout(() => {
+                VerificationCard.update(verifyCard.cardId, {
+                    status: 'verified',
+                    txHash: '0x' + Math.random().toString(16).substr(2, 64),
+                    blockNumber: Math.floor(Math.random() * 1000000 + 1000000),
+                    verificationTime: Math.floor(Math.random() * 2000 + 1000),
+                    gasUsed: Math.floor(Math.random() * 100000 + 50000)
+                });
+            }, 4000);
+        }
+        
+        // Start Gateway zkML workflow
+        function startGatewayZkMLWorkflow() {
+            const workflowId = 'workflow-' + Date.now();
+            
+            // Add workflow progress card
+            const workflowCard = WorkflowProgress.create({
+                type: 'gateway_zkml',
+                status: 'in-progress',
+                currentStep: 'zkml_proof',
+                progress: 0,
+                id: workflowId
+            });
+            
+            addComponentToMessages(workflowCard.html);
+            
+            // Simulate workflow progression
+            const steps = ['zkml_proof', 'ethereum_verify', 'gateway_transfer', 'attestation'];
+            let currentStepIndex = 0;
+            
+            const progressInterval = setInterval(() => {
+                currentStepIndex++;
+                if (currentStepIndex >= steps.length) {
+                    clearInterval(progressInterval);
+                    WorkflowProgress.update(workflowCard.cardId, {
+                        status: 'complete',
+                        progress: 100,
+                        currentStep: steps[steps.length - 1]
+                    });
+                } else {
+                    WorkflowProgress.update(workflowCard.cardId, {
+                        currentStep: steps[currentStepIndex],
+                        progress: Math.floor((currentStepIndex / steps.length) * 100),
+                        stepMessage: 'Processing ' + steps[currentStepIndex].replace(/_/g, ' ') + '...'
+                    });
+                }
+            }, 3000);
+        }
+        
+        // Start compilation workflow
+        function startCompilationWorkflow() {
+            const codeDisplay = CodeDisplay.create({
+                language: 'c',
+                title: 'C to WASM Compilation',
+                mode: 'split',
+                before: `// Example C code
+int factorial(int n) {
+    if (n <= 1) return 1;
+    return n * factorial(n - 1);
+}`,
+                after: `(module
+  (func $factorial (param $n i32) (result i32)
+    (if (result i32)
+      (i32.le_s (local.get $n) (i32.const 1))
+      (then (i32.const 1))
+      (else 
+        (i32.mul 
+          (local.get $n)
+          (call $factorial 
+            (i32.sub (local.get $n) (i32.const 1))
+          )
+        )
+      )
+    )
+  )
+)`,
+                canCompile: true,
+                showStats: true,
+                lines: 5,
+                compilationTime: 243
+            });
+            
+            addComponentToMessages(codeDisplay.html);
+        }
+        
+        // Add message to UI
+        function addMessage(text, sender) {
+            const messages = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ' + sender;
+            messageDiv.innerHTML = '<div class="message-content">' + text + '</div>';
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        // Add component HTML to messages
+        function addComponentToMessages(html) {
+            const messages = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+            messageDiv.innerHTML = html;
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        // File handling
+        function openFileUpload() {
+            document.getElementById('fileInput').click();
+        }
+        
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                processFileContent(file.name, content);
+            };
+            reader.readAsText(file);
+        }
+        
+        function processFileContent(filename, content) {
+            const extension = filename.split('.').pop().toLowerCase();
+            const language = extension === 'c' ? 'c' : 
+                           extension === 'wasm' || extension === 'wat' ? 'wasm' :
+                           extension === 'circom' ? 'circom' : 'json';
+            
+            const codeDisplay = CodeDisplay.create({
+                language: language,
+                title: 'Uploaded: ' + filename,
+                filename: filename,
+                code: content,
+                canDownload: true,
+                canFormat: true,
+                showStats: true,
+                lines: content.split('\n').length,
+                size: content.length
+            });
+            
+            addComponentToMessages(codeDisplay.html);
+        }
+        
+        // Paste modal
+        function openPasteModal() {
+            document.getElementById('pasteModal').classList.add('active');
+            document.getElementById('pasteTextarea').focus();
+        }
+        
+        function closePasteModal() {
+            document.getElementById('pasteModal').classList.remove('active');
+            document.getElementById('pasteTextarea').value = '';
+        }
+        
+        function processPastedCode() {
+            const code = document.getElementById('pasteTextarea').value;
+            if (!code.trim()) return;
+            
+            // Detect language from content
+            const language = detectCodeLanguage(code);
+            
+            const codeDisplay = CodeDisplay.create({
+                language: language,
+                title: 'Pasted ' + language.toUpperCase() + ' Code',
+                code: code,
+                canDownload: true,
+                canFormat: true,
+                canCompile: language === 'c',
+                canGenerateProof: language === 'circom',
+                showStats: true,
+                lines: code.split('\n').length,
+                size: code.length
+            });
+            
+            addComponentToMessages(codeDisplay.html);
+            closePasteModal();
+        }
+        
+        function detectCodeLanguage(code) {
+            if (code.includes('template') && code.includes('signal')) return 'circom';
+            if (code.includes('(module') || code.includes('(func')) return 'wasm';
+            if (code.includes('#include') || code.includes('int main')) return 'c';
+            if (code.trim().startsWith('{') && code.includes(':')) return 'json';
+            return 'c'; // Default
+        }
+        
+        // Helper functions
+        function extractProofId(message) {
+            const match = message.match(/proof-[\w-]+/);
+            return match ? match[0] : null;
+        }
+        
+        function updateExamplesForProofType(type) {
+            // Could dynamically update the examples section based on selected proof type
+            console.log('Selected proof type:', type);
+        }
+        
+        // Event listeners for custom events from components
+        window.addEventListener('verifyProof', (e) => {
+            verifyProof(e.detail.proofId);
+        });
+        
+        window.addEventListener('initiateGateway', (e) => {
+            startGatewayZkMLWorkflow();
+        });
+        
+        window.addEventListener('compileCode', (e) => {
+            addMessage('Compiling code to WASM...', 'assistant');
+            // Add actual compilation logic here
+        });
+        
+        window.addEventListener('generateProofFromCode', (e) => {
+            addMessage('Generating proof from Circom circuit...', 'assistant');
+            // Add actual proof generation logic here
+        });
+        
+        // Keyboard shortcuts
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Initialize on load
+        window.addEventListener('load', () => {
+            // Initialize WebSocket connection
+            initWebSocket();
+            
+            // Set default selections
+            selectProofType('zkml');
+            selectChain('ethereum');
+            
+            // Show welcome message
+            addMessage('Welcome to AgentKit v2.0! Select a proof type and chain, then try an example or type your own command.', 'assistant');
+        });
+    </script>
+</body>
+</html>
