@@ -557,8 +557,8 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             // Generate proof hash from zkML proof data
             const proofHash = zkmlData.proof?.hash || ('0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join(''));
             
-            // Call Groth16 backend for proof-of-proof generation and on-chain verification
-            console.log('Generating Groth16 proof-of-proof for zkML verification...');
+            // Call Groth16 backend for REAL on-chain verification (costs gas)
+            console.log('Creating permanent on-chain verification record...');
             const response = await fetch('http://localhost:3004/groth16/workflow', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -566,7 +566,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                     proofHash: proofHash,
                     decision: 1, // ALLOW (from zkML proof)
                     confidence: 95, // High confidence from LLM decision
-                    amount: 2.0 // Amount being transferred per chain
+                    sessionId: sessionId // Track verification by session
                 })
             });
             
@@ -578,8 +578,23 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             console.log('zkML proof verified on Ethereum at block:', data.blockNumber);
             
             if (data.success) {
-                if (data.blockNumber) {
-                    // On-chain verification successful (via view function)
+                if (data.transactionHash) {
+                    // REAL on-chain verification with permanent record
+                    console.log('Transaction hash:', data.transactionHash);
+                    console.log('Gas used:', data.gasUsed);
+                    console.log('Cost:', data.totalCost);
+                    updateStep2Complete(wfId, { 
+                        transactionHash: data.transactionHash,
+                        blockNumber: data.blockNumber,
+                        gasUsed: data.gasUsed,
+                        totalCost: data.totalCost,
+                        contractAddress: data.contractAddress,
+                        etherscanUrl: data.etherscanUrl,
+                        proofId: data.proofId
+                    });
+                    return { success: true, transactionHash: data.transactionHash };
+                } else if (data.blockNumber) {
+                    // Fallback: block verification without transaction
                     updateStep2Complete(wfId, { 
                         blockNumber: data.blockNumber,
                         contractAddress: data.contractAddress,
@@ -643,7 +658,10 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             
             const content = document.getElementById('gateway-step-content-onchain_verify');
             if (content) {
-                content.innerHTML = '<div style="font-size: 12px; color: #9ca3af;">🔄 Generating Groth16 proof-of-proof and verifying on Ethereum Sepolia...</div>';
+                content.innerHTML = `
+                    <div style="font-size: 12px; color: #9ca3af;">🔄 Creating permanent on-chain verification...</div>
+                    <div style="font-size: 10px; color: #6b7280; margin-top: 4px;">⛽ This will cost ~0.0005 ETH gas</div>
+                `;
             }
         }
     }
@@ -663,23 +681,45 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             
             const content = document.getElementById('gateway-step-content-onchain_verify');
             if (content) {
-                if (verifyResult.blockNumber) {
-                    // Full on-chain verification (via view function)
+                if (verifyResult.transactionHash) {
+                    // REAL on-chain verification with transaction
+                    const txHash = verifyResult.transactionHash;
+                    const shortTx = txHash.substring(0, 10) + '...' + txHash.substring(txHash.length - 8);
+                    const gasUsed = verifyResult.gasUsed || '~365k';
+                    const totalCost = verifyResult.totalCost || '~0.0005 ETH';
+                    const etherscanUrl = verifyResult.etherscanUrl || `https://sepolia.etherscan.io/tx/${txHash}`;
+                    const contractAddr = verifyResult.contractAddress || '0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944';
+                    
+                    content.innerHTML = `
+                        <div style="font-size: 12px; color: #10b981; margin-bottom: 8px;">✅ Permanently verified on Ethereum</div>
+                        <div style="margin-bottom: 6px;">
+                            <a href="${etherscanUrl}" target="_blank" style="color: #8b9aff; font-size: 11px; text-decoration: none;">
+                                📜 Transaction: ${shortTx}
+                            </a>
+                        </div>
+                        <div style="font-size: 10px; color: #9ca3af; margin-bottom: 4px;">
+                            ⛽ Gas used: ${gasUsed} • Cost: ${totalCost}
+                        </div>
+                        <div>
+                            <a href="https://sepolia.etherscan.io/address/${contractAddr}" target="_blank" style="color: #9ca3af; font-size: 10px; text-decoration: none;">
+                                📄 Storage Verifier: ${contractAddr.substring(0, 10)}...
+                            </a>
+                        </div>
+                    `;
+                } else if (verifyResult.blockNumber) {
+                    // Fallback to block-only verification
                     const blockNum = verifyResult.blockNumber;
-                    const contractAddr = verifyResult.contractAddress || '0xE2506E6871EAe022608B97d92D5e051210DF684E';
-                    const blockUrl = verifyResult.blockUrl || `https://sepolia.etherscan.io/block/${blockNum}`;
+                    const contractAddr = verifyResult.contractAddress || '0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944';
                     const contractUrl = verifyResult.contractUrl || `https://sepolia.etherscan.io/address/${contractAddr}`;
                     
                     content.innerHTML = `
                         <div style="font-size: 12px; color: #10b981; margin-bottom: 8px;">✅ zkML proof verified on Ethereum</div>
-                        <div style="margin-bottom: 6px;">
-                            <a href="${blockUrl}" target="_blank" style="color: #8b9aff; font-size: 11px; text-decoration: none;">
-                                🔗 Verification Block #${blockNum}
-                            </a>
+                        <div style="font-size: 11px; color: #8b9aff; margin-bottom: 6px;">
+                            📦 Verified at block #${blockNum}
                         </div>
                         <div>
                             <a href="${contractUrl}" target="_blank" style="color: #9ca3af; font-size: 10px; text-decoration: none;">
-                                📄 View Groth16 Verifier Contract
+                                📄 View Verifier Contract
                             </a>
                         </div>
                     `;
