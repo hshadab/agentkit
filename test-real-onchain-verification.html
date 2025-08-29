@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real On-Chain zkML Verification - Experimental</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+            padding: 40px;
+            margin: 0;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #00ff41;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+        }
+        .warning {
+            background: rgba(255, 170, 0, 0.1);
+            border: 2px solid #ffaa00;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .circuit-box {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff41;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .step {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border-left: 3px solid #00ff41;
+        }
+        .step.active {
+            border-left-color: #ffaa00;
+            background: rgba(255, 170, 0, 0.05);
+        }
+        .step.complete {
+            border-left-color: #00ff41;
+            background: rgba(0, 255, 65, 0.05);
+        }
+        button {
+            background: #00ff41;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+        }
+        button:hover {
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+        }
+        button:disabled {
+            background: #444;
+            cursor: not-allowed;
+        }
+        .code-block {
+            background: #000;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .success { color: #00ff41; }
+        .error { color: #ff0041; }
+        .info { color: #00aaff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 Real On-Chain zkML Verification</h1>
+        
+        <div class="warning">
+            <h3>⚠️ EXPERIMENTAL - Phase 1 Testing</h3>
+            <p>This is a proof-of-concept for true on-chain verification of zkML proofs.</p>
+            <p>NOT integrated with the main workflow yet - purely for testing the circuit approach.</p>
+        </div>
+        
+        <div class="circuit-box">
+            <h2>Circuit Architecture</h2>
+            <div class="code-block">
+JOLT zkML Proof (14 parameters)
+    ↓
+Circom Circuit (decision + confidence validation)
+    ↓
+Groth16 Proof Generation
+    ↓
+On-Chain Verification (300k gas)
+    ↓
+Immutable Proof Registry
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <button onclick="setupCircuit()">1. Setup Circuit</button>
+            <button onclick="testPipeline()">2. Test Pipeline</button>
+            <button onclick="generateRealProof()">3. Generate Real Proof</button>
+        </div>
+        
+        <div id="steps">
+            <div id="step1" class="step">
+                <h3>Step 1: Circuit Setup</h3>
+                <div id="step1-status">Not started</div>
+            </div>
+            
+            <div id="step2" class="step">
+                <h3>Step 2: JOLT → Circuit Conversion</h3>
+                <div id="step2-status">Not started</div>
+            </div>
+            
+            <div id="step3" class="step">
+                <h3>Step 3: Groth16 Proof Generation</h3>
+                <div id="step3-status">Not started</div>
+            </div>
+            
+            <div id="step4" class="step">
+                <h3>Step 4: On-Chain Verification</h3>
+                <div id="step4-status">Not started</div>
+            </div>
+        </div>
+        
+        <div id="results" style="display: none;" class="circuit-box">
+            <h2>Results</h2>
+            <div id="results-content"></div>
+        </div>
+    </div>
+    
+    <script>
+        async function setupCircuit() {
+            updateStatus('step1', 'active', 'Checking circuit files...');
+            
+            try {
+                const response = await fetch('http://localhost:3006/health');
+                const data = await response.json();
+                
+                if (data.circuitReady) {
+                    updateStatus('step1', 'complete', '✅ Circuit ready!');
+                } else {
+                    updateStatus('step1', 'error', '❌ Circuit not setup. Run: cd circuits/jolt-verifier && ./setup_jolt_circuit.sh');
+                }
+            } catch (error) {
+                updateStatus('step1', 'error', '❌ Bridge service not running. Run: node api/jolt-to-circuit-bridge.js');
+            }
+        }
+        
+        async function testPipeline() {
+            updateStatus('step2', 'active', 'Testing full pipeline...');
+            
+            try {
+                const response = await fetch('http://localhost:3006/test/full-pipeline', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.verified) {
+                    updateStatus('step2', 'complete', '✅ Pipeline test successful!');
+                    updateStatus('step3', 'complete', '✅ Groth16 proof generated!');
+                    
+                    showResults({
+                        title: 'Test Pipeline Complete',
+                        decision: data.publicSignals[0],
+                        confidence: data.publicSignals[1],
+                        verified: data.verified,
+                        gasEstimate: data.gasEstimate,
+                        proof: data.proof
+                    });
+                } else {
+                    updateStatus('step2', 'error', '❌ Pipeline test failed: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                updateStatus('step2', 'error', '❌ Error: ' + error.message);
+            }
+        }
+        
+        async function generateRealProof() {
+            updateStatus('step2', 'active', 'Generating real zkML proof...');
+            
+            try {
+                // First, generate a real JOLT proof
+                const joltResponse = await fetch('http://localhost:8002/zkml/prove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        input: {
+                            prompt: "test verification",
+                            approve_confidence: 95,
+                            amount_confidence: 92,
+                            rules_attention: 88,
+                            amount_attention: 90,
+                            format_valid: 1,
+                            amount_valid: 1,
+                            recipient_valid: 1,
+                            decision: 1
+                        }
+                    })
+                });
+                
+                const joltData = await joltResponse.json();
+                console.log('JOLT proof session:', joltData.sessionId);
+                
+                // Wait for completion
+                await new Promise(r => setTimeout(r, 1000));
+                
+                // Get the proof
+                const proofResponse = await fetch(`http://localhost:8002/zkml/status/${joltData.sessionId}`);
+                const joltProof = await proofResponse.json();
+                
+                updateStatus('step2', 'complete', '✅ JOLT proof generated in ' + joltProof.proofTime + 'ms');
+                updateStatus('step3', 'active', 'Converting to Groth16...');
+                
+                // Convert to Groth16
+                const grothResponse = await fetch('http://localhost:3006/convert/jolt-to-groth16', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ joltProof })
+                });
+                
+                const grothData = await grothResponse.json();
+                
+                if (grothData.success && grothData.verified) {
+                    updateStatus('step3', 'complete', '✅ Groth16 proof generated and verified!');
+                    updateStatus('step4', 'active', 'Ready for on-chain verification...');
+                    
+                    // Generate calldata
+                    const calldataResponse = await fetch('http://localhost:3006/generate/calldata', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            proof: grothData.proof,
+                            publicSignals: grothData.publicSignals
+                        })
+                    });
+                    
+                    const calldata = await calldataResponse.json();
+                    
+                    updateStatus('step4', 'complete', '✅ Ready for on-chain submission!');
+                    
+                    showResults({
+                        title: 'Real Proof Generated',
+                        decision: grothData.metadata.decision === "1" ? 'APPROVE' : 'DENY',
+                        confidence: grothData.metadata.confidence + '%',
+                        verified: grothData.verified,
+                        calldata: calldata.calldata.substring(0, 100) + '...',
+                        functionSig: calldata.functionSig,
+                        note: 'Deploy JOLTDecisionVerifier.sol to execute on-chain'
+                    });
+                } else {
+                    updateStatus('step3', 'error', '❌ Groth16 conversion failed');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                updateStatus('step2', 'error', '❌ Error: ' + error.message);
+            }
+        }
+        
+        function updateStatus(stepId, status, message) {
+            const step = document.getElementById(stepId);
+            const statusEl = document.getElementById(stepId + '-status');
+            
+            step.className = 'step ' + (status === 'active' ? 'active' : status === 'complete' ? 'complete' : '');
+            statusEl.innerHTML = `<span class="${status === 'complete' ? 'success' : status === 'error' ? 'error' : 'info'}">${message}</span>`;
+        }
+        
+        function showResults(data) {
+            const results = document.getElementById('results');
+            const content = document.getElementById('results-content');
+            
+            results.style.display = 'block';
+            
+            let html = `<h3 class="success">${data.title}</h3>`;
+            for (const [key, value] of Object.entries(data)) {
+                if (key !== 'title') {
+                    html += `<div><strong>${key}:</strong> ${
+                        typeof value === 'object' ? JSON.stringify(value, null, 2) : value
+                    }</div>`;
+                }
+            }
+            
+            content.innerHTML = html;
+        }
+        
+        // Check services on load
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Check if bridge is running
+                const bridgeResp = await fetch('http://localhost:3006/health');
+                const bridgeData = await bridgeResp.json();
+                console.log('Bridge service:', bridgeData.circuitReady ? 'Ready' : 'Not setup');
+                
+                // Check if zkML backend is running
+                const zkmlResp = await fetch('http://localhost:8002/health');
+                const zkmlData = await zkmlResp.json();
+                console.log('zkML service:', zkmlData.services.binaryExists ? 'Ready' : 'Not found');
+            } catch (e) {
+                console.error('Services not running:', e);
+            }
+        });
+    </script>
+</body>
+</html>

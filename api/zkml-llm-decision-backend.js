@@ -72,11 +72,11 @@ app.post('/zkml/prove', async (req, res) => {
         temperature_setting: llmParams.temperature || 0, // 0 for deterministic
         model_checkpoint: llmParams.model_version || 1337, // Model version identifier
         
-        // Decision process (5 params)
-        token_probability_approve: llmParams.approve_confidence || 95,
-        token_probability_amount: llmParams.amount_confidence || 92,
-        attention_score_rules: llmParams.rules_attention || 88,
-        attention_score_amount: llmParams.amount_attention || 90,
+        // Decision process (5 params) - Handle both float (0.95) and int (95) formats
+        token_probability_approve: llmParams.approve_confidence > 1 ? llmParams.approve_confidence : Math.round((llmParams.approve_confidence || 0.95) * 100),
+        token_probability_amount: llmParams.amount_confidence > 1 ? llmParams.amount_confidence : Math.round((llmParams.amount_confidence || 0.92) * 100),
+        attention_score_rules: llmParams.rules_attention > 1 ? llmParams.rules_attention : Math.round((llmParams.rules_attention || 0.88) * 100),
+        attention_score_amount: llmParams.amount_attention > 1 ? llmParams.amount_attention : Math.round((llmParams.amount_attention || 0.90) * 100),
         chain_of_thought_hash: llmParams.reasoning_hash || hashString("User authorized, amount within limits"),
         
         // Output validation (4 params)
@@ -197,6 +197,11 @@ async function generateRealJOLTProof(sessionId, modelInput) {
                     
                     // Real proof bytes from Rust
                     proof_bytes: proofData.proof_bytes,
+                    
+                    // Add hash for Groth16 integration (hash of proof bytes)
+                    hash: '0x' + require('crypto').createHash('sha256')
+                        .update(Buffer.from(proofData.proof_bytes))
+                        .digest('hex'),
                     
                     // Lookup commitments (extracted from proof header)
                     lookup_commitments: [
