@@ -1,0 +1,60 @@
+{
+  "name": "nova-jolt-gateway",
+  "version": "1.0.0",
+  "description": "Nova+JOLT Recursive zkML Gateway System for Circle USDC Authorization",
+  "main": "backend/nova-jolt-gateway-backend.js",
+  "scripts": {
+    "start": "node backend/nova-jolt-gateway-backend.js",
+    "dev": "nodemon backend/nova-jolt-gateway-backend.js",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "echo 'Running unit tests...' && node tests/test-nova-success-case.js",
+    "test:integration": "echo 'Running integration tests...' && bash tests/test-nova-final.sh",
+    "test:performance": "echo 'Running performance benchmarks...' && node tests/test-nova-jolt-gateway.js",
+    "deploy": "hardhat run scripts/deploy-nova-jolt-verifier.js --network sepolia",
+    "deploy:local": "hardhat run scripts/deploy-nova-jolt-verifier.js --network localhost",
+    "lint": "eslint backend/ tests/",
+    "format": "prettier --write 'backend/**/*.js' 'tests/**/*.js'"
+  },
+  "keywords": [
+    "zkML",
+    "Nova",
+    "JOLT-Atlas",
+    "recursive-proofs",
+    "Circle-Gateway",
+    "USDC",
+    "blockchain",
+    "AI-authorization",
+    "zero-knowledge"
+  ],
+  "author": "AgentKit Team",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "ethers": "^5.7.2",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.6",
+    "chai": "^4.3.10",
+    "colors": "^1.4.0",
+    "eslint": "^8.50.0",
+    "hardhat": "^2.19.0",
+    "nodemon": "^3.0.1",
+    "prettier": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hshadab/agentkit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hshadab/agentkit/issues"
+  },
+  "homepage": "https://github.com/hshadab/agentkit/tree/main/nova-jolt"
+}
