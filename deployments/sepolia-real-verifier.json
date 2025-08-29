@@ -1,0 +1,338 @@
+{
+  "address": "0x77676818D13D05275Cb7D7D3A5BD95BA55814a41",
+  "transactionHash": "0xd0549a04fff20cc18d2b91bd62f09e1690bdb4a2fb05b77396520f75ed4bd685",
+  "deployer": "0xE616B2eC620621797030E0AB1BA38DA68D78351C",
+  "network": "sepolia",
+  "timestamp": "2025-08-28T12:46:24.121Z",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "proofId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "submitter",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "authorized",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "decision",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "gasUsed",
+          "type": "uint256"
+        }
+      ],
+      "name": "ZKMLProofVerified",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "MODEL_COMMITMENT",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "PEDERSEN_G",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "PEDERSEN_H",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "agentAuthorizations",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "estimateVerificationGas",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "agent",
+          "type": "address"
+        }
+      ],
+      "name": "getAgentAuthCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "proofId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getProofStatus",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "verified",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "proofHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256[4]",
+          "name": "publicSignals",
+          "type": "uint256[4]"
+        }
+      ],
+      "name": "submitProof",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "success",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "verifiedProofs",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "proofData",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "publicSignals",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "verifyProof",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "commitmentW1",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "commitmentE1",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "u1",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "commitmentW2",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "commitmentE2",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "u2",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "commitmentT",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32[]",
+              "name": "openingProofs",
+              "type": "bytes32[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "iterationCount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "publicOutput",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct RealZKMLNovaVerifier.NovaProof",
+          "name": "proof",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "agentType",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amountNormalized",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "operationType",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "riskScore",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "modelCommitment",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct RealZKMLNovaVerifier.MLPublicInputs",
+          "name": "publicInputs",
+          "type": "tuple"
+        }
+      ],
+      "name": "verifyZKMLProof",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "authorized",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "functions": [
+    "MODEL_COMMITMENT",
+    "PEDERSEN_G",
+    "PEDERSEN_H",
+    "agentAuthorizations",
+    "estimateVerificationGas",
+    "getAgentAuthCount",
+    "getProofStatus",
+    "submitProof",
+    "verifiedProofs",
+    "verifyProof",
+    "verifyZKMLProof"
+  ]
+}

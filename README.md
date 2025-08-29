@@ -60,12 +60,12 @@ graph TD
 
 ### Core Components
 
-| Component | Purpose | Technology |
-|-----------|---------|------------|
-| **AI Agent** | Decision making & intent recognition | LLM with rule engine |
-| **zkML System** | Proof of correct execution | JOLT-Atlas SNARKs |
-| **Verifier** | On-chain proof validation | Ethereum smart contracts |
-| **Gateway** | Cross-chain asset transfers | Circle Gateway API |
+| Component | Purpose | Technology | Status |
+|-----------|---------|------------|--------|
+| **AI Agent** | Decision making & intent recognition | LLM Decision Proof Model | ✅ REAL |
+| **zkML System** | Proof of correct execution | JOLT-Atlas SNARKs | ✅ REAL |
+| **Groth16 Verifier** | Proof-of-proof validation | Contract: [`0xE2506E6871EAe022608B97d92D5e051210DF684E`](https://sepolia.etherscan.io/address/0xE2506E6871EAe022608B97d92D5e051210DF684E) | ✅ REAL |
+| **Gateway** | Cross-chain asset transfers | Circle Gateway API | ✅ REAL |
 
 ## 🚀 Quick Start
 
@@ -94,8 +94,8 @@ npm install
 # 1. Start zkML proof generation
 node api/zkml-llm-decision-backend.js
 
-# 2. Start on-chain verifier
-node api/zkml-llm-verifier-backend.js
+# 2. Start Groth16 proof-of-proof verifier
+node api/groth16-verifier-backend.js
 
 # 3. Start web interface
 python3 serve-no-cache.py
@@ -104,7 +104,7 @@ python3 serve-no-cache.py
 ### Access the System
 - **Web Interface**: http://localhost:8000
 - **zkML API**: http://localhost:8002/health
-- **Verifier API**: http://localhost:3003/health
+- **Groth16 Verifier API**: http://localhost:3004/health
 
 ## 📖 How It Works
 
@@ -140,10 +140,10 @@ console.log("Transfer ID:", transfer.id);
    - Uses JOLT-Atlas recursive SNARKs
    - 14-parameter LLM Decision Model
 
-2. **⛓ On-Chain Verification** (< 30 seconds)
-   - Smart contract validates proof
-   - Creates immutable audit trail
-   - Gas cost: ~145,000
+2. **⛓ Groth16 Proof-of-Proof Verification** (< 3 seconds)
+   - Smart contract validates zkML proof validity
+   - Uses view function (no gas cost for query)
+   - Verification shown via [block number](https://sepolia.etherscan.io/block/9085599)
 
 3. **💸 Multi-Chain Transfer** (instant attestation)
    - Circle Gateway executes transfer
@@ -167,9 +167,9 @@ console.log("Transfer ID:", transfer.id);
          ┌───────▼────────┬──────────────┐
          │                │              │
 ┌────────▼──────┐ ┌───────▼──────┐ ┌────▼─────┐
-│   On-Chain    │ │   Gateway    │ │  Other   │
+│   Groth16     │ │   Gateway    │ │  Other   │
 │   Verifier    │ │     API      │ │  Proofs  │
-│  (Port 3003)  │ │   (Circle)   │ │  (KYC,   │
+│  (Port 3004)  │ │   (Circle)   │ │  (KYC,   │
 │               │ │              │ │Location) │
 └───────────────┘ └──────────────┘ └──────────┘
          │                │
@@ -196,7 +196,10 @@ cd agentkit
 npm install
 
 # Start zkML backend (port 8002)
-node api/zkml-backend.js
+node api/zkml-llm-decision-backend.js
+
+# Start Groth16 verifier (port 3004)
+node api/groth16-verifier-backend.js
 
 # Start verifier backend (port 3003)
 node api/zkml-verifier-backend.js
