@@ -647,7 +647,7 @@
             nodes.push(centerNode);
 
             if (data.children) {
-                const radius = 250;
+                const radius = 280;
                 data.children.forEach((child, i) => {
                     const angle = (i / data.children.length) * Math.PI * 2 - Math.PI / 2;
                     const childNode = {
@@ -660,7 +660,7 @@
                     links.push({ source: centerNode, target: childNode });
 
                     if (child.children) {
-                        const subRadius = 120;
+                        const subRadius = 140;
                         child.children.forEach((subchild, j) => {
                             const subAngle = (j / child.children.length) * Math.PI * 2 - Math.PI / 2;
                             const subNode = {
