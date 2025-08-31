@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaNet × Google A2A - Verifiable AI Agents Demo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 20px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo {
+            height: 40px;
+        }
+        
+        .title {
+            font-size: 24px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #e8f5e9;
+            border-radius: 20px;
+            color: #2e7d32;
+            font-size: 14px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #4caf50;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+        }
+        
+        .sidebar {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        
+        .sidebar h3 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #1a73e8;
+        }
+        
+        .agent-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .agent-card {
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .agent-card:hover {
+            border-color: #1a73e8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.15);
+        }
+        
+        .agent-card.selected {
+            border-color: #1a73e8;
+            background: #e8f0fe;
+        }
+        
+        .agent-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .agent-name {
+            font-weight: 600;
+            color: #202124;
+            margin-bottom: 4px;
+        }
+        
+        .agent-model {
+            font-size: 12px;
+            color: #5f6368;
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .tab-navigation {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            color: #5f6368;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.3s;
+        }
+        
+        .tab:hover {
+            color: #1a73e8;
+        }
+        
+        .tab.active {
+            color: #1a73e8;
+        }
+        
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #1a73e8;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .input-section {
+            margin-bottom: 24px;
+        }
+        
+        .input-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #5f6368;
+            margin-bottom: 8px;
+        }
+        
+        .prompt-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+        
+        .prompt-input:focus {
+            outline: none;
+            border-color: #1a73e8;
+        }
+        
+        .example-prompts {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+        
+        .example-chip {
+            padding: 6px 12px;
+            background: #f1f3f4;
+            border: 1px solid #dadce0;
+            border-radius: 16px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .example-chip:hover {
+            background: #e8f0fe;
+            border-color: #1a73e8;
+        }
+        
+        .options-section {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .checkbox-wrapper label {
+            font-size: 15px;
+            cursor: pointer;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: #1a73e8;
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            background: #1557b0;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #1a73e8;
+            border: 2px solid #1a73e8;
+        }
+        
+        .btn-secondary:hover {
+            background: #e8f0fe;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .results-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+        }
+        
+        .result-card {
+            background: #f8f9fa;
+            border: 1px solid #dadce0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        
+        .result-agent {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .result-agent-icon {
+            font-size: 28px;
+        }
+        
+        .result-agent-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .result-agent-name {
+            font-weight: 600;
+            color: #202124;
+        }
+        
+        .result-timestamp {
+            font-size: 12px;
+            color: #5f6368;
+        }
+        
+        .decision-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .decision-approve {
+            background: #e6f4ea;
+            color: #1e8e3e;
+        }
+        
+        .decision-deny {
+            background: #fce8e6;
+            color: #d33b27;
+        }
+        
+        .decision-refer {
+            background: #fef7e0;
+            color: #e37400;
+        }
+        
+        .decision-flag {
+            background: #fce8e6;
+            color: #d33b27;
+        }
+        
+        .result-content {
+            margin-bottom: 20px;
+        }
+        
+        .result-field {
+            margin-bottom: 12px;
+        }
+        
+        .result-label {
+            font-size: 13px;
+            color: #5f6368;
+            margin-bottom: 4px;
+        }
+        
+        .result-value {
+            font-size: 15px;
+            color: #202124;
+        }
+        
+        .confidence-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .confidence-progress {
+            flex: 1;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #34a853 0%, #fbbc04 50%, #ea4335 100%);
+            transition: width 0.5s;
+        }
+        
+        .verification-section {
+            background: #e8f0fe;
+            border: 2px solid #1a73e8;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        
+        .verification-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #1a73e8;
+        }
+        
+        .verification-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        
+        .verification-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .verification-label {
+            font-size: 12px;
+            color: #5f6368;
+            margin-bottom: 2px;
+        }
+        
+        .verification-value {
+            font-size: 13px;
+            color: #202124;
+            font-family: monospace;
+            word-break: break-all;
+        }
+        
+        .workflow-timeline {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .workflow-timeline::before {
+            content: '';
+            position: absolute;
+            top: 24px;
+            left: 30px;
+            right: 30px;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+        
+        .workflow-step {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .workflow-step-node {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 8px;
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+        
+        .workflow-step.completed .workflow-step-node {
+            border-color: #34a853;
+            background: #e6f4ea;
+        }
+        
+        .workflow-step.active .workflow-step-node {
+            border-color: #1a73e8;
+            background: #e8f0fe;
+            animation: pulse 2s infinite;
+        }
+        
+        .workflow-step-label {
+            font-size: 13px;
+            color: #5f6368;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1a73e8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #1976d2;
+            padding: 16px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .info-box-title {
+            font-weight: 600;
+            color: #1565c0;
+            margin-bottom: 8px;
+        }
+        
+        .info-box-content {
+            color: #424242;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <img src="https://cdn.prod.website-files.com/65d52b07d5bc41614daa723f/665df12739c532f45b665fe7_logo-novanet.svg" alt="NovaNet" class="logo">
+                <span style="font-size: 24px; color: #5f6368;">×</span>
+                <img src="https://www.gstatic.com/devrel-devsite/prod/v45f61267e22826169cf5d5f452882f7812c8cfb5f8b103a48c0d88727908b295/cloud/images/cloud-logo.svg" alt="Google Cloud" class="logo">
+                <h1 class="title">Verifiable AI Agents Demo</h1>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Systems Active</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="info-box">
+            <div class="info-box-title">🚀 Google A2A + NovaNet Integration</div>
+            <div class="info-box-content">
+                This demo shows how Google's Agent2Agent (A2A) protocol can be enhanced with NovaNet's zkML verification.
+                Every AI agent decision is cryptographically proven and can be verified on-chain, solving the trust problem in multi-agent systems.
+            </div>
+        </div>
+        
+        <div class="demo-grid">
+            <div class="sidebar">
+                <h3>Available Vertex AI Agents</h3>
+                <div class="agent-list" id="agentList">
+                    <!-- Agents will be loaded here -->
+                </div>
+            </div>
+            
+            <div class="main-content">
+                <div class="tab-navigation">
+                    <button class="tab active" onclick="switchTab('single')">Single Agent</button>
+                    <button class="tab" onclick="switchTab('multi')">Multi-Agent Workflow</button>
+                    <button class="tab" onclick="switchTab('handoff')">A2A Handoff</button>
+                </div>
+                
+                <!-- Single Agent Tab -->
+                <div class="tab-content active" id="single-tab">
+                    <div class="input-section">
+                        <div class="input-label">Prompt for Agent</div>
+                        <textarea class="prompt-input" id="singlePrompt" placeholder="Enter your request for the agent...">Analyze loan application for $50,000, credit score 720, income $85,000/year</textarea>
+                        <div class="example-prompts">
+                            <div class="example-chip" onclick="setPrompt('single', 'Analyze loan application for $50,000, credit score 720, income $85,000/year')">
+                                💰 Loan Approval
+                            </div>
+                            <div class="example-chip" onclick="setPrompt('single', 'Patient presents with persistent headache, fever, and neck stiffness')">
+                                🏥 Medical Diagnosis
+                            </div>
+                            <div class="example-chip" onclick="setPrompt('single', 'Detect unusual transaction patterns in account #12345')">
+                                🔍 Fraud Detection
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="options-section">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="requireProof" checked>
+                            <label for="requireProof">Generate zkML Proof</label>
+                        </div>
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="onChainVerify">
+                            <label for="onChainVerify">On-Chain Verification</label>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="processSingleAgent()" id="processBtn">
+                            Process with Selected Agent
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearResults()">
+                            Clear Results
+                        </button>
+                    </div>
+                    
+                    <div class="results-section" id="singleResults" style="display: none;">
+                        <!-- Results will appear here -->
+                    </div>
+                </div>
+                
+                <!-- Multi-Agent Tab -->
+                <div class="tab-content" id="multi-tab">
+                    <div class="input-section">
+                        <div class="input-label">Initial Request</div>
+                        <textarea class="prompt-input" id="multiPrompt" placeholder="Enter initial request for workflow...">Analyze loan application and assess associated risks</textarea>
+                    </div>
+                    
+                    <div class="workflow-timeline" id="workflowTimeline">
+                        <div class="workflow-step" id="step-1">
+                            <div class="workflow-step-node">💰</div>
+                            <div class="workflow-step-label">Loan Analysis</div>
+                        </div>
+                        <div class="workflow-step" id="step-2">
+                            <div class="workflow-step-node">🔍</div>
+                            <div class="workflow-step-label">Fraud Check</div>
+                        </div>
+                        <div class="workflow-step" id="step-3">
+                            <div class="workflow-step-node">⚠️</div>
+                            <div class="workflow-step-label">Risk Assessment</div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="processMultiAgent()" id="multiProcessBtn">
+                            Run Multi-Agent Workflow
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearResults()">
+                            Clear Results
+                        </button>
+                    </div>
+                    
+                    <div class="results-section" id="multiResults" style="display: none;">
+                        <!-- Results will appear here -->
+                    </div>
+                </div>
+                
+                <!-- A2A Handoff Tab -->
+                <div class="tab-content" id="handoff-tab">
+                    <div class="info-box">
+                        <div class="info-box-title">Agent-to-Agent Protocol</div>
+                        <div class="info-box-content">
+                            Demonstrates secure handoff between agents using Google's A2A protocol enhanced with zkML verification.
+                            The receiving agent can cryptographically verify the sending agent's decision.
+                        </div>
+                    </div>
+                    
+                    <div class="input-section">
+                        <div class="input-label">Handoff Scenario</div>
+                        <select class="prompt-input" style="min-height: auto; padding: 12px;" id="handoffScenario">
+                            <option value="loan-to-risk">Loan Processor → Risk Assessor</option>
+                            <option value="medical-to-specialist">General Diagnosis → Specialist</option>
+                            <option value="fraud-to-compliance">Fraud Detection → Compliance Review</option>
+                        </select>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="processHandoff()" id="handoffBtn">
+                            Execute Verified Handoff
+                        </button>
+                    </div>
+                    
+                    <div class="results-section" id="handoffResults" style="display: none;">
+                        <!-- Results will appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let selectedAgent = 'gemini-loan-processor';
+        let agents = {};
+        
+        // Load agents on startup
+        async function loadAgents() {
+            try {
+                const response = await fetch('http://localhost:8003/api/agents');
+                agents = await response.json();
+                displayAgents();
+            } catch (error) {
+                console.error('Error loading agents:', error);
+                // Fallback agents for demo
+                agents = {
+                    'gemini-loan-processor': {
+                        name: 'Loan Processing Agent',
+                        model: 'gemini-1.5-pro',
+                        icon: '💰'
+                    },
+                    'gemini-medical-diagnosis': {
+                        name: 'Medical Diagnosis Agent',
+                        model: 'gemini-1.5-pro',
+                        icon: '🏥'
+                    }
+                };
+                displayAgents();
+            }
+        }
+        
+        function displayAgents() {
+            const agentList = document.getElementById('agentList');
+            agentList.innerHTML = '';
+            
+            for (const [id, agent] of Object.entries(agents)) {
+                const card = document.createElement('div');
+                card.className = `agent-card ${id === selectedAgent ? 'selected' : ''}`;
+                card.onclick = () => selectAgent(id);
+                card.innerHTML = `
+                    <div class="agent-icon">${agent.icon}</div>
+                    <div class="agent-name">${agent.name}</div>
+                    <div class="agent-model">${agent.model}</div>
+                `;
+                agentList.appendChild(card);
+            }
+        }
+        
+        function selectAgent(agentId) {
+            selectedAgent = agentId;
+            displayAgents();
+        }
+        
+        function switchTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(`${tab}-tab`).classList.add('active');
+        }
+        
+        function setPrompt(type, prompt) {
+            document.getElementById(`${type}Prompt`).value = prompt;
+        }
+        
+        async function processSingleAgent() {
+            const prompt = document.getElementById('singlePrompt').value;
+            const requireProof = document.getElementById('requireProof').checked;
+            const btn = document.getElementById('processBtn');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Processing...';
+            
+            try {
+                const response = await fetch('http://localhost:8003/api/agent/process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        agentId: selectedAgent,
+                        prompt,
+                        requireProof
+                    })
+                });
+                
+                const result = await response.json();
+                displaySingleResult(result);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error processing request. Make sure the backend is running.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Process with Selected Agent';
+            }
+        }
+        
+        function displaySingleResult(result) {
+            const resultsDiv = document.getElementById('singleResults');
+            resultsDiv.style.display = 'block';
+            
+            const decisionClass = result.response.decision.includes('APPROVE') ? 'decision-approve' : 
+                                 result.response.decision.includes('DENY') ? 'decision-deny' :
+                                 result.response.decision.includes('REFER') ? 'decision-refer' : 'decision-flag';
+            
+            resultsDiv.innerHTML = `
+                <div class="result-card">
+                    <div class="result-header">
+                        <div class="result-agent">
+                            <div class="result-agent-icon">${result.agent.icon}</div>
+                            <div class="result-agent-info">
+                                <div class="result-agent-name">${result.agent.name}</div>
+                                <div class="result-timestamp">${new Date(result.timestamp).toLocaleString()}</div>
+                            </div>
+                        </div>
+                        <div class="decision-badge ${decisionClass}">
+                            ${result.response.decision}
+                        </div>
+                    </div>
+                    
+                    <div class="result-content">
+                        <div class="result-field">
+                            <div class="result-label">Confidence</div>
+                            <div class="confidence-bar">
+                                <div class="confidence-progress">
+                                    <div class="confidence-fill" style="width: ${result.response.confidence * 100}%"></div>
+                                </div>
+                                <span>${(result.response.confidence * 100).toFixed(1)}%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="result-field">
+                            <div class="result-label">Reasoning</div>
+                            <div class="result-value">${result.response.reasoning}</div>
+                        </div>
+                        
+                        ${Object.entries(result.response)
+                            .filter(([key]) => !['decision', 'confidence', 'reasoning'].includes(key))
+                            .map(([key, value]) => `
+                                <div class="result-field">
+                                    <div class="result-label">${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
+                                    <div class="result-value">${Array.isArray(value) ? value.join(', ') : value}</div>
+                                </div>
+                            `).join('')}
+                    </div>
+                    
+                    ${result.verification ? `
+                        <div class="verification-section">
+                            <div class="verification-header">
+                                ✅ zkML Verification
+                            </div>
+                            <div class="verification-details">
+                                <div class="verification-item">
+                                    <div class="verification-label">Framework</div>
+                                    <div class="verification-value">${result.verification.framework}</div>
+                                </div>
+                                <div class="verification-item">
+                                    <div class="verification-label">Proof Time</div>
+                                    <div class="verification-value">${result.verification.proofTime}ms</div>
+                                </div>
+                                <div class="verification-item">
+                                    <div class="verification-label">Proof Hash</div>
+                                    <div class="verification-value">${result.verification.zkProof.substring(0, 20)}...</div>
+                                </div>
+                                <div class="verification-item">
+                                    <div class="verification-label">Verifier Contract</div>
+                                    <div class="verification-value">
+                                        <a href="https://sepolia.etherscan.io/address/${result.verification.verifierContract}" target="_blank">
+                                            ${result.verification.verifierContract.substring(0, 10)}...
+                                        </a>
+                                    </div>
+                                </div>
+                                ${result.verification.real ? `
+                                    <div class="verification-item">
+                                        <div class="verification-label">Status</div>
+                                        <div class="verification-value" style="color: #1e8e3e;">🚀 Real JOLT-Atlas Proof</div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+        
+        async function processMultiAgent() {
+            const prompt = document.getElementById('multiPrompt').value;
+            const btn = document.getElementById('multiProcessBtn');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Running Workflow...';
+            
+            // Reset timeline
+            document.querySelectorAll('.workflow-step').forEach(s => {
+                s.classList.remove('completed', 'active');
+            });
+            
+            try {
+                // Animate workflow steps
+                const steps = ['step-1', 'step-2', 'step-3'];
+                for (let i = 0; i < steps.length; i++) {
+                    document.getElementById(steps[i]).classList.add('active');
+                    if (i > 0) {
+                        document.getElementById(steps[i-1]).classList.remove('active');
+                        document.getElementById(steps[i-1]).classList.add('completed');
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                const response = await fetch('http://localhost:8003/api/workflow/multi-agent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt,
+                        agents: ['gemini-loan-processor', 'gemini-fraud-detector', 'gemini-risk-assessor'],
+                        requireProof: true
+                    })
+                });
+                
+                const result = await response.json();
+                
+                // Mark all steps complete
+                steps.forEach(s => {
+                    document.getElementById(s).classList.remove('active');
+                    document.getElementById(s).classList.add('completed');
+                });
+                
+                displayMultiResult(result);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error running workflow. Make sure the backend is running.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Run Multi-Agent Workflow';
+            }
+        }
+        
+        function displayMultiResult(result) {
+            const resultsDiv = document.getElementById('multiResults');
+            resultsDiv.style.display = 'block';
+            
+            resultsDiv.innerHTML = `
+                <h3>Workflow Results</h3>
+                <div class="info-box">
+                    <div class="info-box-content">
+                        <strong>Workflow ID:</strong> ${result.workflowId}<br>
+                        <strong>Total Agents:</strong> ${result.summary.totalAgents}<br>
+                        <strong>Total Proof Time:</strong> ${result.summary.totalProofTime}ms<br>
+                        <strong>Final Decision:</strong> ${result.summary.finalDecision}
+                    </div>
+                </div>
+                
+                ${result.steps.map((step, index) => `
+                    <div class="result-card">
+                        <div class="result-header">
+                            <div class="result-agent">
+                                <div class="result-agent-icon">${step.agent.icon}</div>
+                                <div class="result-agent-info">
+                                    <div class="result-agent-name">Step ${index + 1}: ${step.agent.name}</div>
+                                    <div class="result-timestamp">${new Date(step.timestamp).toLocaleString()}</div>
+                                </div>
+                            </div>
+                            <div class="decision-badge ${step.response.decision.includes('APPROVE') ? 'decision-approve' : 'decision-flag'}">
+                                ${step.response.decision}
+                            </div>
+                        </div>
+                        
+                        <div class="result-content">
+                            <div class="result-field">
+                                <div class="result-label">Input</div>
+                                <div class="result-value">${step.input.substring(0, 200)}...</div>
+                            </div>
+                            <div class="result-field">
+                                <div class="result-label">Reasoning</div>
+                                <div class="result-value">${step.response.reasoning}</div>
+                            </div>
+                        </div>
+                        
+                        ${step.verification ? `
+                            <div class="verification-section">
+                                <div class="verification-header">
+                                    ✅ Step Verification
+                                </div>
+                                <div class="verification-details">
+                                    <div class="verification-item">
+                                        <div class="verification-label">Proof Generated</div>
+                                        <div class="verification-value">${step.verification.proofTime}ms</div>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('')}
+            `;
+        }
+        
+        async function processHandoff() {
+            const scenario = document.getElementById('handoffScenario').value;
+            const btn = document.getElementById('handoffBtn');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Processing Handoff...';
+            
+            try {
+                const [from, to] = scenario.split('-to-');
+                const fromAgent = `gemini-${from === 'loan' ? 'loan-processor' : from === 'medical' ? 'medical-diagnosis' : 'fraud-detector'}`;
+                const toAgent = `gemini-${to === 'risk' ? 'risk-assessor' : to === 'specialist' ? 'medical-diagnosis' : 'risk-assessor'}`;
+                
+                const response = await fetch('http://localhost:8003/api/a2a/handoff', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fromAgent,
+                        toAgent,
+                        data: {
+                            decision: 'APPROVE',
+                            confidence: 0.92,
+                            details: 'Initial assessment complete'
+                        },
+                        requireProof: true
+                    })
+                });
+                
+                const result = await response.json();
+                displayHandoffResult(result);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error processing handoff. Make sure the backend is running.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Execute Verified Handoff';
+            }
+        }
+        
+        function displayHandoffResult(result) {
+            const resultsDiv = document.getElementById('handoffResults');
+            resultsDiv.style.display = 'block';
+            
+            resultsDiv.innerHTML = `
+                <div class="result-card">
+                    <div class="result-header">
+                        <h3>A2A Handoff Complete</h3>
+                    </div>
+                    
+                    <div class="result-content">
+                        <div class="result-field">
+                            <div class="result-label">Handoff ID</div>
+                            <div class="result-value">${result.handoffId}</div>
+                        </div>
+                        <div class="result-field">
+                            <div class="result-label">From Agent</div>
+                            <div class="result-value">${result.from.icon} ${result.from.name}</div>
+                        </div>
+                        <div class="result-field">
+                            <div class="result-label">To Agent</div>
+                            <div class="result-value">${result.to.icon} ${result.to.name}</div>
+                        </div>
+                        <div class="result-field">
+                            <div class="result-label">Status</div>
+                            <div class="result-value" style="color: #1e8e3e;">✅ ${result.status}</div>
+                        </div>
+                    </div>
+                    
+                    ${result.verification ? `
+                        <div class="verification-section">
+                            <div class="verification-header">
+                                🔐 Handoff Verification
+                            </div>
+                            <div class="verification-details">
+                                <div class="verification-item">
+                                    <div class="verification-label">Verification Type</div>
+                                    <div class="verification-value">${result.verification.type}</div>
+                                </div>
+                                <div class="verification-item">
+                                    <div class="verification-label">Data Hash</div>
+                                    <div class="verification-value">${result.verification.dataHash.substring(0, 20)}...</div>
+                                </div>
+                                <div class="verification-item">
+                                    <div class="verification-label">Proof Time</div>
+                                    <div class="verification-value">${result.verification.proofTime}ms</div>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="info-box" style="margin-top: 20px;">
+                        <div class="info-box-title">A2A Protocol Message</div>
+                        <div class="info-box-content">
+                            <pre style="font-size: 12px; overflow-x: auto;">${JSON.stringify(result.a2aMessage, null, 2)}</pre>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function clearResults() {
+            document.getElementById('singleResults').style.display = 'none';
+            document.getElementById('multiResults').style.display = 'none';
+            document.getElementById('handoffResults').style.display = 'none';
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', () => {
+            loadAgents();
+        });
+    </script>
+</body>
+</html>

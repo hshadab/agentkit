@@ -1,0 +1,441 @@
+/* Enhanced Menu Content Styles */
+
+.menu-content-panel {
+    background: rgba(30, 30, 30, 0.95);
+    border: 1px solid rgba(107, 124, 255, 0.3);
+    border-radius: 16px;
+    padding: 28px;
+    margin: 20px 0;
+    max-width: 900px;
+    animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.menu-header {
+    border-bottom: 2px solid rgba(107, 124, 255, 0.2);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+}
+
+.menu-header h2 {
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+}
+
+.menu-header .subtitle {
+    font-size: 16px;
+    color: #8b9aff;
+    font-weight: 500;
+}
+
+.menu-description {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #d0d0d0;
+    margin-bottom: 28px;
+    padding: 16px;
+    background: rgba(107, 124, 255, 0.08);
+    border-left: 3px solid #6B7CFF;
+    border-radius: 8px;
+}
+
+.menu-body {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.content-section {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(107, 124, 255, 0.15);
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s;
+}
+
+.content-section:hover {
+    border-color: rgba(107, 124, 255, 0.3);
+    box-shadow: 0 4px 20px rgba(107, 124, 255, 0.1);
+}
+
+.content-section h3 {
+    font-size: 18px;
+    color: #8b9aff;
+    margin-bottom: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.content-section h3::before {
+    content: '▸';
+    color: #6B7CFF;
+    font-size: 20px;
+}
+
+.code-block {
+    background: #0d0d0d;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 16px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #f0f0f0;
+    overflow-x: auto;
+    white-space: pre;
+    position: relative;
+}
+
+.code-block::before {
+    content: 'CODE';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 10px;
+    color: #666;
+    background: #1a1a1a;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+}
+
+.content-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.content-list li {
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background: rgba(107, 124, 255, 0.05);
+    border-left: 3px solid rgba(107, 124, 255, 0.3);
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.content-list li:hover {
+    background: rgba(107, 124, 255, 0.1);
+    border-left-color: #6B7CFF;
+    transform: translateX(4px);
+}
+
+.content-object {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    background: rgba(50, 50, 50, 0.3);
+    border-radius: 8px;
+}
+
+.object-field {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(107, 124, 255, 0.1);
+}
+
+.object-field:last-child {
+    border-bottom: none;
+}
+
+.object-field strong {
+    color: #8b9aff;
+    min-width: 140px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Network cards for testnet section */
+.network-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.network-card {
+    background: rgba(30, 30, 30, 0.9);
+    border: 1px solid rgba(107, 124, 255, 0.2);
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.3s;
+}
+
+.network-card:hover {
+    border-color: #6B7CFF;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(107, 124, 255, 0.2);
+}
+
+.network-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.network-detail {
+    font-size: 12px;
+    color: #9ca3af;
+    margin: 4px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.network-detail span:first-child {
+    color: #8b9aff;
+}
+
+.network-links {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(107, 124, 255, 0.1);
+}
+
+.network-link {
+    flex: 1;
+    padding: 6px 12px;
+    background: rgba(107, 124, 255, 0.1);
+    border: 1px solid rgba(107, 124, 255, 0.2);
+    border-radius: 6px;
+    color: #8b9aff;
+    text-decoration: none;
+    font-size: 12px;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.network-link:hover {
+    background: rgba(107, 124, 255, 0.2);
+    border-color: #6B7CFF;
+    color: #fff;
+}
+
+/* Tool cards */
+.tool-card {
+    background: linear-gradient(135deg, rgba(107, 124, 255, 0.1), rgba(74, 90, 138, 0.1));
+    border: 1px solid rgba(107, 124, 255, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.tool-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6B7CFF, #4A5A8A);
+}
+
+.tool-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.tool-description {
+    font-size: 14px;
+    color: #c0c0c0;
+    margin-bottom: 16px;
+}
+
+.tool-command {
+    background: #0d0d0d;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 12px;
+    font-family: monospace;
+    font-size: 13px;
+    color: #10b981;
+    margin-bottom: 12px;
+}
+
+/* API endpoint styling */
+.endpoint-card {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(107, 124, 255, 0.2);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.endpoint-method {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+.endpoint-method.post {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.endpoint-method.get {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+}
+
+.endpoint-method.put {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+}
+
+.endpoint-method.delete {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.endpoint-path {
+    font-family: monospace;
+    font-size: 14px;
+    color: #fff;
+}
+
+.endpoint-description {
+    font-size: 13px;
+    color: #9ca3af;
+    margin-top: 8px;
+}
+
+/* Benchmark table */
+.benchmark-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+}
+
+.benchmark-table th {
+    background: rgba(107, 124, 255, 0.1);
+    color: #8b9aff;
+    padding: 12px;
+    text-align: left;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid rgba(107, 124, 255, 0.3);
+}
+
+.benchmark-table td {
+    padding: 12px;
+    color: #d0d0d0;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(107, 124, 255, 0.1);
+}
+
+.benchmark-table tr:hover {
+    background: rgba(107, 124, 255, 0.05);
+}
+
+/* Resource links */
+.resource-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.resource-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background: rgba(107, 124, 255, 0.1);
+    border: 1px solid rgba(107, 124, 255, 0.3);
+    border-radius: 8px;
+    color: #8b9aff;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.resource-link:hover {
+    background: rgba(107, 124, 255, 0.2);
+    border-color: #6B7CFF;
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.resource-link::before {
+    content: '🔗';
+    font-size: 16px;
+}
+
+/* Copy button for code blocks */
+.copy-button {
+    position: absolute;
+    top: 8px;
+    right: 60px;
+    padding: 4px 8px;
+    background: rgba(107, 124, 255, 0.2);
+    border: 1px solid rgba(107, 124, 255, 0.3);
+    border-radius: 4px;
+    color: #8b9aff;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.copy-button:hover {
+    background: rgba(107, 124, 255, 0.3);
+    border-color: #6B7CFF;
+    color: #fff;
+}
+
+.copy-button.copied {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #10b981;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .menu-content-panel {
+        padding: 20px;
+        margin: 16px;
+    }
+    
+    .network-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .resource-links {
+        flex-direction: column;
+    }
+    
+    .resource-link {
+        width: 100%;
+        justify-content: center;
+    }
+}

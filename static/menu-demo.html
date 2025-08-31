@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentKit - Enhanced Menu Demo</title>
+    <link rel="stylesheet" href="css/menu-content.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 300px;
+            background: rgba(17, 17, 17, 0.95);
+            padding: 24px;
+            border-right: 1px solid rgba(107, 124, 255, 0.3);
+            overflow-y: auto;
+        }
+        
+        .sidebar h2 {
+            font-size: 20px;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .menu-item {
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            background: rgba(107, 124, 255, 0.05);
+            border: 1px solid rgba(107, 124, 255, 0.15);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .menu-item:hover {
+            background: rgba(107, 124, 255, 0.15);
+            border-color: rgba(107, 124, 255, 0.4);
+            transform: translateX(4px);
+        }
+        
+        .menu-item.active {
+            background: rgba(107, 124, 255, 0.2);
+            border-color: #6B7CFF;
+        }
+        
+        .content-area {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+        }
+        
+        .welcome {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .welcome h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #6B7CFF 0%, #4A5A8A 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .welcome p {
+            font-size: 18px;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>📚 Documentation</h2>
+            
+            <div class="menu-item" onclick="showContent('testnet')">
+                🧪 Test on Testnet
+            </div>
+            
+            <div class="menu-item" onclick="showContent('developerTools')">
+                🛠️ Developer Tools
+            </div>
+            
+            <div class="menu-item" onclick="showContent('zkEngineBinary')">
+                ⚙️ zkEngine Binary
+            </div>
+            
+            <div class="menu-item" onclick="showContent('circuits')">
+                📐 Circuits Library
+            </div>
+            
+            <div class="menu-item" onclick="showContent('apiDocs')">
+                📚 API Documentation
+            </div>
+            
+            <div class="menu-item" onclick="showContent('integrations')">
+                🔗 Integration Examples
+            </div>
+        </div>
+        
+        <div class="content-area" id="contentArea">
+            <div class="welcome">
+                <h1>AgentKit Documentation</h1>
+                <p>Select a topic from the menu to view detailed information</p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/menu-content-enhanced.js"></script>
+    <script>
+        function showContent(section) {
+            // Update active menu item
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // Display content
+            const contentArea = document.getElementById('contentArea');
+            const content = MenuContent[section];
+            
+            if (!content) {
+                contentArea.innerHTML = '<div class="welcome"><h1>Content not found</h1></div>';
+                return;
+            }
+            
+            // Build HTML for content
+            let html = `
+                <div class="menu-content-panel">
+                    <div class="menu-header">
+                        <h2>${content.title}</h2>
+                        <p class="subtitle">${content.subtitle}</p>
+                    </div>
+                    <div class="menu-description">
+                        ${content.description}
+                    </div>
+                    <div class="menu-body">
+            `;
+            
+            // Handle different content types
+            if (section === 'testnet') {
+                html += renderTestnetContent(content.content);
+            } else if (section === 'developerTools') {
+                html += renderDeveloperTools(content.content);
+            } else if (section === 'zkEngineBinary') {
+                html += renderZkEngineBinary(content.content);
+            } else if (section === 'circuits') {
+                html += renderCircuits(content.content);
+            } else if (section === 'apiDocs') {
+                html += renderApiDocs(content.content);
+            } else if (section === 'integrations') {
+                html += renderIntegrations(content.content);
+            }
+            
+            html += `
+                    </div>
+                </div>
+            `;
+            
+            contentArea.innerHTML = html;
+            
+            // Add copy functionality to code blocks
+            addCopyButtons();
+        }
+        
+        function renderTestnetContent(content) {
+            let html = '<div class="network-grid">';
+            
+            content.networks.forEach(network => {
+                html += `
+                    <div class="network-card">
+                        <div class="network-name">${network.name}</div>
+                        <div class="network-detail">
+                            <span>Chain ID:</span>
+                            <span>${network.chainId}</span>
+                        </div>
+                        <div class="network-detail">
+                            <span>RPC:</span>
+                            <span style="font-size: 10px;">${network.rpc.substring(0, 30)}...</span>
+                        </div>
+                        <div class="network-links">
+                            <a href="${network.explorer}" target="_blank" class="network-link">Explorer</a>
+                            <a href="${network.faucet}" target="_blank" class="network-link">Faucet</a>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            html += `
+                <div class="content-section">
+                    <h3>Quick Start</h3>
+                    <pre class="code-block">${content.quickStart}</pre>
+                </div>
+            `;
+            
+            html += '<div class="resource-links">';
+            content.resources.forEach(resource => {
+                html += `<a href="${resource.url}" target="_blank" class="resource-link">${resource.name}</a>`;
+            });
+            html += '</div>';
+            
+            return html;
+        }
+        
+        function renderDeveloperTools(content) {
+            let html = '';
+            
+            content.tools.forEach(tool => {
+                html += `
+                    <div class="tool-card">
+                        <div class="tool-name">${tool.name}</div>
+                        <div class="tool-description">${tool.description}</div>
+                        ${tool.command ? `<div class="tool-command">${tool.command}</div>` : ''}
+                        ${tool.install ? `<div class="tool-command">${tool.install}</div>` : ''}
+                        ${tool.usage ? `<pre class="code-block">${tool.usage}</pre>` : ''}
+                        ${tool.example ? `<pre class="code-block">${tool.example}</pre>` : ''}
+                    </div>
+                `;
+            });
+            
+            html += `
+                <div class="content-section">
+                    <h3>Debugging</h3>
+                    <pre class="code-block">${content.debugging}</pre>
+                </div>
+            `;
+            
+            return html;
+        }
+        
+        function renderZkEngineBinary(content) {
+            let html = `
+                <div class="content-section">
+                    <h3>Installation</h3>
+                    <pre class="code-block">${content.installation}</pre>
+                </div>
+                
+                <div class="content-section">
+                    <h3>Usage</h3>
+                    <pre class="code-block">${content.usage}</pre>
+                </div>
+                
+                <div class="content-section">
+                    <h3>Configuration</h3>
+                    <pre class="code-block">${content.configuration}</pre>
+                </div>
+                
+                <div class="content-section">
+                    <h3>Performance Benchmarks</h3>
+                    <table class="benchmark-table">
+                        <thead>
+                            <tr>
+                                <th>Operation</th>
+                                <th>Time</th>
+                                <th>Constraints</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            content.performance.benchmarks.forEach(bench => {
+                html += `
+                    <tr>
+                        <td>${bench.operation}</td>
+                        <td>${bench.time}</td>
+                        <td>${bench.constraints}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            return html;
+        }
+        
+        function renderCircuits(content) {
+            let html = '';
+            
+            content.available.forEach(circuit => {
+                html += `
+                    <div class="content-section">
+                        <h3>${circuit.name}</h3>
+                        <p style="color: #9ca3af; margin-bottom: 12px;">${circuit.description}</p>
+                        <div style="display: flex; gap: 20px; margin-bottom: 12px;">
+                            <span style="color: #8b9aff;">File: ${circuit.file}</span>
+                            <span style="color: #8b9aff;">Constraints: ${circuit.constraints.toLocaleString()}</span>
+                        </div>
+                        <pre class="code-block">${circuit.template}</pre>
+                    </div>
+                `;
+            });
+            
+            html += `
+                <div class="content-section">
+                    <h3>Compilation Process</h3>
+                    <pre class="code-block">${content.compilation}</pre>
+                </div>
+            `;
+            
+            return html;
+        }
+        
+        function renderApiDocs(content) {
+            let html = `
+                <div class="content-section">
+                    <h3>Base URL</h3>
+                    <div class="tool-command">${content.baseUrl}</div>
+                </div>
+                
+                <div class="content-section">
+                    <h3>Authentication</h3>
+                    <pre class="code-block">${content.authentication}</pre>
+                </div>
+                
+                <div class="content-section">
+                    <h3>Endpoints</h3>
+            `;
+            
+            content.endpoints.forEach(endpoint => {
+                html += `
+                    <div class="endpoint-card">
+                        <div>
+                            <span class="endpoint-method ${endpoint.method.toLowerCase()}">${endpoint.method}</span>
+                            <span class="endpoint-path">${endpoint.path}</span>
+                        </div>
+                        <div class="endpoint-description">${endpoint.description}</div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                </div>
+                
+                <div class="content-section">
+                    <h3>WebSocket Connection</h3>
+                    <pre class="code-block">${content.websocket}</pre>
+                </div>
+            `;
+            
+            return html;
+        }
+        
+        function renderIntegrations(content) {
+            let html = '';
+            
+            Object.values(content.content).forEach(integration => {
+                html += `
+                    <div class="content-section">
+                        <h3>${integration.name}</h3>
+                        <pre class="code-block">${integration.code}</pre>
+                    </div>
+                `;
+            });
+            
+            return html;
+        }
+        
+        function addCopyButtons() {
+            const codeBlocks = document.querySelectorAll('.code-block');
+            codeBlocks.forEach(block => {
+                if (block.querySelector('.copy-button')) return;
+                
+                const button = document.createElement('button');
+                button.className = 'copy-button';
+                button.textContent = 'Copy';
+                button.style.position = 'absolute';
+                block.style.position = 'relative';
+                
+                button.onclick = () => {
+                    navigator.clipboard.writeText(block.textContent.replace('CODE', '').trim());
+                    button.textContent = 'Copied!';
+                    button.classList.add('copied');
+                    setTimeout(() => {
+                        button.textContent = 'Copy';
+                        button.classList.remove('copied');
+                    }, 2000);
+                };
+                
+                block.appendChild(button);
+            });
+        }
+    </script>
+</body>
+</html>
