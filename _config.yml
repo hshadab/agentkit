@@ -1,3 +1,0 @@
-# Minimal config to exclude problematic directories
-exclude:
-  - jolt-atlas
