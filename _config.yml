@@ -1,6 +1,3 @@
-# Disable Jekyll completely
-plugins: []
+# Minimal config to exclude problematic directories
 exclude:
-  - "*"
-include:
-  - circle/gateway/index.html
+  - jolt-atlas
