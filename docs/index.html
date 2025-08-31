@@ -1078,7 +1078,23 @@
                     return 0.2;
                 });
             }
-            if (link) link.style('opacity', 0.15);
+            if (link) {
+                link.style('opacity', d => {
+                    if (filterType === 'all') return 0.4;
+                    // Keep links visible if both nodes are visible
+                    const sourceVisible = 
+                        (filterType === 'technical' && (d.source.category === 'technical' || d.source.level === 0)) ||
+                        (filterType === 'business' && (d.source.category === 'business' || d.source.level === 0)) ||
+                        (filterType === 'chains' && (d.source.name === 'Chains' || d.source.name === 'ETH' || d.source.name === 'L2s' || d.source.name === 'Alt L1s' || d.source.level === 0)) ||
+                        (filterType === 'integration' && (d.source.name === 'Flow' || d.source.name === 'Dev' || d.source.name === 'APIs' || d.source.level === 0));
+                    const targetVisible = 
+                        (filterType === 'technical' && (d.target.category === 'technical' || d.target.level === 0)) ||
+                        (filterType === 'business' && (d.target.category === 'business' || d.target.level === 0)) ||
+                        (filterType === 'chains' && (d.target.name === 'Chains' || d.target.name === 'ETH' || d.target.name === 'L2s' || d.target.name === 'Alt L1s' || d.target.level === 0)) ||
+                        (filterType === 'integration' && (d.target.name === 'Flow' || d.target.name === 'Dev' || d.target.name === 'APIs' || d.target.level === 0));
+                    return (sourceVisible && targetVisible) ? 0.4 : 0.05;
+                });
+            }
         }
 
         // Export globals
