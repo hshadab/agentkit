@@ -5,8 +5,8 @@ Circle Gateway enables programmatic, multi-chain USDC transfers with zkML author
 ## 🎨 Interactive Visualization
 
 View the Circle Gateway API visualization:
-- **Live Demo**: [https://hshadab.github.io/agentkit/circle/gateway/visualization.html](https://hshadab.github.io/agentkit/circle/gateway/visualization.html)
-- **Local**: Open `visualization.html` in your browser
+- **Live Demo**: [https://hshadab.github.io/agentkit/circle/gateway/](https://hshadab.github.io/agentkit/circle/gateway/)
+- **Local**: Open `index.html` in this folder
 
 The visualization shows the complete Circle Gateway API architecture with interactive nodes and detailed documentation.
 
