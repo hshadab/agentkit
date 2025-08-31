@@ -121,7 +121,7 @@
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
 
         /* Links */
-        .link { fill: none; stroke-opacity: 0.7; stroke-width: 2; transition: all 0.3s ease; }
+        .link { fill: none; stroke-opacity: 0.9; stroke-width: 2; transition: all 0.3s ease; }
         .link.highlighted { stroke-opacity: 1.0; stroke-width: 4; }
 
         /* Info Panel */
@@ -690,7 +690,7 @@
             .attr("y1", d => d.source.y)
             .attr("x2", d => d.target.x)
             .attr("y2", d => d.target.y)
-            .attr("stroke", d => d.target.color)
+            .attr("stroke", "#00FFAA")
             .attr("stroke-width", 2);
 
         // Nodes
@@ -1055,8 +1055,8 @@
                 }
                 if (link) {
                     link.style('opacity', d => {
-                        if (!searchTerm) return 0.3;
-                        return (d.source.name.toLowerCase().includes(searchTerm) || d.target.name.toLowerCase().includes(searchTerm)) ? 0.3 : 0.1;
+                        if (!searchTerm) return 0.9;
+                        return (d.source.name.toLowerCase().includes(searchTerm) || d.target.name.toLowerCase().includes(searchTerm)) ? 0.9 : 0.1;
                     });
                 }
             });
@@ -1078,7 +1078,7 @@
                     return 0.2;
                 });
             }
-            if (link) link.style('opacity', 0.1);
+            if (link) link.style('opacity', 0.2);
         }
 
         // Export globals
