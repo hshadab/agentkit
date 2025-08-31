@@ -1,49 +1,6 @@
-# Jekyll configuration for GitHub Pages
-title: AgentKit - Circle Gateway
-description: Circle Gateway API Interactive Visualization
-
-# Disable Jekyll processing completely
+# Disable Jekyll completely
 plugins: []
-
-# Build settings
 exclude:
-  - node_modules
-  - package.json
-  - package-lock.json
-  - "*.py"
-  - "*.sh"
-  - "*.log"
-  - .git
-  - .gitignore
-  - jolt-atlas
-  - zkengine
-  - zkengine_binary
-  - target
-  - build
-  - dist
-  - venv
-  - __pycache__
-  - "*.pyc"
-  - .env
-  - .DS_Store
-  - api
-  - archive
-  - ceremony
-  - circuits
-  - contracts
-  - data
-  - deployments
-  - examples
-  - google-a2a
-  - resources
-  - scripts
-  - tests
-  - "*.tar.gz"
-  - "*.patch"
-  - README.md
-  - CLAUDE.md
-
-# Only include what we need
+  - "*"
 include:
   - circle/gateway/index.html
-  - static/
