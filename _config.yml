@@ -2,6 +2,9 @@
 title: AgentKit - Circle Gateway
 description: Circle Gateway API Interactive Visualization
 
+# Disable Jekyll processing completely
+plugins: []
+
 # Build settings
 exclude:
   - node_modules
@@ -14,6 +17,7 @@ exclude:
   - .gitignore
   - jolt-atlas
   - zkengine
+  - zkengine_binary
   - target
   - build
   - dist
@@ -22,13 +26,24 @@ exclude:
   - "*.pyc"
   - .env
   - .DS_Store
+  - api
+  - archive
+  - ceremony
+  - circuits
+  - contracts
+  - data
+  - deployments
+  - examples
+  - google-a2a
+  - resources
+  - scripts
+  - tests
+  - "*.tar.gz"
+  - "*.patch"
+  - README.md
+  - CLAUDE.md
 
-# Include these directories
+# Only include what we need
 include:
-  - circle
-  - static
-  - docs
-
-# Disable Jekyll processing for certain files
-keep_files:
   - circle/gateway/index.html
+  - static/
