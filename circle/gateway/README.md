@@ -2,6 +2,14 @@
 
 Circle Gateway enables programmatic, multi-chain USDC transfers with zkML authorization.
 
+## 🎨 Interactive Visualization
+
+View the Circle Gateway API visualization:
+- **Live Demo**: [https://hshadab.github.io/agentkit/circle/gateway/visualization.html](https://hshadab.github.io/agentkit/circle/gateway/visualization.html)
+- **Local**: Open `visualization.html` in your browser
+
+The visualization shows the complete Circle Gateway API architecture with interactive nodes and detailed documentation.
+
 ## 🎯 Why Circle Gateway + zkML?
 
 Circle Gateway is designed for programmatic value transfer, but determining **when** and **how much** to transfer typically requires human judgment. AgentKit bridges this gap by:
