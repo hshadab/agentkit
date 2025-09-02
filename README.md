@@ -128,8 +128,13 @@ This is a **production-grade system** with no simulations:
 ### Real On-Chain Verification
 - **Contract**: [`0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944`](https://sepolia.etherscan.io/address/0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944)
 - **Gas Cost**: ~344,175 gas (~0.0005 ETH)
-- **Example TX**: [`0x5bd91b0146b1e67e8a1a182a8295b574f3313ec989128c04ab07b93d234bd59f`](https://sepolia.etherscan.io/tx/0x5bd91b0146b1e67e8a1a182a8295b574f3313ec989128c04ab07b93d234bd59f)
+- **Latest TX**: [`0x30775278f457979fcf71f51c8726168f8929db699884761b84183a73ec92875c`](https://sepolia.etherscan.io/tx/0x30775278f457979fcf71f51c8726168f8929db699884761b84183a73ec92875c)
 - **Result**: Permanent blockchain record with events
+
+### Real Circle Gateway Integration
+- **Balance Tracking**: 18.80 → 10.80 USDC (verified transfers working)
+- **Transfer Cost**: 2 USDC + 2.001 fee per chain
+- **Attestations**: 498-character cryptographic proofs returned instantly
 
 ## 🚀 Quick Start
 

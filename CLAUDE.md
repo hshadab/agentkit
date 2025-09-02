@@ -3,7 +3,7 @@
 ## Project Overview
 AgentKit is a **universal verifiable AI agent framework** that enables trustless AI operations across multiple blockchains with cryptographic proof of correct execution. The system combines zkEngine (Rust-based universal proof generation), zkML (JOLT-Atlas), multi-chain verification, and Circle integration for cross-chain asset management.
 
-**Latest Update**: 2025-08-29 - Repository reorganization, broader multi-chain scope, Groth16 integration complete.
+**Latest Update**: 2025-09-02 - Fixed Groth16 backend timeout issues, verified Circle Gateway transfers working with balance reduction.
 
 ## 🎯 Core Technologies Stack
 
@@ -191,17 +191,25 @@ node tests/integration/test-iotex-proximity.js
 
 ## 🔧 Common Issues
 
-### RPC Connection Issues
-- Primary: `https://eth-sepolia.public.blastapi.io`
-- Fallbacks configured in each backend
+### RPC Connection Issues (FIXED)
+- **Problem**: Groth16 backend timeout on startup due to ethers network detection
+- **Solution**: Implemented retry logic with multiple fallback RPCs
+- **Fallback RPCs**:
+  - `https://eth-sepolia.public.blastapi.io` (primary)
+  - `https://ethereum-sepolia-rpc.publicnode.com`
+  - `https://sepolia.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161`
+  - `https://rpc.sepolia.org`
+- **Fix**: Added staticNetwork mode and 5-second timeout per RPC attempt
 
 ### Balance Issues
-- Minimum: 2.00 USDC per transfer
-- Check Gateway balance, not wallet
+- Minimum: 2.00 USDC per transfer + 2.001 USDC fee
+- Total needed per workflow: 8.002 USDC (2 chains)
+- Check Gateway balance via API, not wallet
 
 ### Verification Failures
-- Ensure all services running
+- Ensure all services running (ports 8002, 3004, 8000)
 - Check contract addresses match deployment
+- Verify wallet has sufficient ETH for gas (~0.001 ETH)
 
 ## 🏗️ Development Guide
 
@@ -223,6 +231,14 @@ node tests/integration/test-iotex-proximity.js
 - Keep SES-safe (no dynamic code generation)
 
 ## 📝 Recent Updates
+
+### 2025-09-02 - Groth16 Backend Fix & Circle Gateway Verification
+- ✅ Fixed RPC timeout issues in Groth16 backend with retry logic
+- ✅ Added multiple fallback RPC endpoints for resilience
+- ✅ Implemented lazy provider initialization
+- ✅ Verified Circle Gateway transfers working (balance: 18.80 → 10.80 USDC)
+- ✅ Recent verification TX: [0x30775278f457979fcf71f51c8726168f8929db699884761b84183a73ec92875c](https://sepolia.etherscan.io/tx/0x30775278f457979fcf71f51c8726168f8929db699884761b84183a73ec92875c)
+- ✅ All 3 workflow steps now complete successfully
 
 ### 2025-08-29 - 100% REAL Implementation Complete
 - ✅ Real zkML proof generation with Rust binary (~500ms)
