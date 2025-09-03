@@ -1002,17 +1002,17 @@ int factorial(int n) {
         // Avalanche Medical Workflow Functions
         async function startAvalancheMedicalWorkflow() {
             const workflowId = 'med-' + Date.now();
-            const patientId = Math.floor(Math.random() * 100000);
+            const patientId = Math.floor(Math.random() * 10) + 1; // Use small IDs (1-10) for faster zkEngine proofs
             
-            // Create the workflow card with modern styling
+            // Create the workflow card with modern styling - 3 distinct steps
             const workflowHTML = `
                 <div class="workflow-card medical-workflow" id="workflow-${workflowId}">
                     <div class="workflow-header">
                         <div class="workflow-title-row">
                             <span style="font-size: 24px;">🏔️</span>
                             <div>
-                                <div class="workflow-title">Avalanche Medical Records Workflow</div>
-                                <div style="font-size: 11px; color: #9ca3af; margin-top: 2px;">Patient ID: ${patientId} | Chain: Avalanche Fuji</div>
+                                <div class="workflow-title">Avalanche Medical Records Workflow (3-Step)</div>
+                                <div style="font-size: 11px; color: #9ca3af; margin-top: 2px;">Patient ID: ${patientId} | Chain: Avalanche Fuji | REAL On-Chain TX</div>
                             </div>
                         </div>
                         <div class="workflow-status in-progress">IN PROGRESS</div>
@@ -1024,7 +1024,7 @@ int factorial(int n) {
                             <div class="step-header">
                                 <div class="step-info">
                                     <div class="step-number">STEP 1</div>
-                                    <div class="step-title">Create Medical Record Commitment</div>
+                                    <div class="step-title">Create Medical Record On-Chain</div>
                                     <div class="step-description">Recording patient data hash on Avalanche blockchain</div>
                                 </div>
                                 <div class="step-status pending">PENDING</div>
@@ -1032,17 +1032,30 @@ int factorial(int n) {
                             <div class="step-content" id="step1-content-${workflowId}"></div>
                         </div>
                         
-                        <!-- Step 2: Verify Integrity -->
+                        <!-- Step 2: Generate Proof -->
                         <div class="workflow-step" id="step2-${workflowId}">
                             <div class="step-header">
                                 <div class="step-info">
                                     <div class="step-number">STEP 2</div>
-                                    <div class="step-title">Verify Record Integrity with zkProof</div>
-                                    <div class="step-description">Generate and verify zkEngine proof on-chain</div>
+                                    <div class="step-title">Generate zkProof with On-Chain Hash</div>
+                                    <div class="step-description">Creating zkEngine proof that incorporates the on-chain hash</div>
                                 </div>
                                 <div class="step-status pending">PENDING</div>
                             </div>
                             <div class="step-content" id="step2-content-${workflowId}"></div>
+                        </div>
+                        
+                        <!-- Step 3: Verify On-Chain -->
+                        <div class="workflow-step" id="step3-${workflowId}">
+                            <div class="step-header">
+                                <div class="step-info">
+                                    <div class="step-number">STEP 3</div>
+                                    <div class="step-title">Verify Proof On-Chain (REAL TX)</div>
+                                    <div class="step-description">Execute on-chain verification transaction</div>
+                                </div>
+                                <div class="step-status pending">PENDING</div>
+                            </div>
+                            <div class="step-content" id="step3-content-${workflowId}"></div>
                         </div>
                     </div>
                 </div>
@@ -1095,8 +1108,8 @@ int factorial(int n) {
                         </div>
                     `;
                     
-                    // Automatically proceed to Step 2
-                    await executeStep2Medical(workflowId, data.sessionId);
+                    // Automatically proceed to Step 2: Generate Proof
+                    await executeStep2Medical(workflowId, data.sessionId, data.recordHash);
                 } else {
                     throw new Error(data.error || 'Failed to create medical record');
                 }
@@ -1113,7 +1126,7 @@ int factorial(int n) {
             }
         }
         
-        async function executeStep2Medical(workflowId, sessionId) {
+        async function executeStep2Medical(workflowId, sessionId, recordHash) {
             // Update UI to show in progress
             const step2 = document.getElementById(`step2-${workflowId}`);
             const step2Content = document.getElementById(`step2-content-${workflowId}`);
@@ -1121,10 +1134,61 @@ int factorial(int n) {
             
             step2Status.textContent = 'EXECUTING';
             step2Status.className = 'step-status executing';
-            step2Content.innerHTML = '<div style="color: #fbbf24; font-size: 12px;">🔐 Generating zkEngine proof and verifying on-chain...</div>';
+            step2Content.innerHTML = '<div style="color: #fbbf24; font-size: 12px;">🔐 Generating zkEngine proof incorporating on-chain hash...</div>';
             
             try {
-                // Call backend to verify integrity
+                // Call backend to generate proof
+                const response = await fetch('http://localhost:8003/medical/generate-proof', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update Step 2 as complete
+                    step2Status.textContent = 'COMPLETED';
+                    step2Status.className = 'step-status completed';
+                    
+                    step2Content.innerHTML = `
+                        <div style="color: #10b981; font-size: 12px; margin-bottom: 8px;">✅ Proof generated with on-chain hash!</div>
+                        <div style="font-size: 11px; color: #9ca3af;">
+                            <div>Proof ID: ${data.proofId ? data.proofId.substring(0, 16) + '...' : 'N/A'}</div>
+                            <div>Hash incorporated: ${recordHash ? recordHash.substring(0, 16) + '...' : 'N/A'}</div>
+                        </div>
+                    `;
+                    
+                    // Automatically proceed to Step 3: Verify On-Chain
+                    await executeStep3Medical(workflowId, sessionId);
+                } else {
+                    throw new Error(data.error || 'Failed to generate proof');
+                }
+            } catch (error) {
+                console.error('Step 2 failed:', error);
+                step2Status.textContent = 'FAILED';
+                step2Status.className = 'step-status failed';
+                step2Content.innerHTML = `<div style="color: #ef4444; font-size: 12px;">❌ ${error.message}</div>`;
+                
+                // Update workflow status
+                const workflowStatus = document.querySelector(`#workflow-${workflowId} .workflow-status`);
+                workflowStatus.textContent = 'FAILED';
+                workflowStatus.className = 'workflow-status failed';
+            }
+        }
+        
+        async function executeStep3Medical(workflowId, sessionId) {
+            // Update UI to show in progress
+            const step3 = document.getElementById(`step3-${workflowId}`);
+            const step3Content = document.getElementById(`step3-content-${workflowId}`);
+            const step3Status = step3.querySelector('.step-status');
+            
+            step3Status.textContent = 'EXECUTING';
+            step3Status.className = 'step-status executing';
+            step3Content.innerHTML = '<div style="color: #8b9aff; font-size: 12px;">📤 Executing on-chain verification transaction...</div>';
+            
+            try {
+                // Call backend to verify on-chain
                 const response = await fetch('http://localhost:8003/medical/verify', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1134,33 +1198,35 @@ int factorial(int n) {
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Update UI with success
-                    step2Status.textContent = 'COMPLETED';
-                    step2Status.className = 'step-status completed';
-                    step2Content.innerHTML = `
-                        <div style="color: #10b981; font-size: 12px; margin-bottom: 8px;">✅ Integrity verified on Avalanche!</div>
+                    // Update Step 3 as complete
+                    step3Status.textContent = 'COMPLETED';
+                    step3Status.className = 'step-status completed';
+                    
+                    step3Content.innerHTML = `
+                        <div style="color: #10b981; font-size: 12px; margin-bottom: 8px;">✅ On-chain verification complete! (REAL TX)</div>
                         <div style="font-size: 11px; color: #9ca3af;">
                             <div>Integrity Score: ${data.integrityScore}/100</div>
-                            <div>TX Hash: <a href="${data.explorerUrl}" target="_blank" style="color: #8b9aff;">${data.transactionHash.substring(0, 16)}...</a></div>
                             <div>Gas Used: ${data.gasUsed}</div>
+                            <div>Block: ${data.blockNumber}</div>
+                            <div>TX: <a href="${data.explorerUrl}" target="_blank" style="color: #8b9aff;">${data.transactionHash.substring(0, 16)}...</a></div>
+                            <div>Contract: <a href="https://testnet.snowtrace.io/address/0x1698ebB10e789EebE7A66bDb096F0a65ce49Dc68" target="_blank" style="color: #8b9aff;">0x1698ebB1...ce49Dc68</a></div>
                         </div>
                     `;
                     
-                    // Update workflow status to completed
+                    // Update workflow status to complete
                     const workflowStatus = document.querySelector(`#workflow-${workflowId} .workflow-status`);
                     workflowStatus.textContent = 'COMPLETED';
                     workflowStatus.className = 'workflow-status completed';
                     
-                    // Add success message
-                    addMessage(`✅ Avalanche medical workflow completed! Both transactions confirmed on-chain.`, 'assistant');
+                    addMessage(`✅ Medical record workflow complete! All 3 steps verified on Avalanche with real on-chain transactions.`, 'assistant');
                 } else {
-                    throw new Error(data.error || 'Failed to verify integrity');
+                    throw new Error(data.error || 'Failed to verify on-chain');
                 }
             } catch (error) {
-                console.error('Step 2 failed:', error);
-                step2Status.textContent = 'FAILED';
-                step2Status.className = 'step-status failed';
-                step2Content.innerHTML = `<div style="color: #ef4444; font-size: 12px;">❌ ${error.message}</div>`;
+                console.error('Step 3 failed:', error);
+                step3Status.textContent = 'FAILED';
+                step3Status.className = 'step-status failed';
+                step3Content.innerHTML = `<div style="color: #ef4444; font-size: 12px;">❌ ${error.message}</div>`;
                 
                 // Update workflow status
                 const workflowStatus = document.querySelector(`#workflow-${workflowId} .workflow-status`);

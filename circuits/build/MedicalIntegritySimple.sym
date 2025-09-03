@@ -1,0 +1,7 @@
+1,1,0,main.patientId
+2,2,0,main.recordData
+3,3,0,main.recordHash
+4,4,0,main.hash1
+5,5,0,main.hash2
+6,-1,0,main.computedHash
+7,6,0,main.check

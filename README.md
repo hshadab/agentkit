@@ -44,14 +44,22 @@ Deploy once, verify everywhere:
 
 ### Avalanche - Healthcare & Medical Records
 ```javascript
-// Verify medical record integrity without exposing patient data
-const proof = await zkEngine.generateMedicalRecordProof({
-    patientId: "hash(SSN)",
+// 100% REAL: Three-step workflow with on-chain transactions
+// Step 1: Create medical record on-chain (costs AVAX)
+const record = await createMedicalRecord({
+    patientId: 5,  // Small ID for ~25s zkEngine computation
     diagnosis: "encrypted",
-    provider: "Mayo Clinic",
-    timestamp: Date.now()
+    provider: "Avalanche Medical Center"
 });
-// Deployed at: 0x... on Avalanche C-Chain
+
+// Step 2: Generate zkEngine proof (real cryptographic proof)
+const proof = await zkEngine.generateMedicalRecordProof(patientId, recordHash);
+
+// Step 3: Verify proof on-chain (costs AVAX)
+const verification = await contract.verifyIntegrity(recordId, proof, recordHash);
+
+// Contract: 0x1698ebB10e789EebE7A66bDb096F0a65ce49Dc68 on Avalanche Fuji
+// Example TXs viewable on Snowtrace explorer
 ```
 
 ### Base - DeFi & Automated Trading
@@ -94,7 +102,7 @@ const proof = await zkEngine.generateProximityProof({
 |------------|----------|-----------------|---------------|
 | **KYC Compliance** | Identity verification | ~2s | All EVM chains |
 | **Location/Proximity** | Geofencing, attendance | ~1s | IoTeX, Ethereum |
-| **Medical Records** | HIPAA-compliant verification | ~3s | Avalanche |
+| **Medical Records** | HIPAA-compliant verification | ~25s | Avalanche (Real TX) |
 | **Trading Decisions** | DeFi strategy compliance | ~2s | Base, Ethereum |
 | **IoT Attestation** | Device authenticity | ~1s | IoTeX |
 | **Payment Authorization** | USDC transfers | ~10s | All chains |
