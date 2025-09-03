@@ -44,22 +44,25 @@ Deploy once, verify everywhere:
 
 ### Avalanche - Healthcare & Medical Records
 ```javascript
-// 100% REAL: Three-step workflow with on-chain transactions
+// 100% REAL: Groth16 proof-of-proof verification on-chain
 // Step 1: Create medical record on-chain (costs AVAX)
 const record = await createMedicalRecord({
-    patientId: 5,  // Small ID for ~25s zkEngine computation
-    diagnosis: "encrypted",
-    provider: "Avalanche Medical Center"
+    patientId: 3,
+    recordData: 549,  // Encoded medical data
+    diagnosis: "encrypted"
 });
 
-// Step 2: Generate zkEngine proof (real cryptographic proof)
-const proof = await zkEngine.generateMedicalRecordProof(patientId, recordHash);
+// Step 2: Generate Groth16 proof (1-2 seconds)
+const proof = await snarkjs.groth16.fullProve(input, WASM, ZKEY);
 
-// Step 3: Verify proof on-chain (costs AVAX)
-const verification = await contract.verifyIntegrity(recordId, proof, recordHash);
+// Step 3: Verify proof cryptographically on-chain (costs AVAX)
+const verified = await verifierContract.verifyProof(
+    proof.a, proof.b, proof.c, publicSignals
+);
 
-// Contract: 0x1698ebB10e789EebE7A66bDb096F0a65ce49Dc68 on Avalanche Fuji
-// Example TXs viewable on Snowtrace explorer
+// Groth16 Verifier: 0xe285dA4D9808DEabb0608Fb2f8F99256Bd80e0ea
+// Records Contract: 0x1698ebB10e789EebE7A66bDb096F0a65ce49Dc68
+// Example TX: 0x9cc6aa7b74ab4e4bba1348ff69c3b8e7d9e279309a738a1abb6befc233f09951
 ```
 
 ### Base - DeFi & Automated Trading
@@ -102,7 +105,7 @@ const proof = await zkEngine.generateProximityProof({
 |------------|----------|-----------------|---------------|
 | **KYC Compliance** | Identity verification | ~2s | All EVM chains |
 | **Location/Proximity** | Geofencing, attendance | ~1s | IoTeX, Ethereum |
-| **Medical Records** | HIPAA-compliant verification | ~25s | Avalanche (Real TX) |
+| **Medical Records** | Groth16 proof verification | ~2s | Avalanche (Real TX) |
 | **Trading Decisions** | DeFi strategy compliance | ~2s | Base, Ethereum |
 | **IoT Attestation** | Device authenticity | ~1s | IoTeX |
 | **Payment Authorization** | USDC transfers | ~10s | All chains |

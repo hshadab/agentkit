@@ -7,7 +7,7 @@
     "express": "^5.1.0",
     "node-fetch": "^3.3.2",
     "snarkjs": "^0.7.5",
-    "solc": "^0.8.17"
+    "solc": "^0.8.30"
   },
   "type": "commonjs"
 }

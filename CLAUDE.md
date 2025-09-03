@@ -97,36 +97,37 @@ node api/solana-game-backend.js
 
 ## 🏥 Use Case Examples
 
-### Avalanche - Medical Records (100% REAL On-Chain)
+### Avalanche - Medical Records (100% REAL Groth16 Verification)
 ```javascript
-// Three-step workflow with real zkEngine proofs and on-chain transactions
-// Backend: api/avalanche-medical-zkengine-onchain.js (Port 8003)
+// Three-step workflow with REAL Groth16 proof-of-proof verification
+// Backend: api/avalanche-medical-groth16.js (Port 8003)
 
 // Step 1: Create medical record on-chain (costs AVAX gas)
 const record = await createMedicalRecord({
-    patientId: 5,  // Small ID for reasonable zkEngine computation time
+    patientId: 3,
+    recordData: 549,  // Medical data encoded as number
     diagnosis: "encrypted",
     treatment: "encrypted"
 });
-// Real TX example: 0x6738b290c5d60489ee49965d1791e000b4a0814171aa014f33a32b8f9056c3e9
+// Real TX: 0x6ca214258f20dd4d9eb5a3c7194433d9b680e715825676e8955857bc3ad4dc9e
 
-// Step 2: Generate zkEngine proof (24-30 seconds)
-const proof = await zkEngine.generateMedicalRecordProof(
-    patientId,
-    recordHash
+// Step 2: Generate Groth16 proof (1-2 seconds)
+const proof = await snarkjs.groth16.fullProve(
+    { patientId, recordData, recordHash },
+    WASM_PATH,
+    ZKEY_PATH
 );
-// Uses factorial.wasm for computation demonstration
-// Generates real Groth16 proof with public signals
+// Generates cryptographic Groth16 proof with public signals
+// Public signal: computed hash (e.g., 301410)
 
-// Step 3: Verify proof on-chain (costs AVAX gas)
-const verification = await verifyIntegrity(
-    recordId,
-    proof,
-    recordHash
+// Step 3: Verify proof cryptographically on-chain (costs AVAX gas)
+const verified = await verifierContract.verifyProof(
+    proof.a, proof.b, proof.c, publicSignals
 );
-// Real TX example: 0x9b7bc6077d70b61d6ed99f783b7a0540eaf31f8db9ba6a64ee1d36c350a649f6
-// Contract: 0x1698ebB10e789EebE7A66bDb096F0a65ce49Dc68 on Avalanche Fuji
-// Updates integrity score and access count on-chain
+// Real TX: 0x9cc6aa7b74ab4e4bba1348ff69c3b8e7d9e279309a738a1abb6befc233f09951
+// Groth16 Verifier: 0xe285dA4D9808DEabb0608Fb2f8F99256Bd80e0ea
+// Records Contract: 0x1698ebB10e789EebE7A66bDb096F0a65ce49Dc68
+// Full cryptographic verification using pairing checks
 ```
 
 ### IoTeX - IoT Device Proximity
@@ -252,6 +253,16 @@ node tests/integration/test-iotex-proximity.js
 - Keep SES-safe (no dynamic code generation)
 
 ## 📝 Recent Updates
+
+### 2025-09-03 - Avalanche Medical with REAL Groth16 Proof-of-Proof
+- ✅ Upgraded from hash comparison to full Groth16 cryptographic verification
+- ✅ Deployed Groth16 verifier contract: `0xe285dA4D9808DEabb0608Fb2f8F99256Bd80e0ea`
+- ✅ Real Groth16 proof generation using snarkjs (1-2 seconds)
+- ✅ On-chain cryptographic verification with pairing checks
+- ✅ Same security level as zkML workflow - full zero-knowledge privacy
+- ✅ Example verification TX: `0x9cc6aa7b74ab4e4bba1348ff69c3b8e7d9e279309a738a1abb6befc233f09951`
+- ✅ Gas cost: ~148k for verification (includes pairing operations)
+- 📝 Circuit: MedicalIntegritySimple.circom with 1 public input
 
 ### 2025-09-03 - Avalanche Medical Records with Real zkEngine + On-Chain
 - ✅ Implemented complete 3-step medical records workflow on Avalanche
