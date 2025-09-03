@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test UI - Console Error Check</title>
+</head>
+<body>
+    <h1>UI Test - Check Console for Errors</h1>
+    <div id="status">Checking services...</div>
+    <div id="results"></div>
+    
+    <script>
+        'use strict';
+        
+        // Service status tracking
+        const serviceStatus = {
+            zkml: false,
+            groth16: false,
+            avalanche: false
+        };
+        
+        // Check backend services status
+        async function checkServicesStatus() {
+            const results = [];
+            
+            // Check zkML backend (port 8002)
+            try {
+                const zkmlResponse = await fetch('http://localhost:8002/health');
+                serviceStatus.zkml = zkmlResponse.ok;
+                results.push(`zkML Backend: ${serviceStatus.zkml ? '✅ Running' : '❌ Not running'}`);
+            } catch (e) {
+                serviceStatus.zkml = false;
+                results.push(`zkML Backend: ❌ Error - ${e.message}`);
+            }
+            
+            // Check Groth16 backend (port 3004)
+            try {
+                const groth16Response = await fetch('http://localhost:3004/health');
+                serviceStatus.groth16 = groth16Response.ok;
+                results.push(`Groth16 Backend: ${serviceStatus.groth16 ? '✅ Running' : '❌ Not running'}`);
+            } catch (e) {
+                serviceStatus.groth16 = false;
+                results.push(`Groth16 Backend: ❌ Error - ${e.message}`);
+            }
+            
+            // Check Avalanche medical backend (port 8003)
+            try {
+                const avalancheResponse = await fetch('http://localhost:8003/health');
+                serviceStatus.avalanche = avalancheResponse.ok;
+                results.push(`Avalanche Backend: ${serviceStatus.avalanche ? '✅ Running' : '❌ Not running'}`);
+            } catch (e) {
+                serviceStatus.avalanche = false;
+                results.push(`Avalanche Backend: ❌ Error - ${e.message}`);
+            }
+            
+            // Update UI
+            document.getElementById('status').textContent = 'Service Check Complete';
+            document.getElementById('results').innerHTML = '<ul>' + 
+                results.map(r => `<li>${r}</li>`).join('') + 
+                '</ul>';
+            
+            // Log to console
+            console.log('Service Status:', serviceStatus);
+            console.log('No WebSocket errors - using HTTP health checks only');
+            
+            return serviceStatus;
+        }
+        
+        // Run check on load
+        window.addEventListener('load', async () => {
+            console.log('Page loaded - checking services...');
+            await checkServicesStatus();
+            console.log('Check complete - no errors expected');
+        });
+    </script>
+</body>
+</html>

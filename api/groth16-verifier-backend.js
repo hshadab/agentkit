@@ -11,8 +11,8 @@ app.use(express.json());
 
 const PORT = 3004;
 
-// Load deployment info
-const deploymentInfo = JSON.parse(fs.readFileSync(path.join(__dirname, '../deployments/groth16-verifier.json'), 'utf8'));
+// Load deployment info for the storage verifier contract
+const deploymentInfo = JSON.parse(fs.readFileSync(path.join(__dirname, '../deployments/jolt-storage-verifier-sepolia.json'), 'utf8'));
 
 // RPC endpoints for Sepolia
 const RPC_ENDPOINTS = [
@@ -218,34 +218,38 @@ app.post('/groth16/workflow', async (req, res) => {
         
         // Try to verify with current provider
         try {
-            console.log('Attempting on-chain verification...');
+            console.log('Submitting on-chain verification transaction...');
             
-            // Call the view function to verify the proof on-chain
-            const isValid = await verifierContract.verifyProof(a, b, c, signals);
-            console.log('On-chain proof verification result:', isValid);
+            // Use verifyAndStore to create a real transaction that stores the proof
+            // This uses only 2 public signals as per the contract
+            const publicSignalsForStorage = [
+                signals[0], // decision (1 = APPROVE)
+                signals[2]  // confidence
+            ];
             
-            if (isValid) {
-                // Since it's a view function, we don't get a transaction hash
-                // But we can prove it was verified on-chain by getting the current block
-                const currentBlock = await provider.getBlockNumber();
-                const block = await provider.getBlock(currentBlock);
-                
-                verificationSuccess = true;
-                
-                // Since verifyProof is a view function, it doesn't create a transaction
-                // We'll return the block number where verification occurred
-                console.log('✅ On-chain verification successful!');
-                console.log('Proof verified on-chain at block:', currentBlock);
-                console.log('Block hash:', block.hash);
-                console.log('Contract:', deploymentInfo.address);
-                
-                // Store verification details (block number instead of fake tx hash)
-                blockNumber = currentBlock;
-                verificationSuccess = true;
-            } else {
-                console.log('❌ Proof verification failed on-chain');
-                throw new Error('Proof verification failed');
-            }
+            const tx = await verifierContract.verifyAndStore(
+                a,
+                b,
+                c,
+                publicSignalsForStorage,
+                {
+                    gasLimit: 500000,
+                    gasPrice: (await provider.getFeeData()).gasPrice * 2n
+                }
+            );
+            
+            console.log('Transaction hash:', tx.hash);
+            txHash = tx.hash;
+            
+            // Wait for confirmation
+            const receipt = await tx.wait();
+            blockNumber = receipt.blockNumber;
+            verificationSuccess = true;
+            
+            console.log('✅ On-chain verification successful!');
+            console.log('Transaction confirmed in block:', blockNumber);
+            console.log('Transaction hash:', txHash);
+            console.log('Contract:', deploymentInfo.address);
         } catch (verifyError) {
             console.error('On-chain verification error:', verifyError.message);
             
@@ -258,14 +262,23 @@ app.post('/groth16/workflow', async (req, res) => {
                     verifierContract = new ethers.Contract(deploymentInfo.address, deploymentInfo.abi, wallet);
                     
                     // Try one more time with the new connection
-                    const isValid = await verifierContract.verifyProof(a, b, c, signals);
+                    const publicSignalsForStorage = [signals[0], signals[2]];
+                    const tx = await verifierContract.verifyAndStore(
+                        a,
+                        b,
+                        c,
+                        publicSignalsForStorage,
+                        {
+                            gasLimit: 500000,
+                            gasPrice: (await provider.getFeeData()).gasPrice * 2n
+                        }
+                    );
                     
-                    if (isValid) {
-                        const currentBlock = await provider.getBlockNumber();
-                        blockNumber = currentBlock;
-                        verificationSuccess = true;
-                        console.log('✅ Retry successful! Verified at block:', currentBlock);
-                    }
+                    txHash = tx.hash;
+                    const receipt = await tx.wait();
+                    blockNumber = receipt.blockNumber;
+                    verificationSuccess = true;
+                    console.log('✅ Retry successful! Transaction:', txHash);
                 } catch (retryError) {
                     console.error('Retry failed:', retryError.message);
                 }
@@ -273,16 +286,16 @@ app.post('/groth16/workflow', async (req, res) => {
         }
         
         // Return appropriate response
-        if (verificationSuccess && blockNumber) {
+        if (verificationSuccess && (txHash || blockNumber)) {
             res.json({
                 success: true,
                 proof: proofResult.proof,
                 publicSignals: proofResult.publicSignals,
+                transactionHash: txHash,
                 blockNumber: blockNumber,
+                etherscanUrl: txHash ? `https://sepolia.etherscan.io/tx/${txHash}` : null,
                 contractAddress: deploymentInfo.address,
-                contractUrl: `https://sepolia.etherscan.io/address/${deploymentInfo.address}`,
-                blockUrl: `https://sepolia.etherscan.io/block/${blockNumber}`,
-                note: 'Verification performed via view function (no transaction created)'
+                contractUrl: `https://sepolia.etherscan.io/address/${deploymentInfo.address}`
             });
         } else {
             // Proof is valid but couldn't verify on-chain

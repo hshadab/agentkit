@@ -593,13 +593,14 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                         proofId: data.proofId
                     });
                     return { success: true, transactionHash: data.transactionHash };
-                } else if (data.blockNumber) {
-                    // Fallback: block verification without transaction
+                } else if (data.transactionHash) {
+                    // Transaction created successfully
                     updateStep2Complete(wfId, { 
+                        transactionHash: data.transactionHash,
                         blockNumber: data.blockNumber,
+                        etherscanUrl: data.etherscanUrl,
                         contractAddress: data.contractAddress,
-                        contractUrl: data.contractUrl,
-                        blockUrl: data.blockUrl
+                        contractUrl: data.contractUrl
                     });
                     return { success: true, blockNumber: data.blockNumber };
                 } else if (data.proofValid) {
@@ -709,16 +710,19 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                 } else if (verifyResult.blockNumber) {
                     // Fallback to block-only verification
                     const blockNum = verifyResult.blockNumber;
-                    const contractAddr = verifyResult.contractAddress || '0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944';
+                    const contractAddr = verifyResult.contractAddress || '0xE2506E6871EAe022608B97d92D5e051210DF684E';
                     const contractUrl = verifyResult.contractUrl || `https://sepolia.etherscan.io/address/${contractAddr}`;
+                    const blockUrl = verifyResult.blockUrl || `https://sepolia.etherscan.io/block/${blockNum}`;
                     
                     content.innerHTML = `
                         <div style="font-size: 12px; color: #10b981; margin-bottom: 8px;">✅ zkML proof verified on Ethereum</div>
-                        <div style="font-size: 11px; color: #8b9aff; margin-bottom: 6px;">
-                            📦 Verified at block #${blockNum}
+                        <div style="margin-bottom: 6px;">
+                            <a href="${blockUrl}" target="_blank" style="color: #8b9aff; font-size: 11px; text-decoration: none;">
+                                📦 Verified at block #${blockNum}
+                            </a>
                         </div>
                         <div>
-                            <a href="${contractUrl}" target="_blank" style="color: #9ca3af; font-size: 10px; text-decoration: none;">
+                            <a href="${contractUrl}" target="_blank" style="color: #8b9aff; font-size: 11px; text-decoration: none;">
                                 📄 View Verifier Contract
                             </a>
                         </div>
@@ -734,7 +738,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                             The proof is valid and can be verified when network is available
                         </div>
                         <div style="margin-top: 8px;">
-                            <a href="https://sepolia.etherscan.io/address/0xE2506E6871EAe022608B97d92D5e051210DF684E" target="_blank" style="color: #9ca3af; font-size: 10px; text-decoration: none;">
+                            <a href="https://sepolia.etherscan.io/address/0xE2506E6871EAe022608B97d92D5e051210DF684E" target="_blank" style="color: #8b9aff; font-size: 10px; text-decoration: none;">
                                 📄 View Groth16 Verifier Contract
                             </a>
                         </div>

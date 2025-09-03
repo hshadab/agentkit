@@ -147,6 +147,19 @@
         .timeline-step.complete .step-label { color: #10b981; }
         .timeline-step.executing .step-label { color: #fbbf24; }
         
+        /* Medical Workflow Styles */
+        .medical-workflow { background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(30, 30, 30, 0.9) 100%); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .medical-workflow .workflow-header { border-bottom: 1px solid rgba(239, 68, 68, 0.2); padding-bottom: 16px; }
+        .medical-workflow .workflow-step { background: rgba(239, 68, 68, 0.03); border: 1px solid rgba(239, 68, 68, 0.15); margin: 16px 0; padding: 20px; border-radius: 12px; transition: all 0.3s; }
+        .medical-workflow .workflow-step:hover { background: rgba(239, 68, 68, 0.08); }
+        .medical-workflow .step-number { color: #ef4444; text-transform: uppercase; letter-spacing: 0.1em; }
+        .medical-workflow .step-title { color: #ffffff; }
+        .medical-workflow .step-description { color: #9ca3af; }
+        .medical-workflow .workflow-status.completed { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .medical-workflow .step-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .medical-workflow .step-info { flex: 1; }
+        .medical-workflow .step-content { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(239, 68, 68, 0.1); }
+        
         /* Code Display */
         .code-container { background: #0d0d0d; border-radius: 8px; overflow: hidden; margin-top: 16px; }
         .code-wrapper { display: flex; }
@@ -295,6 +308,13 @@
         </div>
         
         <div class="example-category">
+            <h4>🏔️ Avalanche Medical Records (REAL ON-CHAIN)</h4>
+            <div class="example-item" onclick="sendMessage('Create medical record for patient 12345 on Avalanche')">Create Medical Record Commitment</div>
+            <div class="example-item" onclick="sendMessage('Verify medical record integrity on Avalanche')">Verify Record Integrity with zkProof</div>
+            <div class="example-item" onclick="sendMessage('Complete Avalanche medical workflow')">Full Medical Workflow (2 On-chain TXs)</div>
+        </div>
+        
+        <div class="example-category">
             <h4>C → WASM Compilation</h4>
             <div class="example-item" onclick="sendMessage('Compile C code to WASM')">Compile C to WASM</div>
             <div class="example-item" onclick="sendMessage('Show zkEngine compilation workflow')">Show Compilation Flow</div>
@@ -354,7 +374,9 @@
     
     <!-- Main application logic -->
     <script>
-        // SES-safe implementation
+        'use strict';
+        // SES-safe implementation - no dynamic code generation
+        // All functions are pre-defined, no eval() or Function() constructors
         window.DEMO_PRIVATE_KEY = 'c3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
         
         // Application state
@@ -367,9 +389,62 @@
             codeCache: {}
         };
         
-        // Initialize WebSocket connection
+        // Track medical session
+        let currentMedicalSession = null;
+        
+        // Service status tracking
+        const serviceStatus = {
+            zkml: false,
+            groth16: false,
+            avalanche: false
+        };
+        
+        // Check backend services status
+        async function checkServicesStatus() {
+            // Check zkML backend (port 8002)
+            try {
+                const zkmlResponse = await fetch('http://localhost:8002/health');
+                serviceStatus.zkml = zkmlResponse.ok;
+            } catch (e) {
+                serviceStatus.zkml = false;
+            }
+            
+            // Check Groth16 backend (port 3004)
+            try {
+                const groth16Response = await fetch('http://localhost:3004/health');
+                serviceStatus.groth16 = groth16Response.ok;
+            } catch (e) {
+                serviceStatus.groth16 = false;
+            }
+            
+            // Check Avalanche medical backend (port 8003)
+            try {
+                const avalancheResponse = await fetch('http://localhost:8003/health');
+                serviceStatus.avalanche = avalancheResponse.ok;
+            } catch (e) {
+                serviceStatus.avalanche = false;
+            }
+            
+            // Update connection status based on service availability
+            const anyServiceUp = serviceStatus.zkml || serviceStatus.groth16 || serviceStatus.avalanche;
+            updateConnectionStatus(anyServiceUp);
+            
+            // Log service status for debugging
+            console.log('Service Status:', serviceStatus);
+            
+            return serviceStatus;
+        }
+        
+        // Initialize WebSocket connection (disabled for now - not needed)
         let ws = null;
         function initWebSocket() {
+            // WebSocket disabled - not required for current workflows
+            // All workflows use direct HTTP APIs
+            // Check service status instead
+            checkServicesStatus();
+            return;
+            
+            /* Original WebSocket code - kept for future use
             ws = new WebSocket('ws://localhost:8001');
             
             ws.onopen = function() {
@@ -392,6 +467,7 @@
                 // Attempt reconnection after 3 seconds
                 setTimeout(initWebSocket, 3000);
             };
+            */
         }
         
         // Handle WebSocket messages
@@ -464,6 +540,26 @@
             // Check for Gateway zkML workflow
             if (lowerMessage.includes('gateway') && lowerMessage.includes('zkml')) {
                 startGatewayZkMLWorkflow();
+                return;
+            }
+            
+            // Check for Avalanche medical workflow
+            if ((lowerMessage.includes('medical') || lowerMessage.includes('health')) && 
+                (lowerMessage.includes('avalanche') || lowerMessage.includes('complete') || lowerMessage.includes('workflow'))) {
+                startAvalancheMedicalWorkflow();
+                return;
+            }
+            
+            // Check for medical record creation
+            if (lowerMessage.includes('create medical record')) {
+                const patientId = extractPatientId(message) || Math.floor(Math.random() * 100000);
+                createMedicalRecord(patientId);
+                return;
+            }
+            
+            // Check for medical record verification
+            if (lowerMessage.includes('verify medical') && lowerMessage.includes('integrity')) {
+                verifyMedicalIntegrity();
                 return;
             }
             
@@ -893,9 +989,201 @@ int factorial(int n) {
             return match ? match[0] : null;
         }
         
+        function extractPatientId(message) {
+            const match = message.match(/patient\s+(\d+)/i);
+            return match ? match[1] : null;
+        }
+        
         function updateExamplesForProofType(type) {
             // Could dynamically update the examples section based on selected proof type
             console.log('Selected proof type:', type);
+        }
+        
+        // Avalanche Medical Workflow Functions
+        async function startAvalancheMedicalWorkflow() {
+            const workflowId = 'med-' + Date.now();
+            const patientId = Math.floor(Math.random() * 100000);
+            
+            // Create the workflow card with modern styling
+            const workflowHTML = `
+                <div class="workflow-card medical-workflow" id="workflow-${workflowId}">
+                    <div class="workflow-header">
+                        <div class="workflow-title-row">
+                            <span style="font-size: 24px;">🏔️</span>
+                            <div>
+                                <div class="workflow-title">Avalanche Medical Records Workflow</div>
+                                <div style="font-size: 11px; color: #9ca3af; margin-top: 2px;">Patient ID: ${patientId} | Chain: Avalanche Fuji</div>
+                            </div>
+                        </div>
+                        <div class="workflow-status in-progress">IN PROGRESS</div>
+                    </div>
+                    
+                    <div class="workflow-content" style="margin-top: 20px;">
+                        <!-- Step 1: Create Medical Record -->
+                        <div class="workflow-step" id="step1-${workflowId}">
+                            <div class="step-header">
+                                <div class="step-info">
+                                    <div class="step-number">STEP 1</div>
+                                    <div class="step-title">Create Medical Record Commitment</div>
+                                    <div class="step-description">Recording patient data hash on Avalanche blockchain</div>
+                                </div>
+                                <div class="step-status pending">PENDING</div>
+                            </div>
+                            <div class="step-content" id="step1-content-${workflowId}"></div>
+                        </div>
+                        
+                        <!-- Step 2: Verify Integrity -->
+                        <div class="workflow-step" id="step2-${workflowId}">
+                            <div class="step-header">
+                                <div class="step-info">
+                                    <div class="step-number">STEP 2</div>
+                                    <div class="step-title">Verify Record Integrity with zkProof</div>
+                                    <div class="step-description">Generate and verify zkEngine proof on-chain</div>
+                                </div>
+                                <div class="step-status pending">PENDING</div>
+                            </div>
+                            <div class="step-content" id="step2-content-${workflowId}"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            addComponentToMessages(workflowHTML);
+            
+            // Execute Step 1: Create Medical Record
+            await executeStep1Medical(workflowId, patientId);
+        }
+        
+        async function executeStep1Medical(workflowId, patientId) {
+            // Update UI to show in progress
+            const step1 = document.getElementById(`step1-${workflowId}`);
+            const step1Content = document.getElementById(`step1-content-${workflowId}`);
+            const step1Status = step1.querySelector('.step-status');
+            
+            step1Status.textContent = 'EXECUTING';
+            step1Status.className = 'step-status executing';
+            step1Content.innerHTML = '<div style="color: #fbbf24; font-size: 12px;">🔄 Creating medical record on Avalanche...</div>';
+            
+            try {
+                // Call backend to create medical record
+                const response = await fetch('http://localhost:8003/medical/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        patientId: patientId,
+                        diagnosis: 'Routine Checkup',
+                        treatment: 'Preventive Care',
+                        provider: 'Avalanche Medical Center'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Store session for step 2
+                    currentMedicalSession = data.sessionId;
+                    
+                    // Update UI with success
+                    step1Status.textContent = 'COMPLETED';
+                    step1Status.className = 'step-status completed';
+                    step1Content.innerHTML = `
+                        <div style="color: #10b981; font-size: 12px; margin-bottom: 8px;">✅ Medical record created on Avalanche!</div>
+                        <div style="font-size: 11px; color: #9ca3af;">
+                            <div>Record ID: ${data.recordId ? data.recordId.substring(0, 16) + '...' : 'N/A'}</div>
+                            <div>TX Hash: <a href="${data.explorerUrl}" target="_blank" style="color: #8b9aff;">${data.transactionHash.substring(0, 16)}...</a></div>
+                            <div>Block: ${data.blockNumber}</div>
+                        </div>
+                    `;
+                    
+                    // Automatically proceed to Step 2
+                    await executeStep2Medical(workflowId, data.sessionId);
+                } else {
+                    throw new Error(data.error || 'Failed to create medical record');
+                }
+            } catch (error) {
+                console.error('Step 1 failed:', error);
+                step1Status.textContent = 'FAILED';
+                step1Status.className = 'step-status failed';
+                step1Content.innerHTML = `<div style="color: #ef4444; font-size: 12px;">❌ ${error.message}</div>`;
+                
+                // Update workflow status
+                const workflowStatus = document.querySelector(`#workflow-${workflowId} .workflow-status`);
+                workflowStatus.textContent = 'FAILED';
+                workflowStatus.className = 'workflow-status failed';
+            }
+        }
+        
+        async function executeStep2Medical(workflowId, sessionId) {
+            // Update UI to show in progress
+            const step2 = document.getElementById(`step2-${workflowId}`);
+            const step2Content = document.getElementById(`step2-content-${workflowId}`);
+            const step2Status = step2.querySelector('.step-status');
+            
+            step2Status.textContent = 'EXECUTING';
+            step2Status.className = 'step-status executing';
+            step2Content.innerHTML = '<div style="color: #fbbf24; font-size: 12px;">🔐 Generating zkEngine proof and verifying on-chain...</div>';
+            
+            try {
+                // Call backend to verify integrity
+                const response = await fetch('http://localhost:8003/medical/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update UI with success
+                    step2Status.textContent = 'COMPLETED';
+                    step2Status.className = 'step-status completed';
+                    step2Content.innerHTML = `
+                        <div style="color: #10b981; font-size: 12px; margin-bottom: 8px;">✅ Integrity verified on Avalanche!</div>
+                        <div style="font-size: 11px; color: #9ca3af;">
+                            <div>Integrity Score: ${data.integrityScore}/100</div>
+                            <div>TX Hash: <a href="${data.explorerUrl}" target="_blank" style="color: #8b9aff;">${data.transactionHash.substring(0, 16)}...</a></div>
+                            <div>Gas Used: ${data.gasUsed}</div>
+                        </div>
+                    `;
+                    
+                    // Update workflow status to completed
+                    const workflowStatus = document.querySelector(`#workflow-${workflowId} .workflow-status`);
+                    workflowStatus.textContent = 'COMPLETED';
+                    workflowStatus.className = 'workflow-status completed';
+                    
+                    // Add success message
+                    addMessage(`✅ Avalanche medical workflow completed! Both transactions confirmed on-chain.`, 'assistant');
+                } else {
+                    throw new Error(data.error || 'Failed to verify integrity');
+                }
+            } catch (error) {
+                console.error('Step 2 failed:', error);
+                step2Status.textContent = 'FAILED';
+                step2Status.className = 'step-status failed';
+                step2Content.innerHTML = `<div style="color: #ef4444; font-size: 12px;">❌ ${error.message}</div>`;
+                
+                // Update workflow status
+                const workflowStatus = document.querySelector(`#workflow-${workflowId} .workflow-status`);
+                workflowStatus.textContent = 'FAILED';
+                workflowStatus.className = 'workflow-status failed';
+            }
+        }
+        
+        async function createMedicalRecord(patientId) {
+            addMessage(`Creating medical record for patient ${patientId} on Avalanche...`, 'assistant');
+            // Can call executeStep1Medical directly with a simple UI
+            const workflowId = 'med-simple-' + Date.now();
+            await executeStep1Medical(workflowId, patientId);
+        }
+        
+        async function verifyMedicalIntegrity() {
+            if (!currentMedicalSession) {
+                addMessage('Please create a medical record first before verifying integrity.', 'assistant');
+                return;
+            }
+            addMessage('Verifying medical record integrity with zkProof...', 'assistant');
+            const workflowId = 'med-verify-' + Date.now();
+            await executeStep2Medical(workflowId, currentMedicalSession);
         }
         
         // Event listeners for custom events from components
@@ -926,15 +1214,32 @@ int factorial(int n) {
         
         // Initialize on load
         window.addEventListener('load', () => {
-            // Initialize WebSocket connection
+            // Initialize WebSocket connection (actually checks service status)
             initWebSocket();
+            
+            // Periodically check service status (every 30 seconds)
+            setInterval(checkServicesStatus, 30000);
             
             // Set default selections
             selectProofType('zkml');
             selectChain('ethereum');
             
-            // Show welcome message
+            // Show welcome message with service status
             addMessage('Welcome to AgentKit v2.0! Select a proof type and chain, then try an example or type your own command.', 'assistant');
+            
+            // Check and display which services are available
+            setTimeout(async () => {
+                await checkServicesStatus();
+                const availableServices = [];
+                if (serviceStatus.zkml && serviceStatus.groth16) availableServices.push('Circle Gateway zkML');
+                if (serviceStatus.avalanche) availableServices.push('Avalanche Medical Records');
+                
+                if (availableServices.length > 0) {
+                    console.log('Available workflows:', availableServices.join(', '));
+                } else {
+                    console.log('No backend services detected. Please start the required services.');
+                }
+            }, 1000);
         });
     </script>
 </body>
