@@ -1,0 +1,15 @@
+1,1,1,main.prompt
+2,2,1,main.response
+3,3,1,main.nonce
+4,4,1,main.promptHash
+5,5,1,main.responseHash
+6,6,1,main.timestamp
+7,7,1,main.promptSquared
+8,8,1,main.responseSquared
+9,9,1,main.nonceSquared
+10,-1,1,main.computedPromptHash
+11,-1,1,main.computedResponseHash
+12,10,1,main.timestampCheck
+13,-1,0,main.isNonZero.out
+14,-1,0,main.isNonZero.in
+15,11,0,main.isNonZero.inv

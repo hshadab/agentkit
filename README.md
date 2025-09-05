@@ -65,15 +65,22 @@ const verified = await verifierContract.verifyProof(
 // Example TX: 0x9cc6aa7b74ab4e4bba1348ff69c3b8e7d9e279309a738a1abb6befc233f09951
 ```
 
-### Base - DeFi & Automated Trading
+### Base - AI Predictions & DeFi Trading
 ```javascript
-// Prove trading strategy compliance without revealing alpha
-const proof = await zkEngine.generateTradingProof({
-    strategy: "market_neutral",
-    riskLimit: 0.02,
-    leverage: 3,
-    profitTarget: 0.15
+// NEW: AI Prediction with Commit-Reveal Scheme (Port 8004)
+// Prove AI made prediction before outcome was known
+const commitment = await aiPredictor.commit({
+    prompt: "Will ETH exceed $5000 by end of month?",
+    response: "Yes, based on technical indicators",
+    nonce: generateNonce()
 });
+
+// After outcome is known, reveal with Groth16 proof
+const proof = await aiPredictor.generateProof(commitment);
+const revealed = await aiPredictor.reveal(proof);
+
+// Also supports zkEngine + Groth16 hybrid (Port 8005)
+// Combines WASM proof generation with on-chain verification
 ```
 
 ### Solana - High-Performance Gaming
@@ -88,29 +95,36 @@ const proof = await zkEngine.generateGameStateProof({
 
 ### IoTeX - IoT Device Verification
 ```javascript
-// Prove device proximity and authenticity
+// NEW: zkEngine-powered proximity proofs (Port 8006)
+// Prove device location without revealing coordinates
 const proof = await zkEngine.generateProximityProof({
-    deviceId: "0xDEVICE",
-    location: "commitment",
-    distance: "<100m",
+    deviceId: "0xDEVICE123",
+    targetLocation: { lat: 37.7749, lon: -122.4194 },
+    maxDistance: 100,  // meters
     timestamp: Date.now()
 });
+
+// On-chain verification with IoTeX W3bstream
+const verified = await iotexContract.verifyProximity(proof);
 ```
 
 ## 📊 Proof Types & Workflows
 
 ### Available Proof Systems
 
-| Proof Type | Use Case | Generation Time | Chain Support |
-|------------|----------|-----------------|---------------|
-| **KYC Compliance** | Identity verification | ~2s | All EVM chains |
-| **Location/Proximity** | Geofencing, attendance | ~1s | IoTeX, Ethereum |
-| **Medical Records** | Groth16 proof verification | ~2s | Avalanche (Real TX) |
-| **Trading Decisions** | DeFi strategy compliance | ~2s | Base, Ethereum |
-| **IoT Attestation** | Device authenticity | ~1s | IoTeX |
-| **Payment Authorization** | USDC transfers | ~10s | All chains |
-| **Game State** | Fair play verification | ~500ms | Solana |
-| **Credit Scoring** | Loan eligibility | ~5s | Ethereum, Avalanche |
+| Proof Type | Use Case | Generation Time | Chain Support | Port |
+|------------|----------|-----------------|---------------|------|
+| **zkML LLM Decision** | AI decision verification | ~500ms | All EVM chains | 8002 |
+| **Groth16 JOLT Verifier** | On-chain proof verification | ~2s | Ethereum Sepolia | 3004 |
+| **Avalanche Medical** | Healthcare records with Groth16 | ~2s | Avalanche Fuji | 8003 |
+| **Base AI Prediction** | Commit-reveal AI predictions | ~2s | Base Sepolia | 8004 |
+| **Base zkEngine+Groth16** | Hybrid WASM+Groth16 proofs | ~3s | Base Sepolia | 8005 |
+| **IoTeX Proximity** | Device location proofs | ~1s | IoTeX Testnet | 8006 |
+| **Gateway Balance** | Circle USDC balance checking | instant | All chains | 8007 |
+| **KYC Compliance** | Identity verification | ~2s | All EVM chains | - |
+| **Trading Decisions** | DeFi strategy compliance | ~2s | Base, Ethereum | - |
+| **Payment Authorization** | USDC transfers | ~10s | All chains | - |
+| **Game State** | Fair play verification | ~500ms | Solana | - |
 
 ### Complete Workflow Example
 
@@ -159,8 +173,18 @@ cd agentkit
 npm install
 cargo build --release
 
-# Start services
+# Start all services (recommended)
 ./start-all-services.sh
+
+# Or start specific services
+node api/zkml-llm-decision-backend.js      # Port 8002 - zkML proofs
+node api/groth16-jolt-backend-real.js      # Port 3004 - On-chain verification
+node api/avalanche-medical-groth16.js      # Port 8003 - Medical records
+node api/base-ai-prediction-groth16.js     # Port 8004 - AI predictions
+node api/base-ai-prediction-zkengine-groth16.js # Port 8005 - Hybrid proofs
+node api/iotex-proximity-zkengine.js       # Port 8006 - IoT proximity
+node api/gateway-balance-proxy.js          # Port 8007 - Circle balance
+python3 scripts/utils/serve-no-cache.py    # Port 8000 - Web UI
 ```
 
 ### Running Different Proof Types

@@ -78,21 +78,33 @@ agentkit/
 ./start-all-services.sh
 
 # Or individually:
-node api/zkml-llm-decision-backend.js      # Port 8002 - zkML proof generation
-node api/groth16-jolt-backend-real.js     # Port 3004 - REAL on-chain verification (costs gas)
-python3 scripts/utils/serve-no-cache.py    # Port 8000 - Web UI
+node api/zkml-llm-decision-backend.js              # Port 8002 - zkML proof generation
+node api/groth16-jolt-backend-real.js             # Port 3004 - REAL on-chain verification (costs gas)
+node api/avalanche-medical-groth16.js             # Port 8003 - Medical records with Groth16
+node api/base-ai-prediction-groth16.js            # Port 8004 - AI commit-reveal predictions
+node api/base-ai-prediction-zkengine-groth16.js   # Port 8005 - Hybrid zkEngine+Groth16
+node api/iotex-proximity-zkengine.js              # Port 8006 - IoT proximity proofs
+node api/gateway-balance-proxy.js                 # Port 8007 - Circle balance tracking
+python3 scripts/utils/serve-no-cache.py           # Port 8000 - Web UI
 ```
 
 ### Chain-Specific Services
 ```bash
-# Avalanche medical records
-node api/avalanche-medical-backend.js
+# Avalanche medical records with Groth16 (REAL)
+node api/avalanche-medical-groth16.js
 
-# IoTeX device verification
-node api/iotex-device-backend.js
+# Base AI predictions (NEW)
+node api/base-ai-prediction-groth16.js          # Commit-reveal scheme
+node api/base-ai-prediction-zkengine-groth16.js # Hybrid WASM+Groth16
+
+# IoTeX device verification with zkEngine (NEW)
+node api/iotex-proximity-zkengine.js
 
 # Solana high-speed verification
 node api/solana-game-backend.js
+
+# Circle Gateway balance tracking (NEW)
+node api/gateway-balance-proxy.js
 ```
 
 ## 🏥 Use Case Examples
@@ -130,26 +142,60 @@ const verified = await verifierContract.verifyProof(
 // Full cryptographic verification using pairing checks
 ```
 
-### IoTeX - IoT Device Proximity
+### IoTeX - IoT Device Proximity (NEW zkEngine Integration)
 ```javascript
+// Backend: api/iotex-proximity-zkengine.js (Port 8006)
 // Prove device location without revealing coordinates
-const proof = await zkEngine.generateProximityProof({
-    deviceId: "0xDEVICE",
-    distance: "<100m",
+
+// Step 1: Generate zkEngine WASM proof
+const proximityProof = await zkEngine.generateProximityProof({
+    deviceId: "0xDEVICE123",
+    targetLat: 37.7749,
+    targetLon: -122.4194,
+    maxDistance: 100,  // meters
     timestamp: Date.now()
 });
-// Contract: contracts/IoTeXProximityVerifier.sol
+
+// Step 2: Verify on IoTeX testnet
+const verified = await iotexContract.verifyProximity(
+    proximityProof.proof,
+    proximityProof.publicSignals
+);
+// Contract: 0xProximityVerifier on IoTeX testnet
+// Gas cost: ~150k
 ```
 
-### Base - DeFi Trading
+### Base - AI Predictions & DeFi Trading (NEW)
 ```javascript
-// Prove trading compliance without revealing strategy
-const proof = await zkEngine.generateTradingProof({
-    strategy: "market_neutral",
-    riskLimit: 0.02,
-    leverage: 3
-});
-// Uses Groth16 verifier for Base
+// Backend: api/base-ai-prediction-groth16.js (Port 8004)
+// Commit-reveal scheme for temporal proof of AI predictions
+
+// Step 1: Commit prediction before outcome
+const commitment = await aiContract.commitPrediction(
+    promptHash,    // keccak256(prompt + nonce)
+    responseHash   // keccak256(response + nonce)
+);
+// TX: 0xCommitTxHash on Base Sepolia
+
+// Step 2: Generate Groth16 proof
+const proof = await snarkjs.groth16.fullProve(
+    { prompt, response, nonce },
+    "circuits/AIPredictionSimple.wasm",
+    "circuits/ai_simple_0000.zkey"
+);
+
+// Step 3: Reveal with proof after outcome
+const revealed = await aiContract.revealPrediction(
+    prompt,
+    response,
+    nonce,
+    proof
+);
+// Verifier: 0x28F7de77C120f92ceB5E14Efab4fCA31c7ac212E
+// Commitment: 0xae7d069d0A45a8Ecd969ABbb2705bA96472D36FC
+
+// Alternative: zkEngine + Groth16 Hybrid (Port 8005)
+// Combines WASM proof generation with on-chain Groth16 verification
 ```
 
 ## 🔄 Gateway zkML Workflow
@@ -253,6 +299,16 @@ node tests/integration/test-iotex-proximity.js
 - Keep SES-safe (no dynamic code generation)
 
 ## 📝 Recent Updates
+
+### 2025-09-05 - New Services and Implementations
+- ✅ Base AI Prediction with Commit-Reveal scheme (Port 8004)
+- ✅ Base AI Prediction zkEngine+Groth16 hybrid (Port 8005)
+- ✅ IoTeX Proximity with zkEngine WASM proofs (Port 8006)
+- ✅ Circle Gateway Balance Proxy service (Port 8007)
+- ✅ AI Prediction circuits and verifiers deployed
+- ✅ All services tested and running in production
+- 📝 Commit-reveal provides temporal proof of AI predictions
+- 📝 zkEngine integration enables browser-based proof generation
 
 ### 2025-09-03 - Avalanche Medical with REAL Groth16 Proof-of-Proof
 - ✅ Upgraded from hash comparison to full Groth16 cryptographic verification

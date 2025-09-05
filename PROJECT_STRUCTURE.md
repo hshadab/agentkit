@@ -5,22 +5,35 @@
 ```
 agentkit/
 ├── api/                          # Backend Services
-│   ├── zkml-llm-decision-backend.js      # REAL zkML proof generation (port 8002)
-│   ├── groth16-jolt-backend-real.js      # REAL on-chain verification (port 3004)
-│   ├── unified-backend.js                # Unified endpoint for all proofs
-│   └── [chain]-backend.js                # Chain-specific backends
+│   ├── zkml-llm-decision-backend.js              # REAL zkML proof generation (port 8002)
+│   ├── groth16-jolt-backend-real.js              # REAL on-chain verification (port 3004)
+│   ├── avalanche-medical-groth16.js              # Medical records with Groth16 (port 8003)
+│   ├── base-ai-prediction-groth16.js             # AI commit-reveal predictions (port 8004)
+│   ├── base-ai-prediction-zkengine-groth16.js    # Hybrid zkEngine+Groth16 (port 8005)
+│   ├── iotex-proximity-zkengine.js               # IoT proximity proofs (port 8006)
+│   ├── gateway-balance-proxy.js                  # Circle balance tracking (port 8007)
+│   ├── unified-backend.js                        # Unified endpoint for all proofs
+│   └── [chain]-backend.js                        # Other chain-specific backends
 │
 ├── circuits/                     # Circom Circuits
 │   ├── jolt-verifier/           # JOLT decision verification circuits
 │   │   ├── jolt_decision_simple.circom   # 2-param circuit (decision, confidence)
 │   │   ├── JOLTDecisionSimpleVerifier.sol # Generated verifier contract
 │   │   └── setup_simple_circuit.sh       # Circuit compilation script
+│   ├── AIPredictionProof.circom          # AI prediction proof circuit
+│   ├── AIPredictionSimple.circom         # Simplified AI prediction circuit
+│   ├── AIPredictionProof_js/             # Generated JS files
+│   ├── AIPredictionSimple_js/            # Generated JS files
+│   ├── ai_prediction_0000.zkey           # Proving key for AI predictions
+│   ├── ai_simple_0000.zkey               # Simplified proving key
 │   └── [proof-type]/            # Other proof circuits
 │
 ├── contracts/                    # Smart Contracts
-│   ├── JOLTDecisionVerifierWithStorage.sol  # Storage verifier (permanent records)
+│   ├── JOLTDecisionVerifierWithStorage.sol   # Storage verifier (permanent records)
 │   ├── MedicalRecordsIntegrity_Avalanche.sol
 │   ├── IoTeXProximityVerifier.sol
+│   ├── AIPredictionGroth16Verifier.sol       # AI prediction verifier
+│   ├── AIPredictionGroth16VerifierNew.sol    # Updated AI verifier
 │   └── [chain]_[purpose].sol
 │
 ├── deployments/                  # Contract Deployment Info
@@ -94,9 +107,14 @@ agentkit/
 ./start-all-services.sh
 
 # Or individually:
-node api/zkml-llm-decision-backend.js      # zkML proof generation
-node api/groth16-jolt-backend-real.js     # On-chain verification
-python3 scripts/utils/serve-no-cache.py    # Web UI on port 8000
+node api/zkml-llm-decision-backend.js              # Port 8002 - zkML proof generation
+node api/groth16-jolt-backend-real.js             # Port 3004 - On-chain verification
+node api/avalanche-medical-groth16.js             # Port 8003 - Medical records
+node api/base-ai-prediction-groth16.js            # Port 8004 - AI predictions
+node api/base-ai-prediction-zkengine-groth16.js   # Port 8005 - Hybrid proofs
+node api/iotex-proximity-zkengine.js              # Port 8006 - IoT proximity
+node api/gateway-balance-proxy.js                 # Port 8007 - Circle balance
+python3 scripts/utils/serve-no-cache.py           # Port 8000 - Web UI
 ```
 
 ## ✅ Verification This is Real
