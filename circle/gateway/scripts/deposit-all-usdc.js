@@ -1,9 +1,8 @@
-const { ethers } = require('ethers');
+import { ethers } from 'ethers';
 
 async function depositAllToGateway() {
-    const provider = new ethers.providers.StaticJsonRpcProvider(
-        { url: 'https://ethereum-sepolia-rpc.publicnode.com', skipFetchSetup: true },
-        11155111
+    const provider = new ethers.JsonRpcProvider(
+        'https://ethereum-sepolia-rpc.publicnode.com'
     );
     
     const wallet = new ethers.Wallet(
@@ -21,11 +20,11 @@ async function depositAllToGateway() {
     
     console.log('Checking USDC balance...');
     const balance = await usdc.balanceOf(wallet.address);
-    const formatted = ethers.utils.formatUnits(balance, 6);
+    const formatted = ethers.formatUnits(balance, 6);
     
     console.log(`Current USDC balance: ${formatted} USDC`);
     
-    if (balance.isZero()) {
+    if (balance == 0n) {
         console.log('No USDC to deposit');
         return;
     }
@@ -47,7 +46,7 @@ async function depositAllToGateway() {
     
     // Check new balance
     const newBalance = await usdc.balanceOf(wallet.address);
-    console.log('\nNew wallet balance:', ethers.utils.formatUnits(newBalance, 6), 'USDC (should be 0)');
+    console.log('\nNew wallet balance:', ethers.formatUnits(newBalance, 6), 'USDC (should be 0)');
     
     // Check Gateway balance
     setTimeout(async () => {
