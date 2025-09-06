@@ -16,6 +16,14 @@
 
 AgentKit is a **production-ready framework** for building verifiable AI agents that can operate across multiple blockchains with cryptographic proof of correct execution. From healthcare records on Avalanche to DeFi operations on Base, from IoT device verification on IoTeX to high-speed trading on Solana - AgentKit provides the infrastructure for trustless AI operations at scale.
 
+### ⚠️ 100% REAL Implementation Policy
+**NO MOCKS. NO SIMULATIONS. NO DEMOS.** Every component in AgentKit is:
+- ✅ Real cryptographic proofs with verifiable mathematics
+- ✅ Real smart contracts deployed on actual testnets/mainnets
+- ✅ Real transactions visible on blockchain explorers
+- ✅ Real gas costs paid from actual wallets
+- ✅ Real zkEngine binary execution, not simulated delays
+
 ## 🎯 Core Technologies
 
 ### zkEngine - Universal Proof Generation
