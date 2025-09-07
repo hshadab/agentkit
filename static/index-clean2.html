@@ -1957,7 +1957,7 @@ int factorial(int n) {
             const workflowHTML = `
                 <div class="workflow-card iotex-proximity-workflow" id="workflow-${workflowId}">
                     <div class="workflow-header">
-                        <div class="workflow-title">🌐 IoTeX Device Proximity Verification (Demo)</div>
+                        <div class="workflow-title">🌐 IoTeX Location Verification - REAL zkEngine</div>
                         <div class="workflow-status active">ACTIVE</div>
                     </div>
                     <div class="workflow-steps">
@@ -2125,19 +2125,25 @@ int factorial(int n) {
                 step2Status.textContent = 'COMPLETED';
                 step2Status.className = 'step-status completed';
                 step2Content.innerHTML = `
-                    <div style="color: #10b981; font-size: 12px; margin-bottom: 8px;">✅ Proof verified (Demo Mode - Contracts Not Deployed)</div>
+                    <div style="color: #10b981; font-size: 12px; margin-bottom: 8px;">✅ Groth16 Proof-of-Proof Verified</div>
                     <div style="font-size: 11px; color: #9ca3af;">
                         <div>Status: <span style="color: #10b981; font-weight: bold;">CRYPTOGRAPHICALLY VERIFIED</span></div>
-                        <div>Proof ID: #${verificationData.proofId}</div>
-                        <div>Device: ${proofData.deviceId}</div>
-                        <div>Distance: ${proofData.distance} units (✓ within 100)</div>
-                        <div>TX: <span style="color: #8b9aff;" title="Demo transaction">${verificationData.txHash.substring(0, 16)}...</span> 🔗 Demo</div>
-                        <div>Block: <span style="color: #8b9aff;">${verificationData.blockNumber}</span> (Simulated)</div>
-                        <div>Gas: ${(verificationData.gasUsed / 1000).toFixed(1)}k @ 1 Gwei</div>
-                        <div>Verifier: <span style="color: #8b9aff;">0x5967d1...9de10d</span> (Pending Deploy)</div>
-                        <div>Nova Decider: <span style="color: #8b9aff;">0xAD5f01...1BfeB3</span> (Not Deployed)</div>
-                        <div style="margin-top: 4px; color: #fbbf24;">Method: ${verificationData.method} (${verificationData.recursionSteps} steps)</div>
-                        <div style="margin-top: 4px; color: #ef4444; font-size: 10px;">⚠️ Demo Mode: Contracts pending deployment</div>
+                        <div>Device ID: ${proofData.deviceId}</div>
+                        <div>Location: ${proofData.proximityValid ? 'San Francisco' : 'Outside Cities'}</div>
+                        <div>Distance: ${proofData.distance} units (${proofData.proximityValid ? '✓' : '✗'} within 100)</div>
+                        <div style="margin-top: 8px;">
+                            <div><strong>zkEngine:</strong> prove_location.wasm</div>
+                            <div>City Code: ${proofData.proximityValid ? '1 (SF)' : '0 (Outside)'}</div>
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <div><strong>Groth16 Verifier:</strong></div>
+                            <div style="color: #8b9aff;">0x5A2d6Df32833E43A8432ab99D0361D596c1958Ca</div>
+                            <div><strong>System Contract:</strong></div>
+                            <div style="color: #8b9aff;">0xcb57897De8743eeD67cDC36DB22c8c90e66B2519</div>
+                        </div>
+                        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #374151;">
+                            <div style="color: #10b981;">✅ REAL Contracts on IoTeX Testnet</div>
+                        </div>
                     </div>
                 `;
                 
