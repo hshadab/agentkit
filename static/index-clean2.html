@@ -159,6 +159,29 @@
         .medical-workflow .step-header { display: flex; justify-content: space-between; align-items: flex-start; }
         .medical-workflow .step-info { flex: 1; }
         .medical-workflow .step-content { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(239, 68, 68, 0.1); }
+
+        /* IoTeX Proximity workflow cards (Gateway-style) */
+        .iotex-proximity-workflow .workflow-steps { display: grid; grid-template-columns: 1fr; gap: 14px; }
+        .iotex-proximity-workflow .workflow-step { 
+            background: rgba(0, 212, 181, 0.03);
+            border: 1px solid rgba(0, 212, 181, 0.15);
+            margin: 6px 0; 
+            padding: 18px; 
+            border-radius: 12px; 
+            transition: all 0.25s ease; 
+            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+        }
+        .iotex-proximity-workflow .workflow-step:hover { 
+            background: rgba(0, 212, 181, 0.06);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+        }
+        .iotex-proximity-workflow .step-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .iotex-proximity-workflow .step-title { font-weight: 600; color: #00D4B5; }
+        .iotex-proximity-workflow .step-status { font-size: 11px; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(0, 212, 181, 0.2); color: #00D4B5; }
+        .iotex-proximity-workflow .step-status.executing { color: #fbbf24; border-color: rgba(251, 191, 36, 0.35); }
+        .iotex-proximity-workflow .step-status.completed { color: #10b981; border-color: rgba(16, 185, 129, 0.35); }
+        .iotex-proximity-workflow .step-content { margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(0, 212, 181, 0.12); }
         
         /* Code Display */
         .code-container { background: #0d0d0d; border-radius: 8px; overflow: hidden; margin-top: 16px; }
