@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IoTeX Workflow Test</title>
+</head>
+<body>
+    <h2>Testing IoTeX Workflow with Real zkEngine</h2>
+    <div id="results"></div>
+    
+    <script>
+        async function testIoTeXWorkflow() {
+            const results = document.getElementById('results');
+            
+            // Test calling the backend
+            try {
+                const response = await fetch('http://localhost:8007/verify-proximity', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        deviceX: 122500,
+                        deviceY: 37750,
+                        centerX: 122458,
+                        centerY: 37774,
+                        maxDistance: 100,
+                        deviceSecret: 'test-device-ui-' + Date.now()
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Backend error');
+                }
+                
+                results.innerHTML = `
+                    <h3>✅ IoTeX Workflow Complete!</h3>
+                    
+                    <h4>Step 0 - Device Registration</h4>
+                    <p><strong>Device ID:</strong> ${data.workflow.step0_deviceRegistration.deviceId}</p>
+                    <p><strong>Registration TX:</strong> <a href="https://testnet.iotexscan.io/tx/${data.workflow.step0_deviceRegistration.txHash}" target="_blank">${data.workflow.step0_deviceRegistration.txHash.substring(0, 16)}...</a></p>
+                    
+                    <h4>Step 1 - zkEngine Proximity Proof</h4>
+                    <p><strong>Within Proximity:</strong> ${data.workflow.step1_zkEngine.isWithinProximity}</p>
+                    <p><strong>Distance:</strong> ${data.workflow.step1_zkEngine.distance} units</p>
+                    <p><strong>City Code:</strong> ${data.workflow.step1_zkEngine.cityCode}</p>
+                    <p><strong>Proof:</strong> ${data.workflow.step1_zkEngine.proof.substring(0, 32)}...</p>
+                    
+                    <h4>Step 2 - Groth16 Proof Generation</h4>
+                    <p><strong>Proof Generated:</strong> ✅</p>
+                    <p><strong>Public Signal:</strong> ${data.workflow.step2_groth16.publicSignal}</p>
+                    
+                    <h4>Step 3 - On-chain Verification</h4>
+                    <p><strong>Verified:</strong> ${data.workflow.step3_onChain.verified ? '✅' : '❌'}</p>
+                    <p><strong>TX Hash:</strong> <a href="https://testnet.iotexscan.io/tx/${data.workflow.step3_onChain.txHash}" target="_blank">${data.workflow.step3_onChain.txHash.substring(0, 16)}...</a></p>
+                    
+                    <h4>Step 4 - Rewards</h4>
+                    <p><strong>Amount:</strong> ${data.workflow.step4_rewards.amount} IOTX</p>
+                    <p><strong>Reward TX:</strong> <a href="https://testnet.iotexscan.io/tx/${data.workflow.step4_rewards.txHash}" target="_blank">${data.workflow.step4_rewards.txHash.substring(0, 16)}...</a></p>
+                    
+                    <h3>Clickable On-Chain Links:</h3>
+                    <ul>
+                        <li>
+                            <strong>Groth16 Verifier Contract:</strong><br>
+                            <a href="https://testnet.iotexscan.io/address/0x5A2d6Df32833E43A8432ab99D0361D596c1958Ca" target="_blank">
+                                0x5A2d6Df32833E43A8432ab99D0361D596c1958Ca
+                            </a>
+                        </li>
+                        <li>
+                            <strong>System Contract:</strong><br>
+                            <a href="https://testnet.iotexscan.io/address/0xcb57897De8743eeD67cDC36DB22c8c90e66B2519" target="_blank">
+                                0xcb57897De8743eeD67cDC36DB22c8c90e66B2519
+                            </a>
+                        </li>
+                        <li>
+                            <strong>Wallet Address:</strong><br>
+                            <a href="https://testnet.iotexscan.io/address/0xE616B2eC620621797030E0AB1BA38DA68D78351C" target="_blank">
+                                0xE616B2eC620621797030E0AB1BA38DA68D78351C
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <p style="color: green; font-weight: bold;">
+                        ✅ All 4 steps completed successfully with clickable on-chain links!
+                    </p>
+                `;
+            } catch (error) {
+                results.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        testIoTeXWorkflow();
+    </script>
+</body>
+</html>

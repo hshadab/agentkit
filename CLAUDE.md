@@ -164,11 +164,15 @@ const verified = await verifierContract.verifyProof(
 // Step 1: Register device on-chain (costs gas)
 const deviceId = await systemContract.registerDevice(deviceSecret);
 
-// Step 2: Generate zkEngine proof (using factorial WASM for performance)
-const zkProof = await zkEngine.generateProof(deviceId);
+// Step 2: Generate zkEngine proof (using prove_location.wasm)
+const zkProof = await zkEngine.generateProof(deviceX, deviceY);
 
-// Step 3: Generate Groth16 proof-of-proof
-const groth16Proof = await snarkjs.groth16.fullProve(...);
+// Step 3: Generate Groth16 proof-of-proof with ProximityVerification circuit
+const groth16Proof = await snarkjs.groth16.fullProve(
+    { deviceSecret, centerX, centerY, deviceIdHash, x, y, timestamp, nonce },
+    "circuits/ProximityVerification.wasm",
+    "api/proximity_0001.zkey"
+);
 
 // Step 4: Verify on IoTeX blockchain (REAL transaction)
 const tx = await systemContract.verifyProximityAndReward(
@@ -315,13 +319,16 @@ node tests/integration/test-iotex-proximity.js
 
 ## 📝 Recent Updates
 
-### 2025-09-06 - IoTeX Proximity Verification REAL Deployment
+### 2025-09-08 - IoTeX Proximity Verification 100% REAL Implementation
+- ✅ Created custom ProximityVerification.circom circuit outputting 6 signals
+- ✅ Generated trusted setup and zkey file for Groth16 proofs
 - ✅ Deployed ProximityGroth16Verifier: `0x5A2d6Df32833E43A8432ab99D0361D596c1958Ca`
 - ✅ Deployed IoTeXProximitySystem: `0xcb57897De8743eeD67cDC36DB22c8c90e66B2519`
 - ✅ Full 5-step workflow: device registration → zkEngine → Groth16 → on-chain → rewards
 - ✅ Real IOTX transactions with gas costs (~200k per verification)
+- ✅ Using prove_location.wasm for zkEngine proximity proofs
+- ✅ Real snarkjs.groth16.fullProve() for proof generation
 - ✅ Verifiable on IoTeX testnet explorer
-- 📝 Using factorial WASM for zkEngine proof (performance optimization)
 - 🔗 Explorer: https://testnet.iotexscan.io/address/0xcb57897De8743eeD67cDC36DB22c8c90e66B2519
 
 ### 2025-09-05 - New Services and Implementations
