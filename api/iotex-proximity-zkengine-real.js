@@ -46,8 +46,7 @@ const LOCATION_WASM = path.join(__dirname, "../zkengine/example_wasms/prove_loca
 // Circom outputs wasm under <name>_js/<name>.wasm by default
 const PROOF_WASM_6 = path.join(__dirname, "../circuits/ProximityVerification6_js/ProximityVerification6.wasm");
 const PROOF_ZKEY_6 = path.join(__dirname, "../circuits/proximity6_final.zkey");
-const PROOF_WASM_14 = path.join(__dirname, "../circuits/ProximityVerification.wasm");
-const PROOF_ZKEY_14 = path.join(__dirname, "../circuits/proximity_0000.zkey");
+// No 14-signal fallback: enforce 6-signal circuit only
 
 let provider, wallet, verifierContract, systemContract;
 
@@ -256,55 +255,25 @@ async function generateGroth16ProofOfProof(zkEngineProof, isWithinProximity, dev
         
         // Generate REAL Groth16 proof using snarkjs
         try {
-            // Choose 6-signal circuit if present; else fallback to 14-signal
-            let wasmPath, zkeyPath, expectedSignals;
-            try {
-                await fs.access(PROOF_WASM_6);
-                await fs.access(PROOF_ZKEY_6);
-                wasmPath = PROOF_WASM_6;
-                zkeyPath = PROOF_ZKEY_6;
-                expectedSignals = 6;
-                console.log("   Using 6-signal proximity circuit for Groth16");
-            } catch {
-                await fs.access(PROOF_WASM_14);
-                await fs.access(PROOF_ZKEY_14);
-                wasmPath = PROOF_WASM_14;
-                zkeyPath = PROOF_ZKEY_14;
-                expectedSignals = 14;
-                console.log("   Using 14-signal proximity circuit for Groth16");
-            }
+            // Enforce 6-signal circuit
+            await fs.access(PROOF_WASM_6);
+            await fs.access(PROOF_ZKEY_6);
+            const wasmPath = PROOF_WASM_6;
+            const zkeyPath = PROOF_ZKEY_6;
+            const expectedSignals = 6;
+            console.log("   Using 6-signal proximity circuit for Groth16");
             
-            // Build inputs based on circuit variant
-            let input;
-            if (expectedSignals === 6) {
-                // Our 6-signal circuit takes exactly these as inputs (all public)
-                const distanceSquaredStr = distanceSquared.toString();
-                input = {
-                    deviceIdHash: deviceIdHash.toString(),
-                    x: x.toString(),
-                    y: y.toString(),
-                    distanceSquared: distanceSquaredStr,
-                    timestamp: timestamp.toString(),
-                    nonce: nonce.toString()
-                };
-            } else {
-                // Legacy 14-signal circuit
-                const deviceSecret = Number(deviceIdHash % 1000n); // Simplified secret for testing
-                const centerX = 5000; // Default center coordinates
-                const centerY = 5000;
-                input = {
-                    deviceSecret: deviceSecret.toString(),
-                    centerX: centerX.toString(),
-                    centerY: centerY.toString(),
-                    deviceIdHash: deviceIdHash.toString(),
-                    x: x.toString(),
-                    y: y.toString(),
-                    timestamp: timestamp.toString(),
-                    nonce: nonce.toString()
-                };
-            }
+            // Build inputs for the 6-signal circuit (all public)
+            const input = {
+                deviceIdHash: deviceIdHash.toString(),
+                x: x.toString(),
+                y: y.toString(),
+                distanceSquared: distanceSquared.toString(),
+                timestamp: timestamp.toString(),
+                nonce: nonce.toString()
+            };
             
-            console.log("   Generating REAL Groth16 proof with ProximityVerification" + (expectedSignals===6?"6":"") + " circuit...");
+            console.log("   Generating REAL Groth16 proof with ProximityVerification6 circuit...");
             console.log("   Input:", input);
             
             const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, wasmPath, zkeyPath);
@@ -315,23 +284,8 @@ async function generateGroth16ProofOfProof(zkEngineProof, isWithinProximity, dev
             if (publicSignals.length !== expectedSignals) {
                 console.warn("   ⚠️ Unexpected number of public signals from circuit:", publicSignals.length);
             }
-            // Extract the 6 contract signals regardless of circuit variant
             // Order expected by system contract: [deviceIdHash, x, y, distanceSquared, timestamp, nonce]
-            let contractSignals;
-            if (expectedSignals === 6) {
-                contractSignals = publicSignals.map((s) => s.toString());
-            } else {
-                // For 14-signal legacy circuit, we already construct these separately;
-                // use the values we computed earlier to form the 6 required signals
-                contractSignals = [
-                    deviceIdHash.toString(),
-                    x.toString(),
-                    y.toString(),
-                    distanceSquared.toString(),
-                    timestamp.toString(),
-                    nonce.toString()
-                ];
-            }
+            const contractSignals = publicSignals.map((s) => s.toString());
             
             // ProximityVerification outputs exactly 6 signals as expected by contract
             const groth16Proof = {
