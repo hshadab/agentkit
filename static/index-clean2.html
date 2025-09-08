@@ -1953,12 +1953,34 @@ int factorial(int n) {
         async function startIoTeXProximityWorkflow() {
             const workflowId = 'iotex-' + Date.now();
             
-            // Create the workflow card for IoTeX proximity verification
+            // Create the workflow card for IoTeX proximity verification (with horizontal timeline)
             const workflowHTML = `
                 <div class="workflow-card iotex-proximity-workflow" id="workflow-${workflowId}">
                     <div class="workflow-header">
                         <div class="workflow-title">🌐 IoTeX Location Verification - REAL zkEngine</div>
                         <div class="workflow-status active">ACTIVE</div>
+                    </div>
+                    <div class="workflow-timeline" id="timeline-${workflowId}">
+                        <div class="timeline-step executing" id="tl1-${workflowId}">
+                            <div class="step-connector first"></div>
+                            <div class="step-node">1</div>
+                            <div class="step-label">Register</div>
+                        </div>
+                        <div class="timeline-step" id="tl2-${workflowId}">
+                            <div class="step-connector"></div>
+                            <div class="step-node">2</div>
+                            <div class="step-label">Prove</div>
+                        </div>
+                        <div class="timeline-step" id="tl3-${workflowId}">
+                            <div class="step-connector"></div>
+                            <div class="step-node">3</div>
+                            <div class="step-label">Verify</div>
+                        </div>
+                        <div class="timeline-step" id="tl4-${workflowId}">
+                            <div class="step-connector last"></div>
+                            <div class="step-node">4</div>
+                            <div class="step-label">Rewards</div>
+                        </div>
                     </div>
                     <div class="workflow-steps">
                         <div class="workflow-step" id="step1-${workflowId}">
@@ -2024,9 +2046,11 @@ int factorial(int n) {
             const step1 = document.getElementById(`step1-${workflowId}`);
             const step1Content = document.getElementById(`step1-content-${workflowId}`);
             const step1Status = step1.querySelector('.step-status');
+            const tl1 = document.getElementById(`tl1-${workflowId}`);
             
             step1Status.textContent = 'EXECUTING';
             step1Status.className = 'step-status executing';
+            if (tl1) { tl1.classList.add('executing'); tl1.classList.remove('complete'); }
             step1Content.innerHTML = '<div style="color: #8b9aff; font-size: 12px;">📝 Registering device on IoTeX blockchain...</div>';
             
             try {
@@ -2062,9 +2086,11 @@ int factorial(int n) {
             const step2 = document.getElementById(`step2-${workflowId}`);
             const step2Content = document.getElementById(`step2-content-${workflowId}`);
             const step2Status = step2.querySelector('.step-status');
+            const tl2 = document.getElementById(`tl2-${workflowId}`);
             
             step2Status.textContent = 'EXECUTING';
             step2Status.className = 'step-status executing';
+            if (tl2) { tl2.classList.add('executing'); tl2.classList.remove('complete'); }
             step2Content.innerHTML = '<div style="color: #8b9aff; font-size: 12px;">🚀 Generating proximity proof with zkEngine binary...</div>';
             
             try {
@@ -2098,6 +2124,7 @@ int factorial(int n) {
                     
                     step1Status.textContent = 'COMPLETED';
                     step1Status.className = 'step-status completed';
+                    if (tl1) { tl1.classList.remove('executing'); tl1.classList.add('complete'); }
                     step1Content.innerHTML = `
                         <div style="color: #10b981; font-size: 12px; margin-bottom: 8px;">✅ Device Registered On-Chain</div>
                         <div style="font-size: 11px; color: #9ca3af;">
@@ -2115,6 +2142,7 @@ int factorial(int n) {
                     
                     step1Status.textContent = 'COMPLETED';
                     step1Status.className = 'step-status completed';
+                    if (tl1) { tl1.classList.remove('executing'); tl1.classList.add('complete'); }
                     step1Content.innerHTML = `
                         <div style="color: #10b981; font-size: 12px; margin-bottom: 8px;">✅ Device Already Registered</div>
                         <div style="font-size: 11px; color: #9ca3af;">
@@ -2144,6 +2172,7 @@ int factorial(int n) {
                 
                 step2Status.textContent = 'COMPLETED';
                 step2Status.className = 'step-status completed';
+                if (tl2) { tl2.classList.remove('executing'); tl2.classList.add('complete'); }
                 step2Content.innerHTML = `
                     <div style="color: #10b981; font-size: 12px; margin-bottom: 8px;">✅ zkEngine proximity proof generated!</div>
                     <div style="font-size: 11px; color: #9ca3af;">
@@ -2172,9 +2201,11 @@ int factorial(int n) {
             const step3 = document.getElementById(`step3-${workflowId}`);
             const step3Content = document.getElementById(`step3-content-${workflowId}`);
             const step3Status = step3.querySelector('.step-status');
+            const tl3 = document.getElementById(`tl3-${workflowId}`);
             
             step3Status.textContent = 'EXECUTING';
             step3Status.className = 'step-status executing';
+            if (tl3) { tl3.classList.add('executing'); tl3.classList.remove('complete'); }
             step3Content.innerHTML = '<div style="color: #8b9aff; font-size: 12px;">🔗 Verifying Groth16 proof on-chain...</div>';
             
             try {
@@ -2187,6 +2218,7 @@ int factorial(int n) {
 
                 step3Status.textContent = 'COMPLETED';
                 step3Status.className = 'step-status completed';
+                if (tl3) { tl3.classList.remove('executing'); tl3.classList.add('complete'); }
 
                 const txSection = txHash
                     ? `<div><strong>Verification TX:</strong> <a href="https://testnet.iotexscan.io/tx/${txHash}" target="_blank" style="color: #8b9aff; text-decoration: underline;">${txHash.substring(0, 16)}...${txHash.substring(56)}</a></div>`
@@ -2224,9 +2256,11 @@ int factorial(int n) {
             const step4 = document.getElementById(`step4-${workflowId}`);
             const step4Content = document.getElementById(`step4-content-${workflowId}`);
             const step4Status = step4.querySelector('.step-status');
+            const tl4 = document.getElementById(`tl4-${workflowId}`);
             
             step4Status.textContent = 'EXECUTING';
             step4Status.className = 'step-status executing';
+            if (tl4) { tl4.classList.add('executing'); tl4.classList.remove('complete'); }
             step4Content.innerHTML = '<div style="color: #8b9aff; font-size: 12px;">💎 Claiming DePIN rewards...</div>';
             
             try {
@@ -2238,6 +2272,7 @@ int factorial(int n) {
                 
                 step4Status.textContent = 'COMPLETED';
                 step4Status.className = 'step-status completed';
+                if (tl4) { tl4.classList.remove('executing'); tl4.classList.add('complete'); }
                 
                 if (rewardTxHash) {
                     // Real reward transaction
