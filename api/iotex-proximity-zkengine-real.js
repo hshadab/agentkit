@@ -14,37 +14,86 @@ const PORT = 8007;
 app.use(cors());
 app.use(express.json());
 
-// IoTeX testnet configuration
-const IOTEX_RPC = "https://babel-api.testnet.iotex.io";
+// IoTeX testnet configuration - using alternative RPC endpoints
+const IOTEX_RPC = "https://4690.rpc.thirdweb.com"; // ThirdWeb's IoTeX testnet RPC
+const IOTEX_RPC_BACKUP = "https://babel-api.testnet.iotex.io";
+const IOTEX_RPC_BACKUP2 = "https://testnet.iotexrpc.com";
+const IOTEX_RPC_BACKUP3 = "https://rpc.testnet.iotex.one";
 const PRIVATE_KEY = "0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab";
 const WALLET_ADDRESS = "0xE616B2eC620621797030E0AB1BA38DA68D78351C";
 
 // Contract addresses - REAL contracts deployed on IoTeX testnet
-const VERIFIER_ADDRESS = "0x5A2d6Df32833E43A8432ab99D0361D596c1958Ca"; // Real ProximityGroth16Verifier
-const SYSTEM_ADDRESS = "0xcb57897De8743eeD67cDC36DB22c8c90e66B2519"; // Real IoTeXProximitySystem
+let VERIFIER_ADDRESS = "0x9948D8d9Cc8848653c062a5Fdcfea931535DF81A"; // default (6-signal)
+let SYSTEM_ADDRESS = "0xC1BAa1a7A001aC7a476F60ECB5050f8fd6d211DE";  // default
+
+// If a fresh deployment exists, prefer it (keeps things in sync)
+try {
+    const deployInfo = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '../iotex-deployment.json'), 'utf8'));
+    if (deployInfo?.verifier && deployInfo?.system) {
+        VERIFIER_ADDRESS = deployInfo.verifier;
+        SYSTEM_ADDRESS = deployInfo.system;
+        console.log("Using deployed contracts from iotex-deployment.json:", VERIFIER_ADDRESS, SYSTEM_ADDRESS);
+    }
+} catch (e) {
+    // Ignore if file missing; use defaults
+}
 
 // Paths
 const ZKENGINE_PATH = path.join(__dirname, "../zkengine_binary/zkEngine");
 const LOCATION_WASM = path.join(__dirname, "../zkengine/example_wasms/prove_location.wasm");
 
-// Groth16 proof-of-proof files - using ProximityVerification circuit
-// This outputs exactly 6 signals as expected by the IoTeX contract
-const PROOF_OF_PROOF_WASM = path.join(__dirname, "../circuits/ProximityVerification.wasm");
-const PROOF_OF_PROOF_ZKEY = path.join(__dirname, "../proximity_0001.zkey");
+// Groth16 proof-of-proof files - prefer 6-signal circuit if available, else fallback
+// Circom outputs wasm under <name>_js/<name>.wasm by default
+const PROOF_WASM_6 = path.join(__dirname, "../circuits/ProximityVerification6_js/ProximityVerification6.wasm");
+const PROOF_ZKEY_6 = path.join(__dirname, "../circuits/proximity6_final.zkey");
+const PROOF_WASM_14 = path.join(__dirname, "../circuits/ProximityVerification.wasm");
+const PROOF_ZKEY_14 = path.join(__dirname, "../circuits/proximity_0000.zkey");
 
 let provider, wallet, verifierContract, systemContract;
 
-// Initialize blockchain connection
+// Initialize blockchain connection with fallback RPC endpoints
 async function initContracts() {
+    const rpcEndpoints = [IOTEX_RPC, IOTEX_RPC_BACKUP, IOTEX_RPC_BACKUP2, IOTEX_RPC_BACKUP3];
+    let connected = false;
+    
+    for (const rpc of rpcEndpoints) {
+        try {
+            console.log(`Trying RPC: ${rpc}`);
+            provider = new ethers.JsonRpcProvider(rpc, undefined, {
+                timeout: 5000 // 5 second timeout
+            });
+            
+            // Try a simple call to test the connection
+            const network = await Promise.race([
+                provider.getNetwork(),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+            ]);
+            
+            wallet = new ethers.Wallet(PRIVATE_KEY, provider);
+            console.log("✅ Connected to IoTeX testnet via:", rpc);
+            console.log("Network:", network.chainId);
+            console.log("Wallet address:", wallet.address);
+            
+            try {
+                const balance = await provider.getBalance(wallet.address);
+                console.log("Wallet balance:", ethers.formatEther(balance), "IOTX");
+            } catch (e) {
+                console.log("Wallet balance: Unable to fetch (may be zero)");
+            }
+            
+            connected = true;
+            break;
+        } catch (error) {
+            console.log(`Failed to connect to ${rpc}:`, error.message);
+            continue;
+        }
+    }
+    
+    if (!connected) {
+        throw new Error("Could not connect to any IoTeX RPC endpoint; real on-chain verification is required");
+    }
+    
     try {
-        provider = new ethers.JsonRpcProvider(IOTEX_RPC);
-        wallet = new ethers.Wallet(PRIVATE_KEY, provider);
-        
-        console.log("Connected to IoTeX testnet");
-        console.log("Wallet address:", wallet.address);
-        
-        const balance = await provider.getBalance(wallet.address);
-        console.log("Wallet balance:", ethers.formatEther(balance), "IOTX");
         
         // Initialize Groth16 verifier contract
         if (VERIFIER_ADDRESS !== "0x0000000000000000000000000000000000000000") {
@@ -62,6 +111,8 @@ async function initContracts() {
                 "function verifyProximityAndReward(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[6] calldata _pubSignals) external",
                 "function claimRewards() external",
                 "function pendingRewards(address user) external view returns (uint256)",
+                "function config() external view returns (uint256,uint256,uint256,uint256,uint256)",
+                "function getContractBalance() external view returns (uint256)",
                 "function devices(uint256 deviceIdHash) external view returns (address owner, uint256 deviceIdHash, bool isRegistered, uint256 lastProofTime, uint256 totalRewards, uint256 proofCount)",
                 "event DeviceRegistered(uint256 indexed deviceIdHash, address indexed owner, uint256 timestamp)",
                 "event ProximityProofVerified(uint256 indexed deviceIdHash, uint256 x, uint256 y, uint256 distanceSquared, uint256 timestamp)",
@@ -114,7 +165,7 @@ async function generateZkEngineProof(deviceX, deviceY, centerX, centerY, maxDist
         
         // For demo, use pre-generated proof to avoid long computation time
         // In production, would generate fresh proof each time
-        const usePreGenerated = true;
+        const usePreGenerated = true; // use pre-generated real zkEngine proof (faster)
         
         if (usePreGenerated) {
             console.log("   Using pre-generated zkEngine proof for demo...");
@@ -205,87 +256,104 @@ async function generateGroth16ProofOfProof(zkEngineProof, isWithinProximity, dev
         
         // Generate REAL Groth16 proof using snarkjs
         try {
-            // Check if circuit files exist
-            await fs.access(PROOF_OF_PROOF_WASM);
-            await fs.access(PROOF_OF_PROOF_ZKEY);
+            // Choose 6-signal circuit if present; else fallback to 14-signal
+            let wasmPath, zkeyPath, expectedSignals;
+            try {
+                await fs.access(PROOF_WASM_6);
+                await fs.access(PROOF_ZKEY_6);
+                wasmPath = PROOF_WASM_6;
+                zkeyPath = PROOF_ZKEY_6;
+                expectedSignals = 6;
+                console.log("   Using 6-signal proximity circuit for Groth16");
+            } catch {
+                await fs.access(PROOF_WASM_14);
+                await fs.access(PROOF_ZKEY_14);
+                wasmPath = PROOF_WASM_14;
+                zkeyPath = PROOF_ZKEY_14;
+                expectedSignals = 14;
+                console.log("   Using 14-signal proximity circuit for Groth16");
+            }
             
-            // ProximityVerification circuit expects exactly these inputs and outputs 6 signals
-            const deviceSecret = Number(deviceIdHash % 1000n); // Simplified secret for testing
-            const centerX = 5000; // Default center coordinates
-            const centerY = 5000;
+            // Build inputs based on circuit variant
+            let input;
+            if (expectedSignals === 6) {
+                // Our 6-signal circuit takes exactly these as inputs (all public)
+                const distanceSquaredStr = distanceSquared.toString();
+                input = {
+                    deviceIdHash: deviceIdHash.toString(),
+                    x: x.toString(),
+                    y: y.toString(),
+                    distanceSquared: distanceSquaredStr,
+                    timestamp: timestamp.toString(),
+                    nonce: nonce.toString()
+                };
+            } else {
+                // Legacy 14-signal circuit
+                const deviceSecret = Number(deviceIdHash % 1000n); // Simplified secret for testing
+                const centerX = 5000; // Default center coordinates
+                const centerY = 5000;
+                input = {
+                    deviceSecret: deviceSecret.toString(),
+                    centerX: centerX.toString(),
+                    centerY: centerY.toString(),
+                    deviceIdHash: deviceIdHash.toString(),
+                    x: x.toString(),
+                    y: y.toString(),
+                    timestamp: timestamp.toString(),
+                    nonce: nonce.toString()
+                };
+            }
             
-            const input = {
-                deviceSecret: deviceSecret.toString(),
-                centerX: centerX.toString(),
-                centerY: centerY.toString(),
-                deviceIdHash: deviceIdHash.toString(),
-                x: x.toString(),
-                y: y.toString(),
-                timestamp: timestamp.toString(),
-                nonce: nonce.toString()
-            };
-            
-            console.log("   Generating REAL Groth16 proof with ProximityVerification circuit...");
+            console.log("   Generating REAL Groth16 proof with ProximityVerification" + (expectedSignals===6?"6":"") + " circuit...");
             console.log("   Input:", input);
             
-            const { proof, publicSignals } = await snarkjs.groth16.fullProve(
-                input,
-                PROOF_OF_PROOF_WASM,
-                PROOF_OF_PROOF_ZKEY
-            );
+            const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, wasmPath, zkeyPath);
             
-            console.log("   Raw proof generated, 6 public signals:", publicSignals);
-            
-            // ProximityVerification outputs exactly 6 signals as expected by contract
-            const groth16Proof = {
-                a: [proof.pi_a[0], proof.pi_a[1]],
-                b: [[proof.pi_b[0][1], proof.pi_b[0][0]], [proof.pi_b[1][1], proof.pi_b[1][0]]],
-                c: [proof.pi_c[0], proof.pi_c[1]],
-                publicSignals: publicSignals // Already has 6 signals in correct order
-            };
-            
-            console.log("   ✅ REAL Groth16 proof generated with ProximityVerification circuit!");
-            console.log("     [0] deviceIdHash:", publicSignals[0]);
-            console.log("     [1] x:", publicSignals[1]);
-            console.log("     [2] y:", publicSignals[2]);
-            console.log("     [3] distanceSquared:", publicSignals[3]);
-            console.log("     [4] timestamp:", publicSignals[4]);
-            console.log("     [5] nonce:", publicSignals[5]);
-            return groth16Proof;
-            
-        } catch (error) {
-            console.log("   ⚠️  Circuit files not available, using mock proof for demo");
-            console.log("   Error:", error.message);
-            
-            // Fallback to mock proof
-            const mockProof = {
-                a: [
-                    "0x2d4cf5b8d0bfc52a07b6ee9c3a55e0c5a85c1a1234b2c47ef8a9b3d4e6f7a8b9",
-                    "0x1a3b5c7d9e2f4a6b8c1d3e5f7a9b2c4d6e8f1a3b5c7d9e2f4a6b8c1d3e5f7a9b"
-                ],
-                b: [[
-                    "0x0f1e2d3c4b5a69788796a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4",
-                    "0x2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c"
-                ], [
-                    "0x1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d",
-                    "0x3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e"
-                ]],
-                c: [
-                    "0x0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f",
-                    "0x2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b"
-                ],
-                publicSignals: [
+            console.log("   Raw proof generated, total signals:", publicSignals.length);
+            // ProximityVerification circuit outputs exactly 6 public signals in this order:
+            // [deviceIdHash, x, y, distanceSquared, timestamp, nonce]
+            if (publicSignals.length !== expectedSignals) {
+                console.warn("   ⚠️ Unexpected number of public signals from circuit:", publicSignals.length);
+            }
+            // Extract the 6 contract signals regardless of circuit variant
+            // Order expected by system contract: [deviceIdHash, x, y, distanceSquared, timestamp, nonce]
+            let contractSignals;
+            if (expectedSignals === 6) {
+                contractSignals = publicSignals.map((s) => s.toString());
+            } else {
+                // For 14-signal legacy circuit, we already construct these separately;
+                // use the values we computed earlier to form the 6 required signals
+                contractSignals = [
                     deviceIdHash.toString(),
                     x.toString(),
                     y.toString(),
                     distanceSquared.toString(),
                     timestamp.toString(),
                     nonce.toString()
-                ]
+                ];
+            }
+            
+            // ProximityVerification outputs exactly 6 signals as expected by contract
+            const groth16Proof = {
+                a: [proof.pi_a[0], proof.pi_a[1]],
+                b: [[proof.pi_b[0][1], proof.pi_b[0][0]], [proof.pi_b[1][1], proof.pi_b[1][0]]],
+                c: [proof.pi_c[0], proof.pi_c[1]],
+                publicSignals: contractSignals // Correctly ordered signals for contract
             };
             
-            console.log("   ✅ Mock Groth16 proof generated (demo mode)");
-            return mockProof;
+            console.log("   ✅ REAL Groth16 proof generated with ProximityVerification circuit!");
+            console.log("   Contract signals (corrected order):");
+            console.log("     [0] deviceIdHash:", contractSignals[0]);
+            console.log("     [1] x:", contractSignals[1]);
+            console.log("     [2] y:", contractSignals[2]);
+            console.log("     [3] distanceSquared:", contractSignals[3]);
+            console.log("     [4] timestamp:", contractSignals[4]);
+            console.log("     [5] nonce:", contractSignals[5]);
+            return groth16Proof;
+            
+        } catch (error) {
+            console.log("   ❌ Circuit files not available or proof generation failed");
+            throw error;
         }
         
         return groth16Proof;
@@ -304,18 +372,7 @@ async function registerDevice(deviceSecret) {
         console.log("\n📱 Step 0: Device Registration...");
         
         if (!systemContract) {
-            console.log("   ⚠️  System contract not available, using simulated registration");
-            const deviceIdHash = ethers.keccak256(ethers.toUtf8Bytes(deviceSecret.toString()));
-            const deviceIdBigInt = BigInt(deviceIdHash);
-            const deviceId = Number((deviceIdBigInt % 64900n) + 100n);
-            
-            return {
-                deviceIdHash,
-                deviceId,
-                registered: true,
-                transactionHash: "simulated_" + Date.now(),
-                simulated: true
-            };
+            throw new Error("System contract not initialized; on-chain device registration required");
         }
         
         // Generate device ID from secret - must be in valid range for prove_location.wasm
@@ -359,19 +416,8 @@ async function registerDevice(deviceSecret) {
             receipt = await tx.wait();
             console.log("   Transaction confirmed in block:", receipt.blockNumber);
         } catch (error) {
-            console.log("   ⚠️  Contract call failed:", error.message);
-            console.log("   Using simulated registration for demo");
-            
-            const deviceIdHash = expectedHash.toString();
-            const deviceId = Number((expectedHash % 64900n) + 100n);
-            
-            return {
-                deviceIdHash,
-                deviceId,
-                registered: true,
-                transactionHash: "simulated_" + Date.now(),
-                simulated: true
-            };
+            console.log("   ❌ Contract call failed:", error.message);
+            throw error;
         }
         
         // Parse the DeviceRegistered event to get the device ID hash
@@ -466,6 +512,21 @@ app.post('/verify-proximity', async (req, res) => {
         if (systemContract && zkEngineResult.isWithinProximity && groth16Proof) {
             console.log("\n⛓️  Step 3: On-chain Groth16 verification and reward...");
             try {
+                // Ensure system contract has funds to pay rewards
+                try {
+                    const cfg = await systemContract.config();
+                    const rewardAmount = cfg[3];
+                    const currentBal = await provider.getBalance(SYSTEM_ADDRESS);
+                    if (currentBal < rewardAmount) {
+                        const topUp = rewardAmount - currentBal;
+                        console.log("   System low on funds, topping up:", ethers.formatEther(topUp));
+                        const fundTx = await wallet.sendTransaction({ to: SYSTEM_ADDRESS, value: topUp });
+                        console.log("   Funding TX:", fundTx.hash);
+                        await fundTx.wait();
+                    }
+                } catch (fundErr) {
+                    console.log("   Funding check skipped:", fundErr.message);
+                }
                 // Check current pending rewards before
                 const pendingBefore = await systemContract.pendingRewards(wallet.address);
                 console.log("   Pending rewards before:", ethers.formatEther(pendingBefore), "IOTX");
@@ -487,66 +548,39 @@ app.post('/verify-proximity', async (req, res) => {
                 console.log("   Calling verifyProximityAndReward with REAL Groth16 proof...");
                 console.log("   Public signals:", publicSignals);
                 
-                // Try calling the verifier contract directly first to test
-                // The system contract has additional checks that might fail
+                // Optional: quick view verification for logging only
                 if (verifierContract) {
-                    console.log("   First testing with verifier contract directly...");
                     try {
-                        // Test with verifier which just checks the proof
                         const isValid = await verifierContract.verifyProof(
                             proofA,
-                            proofB, 
+                            proofB,
                             proofC,
                             publicSignals
                         );
-                        console.log("   Verifier result:", isValid ? "VALID" : "INVALID");
-                        
-                        if (isValid) {
-                            // Since direct verification works, the issue is with system contract
-                            // For now, mark as verified but don't call system contract
-                            console.log("   ✅ Groth16 proof cryptographically valid!");
-                            console.log("   Note: System contract call skipped (needs matching device registration)");
-                            verificationTx = "verified_no_tx";
-                            onChainVerified = true;
-                        }
+                        console.log("   Verifier view() result:", isValid ? "VALID" : "INVALID");
                     } catch (verifierError) {
-                        console.log("   Verifier contract error:", verifierError.message);
-                        // Try system contract anyway
+                        console.log("   Verifier view() error:", verifierError.message);
                     }
                 }
-                
-                // If we haven't succeeded yet, try the system contract
-                if (!onChainVerified) {
-                    console.log("   Attempting system contract call...");
-                    const tx = await systemContract.verifyProximityAndReward(
-                        proofA,
-                        proofB,
-                        proofC,
-                        publicSignals
-                    );
-                    
-                    console.log("   Transaction sent:", tx.hash);
-                    console.log("   Waiting for confirmation...");
-                    
-                    const receipt = await tx.wait();
-                    console.log("   Transaction confirmed in block:", receipt.blockNumber);
-                    console.log("   Gas used:", receipt.gasUsed.toString());
-                    console.log("   ✅ On-chain Groth16 verification complete!");
-                    console.log("   TX: https://testnet.iotexscan.io/tx/" + tx.hash);
-                    
-                    verificationTx = tx.hash;
-                    onChainVerified = true;
-                }
-                
+
+                // Always attempt the state-changing system contract call
+                console.log("   Sending transaction to system contract...");
+                const tx = await systemContract.verifyProximityAndReward(
+                    proofA,
+                    proofB,
+                    proofC,
+                    publicSignals
+                );
+
                 console.log("   Transaction sent:", tx.hash);
                 console.log("   Waiting for confirmation...");
-                
+
                 const receipt = await tx.wait();
                 console.log("   Transaction confirmed in block:", receipt.blockNumber);
                 console.log("   Gas used:", receipt.gasUsed.toString());
                 console.log("   ✅ On-chain Groth16 verification complete!");
                 console.log("   TX: https://testnet.iotexscan.io/tx/" + tx.hash);
-                
+
                 verificationTx = tx.hash;
                 onChainVerified = true;
                 
@@ -600,14 +634,14 @@ app.post('/verify-proximity', async (req, res) => {
                     rewardAmount = ethers.formatEther(pending);
                 } else {
                     console.log("   No pending rewards to claim");
-                    rewardAmount = "0.01"; // Demo amount
+                    rewardAmount = "0";
                 }
             } catch (error) {
                 console.log("   Rewards claim skipped:", error.message);
-                rewardAmount = "0.01"; // Demo amount
+                rewardAmount = "0";
             }
         } else {
-            rewardAmount = zkEngineResult.isWithinProximity ? "0.01" : "0";
+            rewardAmount = zkEngineResult.isWithinProximity ? "0" : "0";
         }
         
         console.log("\n" + "=".repeat(60));

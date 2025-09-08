@@ -102,7 +102,7 @@ async function main() {
         
         // We'll use the already deployed verifier from the previous run
         // Or deploy a new one if needed
-        const verifierAddress = "0x5A2d6Df32833E43A8432ab99D0361D596c1958Ca"; // Latest deployed verifier
+        const verifierAddress = "0x9948D8d9Cc8848653c062a5Fdcfea931535DF81A"; // Latest deployed verifier (6-signal)
         console.log("1. Using already deployed ProximityGroth16Verifier:", verifierAddress);
         
         // Compile and deploy IoTeXProximitySystem

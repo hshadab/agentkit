@@ -156,9 +156,9 @@ const verified = await verifierContract.verifyProof(
 // REAL contracts deployed on IoTeX testnet - NO SIMULATIONS
 
 // Deployed Contracts (REAL - Verifiable on IoTeX Explorer):
-// ProximityGroth16Verifier: 0x5A2d6Df32833E43A8432ab99D0361D596c1958Ca
-// IoTeXProximitySystem: 0xcb57897De8743eeD67cDC36DB22c8c90e66B2519
-// Explorer: https://testnet.iotexscan.io/address/0xcb57897De8743eeD67cDC36DB22c8c90e66B2519
+// ProximityGroth16Verifier (6-signal): 0x9948D8d9Cc8848653c062a5Fdcfea931535DF81A
+// IoTeXProximitySystem: 0xC1BAa1a7A001aC7a476F60ECB5050f8fd6d211DE
+// Explorer: https://testnet.iotexscan.io/address/0xC1BAa1a7A001aC7a476F60ECB5050f8fd6d211DE
 
 // 5-Step Workflow with Real On-Chain Verification:
 // Step 1: Register device on-chain (costs gas)
@@ -322,14 +322,14 @@ node tests/integration/test-iotex-proximity.js
 ### 2025-09-08 - IoTeX Proximity Verification 100% REAL Implementation
 - ✅ Created custom ProximityVerification.circom circuit outputting 6 signals
 - ✅ Generated trusted setup and zkey file for Groth16 proofs
-- ✅ Deployed ProximityGroth16Verifier: `0x5A2d6Df32833E43A8432ab99D0361D596c1958Ca`
-- ✅ Deployed IoTeXProximitySystem: `0xcb57897De8743eeD67cDC36DB22c8c90e66B2519`
+- ✅ Deployed ProximityGroth16Verifier: `0x9948D8d9Cc8848653c062a5Fdcfea931535DF81A`
+- ✅ Deployed IoTeXProximitySystem: `0xC1BAa1a7A001aC7a476F60ECB5050f8fd6d211DE`
 - ✅ Full 5-step workflow: device registration → zkEngine → Groth16 → on-chain → rewards
 - ✅ Real IOTX transactions with gas costs (~200k per verification)
 - ✅ Using prove_location.wasm for zkEngine proximity proofs
 - ✅ Real snarkjs.groth16.fullProve() for proof generation
 - ✅ Verifiable on IoTeX testnet explorer
-- 🔗 Explorer: https://testnet.iotexscan.io/address/0xcb57897De8743eeD67cDC36DB22c8c90e66B2519
+- 🔗 Explorer: https://testnet.iotexscan.io/address/0xC1BAa1a7A001aC7a476F60ECB5050f8fd6d211DE
 
 ### 2025-09-05 - New Services and Implementations
 - ✅ Base AI Prediction with Commit-Reveal scheme (Port 8004)

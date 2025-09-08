@@ -2104,7 +2104,7 @@ int factorial(int n) {
                             <div>Device ID: ${data.workflow.step0_deviceRegistration.deviceId}</div>
                             <div>Registration TX: <a href="https://testnet.iotexscan.io/tx/${data.workflow.step0_deviceRegistration.txHash}" target="_blank" style="color: #8b9aff; text-decoration: underline;">${data.workflow.step0_deviceRegistration.txHash.substring(0, 10)}...${data.workflow.step0_deviceRegistration.txHash.substring(56)}</a></div>
                             <div>Block: ${data.workflow.step0_deviceRegistration.blockNumber || 'pending'}</div>
-                            <div>System Contract: <a href="https://testnet.iotexscan.io/address/0xcb57897De8743eeD67cDC36DB22c8c90e66B2519" target="_blank" style="color: #8b9aff; text-decoration: underline;">0xcb57897De8743eeD67cDC36DB22c8c90e66B2519</a></div>
+                            <div>System Contract: <a href="https://testnet.iotexscan.io/address/0xC1BAa1a7A001aC7a476F60ECB5050f8fd6d211DE" target="_blank" style="color: #8b9aff; text-decoration: underline;">0xC1BAa1a7A001aC7a476F60ECB5050f8fd6d211DE</a></div>
                             <div style="margin-top: 4px; color: #10b981;">✅ Device authorized for DePIN network</div>
                         </div>
                     `;
@@ -2120,7 +2120,7 @@ int factorial(int n) {
                         <div style="font-size: 11px; color: #9ca3af;">
                             <div>Device ID: ${data.workflow.step0_deviceRegistration.deviceId}</div>
                             <div>Status: Using existing registration</div>
-                            <div>System Contract: <a href="https://testnet.iotexscan.io/address/0xcb57897De8743eeD67cDC36DB22c8c90e66B2519" target="_blank" style="color: #8b9aff; text-decoration: underline;">0xcb57897De8743eeD67cDC36DB22c8c90e66B2519</a></div>
+                            <div>System Contract: <a href="https://testnet.iotexscan.io/address/0xC1BAa1a7A001aC7a476F60ECB5050f8fd6d211DE" target="_blank" style="color: #8b9aff; text-decoration: underline;">0xC1BAa1a7A001aC7a476F60ECB5050f8fd6d211DE</a></div>
                         </div>
                     `;
                 }
@@ -2178,35 +2178,39 @@ int factorial(int n) {
             step3Content.innerHTML = '<div style="color: #8b9aff; font-size: 12px;">🔗 Verifying Groth16 proof on-chain...</div>';
             
             try {
-                // Simulate Groth16 verification (already done in backend)
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
+                // Use backend result (already performed) and render actual TX if present
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                const onchain = proofData.workflow?.step3_onChain || {};
+                const verified = !!onchain.verified;
+                const txHash = onchain.txHash;
+
                 step3Status.textContent = 'COMPLETED';
                 step3Status.className = 'step-status completed';
+
+                const txSection = txHash
+                    ? `<div><strong>Verification TX:</strong> <a href="https://testnet.iotexscan.io/tx/${txHash}" target="_blank" style="color: #8b9aff; text-decoration: underline;">${txHash.substring(0, 16)}...${txHash.substring(56)}</a></div>`
+                    : `<div><strong>Verification TX:</strong> <span style="color: #fbbf24;">none (view-only or skipped)</span></div>`;
+
                 step3Content.innerHTML = `
-                    <div style="color: #10b981; font-size: 12px; margin-bottom: 8px;">✅ Groth16 Proof-of-Proof Verified</div>
+                    <div style="color: ${verified ? '#10b981' : '#fbbf24'}; font-size: 12px; margin-bottom: 8px;">${verified ? '✅ Groth16 Proof Verified On-Chain' : '⚠️ Groth16 verification not finalized on-chain'}</div>
                     <div style="font-size: 11px; color: #9ca3af;">
-                        <div>Status: <span style="color: #10b981; font-weight: bold;">CRYPTOGRAPHICALLY VERIFIED</span></div>
+                        <div>Status: <span style="color: ${verified ? '#10b981' : '#fbbf24'}; font-weight: bold;">${verified ? 'VERIFIED' : 'NOT VERIFIED'}</span></div>
                         <div>Device ID: ${proofData.deviceId}</div>
                         <div>Location: ${proofData.proximityValid ? 'San Francisco' : 'Outside Cities'}</div>
                         <div>Distance: ${proofData.distance} units (${proofData.proximityValid ? '✓' : '✗'} within 100)</div>
                         <div style="margin-top: 8px;">
-                            <div><strong>zkEngine:</strong> prove_location.wasm</div>
-                            <div>City Code: ${proofData.proximityValid ? '1 (SF)' : '0 (Outside)'}</div>
-                        </div>
-                        <div style="margin-top: 8px;">
                             <div><strong>Groth16 Verifier:</strong></div>
-                            <div><a href="https://testnet.iotexscan.io/address/0x5A2d6Df32833E43A8432ab99D0361D596c1958Ca" target="_blank" style="color: #8b9aff; text-decoration: underline;">0x5A2d6Df32833E43A8432ab99D0361D596c1958Ca</a></div>
-                            <div><strong>System Contract:</strong></div>
-                            <div><a href="https://testnet.iotexscan.io/address/0xcb57897De8743eeD67cDC36DB22c8c90e66B2519" target="_blank" style="color: #8b9aff; text-decoration: underline;">0xcb57897De8743eeD67cDC36DB22c8c90e66B2519</a></div>
+                            <div><a href="https://testnet.iotexscan.io/address/0x9948D8d9Cc8848653c062a5Fdcfea931535DF81A" target="_blank" style="color: #8b9aff; text-decoration: underline;">0x9948D8d9Cc8848653c062a5Fdcfea931535DF81A</a></div>
+                            ${txSection}
                         </div>
                         <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #374151;">
                             <div style="color: #10b981;">✅ REAL Contracts on IoTeX Testnet</div>
                         </div>
                     </div>
                 `;
-                
-                return { verified: true, ...proofData };
+
+                return { verified, txHash, ...proofData };
             } catch (error) {
                 console.error('Step 3 failed:', error);
                 step3Status.textContent = 'FAILED';
@@ -2227,7 +2231,7 @@ int factorial(int n) {
             
             try {
                 // Use data from the backend response
-                const rewardAmount = sessionData.workflow?.step4_rewards?.amount || '0.01';
+                const rewardAmount = sessionData.workflow?.step4_rewards?.amount || '0';
                 const rewardTxHash = sessionData.workflow?.step4_rewards?.txHash;
                 
                 await new Promise(resolve => setTimeout(resolve, 1000));
@@ -2255,10 +2259,10 @@ int factorial(int n) {
                     step4Content.innerHTML = `
                         <div style="color: #10b981; font-size: 12px; margin-bottom: 8px;">✅ Rewards Processed</div>
                         <div style="font-size: 11px; color: #9ca3af;">
-                            <div>Reward Amount: ${rewardAmount} IOTX (pending)</div>
+                            <div>Reward Amount: ${rewardAmount} IOTX</div>
                             <div>Device ID: ${sessionData.deviceId}</div>
                             <div>Location Zone: ${sessionData.proximityValid ? 'San Francisco' : 'Outside Cities'}</div>
-                            <div>Status: ${rewardAmount === '0' ? 'No rewards (outside proximity)' : 'Rewards will be claimable after verification'}</div>
+                            <div>Status: ${rewardAmount === '0' ? 'No rewards to claim' : 'Rewards claimed'}</div>
                             <div style="margin-top: 4px;">
                                 <div>Wallet: <a href="https://testnet.iotexscan.io/address/0xE616B2eC620621797030E0AB1BA38DA68D78351C" target="_blank" style="color: #8b9aff; text-decoration: underline;">0xE616B2eC620621797030E0AB1BA38DA68D78351C</a></div>
                                 <div style="color: #fbbf24;">💰 Rewards system active</div>

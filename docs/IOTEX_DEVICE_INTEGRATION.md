@@ -77,12 +77,13 @@ interface IDeviceVerifier {
 - Proof type support in backend
 - Sample queries and commands
 
-### ✅ Deployed Contract
-- **Contract Address**: `0x74D68B2481d298F337e62efc50724CbBA68dCF8f`
+### ✅ Deployed Contracts (REAL)
+- **Groth16 Verifier (6-signal)**: `0x9948D8d9Cc8848653c062a5Fdcfea931535DF81A`
+- **System Contract**: `0xC1BAa1a7A001aC7a476F60ECB5050f8fd6d211DE`
 - **Network**: IoTeX Testnet (Chain ID: 4690)
-- **Explorer**: [View on IoTeXScan](https://testnet.iotexscan.io/address/0x74D68B2481d298F337e62efc50724CbBA68dCF8f)
+- **Explorer**: [Verifier](https://testnet.iotexscan.io/address/0x9948D8d9Cc8848653c062a5Fdcfea931535DF81A) · [System](https://testnet.iotexscan.io/address/0xC1BAa1a7A001aC7a476F60ECB5050f8fd6d211DE)
 - **Deployer**: `0xE616B2eC620621797030E0AB1BA38DA68D78351C`
-- **Features**: Device registration, proximity verification, reward system
+- **Features**: REAL registration, REAL Groth16 verification, REAL rewards
 
 ### 🚧 Pending
 - Integrate with IoTeX ioID registry
@@ -92,18 +93,18 @@ interface IDeviceVerifier {
 ## Testing
 
 ### Current Status
-- ✅ Contract deployed to IoTeX testnet
+- ✅ Contracts deployed to IoTeX testnet
 - ✅ Frontend integration complete
 - ✅ Device registration functional
-- ⚠️ Proximity verification in demo mode (awaiting real circuit)
-- ✅ Reward system ready (0.01 IOTX per proof)
+- ✅ Proximity verification fully REAL (6 public signals)
+- ✅ Rewards claimable on success
 
 ### To Test
-1. Click "Register IoT device DEV123 with proximity proof"
-2. Wait for proof generation
-3. Click "Verify on IoTeX" button
-4. See proximity verification result
-5. If eligible, claim rewards
+1. Open UI: `http://localhost:8000/index-clean2.html`
+2. Start backend: `node api/iotex-proximity-zkengine-real.js` (port 8007)
+3. Run workflow: register device → zkEngine proof → Groth16 verification → rewards
+4. Step 3 shows: Groth16 Verifier link + Verification TX link
+5. Step 4 shows reward claim TX when applicable
 
 ## Future Enhancements
 

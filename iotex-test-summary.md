@@ -18,8 +18,8 @@
 ### Clickable On-Chain Links in UI:
 
 #### 1. Smart Contracts (IoTeX Testnet):
-- **Groth16 Verifier**: [0x5A2d6Df32833E43A8432ab99D0361D596c1958Ca](https://testnet.iotexscan.io/address/0x5A2d6Df32833E43A8432ab99D0361D596c1958Ca)
-- **System Contract**: [0xcb57897De8743eeD67cDC36DB22c8c90e66B2519](https://testnet.iotexscan.io/address/0xcb57897De8743eeD67cDC36DB22c8c90e66B2519)
+- **Groth16 Verifier (6-signal)**: [0x9948D8d9Cc8848653c062a5Fdcfea931535DF81A](https://testnet.iotexscan.io/address/0x9948D8d9Cc8848653c062a5Fdcfea931535DF81A)
+- **System Contract**: [0xC1BAa1a7A001aC7a476F60ECB5050f8fd6d211DE](https://testnet.iotexscan.io/address/0xC1BAa1a7A001aC7a476F60ECB5050f8fd6d211DE)
 - **Wallet Address**: [0xE616B2eC620621797030E0AB1BA38DA68D78351C](https://testnet.iotexscan.io/address/0xE616B2eC620621797030E0AB1BA38DA68D78351C)
 
 #### 2. Transaction Links (Generated for each workflow):

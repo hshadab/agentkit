@@ -5,7 +5,7 @@ const solc = require('solc');
 // IoTeX testnet configuration
 const IOTEX_RPC = "https://babel-api.testnet.iotex.io";
 const PRIVATE_KEY = "0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab";
-const VERIFIER_ADDRESS = "0x5A2d6Df32833E43A8432ab99D0361D596c1958Ca"; // Already deployed
+const VERIFIER_ADDRESS = "0x9948D8d9Cc8848653c062a5Fdcfea931535DF81A"; // 6-signal verifier
 
 async function main() {
     try {

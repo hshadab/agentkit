@@ -1,7 +1,7 @@
 {
   "network": "iotex-testnet",
-  "verifier": "0x5A2d6Df32833E43A8432ab99D0361D596c1958Ca",
-  "system": "0xcb57897De8743eeD67cDC36DB22c8c90e66B2519",
+  "verifier": "0x9948D8d9Cc8848653c062a5Fdcfea931535DF81A",
+  "system": "0xC1BAa1a7A001aC7a476F60ECB5050f8fd6d211DE",
   "deployer": "0xE616B2eC620621797030E0AB1BA38DA68D78351C",
-  "timestamp": "2025-09-06T22:03:34.234Z"
+  "timestamp": "2025-09-08T18:58:11.986Z"
 }

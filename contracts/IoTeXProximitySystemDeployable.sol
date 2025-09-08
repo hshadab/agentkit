@@ -33,7 +33,8 @@ contract IoTeXProximitySystem {
     }
     
     // Device registry
-    mapping(uint256 => Device) public devices;  // deviceIdHash => Device
+    mapping(uint256 => Device) public devices;         // deviceIdHash (raw 256-bit) => Device
+    mapping(uint256 => Device) public devicesByModR;   // deviceIdHash mod r (BN128 scalar field) => Device
     mapping(address => uint256[]) public userDevices;  // user => deviceIdHashes
     
     // Proof tracking
@@ -105,6 +106,9 @@ contract IoTeXProximitySystem {
         });
     }
     
+    // BN128 scalar field modulus
+    uint256 constant FIELD_MODULUS = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+    
     // ========== Core Functions ==========
     
     /**
@@ -118,8 +122,20 @@ contract IoTeXProximitySystem {
         
         require(!devices[deviceIdHash].isRegistered, "Device already registered");
         
-        // Create device record
+        // Create device record (raw)
         devices[deviceIdHash] = Device({
+            owner: msg.sender,
+            deviceIdHash: deviceIdHash,
+            isRegistered: true,
+            lastProofTime: 0,
+            totalRewards: 0,
+            proofCount: 0
+        });
+        
+        // Also index by field modulus to match zk public signal representation
+        uint256 deviceIdHashModR = deviceIdHash % FIELD_MODULUS;
+        require(!devicesByModR[deviceIdHashModR].isRegistered, "Device (mod r) already registered");
+        devicesByModR[deviceIdHashModR] = Device({
             owner: msg.sender,
             deviceIdHash: deviceIdHash,
             isRegistered: true,
@@ -149,16 +165,18 @@ contract IoTeXProximitySystem {
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
         uint[6] calldata _pubSignals
-    ) external deviceExists(_pubSignals[0]) {
-        // Extract public inputs
-        uint256 deviceIdHash = _pubSignals[0];
+    ) external {
+        // Extract public inputs (deviceIdHash is represented mod r in the proof)
+        uint256 deviceIdHashModR = _pubSignals[0];
         uint256 x = _pubSignals[1];
         uint256 y = _pubSignals[2];
         uint256 distanceSquared = _pubSignals[3];
         uint256 proofTimestamp = _pubSignals[4];
         uint256 nonce = _pubSignals[5];
         
-        Device storage device = devices[deviceIdHash];
+        // Lookup registered device by mod r
+        Device storage device = devicesByModR[deviceIdHashModR];
+        require(device.isRegistered, "Device not registered");
         
         // Verify proof hasn't been used
         bytes32 proofHash = keccak256(abi.encodePacked(_pA, _pB, _pC, _pubSignals));
@@ -203,7 +221,7 @@ contract IoTeXProximitySystem {
         totalProofsVerified++;
         
         emit ProximityProofVerified(
-            deviceIdHash,
+            device.deviceIdHash,
             x,
             y,
             distanceSquared,
