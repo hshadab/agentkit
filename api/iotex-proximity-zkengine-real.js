@@ -19,8 +19,11 @@ const IOTEX_RPC = "https://4690.rpc.thirdweb.com"; // ThirdWeb's IoTeX testnet R
 const IOTEX_RPC_BACKUP = "https://babel-api.testnet.iotex.io";
 const IOTEX_RPC_BACKUP2 = "https://testnet.iotexrpc.com";
 const IOTEX_RPC_BACKUP3 = "https://rpc.testnet.iotex.one";
-const PRIVATE_KEY = "0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab";
-const WALLET_ADDRESS = "0xE616B2eC620621797030E0AB1BA38DA68D78351C";
+const PRIVATE_KEY = process.env.IOTEX_PRIVATE_KEY || process.env.PRIVATE_KEY;
+if (!PRIVATE_KEY) {
+    console.warn('⚠️ IOTEX_PRIVATE_KEY not set. Set it in .env to enable on-chain transactions.');
+}
+const WALLET_ADDRESS = process.env.IOTEX_WALLET || "0xE616B2eC620621797030E0AB1BA38DA68D78351C";
 
 // Contract addresses - REAL contracts deployed on IoTeX testnet
 let VERIFIER_ADDRESS = "0x9948D8d9Cc8848653c062a5Fdcfea931535DF81A"; // default (6-signal)

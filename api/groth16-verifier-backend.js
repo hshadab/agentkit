@@ -77,7 +77,10 @@ async function initializeProvider() {
 (async () => {
     try {
         provider = await initializeProvider();
-        const privateKey = '0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+        const privateKey = process.env.GROTH16_PRIVATE_KEY || process.env.PRIVATE_KEY;
+        if (!privateKey) {
+            throw new Error('GROTH16_PRIVATE_KEY/PRIVATE_KEY not set');
+        }
         wallet = new ethers.Wallet(privateKey, provider);
         verifierContract = new ethers.Contract(deploymentInfo.address, deploymentInfo.abi, wallet);
         console.log(`Contract initialized at: ${deploymentInfo.address}`);
@@ -85,7 +88,10 @@ async function initializeProvider() {
         console.error('Failed to initialize provider:', error.message);
         // Use a default provider as fallback
         provider = new ethers.JsonRpcProvider('https://rpc.sepolia.org', 11155111);
-        const privateKey = '0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+        const privateKey = process.env.GROTH16_PRIVATE_KEY || process.env.PRIVATE_KEY;
+        if (!privateKey) {
+            throw new Error('GROTH16_PRIVATE_KEY/PRIVATE_KEY not set');
+        }
         wallet = new ethers.Wallet(privateKey, provider);
         verifierContract = new ethers.Contract(deploymentInfo.address, deploymentInfo.abi, wallet);
     }

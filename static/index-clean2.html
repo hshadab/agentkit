@@ -473,38 +473,51 @@
             }
         };
         
-        // Check backend services status
+        let APP_CAPS = { probes: ['iotex'], workflows: ['iotex'] };
+
+        async function loadCapabilities() {
+            try {
+                const resp = await fetch('/capabilities');
+                if (resp.ok) {
+                    APP_CAPS = await resp.json();
+                }
+            } catch (e) {
+                // default caps remain
+            }
+        }
+
+        // Check backend services status (gated by capabilities)
         async function checkServicesStatus() {
             // Check zkML backend (port 8002)
-            try {
-                const zkmlResponse = await fetch('http://localhost:8002/health');
-                serviceStatus.zkml = zkmlResponse.ok;
-            } catch (e) {
-                serviceStatus.zkml = false;
+            if (APP_CAPS.probes.includes('zkml')) {
+                try {
+                    const zkmlResponse = await fetch('/zkml/health');
+                    serviceStatus.zkml = zkmlResponse.ok;
+                } catch (e) { serviceStatus.zkml = false; }
             }
             
             // Check Groth16 backend (port 3004)
-            try {
-                const groth16Response = await fetch('http://localhost:3004/health');
-                serviceStatus.groth16 = groth16Response.ok;
-            } catch (e) {
-                serviceStatus.groth16 = false;
+            if (APP_CAPS.probes.includes('groth16')) {
+                try {
+                    const groth16Response = await fetch('/groth16/health');
+                    serviceStatus.groth16 = groth16Response.ok;
+                } catch (e) { serviceStatus.groth16 = false; }
             }
             
             // Check Avalanche medical backend (port 8003)
-            try {
-                const avalancheResponse = await fetch('http://localhost:8003/health');
-                serviceStatus.avalanche = avalancheResponse.ok;
-            } catch (e) {
-                serviceStatus.avalanche = false;
+            if (APP_CAPS.probes.includes('avalanche')) {
+                try {
+                    const avalancheResponse = await fetch('/avalanche/health');
+                    serviceStatus.avalanche = avalancheResponse.ok;
+                } catch (e) { serviceStatus.avalanche = false; }
             }
             
             // Check Base AI prediction backend (port 8004)
-            try {
-                const baseResponse = await fetch('http://localhost:8004/health');
-                serviceStatus.baseAI = baseResponse.ok;
-            } catch (e) {
-                serviceStatus.baseAI = false;
+            if (APP_CAPS.probes.includes('baseAI')) {
+                try {
+                    const baseResponse = await fetch('/base/health');
+                    serviceStatus.baseAI = baseResponse.ok;
+                } catch (e) { serviceStatus.baseAI = false; }
             }
             
             // Check IoTeX proximity backend (port 8007)
@@ -516,11 +529,11 @@
             }
             
             // Check Solana gaming backend (port 8006)
-            try {
-                const solanaResponse = await fetch('http://localhost:8006/health');
-                serviceStatus.solana = solanaResponse.ok;
-            } catch (e) {
-                serviceStatus.solana = false;
+            if (APP_CAPS.probes.includes('solana')) {
+                try {
+                    const solanaResponse = await fetch('/solana/health');
+                    serviceStatus.solana = solanaResponse.ok;
+                } catch (e) { serviceStatus.solana = false; }
             }
             
             // Update connection status based on service availability
@@ -533,13 +546,13 @@
             return serviceStatus;
         }
         
-        // Initialize WebSocket connection (disabled for now - not needed)
-        let ws = null;
+            // Initialize WebSocket connection (disabled for now - not needed)
+            let ws = null;
         function initWebSocket() {
             // WebSocket disabled - not required for current workflows
             // All workflows use direct HTTP APIs
             // Check service status instead
-            checkServicesStatus();
+            loadCapabilities().then(checkServicesStatus);
             return;
             
             /* Original WebSocket code - kept for future use

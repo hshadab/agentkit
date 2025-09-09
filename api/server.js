@@ -10,6 +10,8 @@ const IOTEX_PORT = process.env.IOTEX_PORT || 8007;
 const ZKML_PORT = process.env.ZKML_PORT || 8002;
 const GROTH16_PORT = process.env.GROTH16_PORT || 3004;
 const GATEWAY_API = process.env.GATEWAY_API || 'https://gateway-api-testnet.circle.com';
+const ENABLED_PROBES = (process.env.ENABLED_PROBES || 'iotex').split(',').map(s => s.trim()).filter(Boolean);
+const ENABLED_WORKFLOWS = (process.env.ENABLED_WORKFLOWS || 'iotex,gateway').split(',').map(s => s.trim()).filter(Boolean);
 
 const app = express();
 app.use(cors());
@@ -28,8 +30,14 @@ app.get('/health', (req, res) => {
       zkml: `http://localhost:${ZKML_PORT}`,
       groth16: `http://localhost:${GROTH16_PORT}`,
       gateway: GATEWAY_API
-    }
+    },
+    probes: ENABLED_PROBES,
+    workflows: ENABLED_WORKFLOWS
   });
+});
+
+app.get('/capabilities', (req, res) => {
+  res.json({ probes: ENABLED_PROBES, workflows: ENABLED_WORKFLOWS });
 });
 
 // Proxies (keep paths stable for UI)
@@ -53,6 +61,7 @@ app.listen(UI_PORT, () => {
   console.log(`  IoTeX:    /iotex/*  -> http://localhost:${IOTEX_PORT}`);
   console.log(`  zkML:     /zkml/*   -> http://localhost:${ZKML_PORT}`);
   console.log(`  Groth16:  /groth16/*-> http://localhost:${GROTH16_PORT}`);
-  console.log(`  Gateway:  /gateway/*-> ${GATEWAY_API}\n`);
+  console.log(`  Gateway:  /gateway/*-> ${GATEWAY_API}`);
+  console.log(`  Probes:   ${ENABLED_PROBES.join(', ')}`);
+  console.log(`  Flows:    ${ENABLED_WORKFLOWS.join(', ')}\n`);
 });
-
