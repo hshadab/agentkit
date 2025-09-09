@@ -5,6 +5,7 @@
     "cors": "^2.8.5",
     "ethers": "^6.15.0",
     "express": "^5.1.0",
+    "http-proxy-middleware": "^3.0.5",
     "node-fetch": "^3.3.2",
     "snarkjs": "^0.7.5",
     "solc": "^0.8.30"
