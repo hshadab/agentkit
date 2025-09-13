@@ -16,6 +16,34 @@
 
 AgentKit is a **production-ready framework** for building verifiable AI agents that can operate across multiple blockchains with cryptographic proof of correct execution. From healthcare records on Avalanche to DeFi operations on Base, from IoT device verification on IoTeX to high-speed trading on Solana - AgentKit provides the infrastructure for trustless AI operations at scale.
 
+### Recent Changes (Unified 8001 Backend)
+- Unified Rust backend on port `8001` now serves UI, WebSocket, and all APIs.
+- zkML endpoints (`/zkml/*`) now run locally via JOLT‑Atlas `llm_prover` (no external proxy on 8002).
+- IoTeX proximity, Avalanche medical, and Base AI endpoints are wired to run real zkEngine proofs (WASM) locally:
+  - IoTeX step1 uses `zkengine/example_wasms/prove_location.wasm` (step 1000).
+  - Avalanche `/medical/generate-proof` uses `wasm_files/medical_integrity.wasm` (step 10).
+  - Base `/ai/generate-zkengine-proof` uses `wasm_files/ai_predictor.wasm` (step 100).
+- Groth16 flows remain via CLI helpers and real on-chain verification.
+
+### How To Test (Quick)
+- zkML (local JOLT‑Atlas):
+  - Start backend: `cargo run`
+  - Prove: `curl -s -X POST localhost:8001/zkml/prove -H 'content-type: application/json' -d '{"prompt":"gateway zkml transfer $0.01"}'`
+  - Check status: `curl -s localhost:8001/zkml/status/<sessionId>`
+  - Get proof: `curl -s localhost:8001/zkml/proof/<sessionId>`
+- IoTeX proximity (Testnet):
+  - `curl -s -X POST localhost:8001/iotex/verify-proximity -H 'content-type: application/json' -d '{"deviceX":5005,"deviceY":4995,"deviceSecret":"demo-device"}'`
+  - Returns workflow with step1 zkEngine (prove_location.wasm), Groth16 proof-of-proof, and on-chain TX.
+- Avalanche medical (Fuji):
+  - Create: `curl -s -X POST localhost:8001/medical/create -H 'content-type: application/json' -d '{"patientId":3,"diagnosis":"encrypted","treatment":"encrypted","provider":"Demo"}'`
+  - Generate zkEngine: `curl -s -X POST localhost:8001/medical/generate-proof -H 'content-type: application/json' -d '{"sessionId":"<sessionId>"}'`
+  - Verify (state-changing TX): `curl -s -X POST localhost:8001/medical/verify -H 'content-type: application/json' -d '{"sessionId":"<sessionId>"}'`
+- Base AI prediction (Sepolia):
+  - Commit: `curl -s -X POST localhost:8001/ai/commit -H 'content-type: application/json' -d '{"prompt":"Will ETH > $5000?","response":"Yes"}'`
+  - zkEngine proof: `curl -s -X POST localhost:8001/ai/generate-zkengine-proof -H 'content-type: application/json' -d '{"sessionId":"<sessionId>"}'`
+  - Groth16 reveal (real TX): `curl -s -X POST localhost:8001/ai/generate-groth16-verify -H 'content-type: application/json' -d '{"sessionId":"<sessionId>"}'`
+
+
 ### ⚠️ 100% REAL Implementation Policy
 **NO MOCKS. NO SIMULATIONS. NO DEMOS.** Every component in AgentKit is:
 - ✅ Real cryptographic proofs with verifiable mathematics

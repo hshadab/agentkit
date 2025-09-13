@@ -481,7 +481,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                 decision: 1 // APPROVE
             };
             
-            const response = await fetch('http://localhost:8002/zkml/prove', {
+            const response = await fetch('/zkml/prove', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -509,7 +509,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                     
                     // Check status
                     try {
-                        const statusResponse = await fetch(`http://localhost:8002/zkml/status/${data.sessionId}`);
+                        const statusResponse = await fetch(`/zkml/status/${data.sessionId}`);
                         if (statusResponse.ok) {
                             const statusData = await statusResponse.json();
                             console.log(`Proof status: ${statusData.status}`);
@@ -547,7 +547,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
         
         try {
             // First get the zkML proof from backend
-            const proofResponse = await fetch(`http://localhost:8002/zkml/proof/${sessionId}`);
+            const proofResponse = await fetch(`/zkml/proof/${sessionId}`);
             if (!proofResponse.ok) {
                 throw new Error('Failed to get zkML proof');
             }
@@ -700,7 +700,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             const content = document.getElementById('gateway-step-content-zkml_proof');
             if (content) {
                 // Fetch the proof details to show parameters
-                fetch(`http://localhost:8002/zkml/status/${sessionId}`)
+                fetch(`/zkml/status/${sessionId}`)
                     .then(response => response.json())
                     .then(zkmlData => {
                         const proofTime = zkmlData.proofTime || 516;

@@ -63,7 +63,7 @@
         
         try {
             // Step 1: zkML Proof Generation
-            const proofResp = await fetch('http://localhost:8002/zkml/prove', {
+            const proofResp = await fetch('/zkml/prove', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -81,7 +81,7 @@
             // Wait for proof generation
             await new Promise(r => setTimeout(r, 8000));
             
-            const statusResp = await fetch(`http://localhost:8002/zkml/status/${proof.sessionId}`);
+            const statusResp = await fetch(`/zkml/status/${proof.sessionId}`);
             const status = await statusResp.json();
             
             // Update Step 1 UI

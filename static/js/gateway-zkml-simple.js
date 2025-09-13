@@ -52,7 +52,7 @@ window.executeGatewayZKMLWorkflow = async function(amount) {
         // Step 1: Generate zkML proof
         updateCardStatus(card, 'Generating zkML proof (14 parameters)...', 'generating');
         
-        const proofResponse = await fetch('http://localhost:8002/zkml/prove', {
+        const proofResponse = await fetch('/zkml/prove', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -69,7 +69,7 @@ window.executeGatewayZKMLWorkflow = async function(amount) {
         // Wait for proof generation
         await new Promise(r => setTimeout(r, 8000));
         
-        const statusUrl = `http://localhost:8002/zkml/status/${proof.sessionId}`;
+        const statusUrl = `/zkml/status/${proof.sessionId}`;
         const statusResponse = await fetch(statusUrl);
         const status = await statusResponse.json();
         

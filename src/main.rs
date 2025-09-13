@@ -23,7 +23,7 @@ use axum::Json;
 use serde_json::Value;
 use tokio::io::AsyncWriteExt;
 use ethers::prelude::*;
-use ethers::types::{U256, Address, H256, Bytes, H160};
+use ethers::types::{U256, Address, H256, Bytes};
 use std::sync::Arc;
 use sha2::{Digest, Sha256};
 use ethers::core::utils::keccak256;
@@ -38,11 +38,7 @@ struct AppState {
     zkengine_binary: String,
     proofs_dir: String,
     wasm_dir: String,
-    // Upstream service URLs for proxying
-    zkml_url: String,
-    iotex_url: String,
-    medical_url: String,
-    ai_url: String,
+    // (zkML now local)
     enabled_probes: Vec<String>,
     enabled_workflows: Vec<String>,
     // OpenAI + Gateway
@@ -63,10 +59,11 @@ struct AppState {
     base_chain_id: u64,
     base_private_key: Option<String>,
     base_ai_commitment_address: Option<Address>,
-    base_groth16_verifier_address: Option<Address>,
+    // base_groth16_verifier_address removed (unused)
     // Sessions
     medical_sessions: Arc<tokio::sync::Mutex<HashMap<String, MedicalSession>>>,
     ai_sessions: Arc<tokio::sync::Mutex<HashMap<String, AiSession>>>,
+    zkml_sessions: Arc<tokio::sync::Mutex<HashMap<String, ZkmlSession>>>,
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -94,6 +91,16 @@ struct AiSession {
     zk_engine_public: Option<Value>,
 }
 
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+struct ZkmlSession {
+    session_id: String,
+    status: String, // pending | complete | error
+    created_at: u64,
+    params: Value,
+    proof: Option<Value>,
+    error: Option<String>,
+}
+
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug)]
 struct ProofMetadata {
     function: String,
@@ -118,21 +125,14 @@ async fn main() {
     let wasm_dir = std::env::var("WASM_DIR")
         .unwrap_or_else(|_| "./zkengine/example_wasms".to_string());
 
-    // Upstream services (for proxy endpoints)
-    let zkml_url = std::env::var("ZKML_SERVICE_URL")
-        .unwrap_or_else(|_| "http://localhost:8002".to_string());
+    // Upstream services (unused: zkML is local)
     // Circle Gateway direct API (no Node proxy)
     let circle_api_base = std::env::var("CIRCLE_GATEWAY_API_BASE")
         .unwrap_or_else(|_| "https://gateway-api-testnet.circle.com".to_string());
     let circle_api_key = std::env::var("CIRCLE_GATEWAY_API_KEY")
         .or_else(|_| std::env::var("CIRCLE_API_KEY"))
         .unwrap_or_else(|_| "".to_string());
-    let iotex_url = std::env::var("IOTEX_SERVICE_URL")
-        .unwrap_or_else(|_| "http://localhost:8007".to_string());
-    let medical_url = std::env::var("MEDICAL_SERVICE_URL")
-        .unwrap_or_else(|_| "http://localhost:8003".to_string());
-    let ai_url = std::env::var("AI_SERVICE_URL")
-        .unwrap_or_else(|_| "http://localhost:8004".to_string());
+    // Legacy proxy URLs removed; native handlers are used
 
     // OpenAI config
     let openai_api_key = std::env::var("OPENAI_API_KEY").unwrap_or_else(|_| "".to_string());
@@ -181,18 +181,13 @@ async fn main() {
     let base_private_key = std::env::var("BASE_PRIVATE_KEY").ok().or_else(|| std::env::var("PRIVATE_KEY").ok());
     let base_ai_commitment_address = std::env::var("BASE_AI_COMMITMENT").ok().and_then(|s| s.parse::<Address>().ok())
         .or(Some("0xae7d069d0A45a8Ecd969ABbb2705bA96472D36FC".parse().unwrap()));
-    let base_groth16_verifier_address = std::env::var("BASE_GROTH16_VERIFIER").ok().and_then(|s| s.parse::<Address>().ok())
-        .or(Some("0x28F7de77C120f92ceB5E14Efab4fCA31c7ac212E".parse().unwrap()));
+    // Base Groth16 verifier address unused in current flows
 
     let state = AppState {
         tx,
         zkengine_binary,
         proofs_dir,
         wasm_dir,
-        zkml_url,
-        iotex_url,
-        medical_url,
-        ai_url,
         enabled_probes,
         enabled_workflows,
         openai_api_key,
@@ -209,9 +204,9 @@ async fn main() {
         base_chain_id,
         base_private_key,
         base_ai_commitment_address,
-        base_groth16_verifier_address,
         medical_sessions: Arc::new(tokio::sync::Mutex::new(HashMap::new())),
         ai_sessions: Arc::new(tokio::sync::Mutex::new(HashMap::new())),
+        zkml_sessions: Arc::new(tokio::sync::Mutex::new(HashMap::new())),
     };
 
     let app = Router::new()
@@ -222,11 +217,11 @@ async fn main() {
         .route("/avalanche/health", get(avalanche_health))
         .route("/base/health", get(base_health))
         .route("/solana/health", get(solana_health))
-        // zkML proxy
-        .route("/zkml/health", get(zkml_health))
-        .route("/zkml/prove", post(zkml_prove))
-        .route("/zkml/status/:id", get(zkml_status))
-        .route("/zkml/proof/:id", get(zkml_proof))
+        // zkML local (JOLT-Atlas llm_prover)
+        .route("/zkml/health", get(zkml_health_local))
+        .route("/zkml/prove", post(zkml_prove_local))
+        .route("/zkml/status/:id", get(zkml_status_local))
+        .route("/zkml/proof/:id", get(zkml_proof_local))
         // Groth16 proxy
         .route("/groth16/health", get(groth16_health))
         .route("/groth16/workflow", post(groth16_workflow))
@@ -311,63 +306,158 @@ async fn solana_health() -> axum::response::Json<Value> {
     }))
 }
 
-// --- Proxy helpers ---
-async fn forward_get(url: String) -> Result<axum::response::Response, (StatusCode, String)> {
-    let client = reqwest::Client::new();
-    match client.get(&url).send().await {
-        Ok(resp) => {
-            let status = resp.status();
-            let headers = resp.headers().clone();
-            let body = resp.bytes().await.unwrap_or_default();
-            let mut response = axum::response::Response::builder()
-                .status(status)
-                .body(axum::body::boxed(axum::body::Full::from(body)))
-                .unwrap();
-            // Copy content-type if present
-            if let Some(ct) = headers.get(reqwest::header::CONTENT_TYPE) {
-                response.headers_mut().insert(axum::http::header::CONTENT_TYPE, ct.clone());
+// --- Proxy helpers (removed; native handlers in use) ---
+
+// --- zkML local integration (JOLT-Atlas llm_prover) ---
+async fn zkml_health_local() -> impl IntoResponse {
+    // Basic presence checks: jolt-atlas dir and llm_prover source
+    let ok = std::path::Path::new("jolt-atlas/src/bin/llm_prover.rs").exists();
+    axum::response::Json(json!({
+        "service": "zkML llm_prover (local)",
+        "present": ok
+    }))
+}
+
+async fn zkml_prove_local(State(state): State<AppState>, Json(payload): Json<Value>) -> Result<axum::response::Response, (StatusCode, String)> {
+    let session_id = Uuid::new_v4().to_string();
+    let created_at = chrono::Utc::now().timestamp() as u64;
+
+    // Store initial session
+    {
+        let mut map = state.zkml_sessions.lock().await;
+        map.insert(session_id.clone(), ZkmlSession{
+            session_id: session_id.clone(),
+            status: "pending".into(),
+            created_at,
+            params: payload.clone(),
+            proof: None,
+            error: None,
+        });
+    }
+
+    // Spawn background prover
+    let state_clone = state.clone();
+    let sid = session_id.clone();
+    tokio::spawn(async move {
+        match run_llm_prover(&payload).await {
+            Ok(proof) => {
+                let mut map = state_clone.zkml_sessions.lock().await;
+                if let Some(sess) = map.get_mut(&sid) {
+                    sess.status = "complete".into();
+                    sess.proof = Some(proof);
+                }
             }
-            Ok(response)
+            Err(e) => {
+                let mut map = state_clone.zkml_sessions.lock().await;
+                if let Some(sess) = map.get_mut(&sid) {
+                    sess.status = "error".into();
+                    sess.error = Some(e);
+                }
+            }
         }
-        Err(e) => Err((StatusCode::BAD_GATEWAY, format!("Upstream GET failed: {}", e)))
+    });
+
+    let resp = json!({
+        "sessionId": session_id,
+        "status": "pending",
+        "message": "zkML proof generation started"
+    });
+    Ok(axum::response::Response::builder()
+        .status(StatusCode::OK)
+        .body(axum::body::boxed(axum::body::Full::from(resp.to_string())))
+        .unwrap())
+}
+
+async fn zkml_status_local(Path(id): Path<String>, State(state): State<AppState>) -> Result<axum::response::Response, (StatusCode, String)> {
+    let map = state.zkml_sessions.lock().await;
+    if let Some(sess) = map.get(&id) {
+        let resp = json!({
+            "sessionId": id,
+            "status": sess.status,
+            "createdAt": sess.created_at,
+        });
+        Ok(axum::response::Response::builder().status(StatusCode::OK).body(axum::body::boxed(axum::body::Full::from(resp.to_string()))).unwrap())
+    } else {
+        Err((StatusCode::NOT_FOUND, "Session not found".into()))
     }
 }
 
-async fn forward_post_json(url: String, Json(body): Json<Value>) -> Result<axum::response::Response, (StatusCode, String)> {
-    let client = reqwest::Client::new();
-    match client.post(&url).json(&body).send().await {
-        Ok(resp) => {
-            let status = resp.status();
-            let headers = resp.headers().clone();
-            let body = resp.bytes().await.unwrap_or_default();
-            let mut response = axum::response::Response::builder()
-                .status(status)
-                .body(axum::body::boxed(axum::body::Full::from(body)))
-                .unwrap();
-            if let Some(ct) = headers.get(reqwest::header::CONTENT_TYPE) {
-                response.headers_mut().insert(axum::http::header::CONTENT_TYPE, ct.clone());
-            }
-            Ok(response)
-        }
-        Err(e) => Err((StatusCode::BAD_GATEWAY, format!("Upstream POST failed: {}", e)))
+async fn zkml_proof_local(Path(id): Path<String>, State(state): State<AppState>) -> Result<axum::response::Response, (StatusCode, String)> {
+    let map = state.zkml_sessions.lock().await;
+    if let Some(sess) = map.get(&id) {
+        let resp = json!({
+            "sessionId": id,
+            "status": sess.status,
+            "proof": sess.proof,
+            "error": sess.error
+        });
+        Ok(axum::response::Response::builder().status(StatusCode::OK).body(axum::body::boxed(axum::body::Full::from(resp.to_string()))).unwrap())
+    } else {
+        Err((StatusCode::NOT_FOUND, "Session not found".into()))
     }
 }
 
-// --- zkML proxies ---
-async fn zkml_health(State(state): State<AppState>) -> Result<axum::response::Response, (StatusCode, String)> {
-    forward_get(format!("{}/health", state.zkml_url)).await
-}
+async fn run_llm_prover(params: &Value) -> Result<Value, String> {
+    // Derive parameters with reasonable defaults
+    let prompt = params.get("prompt").and_then(|v| v.as_str()).unwrap_or("gateway zkml transfer $0.01");
+    let rules = params.get("rules").and_then(|v| v.as_str()).unwrap_or("amount <= $1, allowlisted recipients only");
+    let approve_conf = params.get("approveConfidence").and_then(|v| v.as_u64()).unwrap_or(92) as u32;
+    let amount_conf = params.get("amountConfidence").and_then(|v| v.as_u64()).unwrap_or(90) as u32;
+    let rules_attn = params.get("rulesAttention").and_then(|v| v.as_u64()).unwrap_or(88) as u32;
+    let amount_attn = params.get("amountAttention").and_then(|v| v.as_u64()).unwrap_or(85) as u32;
+    let context_window = params.get("contextWindow").and_then(|v| v.as_u64()).unwrap_or(2048) as u32;
+    let temperature = params.get("temperature").and_then(|v| v.as_u64()).unwrap_or(0) as u32;
+    let model_checkpoint = params.get("modelCheckpoint").and_then(|v| v.as_u64()).unwrap_or(1337) as u64;
+    let cot = params.get("reasoning").and_then(|v| v.as_str()).unwrap_or("short reasoning");
+    let format_valid = params.get("formatValid").and_then(|v| v.as_bool()).unwrap_or(true) as u8;
+    let amount_valid = params.get("amountValid").and_then(|v| v.as_bool()).unwrap_or(true) as u8;
+    let recipient_valid = params.get("recipientValid").and_then(|v| v.as_bool()).unwrap_or(true) as u8;
+    let decision = if approve_conf >= 80 && format_valid == 1 && amount_valid == 1 && recipient_valid == 1 { 1u8 } else { 0u8 };
 
-async fn zkml_prove(State(state): State<AppState>, payload: Json<Value>) -> Result<axum::response::Response, (StatusCode, String)> {
-    forward_post_json(format!("{}/zkml/prove", state.zkml_url), payload).await
-}
+    // Hashes to u64
+    let ph = ethers::utils::keccak256(prompt.as_bytes());
+    let rh = ethers::utils::keccak256(rules.as_bytes());
+    let ch = ethers::utils::keccak256(cot.as_bytes());
+    let prompt_hash = u64::from_be_bytes([ph[0],ph[1],ph[2],ph[3],ph[4],ph[5],ph[6],ph[7]]);
+    let rules_hash = u64::from_be_bytes([rh[0],rh[1],rh[2],rh[3],rh[4],rh[5],rh[6],rh[7]]);
+    let cot_hash = u64::from_be_bytes([ch[0],ch[1],ch[2],ch[3],ch[4],ch[5],ch[6],ch[7]]);
 
-async fn zkml_status(Path(id): Path<String>, State(state): State<AppState>) -> Result<axum::response::Response, (StatusCode, String)> {
-    forward_get(format!("{}/zkml/status/{}", state.zkml_url, id)).await
-}
+    // Build command
+    let mut cmd = Command::new("cargo");
+    cmd.arg("run").arg("--quiet").arg("--bin").arg("llm_prover").arg("--")
+        .arg("--prompt-hash").arg(prompt_hash.to_string())
+        .arg("--system-rules-hash").arg(rules_hash.to_string())
+        .arg("--context-window").arg(context_window.to_string())
+        .arg("--temperature").arg(temperature.to_string())
+        .arg("--model-checkpoint").arg(model_checkpoint.to_string())
+        .arg("--approve-confidence").arg(approve_conf.to_string())
+        .arg("--amount-confidence").arg(amount_conf.to_string())
+        .arg("--rules-attention").arg(rules_attn.to_string())
+        .arg("--amount-attention").arg(amount_attn.to_string())
+        .arg("--reasoning-hash").arg(cot_hash.to_string())
+        .arg("--format-valid").arg(format_valid.to_string())
+        .arg("--amount-valid").arg(amount_valid.to_string())
+        .arg("--recipient-valid").arg(recipient_valid.to_string())
+        .arg("--decision").arg(decision.to_string())
+        .current_dir("jolt-atlas")
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
 
-async fn zkml_proof(Path(id): Path<String>, State(state): State<AppState>) -> Result<axum::response::Response, (StatusCode, String)> {
-    forward_get(format!("{}/zkml/proof/{}", state.zkml_url, id)).await
+    let output = cmd.spawn().map_err(|e| format!("Failed to spawn llm_prover: {}", e))?
+        .wait_with_output().await.map_err(|e| format!("llm_prover failed: {}", e))?;
+
+    if !output.status.success() {
+        return Err(format!("llm_prover error: {}", String::from_utf8_lossy(&output.stderr)));
+    }
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    // Extract JSON between markers
+    let start = stdout.find("===PROOF_START===").ok_or("Proof markers not found")?;
+    let json_str = &stdout[start..];
+    let json_str = json_str.strip_prefix("===PROOF_START===\n").unwrap_or(json_str);
+    let end = json_str.find("===PROOF_END===").ok_or("Proof end marker not found")?;
+    let payload = &json_str[..end].trim();
+    let proof: Value = serde_json::from_str(payload).map_err(|e| format!("Invalid proof JSON: {}", e))?;
+    Ok(proof)
 }
 
 // --- Groth16 (local, via Node CLI helpers) ---
@@ -537,7 +627,7 @@ abigen!(IotexSystem, r#"[
 ]"#);
 
 #[derive(serde::Deserialize)]
-struct IotexDeployment { network: String, verifier: String, system: String, deployer: Option<String>, timestamp: Option<String> }
+struct IotexDeployment { _network: String, verifier: String, system: String, _deployer: Option<String>, _timestamp: Option<String> }
 
 async fn iotex_status(State(state): State<AppState>) -> Result<axum::response::Response, (StatusCode, String)> {
     let rpc = state.iotex_rpc_urls.get(0).cloned().unwrap_or_else(|| "https://4690.rpc.thirdweb.com".into());
@@ -581,13 +671,17 @@ fn read_iotex_addresses() -> Result<(Address, Address), ()> {
 }
 
 #[derive(serde::Deserialize)]
-struct IotexReq { deviceX: Option<i64>, deviceY: Option<i64>, deviceSecret: Option<String> }
+struct IotexReq {
+    #[serde(rename = "deviceX")] device_x: Option<i64>,
+    #[serde(rename = "deviceY")] device_y: Option<i64>,
+    #[serde(rename = "deviceSecret")] device_secret: Option<String>
+}
 
 async fn iotex_verify_proximity(State(state): State<AppState>, Json(body): Json<Value>) -> Result<axum::response::Response, (StatusCode, String)> {
     let req: IotexReq = serde_json::from_value(body.clone()).map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
-    let x = req.deviceX.unwrap_or(5005);
-    let y = req.deviceY.unwrap_or(4995);
-    let secret = req.deviceSecret.unwrap_or_else(|| format!("ui-device-{}", chrono::Utc::now().timestamp()));
+    let x = req.device_x.unwrap_or(5005);
+    let y = req.device_y.unwrap_or(4995);
+    let secret = req.device_secret.unwrap_or_else(|| format!("ui-device-{}", chrono::Utc::now().timestamp()));
 
     // Connect provider + wallet
     let mut last_err: Option<String> = None;
@@ -643,6 +737,53 @@ async fn iotex_verify_proximity(State(state): State<AppState>, Json(body): Json<
     let timestamp = chrono::Utc::now().timestamp() as u64;
     let nonce = rand::random::<u32>() as u64;
 
+    // --- step1: Local zkEngine proof (prove_location.wasm)
+    let zk_start = std::time::Instant::now();
+    let wasm_path = PathBuf::from(&state.wasm_dir).join("prove_location.wasm");
+    let out_dir = PathBuf::from("temp_workflows").join(format!("iotex_{}", Uuid::new_v4()));
+    std::fs::create_dir_all(&out_dir).ok();
+    // Derive city-like normalized lat/lon deterministically from x/y
+    let lat_norm: i32 = 102 + (((x - center_x).abs() as u64 % 3) as i32); // 102..104
+    let lon_norm: i32 = 180 + (((y - center_y).abs() as u64 % 6) as i32); // 180..185
+    let device16: i32 = (device_id_u64 & 0xFFFF) as i32;
+    let packed_input: i64 = ((lat_norm as i64) << 24) | ((lon_norm as i64) << 16) | (device16 as i64);
+    let mut zk_cmd = Command::new(&state.zkengine_binary);
+    zk_cmd.arg("prove")
+        .arg("--wasm").arg(&wasm_path)
+        .arg("--out-dir").arg(&out_dir)
+        .arg("--step").arg("1000")
+        .arg(packed_input.to_string())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    let mut step1 = json!({});
+    if let Ok(child) = zk_cmd.spawn() {
+        if let Ok(output) = child.wait_with_output().await {
+            let proof_path = out_dir.join("proof.bin");
+            let public_path = out_dir.join("public.json");
+            let proof_time = zk_start.elapsed().as_millis() as u64;
+            let proof_size = std::fs::metadata(&proof_path).map(|m| m.len()).unwrap_or(0);
+            let public_json: Value = std::fs::read_to_string(&public_path)
+                .ok()
+                .and_then(|s| serde_json::from_str(&s).ok())
+                .unwrap_or(json!([]));
+            if output.status.success() {
+                step1 = json!({
+                    "proofSize": proof_size,
+                    "publicSignals": public_json,
+                    "proofTime": proof_time,
+                    "packedInput": packed_input,
+                    "latNorm": lat_norm,
+                    "lonNorm": lon_norm,
+                });
+            } else {
+                step1 = json!({
+                    "error": String::from_utf8_lossy(&output.stderr).to_string(),
+                    "proofTime": proof_time,
+                });
+            }
+        }
+    }
+
     // Generate Groth16 proof-of-proof via CLI
     let groth_input = json!({
         "deviceIdHash": format!("{}", U256::from_big_endian(&device_id_hash)),
@@ -692,12 +833,7 @@ async fn iotex_verify_proximity(State(state): State<AppState>, Json(body): Json<
             "deviceId": device_id_u64,
             "txHash": reg_tx_hash
         },
-        "step1_zkEngine": {
-            "proof": "omitted",
-            "publicSignals": [],
-            "proofTime": 0,
-            "isWithinProximity": distance_squared <= 100
-        },
+        "step1_zkEngine": step1,
         "step2_groth16": {
             "proofOfProof": proof,
             "commitment": pub_signals.get(0)
@@ -816,24 +952,51 @@ async fn medical_generate_proof(State(state): State<AppState>, Json(payload): Js
     let session_id = payload.get("sessionId").and_then(|v| v.as_str()).ok_or((StatusCode::BAD_REQUEST, "Missing sessionId".into()))?.to_string();
     let mut map = state.medical_sessions.lock().await;
     let entry = map.get_mut(&session_id).ok_or((StatusCode::BAD_REQUEST, "Session not found".into()))?;
-    // Simulate quick proof
-    let proof_id = Uuid::new_v4().to_string();
-    let fake_proof = json!({
-        "pi_a": [Uuid::new_v4().to_string(), Uuid::new_v4().to_string()],
-        "pi_b": [[Uuid::new_v4().to_string(), Uuid::new_v4().to_string()],[Uuid::new_v4().to_string(), Uuid::new_v4().to_string()]],
-        "pi_c": [Uuid::new_v4().to_string(), Uuid::new_v4().to_string()],
-        "protocol": "groth16"
-    });
-    entry.proof = Some(fake_proof.clone());
-    entry.proof_id = Some(proof_id.clone());
-    let resp = json!({
-        "success": true,
-        "proofId": proof_id,
-        "proof": fake_proof,
-        "recordHash": entry.record_hash,
-        "message": "Proof generated incorporating on-chain hash"
-    });
-    Ok(axum::response::Response::builder().status(StatusCode::OK).body(axum::body::boxed(axum::body::Full::from(resp.to_string()))).unwrap())
+    // Run zkEngine with medical_integrity.wasm
+    let wasm_path = PathBuf::from("wasm_files").join("medical_integrity.wasm");
+    let out_dir = PathBuf::from("temp_workflows").join(format!("medical_{}", session_id));
+    std::fs::create_dir_all(&out_dir).ok();
+    let mut cmd = Command::new(&state.zkengine_binary);
+    // For now use patient_id as input; step size 10
+    cmd.arg("prove").arg("--wasm").arg(&wasm_path)
+        .arg("--out-dir").arg(&out_dir)
+        .arg("--step").arg("10")
+        .arg(entry.patient_id.to_string())
+        .stdout(Stdio::piped()).stderr(Stdio::piped());
+    let start = std::time::Instant::now();
+    let resp_val: Value = match cmd.spawn() {
+        Ok(child) => match child.wait_with_output().await {
+            Ok(output) => {
+                let proof_path = out_dir.join("proof.bin");
+                let public_path = out_dir.join("public.json");
+                let proof_size = std::fs::metadata(&proof_path).map(|m| m.len()).unwrap_or(0);
+                let public: Value = std::fs::read_to_string(&public_path).ok().and_then(|s| serde_json::from_str(&s).ok()).unwrap_or(json!([]));
+                let proof_id = format!("medical_{}", session_id);
+                entry.proof = Some(json!({"proofSize": proof_size, "publicSignals": public}));
+                entry.proof_id = Some(proof_id.clone());
+                if output.status.success() {
+                    json!({
+                        "success": true,
+                        "proofId": proof_id,
+                        "zkEngineProof": {"size": proof_size},
+                        "zkEnginePublicSignals": public,
+                        "recordHash": entry.record_hash,
+                        "executionSteps": 10,
+                        "timeMs": start.elapsed().as_millis() as u64,
+                        "message": "zkEngine proof generated"
+                    })
+                } else {
+                    json!({
+                        "success": false,
+                        "error": String::from_utf8_lossy(&output.stderr).to_string()
+                    })
+                }
+            }
+            Err(e) => json!({"success": false, "error": format!("Failed to run zkEngine: {}", e)}),
+        },
+        Err(e) => json!({"success": false, "error": format!("Failed to spawn zkEngine: {}", e)}),
+    };
+    Ok(axum::response::Response::builder().status(StatusCode::OK).body(axum::body::boxed(axum::body::Full::from(resp_val.to_string()))).unwrap())
 }
 
 async fn medical_verify(State(state): State<AppState>, Json(payload): Json<Value>) -> Result<axum::response::Response, (StatusCode, String)> {
@@ -974,13 +1137,51 @@ async fn ai_generate_zkengine_proof(State(state): State<AppState>, Json(payload)
     let session_id = payload.get("sessionId").and_then(|v| v.as_str()).ok_or((StatusCode::BAD_REQUEST, "Missing sessionId".into()))?.to_string();
     let mut map = state.ai_sessions.lock().await;
     let entry = map.get_mut(&session_id).ok_or((StatusCode::BAD_REQUEST, "Session not found".into()))?;
-    // Simulate zkEngine proof
-    let zk_proof = json!({"proof_hex":"deadbeef","proof_size":256,"execution_trace":{"steps":100,"wasm_module":"ai_predictor.wasm","computation_type":"ai_prediction_confidence"}});
-    let zk_public = json!([entry.commitment_id]);
-    entry.zk_engine_proof = Some(zk_proof.clone());
-    entry.zk_engine_public = Some(zk_public.clone());
-    let resp = json!({"success":true,"zkEngineProof": zk_proof, "zkEnginePublicSignals": zk_public, "executionSteps": 100, "message":"zkEngine proof generated successfully"});
-    Ok(axum::response::Response::builder().status(StatusCode::OK).body(axum::body::boxed(axum::body::Full::from(resp.to_string()))).unwrap())
+    // Run zkEngine with ai_predictor.wasm
+    let wasm_path = PathBuf::from("wasm_files").join("ai_predictor.wasm");
+    let out_dir = PathBuf::from("temp_workflows").join(format!("ai_{}", session_id));
+    std::fs::create_dir_all(&out_dir).ok();
+    // Derive numeric input from commitment_id (take first 8 bytes of hex)
+    let stripped = entry.commitment_id.trim_start_matches("0x");
+    let num_input: u64 = u64::from_str_radix(&stripped[0..std::cmp::min(16, stripped.len())], 16).unwrap_or(0);
+    let mut cmd = Command::new(&state.zkengine_binary);
+    cmd.arg("prove").arg("--wasm").arg(&wasm_path)
+        .arg("--out-dir").arg(&out_dir)
+        .arg("--step").arg("100")
+        .arg(num_input.to_string())
+        .stdout(Stdio::piped()).stderr(Stdio::piped());
+    let start = std::time::Instant::now();
+    let resp_val: Value = match cmd.spawn() {
+        Ok(child) => match child.wait_with_output().await {
+            Ok(output) => {
+                let proof_path = out_dir.join("proof.bin");
+                let public_path = out_dir.join("public.json");
+                let proof_size = std::fs::metadata(&proof_path).map(|m| m.len()).unwrap_or(0);
+                let public: Value = std::fs::read_to_string(&public_path).ok().and_then(|s| serde_json::from_str(&s).ok()).unwrap_or(json!([]));
+                let zk_proof = json!({"size": proof_size, "timeMs": start.elapsed().as_millis() as u64});
+                let zk_public = public.clone();
+                entry.zk_engine_proof = Some(zk_proof.clone());
+                entry.zk_engine_public = Some(zk_public.clone());
+                if output.status.success() {
+                    json!({
+                        "success": true,
+                        "zkEngineProof": zk_proof,
+                        "zkEnginePublicSignals": zk_public,
+                        "executionSteps": 100,
+                        "message": "zkEngine proof generated successfully"
+                    })
+                } else {
+                    json!({
+                        "success": false,
+                        "error": String::from_utf8_lossy(&output.stderr).to_string()
+                    })
+                }
+            }
+            Err(e) => json!({"success": false, "error": format!("Failed to run zkEngine: {}", e)}),
+        },
+        Err(e) => json!({"success": false, "error": format!("Failed to spawn zkEngine: {}", e)}),
+    };
+    Ok(axum::response::Response::builder().status(StatusCode::OK).body(axum::body::boxed(axum::body::Full::from(resp_val.to_string()))).unwrap())
 }
 
 async fn ai_generate_groth16_verify(State(state): State<AppState>, Json(payload): Json<Value>) -> Result<axum::response::Response, (StatusCode, String)> {
@@ -1524,7 +1725,7 @@ fn infer_function_from_filename(filename: &str) -> String {
 
 // --- Transfer Execution ---
 
-async fn execute_transfer(state: AppState, proof_id: String, context: serde_json::Value) {
+async fn execute_transfer(state: AppState, proof_id: String, _context: serde_json::Value) {
     info!("Executing transfer for proof {}", proof_id);
     
     // Send status update

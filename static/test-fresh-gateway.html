@@ -104,7 +104,7 @@
                 log('STEP 1: Generating 14-parameter zkML proof...', 'warning');
                 
                 const cacheBuster = Date.now();
-                const proofResp = await fetch(`http://localhost:8002/zkml/prove?cb=${cacheBuster}`, {
+                const proofResp = await fetch(`/zkml/prove?cb=${cacheBuster}`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -127,7 +127,7 @@
                 await new Promise(r => setTimeout(r, 8000));
                 
                 // Get proof status
-                const statusResp = await fetch(`http://localhost:8002/zkml/status/${proof.sessionId}?cb=${cacheBuster}`, {
+                const statusResp = await fetch(`/zkml/status/${proof.sessionId}?cb=${cacheBuster}`, {
                     headers: { 'Cache-Control': 'no-cache' }
                 });
                 const status = await statusResp.json();

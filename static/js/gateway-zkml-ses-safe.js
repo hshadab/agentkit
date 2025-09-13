@@ -164,7 +164,7 @@ window.executeGatewayZKMLWorkflow = async function(amount) {
     
     async function generateZKMLProof(wfId) {
         try {
-            const response = await fetch('http://localhost:8002/zkml/prove', {
+            const response = await fetch('/zkml/prove', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

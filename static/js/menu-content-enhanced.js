@@ -149,7 +149,7 @@ console.log('Circuit constraints:', proof.constraints);`,
                     endpoint: "POST /api/prove",
                     description: "Generate zkML proof",
                     example: `
-curl -X POST http://localhost:8002/zkml/prove \\
+curl -X POST http://localhost:8001/zkml/prove \\
   -H "Content-Type: application/json" \\
   -d '{
     "input": {
@@ -163,7 +163,7 @@ curl -X POST http://localhost:8002/zkml/prove \\
                     endpoint: "GET /api/verify/:proofId",
                     description: "Check verification status",
                     example: `
-curl http://localhost:8002/zkml/status/abc123`
+curl http://localhost:8001/zkml/status/abc123`
                 }
             ]
         }

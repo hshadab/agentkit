@@ -2543,7 +2543,7 @@ async function executeZKMLGatewayWorkflow(message) {
         step1.classList.remove('pending');
         step1.classList.add('executing');
         
-        const proofResponse = await fetch('http://localhost:8002/zkml/prove', {
+        const proofResponse = await fetch('/zkml/prove', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -2565,7 +2565,7 @@ async function executeZKMLGatewayWorkflow(message) {
         for (let i = 0; i < 30; i++) {
             await new Promise(resolve => setTimeout(resolve, 1000));
             
-            const statusResponse = await fetch(`http://localhost:8002/zkml/status/${sessionId}`);
+            const statusResponse = await fetch(`/zkml/status/${sessionId}`);
             const status = await statusResponse.json();
             
             if (status.status === 'completed') {
@@ -2588,7 +2588,8 @@ async function executeZKMLGatewayWorkflow(message) {
         step2.classList.remove('pending');
         step2.classList.add('executing');
         
-        const verifyResponse = await fetch('http://localhost:8002/zkml/verify', {
+        // Local zkML integration exposes /zkml/proof/:id for proof retrieval (no separate verify route)
+        const verifyResponse = await fetch(`/zkml/proof/${sessionId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

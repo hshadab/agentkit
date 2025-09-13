@@ -51,7 +51,7 @@ window.handleGatewayZKML = async function(message) {
     
     try {
         // Step 1: zkML Proof
-        const proofResp = await fetch('http://localhost:8002/zkml/prove', {
+        const proofResp = await fetch('/zkml/prove', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -66,7 +66,7 @@ window.handleGatewayZKML = async function(message) {
         const proof = await proofResp.json();
         await new Promise(r => setTimeout(r, 8000));
         
-        const statusResp = await fetch(`http://localhost:8002/zkml/status/${proof.sessionId}`);
+        const statusResp = await fetch(`/zkml/status/${proof.sessionId}`);
         const status = await statusResp.json();
         
         // Update Step 1

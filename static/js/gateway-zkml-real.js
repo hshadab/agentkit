@@ -64,7 +64,7 @@ class GatewayZKMLRealManager {
     async generateZKMLProof(workflowId, amount) {
         console.log('🧬 Step 1: Generating zkML proof...');
         
-        const response = await fetch('http://localhost:8002/zkml/prove', {
+        const response = await fetch('/zkml/prove', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -81,7 +81,7 @@ class GatewayZKMLRealManager {
         // Wait for proof generation
         await new Promise(r => setTimeout(r, 8000));
         
-        const status = await fetch(`http://localhost:8002/zkml/status/${proof.sessionId}`).then(r => r.json());
+        const status = await fetch(`/zkml/status/${proof.sessionId}`).then(r => r.json());
         
         console.log('✅ zkML proof generated:', status);
         return status;
