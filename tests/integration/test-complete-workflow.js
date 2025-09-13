@@ -128,7 +128,7 @@ async function runCompleteWorkflow() {
         if (error.message.includes('ECONNREFUSED')) {
             console.log('\n⚠️  Make sure backends are running:');
             console.log('   1. node api/zkml-llm-decision-backend.js');
-            console.log('   2. node api/groth16-jolt-backend.js');
+            console.log('   2. node api/groth16-jolt-backend-real.js');
         }
         
         return false;

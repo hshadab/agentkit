@@ -19,7 +19,7 @@ This guide consolidates all troubleshooting information for AgentKit.
 **Solutions**:
 - Check if port 8001 is already in use: `lsof -i :8001`
 - Ensure all dependencies are installed: `npm install`
-- Check if the Python service is running on port 8002
+- Ensure `OPENAI_API_KEY` is set in `.env`
 
 ### 2. OpenAI API Errors
 

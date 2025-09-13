@@ -32,7 +32,7 @@ CIRCLE_SOL_WALLET_ID=your_solana_wallet_id
 
 # Server Ports
 PORT=8001                    # Rust WebSocket server
-CHAT_SERVICE_PORT=8002       # Python AI service
+OPENAI_API_KEY=...           # OpenAI key (Rust uses directly)
 
 # Private Keys (for deployments only)
 PRIVATE_KEY=0x...           # Ethereum/Base deployment

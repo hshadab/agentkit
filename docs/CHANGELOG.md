@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **Codebase Reorganization**: Clean modular structure with organized directories
-- **Port Configuration**: Chat service now on port 8002 (was 5000), Web UI on port 8000
+- **Port Configuration**: Removed chat service; Rust (8001) serves UI and proxies
 - **Enhanced Nova Parsers**: Multiple parser versions for different proof formats
 - **Improved Error Handling**: Better error messages and recovery mechanisms
 - **Updated Dependencies**: Latest versions of all major dependencies

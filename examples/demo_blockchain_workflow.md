@@ -68,7 +68,7 @@ To test these workflows:
 
 1. Start the server:
    ```bash
-   python3 chat_service.py
+   cargo run
    ```
 
 2. Run the test suite:
@@ -78,7 +78,7 @@ To test these workflows:
 
 3. Or test individual commands:
    ```bash
-   curl -X POST http://localhost:8000/execute_workflow \
+   curl -X POST http://localhost:8001/execute_workflow \
      -H "Content-Type: application/json" \
      -d '{"command": "If Alice is KYC verified on-chain, send her 0.1 USDC"}'
    ```

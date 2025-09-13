@@ -99,10 +99,7 @@ Get Base Sepolia ETH from:
 cargo run --release
 ```
 
-2. Start the chat service:
-```bash
-python chat_service.py
-```
+2. Ensure `OPENAI_API_KEY` is configured in `.env` and restart the Rust server.
 
 3. Open the UI at http://localhost:8001
 

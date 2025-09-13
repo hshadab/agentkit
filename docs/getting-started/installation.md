@@ -115,7 +115,7 @@ ZKENGINE_BINARY=./zkengine_binary/zkEngine
 
 # Service Ports (defaults are fine)
 PORT=8001                    # Rust WebSocket server (also serves static files)
-CHAT_SERVICE_PORT=8002       # Python AI service
+OPENAI_API_KEY=sk-...        # OpenAI key for agentic parsing
 ```
 
 ### 7. Get API Keys
@@ -194,11 +194,7 @@ cargo run
 # Should see: "🚀 Server listening on 0.0.0.0:8001"
 ```
 
-**Terminal 2** - Python AI Service:
-```bash
-python3 services/chat_service.py
-# Should see: "🔗 Listening on http://localhost:8002"
-```
+No separate Python chat service is required. The Rust backend uses OpenAI directly.
 
 ### Access the Application
 
@@ -271,7 +267,7 @@ pip install -r requirements.txt
 Edit `.env`:
 ```env
 PORT=8081                    # Change Rust server port
-CHAT_SERVICE_PORT=8082       # Change AI service port
+# No separate chat service; Rust uses OPENAI_API_KEY
 ```
 
 ### Production Setup

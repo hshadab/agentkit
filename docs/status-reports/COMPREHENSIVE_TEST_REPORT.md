@@ -79,25 +79,19 @@ The reorganized structure is working correctly:
 
 ### 1. Start Services
 ```bash
-# Terminal 1: Rust server (port 8001)
+# Rust server (port 8001)
 cargo run
-
-# Terminal 2: Chat service (port 8002) 
-python3 services/chat_service.py
-
-# Terminal 3: Web server (port 8000)
-python3 -m http.server 8000
 ```
 
 ### 2. Run Tests
 - **Proof Generation**: `node test_all_proofs.js`
 - **UI Tests**: Open test HTML files in browser
-- **Main App**: http://localhost:8000
+- **Main App**: http://localhost:8001
 
 ## Known Issues & Notes
 
 1. **zkEngine Integration**: Real proof generation works but on-chain verification needs actual cryptographic proofs
-2. **Chat Service Port**: Changed from 5000 to 8002
+2. **Chat Service**: Removed; Rust uses OpenAI directly
 3. **WebSocket**: Stable connection on ws://localhost:8001/ws
 4. **Nova Parser**: Multiple versions available for different proof formats
 
@@ -110,7 +104,7 @@ python3 -m http.server 8000
 
 2. **Security**:
    - Secure API keys in environment variables
-   - Add authentication for chat service
+   - Secure OpenAI API usage on server side
    - Implement rate limiting
 
 3. **Monitoring**:

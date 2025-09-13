@@ -22,19 +22,8 @@ The Rust server acts as the central hub for proof generation and WebSocket commu
 - SHA256 commitment generation
 - CORS support for cross-origin requests
 
-### 2. Python AI Service (Port 8002)
-**Location**: `services/chat_service.py`
-
-The AI service processes natural language commands using OpenAI GPT-4o:
-- Parses user commands into structured workflows
-- Determines proof types and parameters
-- Manages workflow execution
-- Handles USDC transfer logic
-- Provides REST API endpoints
-
-**Endpoints**:
-- `POST /chat` - Process natural language commands
-- WebSocket integration for real-time updates
+### 2. Agentic Parsing (Rust ↔ OpenAI)
+The Rust backend calls OpenAI directly to parse natural language commands into structured JSON intents used to trigger proofs and workflows.
 
 ### 3. Frontend UI (Port 8000)
 **Location**: `static/`

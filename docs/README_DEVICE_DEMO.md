@@ -9,15 +9,9 @@ This demo showcases the complete IoT device proximity verification workflow usin
    cargo run
    ```
 
-2. **Start the Chat service** (AI workflow parser):
-   ```bash
-   python3 services/chat_service.py
-   ```
+2. OpenAI is called directly by Rust; no separate chat service is required.
 
-3. **Start the HTTP server** (serves the UI):
-   ```bash
-   python3 -m http.server 8000
-   ```
+3. Open the UI at http://localhost:8001
 
 4. **Start the workflow responder** (simulates browser responses):
    ```bash
@@ -41,7 +35,7 @@ node demo_device_proximity.js
 
 ## View Results
 
-Open http://localhost:8000 in your browser to see:
+Open http://localhost:8001 in your browser to see:
 - Real-time workflow execution cards
 - Device registration on IoTeX
 - Proof generation progress
@@ -67,8 +61,7 @@ If you encounter issues:
 2. Check service logs:
    ```bash
    tail -f /tmp/rust_server.log
-   tail -f /tmp/chat_service.log
    ```
 
 3. Ensure MetaMask is connected to IoTeX Testnet
-4. Check browser console for errors at http://localhost:8000
+4. Check browser console for errors at http://localhost:8001

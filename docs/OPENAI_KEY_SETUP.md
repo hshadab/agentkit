@@ -53,21 +53,15 @@ Add this to your `~/.bashrc` or `~/.zshrc` to make it permanent.
 
 ## Verifying Your Setup
 
-After setting up your API key, restart the chat service:
+After setting up your API key, restart the Rust server:
 
 ```bash
 cd ~/agentkit
-pkill -f "python.*chat_service.py"
-source venv/bin/activate
-python chat_service.py
+pkill -f "cargo run"
+cargo run
 ```
 
-You should see:
-```
-[INFO] OpenAI API key configured (ending in ...XXXX)
-```
-
-If you see an error about the API key, double-check your setup.
+You should see the server start on port 8001. If prompts fail, double‑check the `OPENAI_API_KEY` in your environment.
 
 ## Troubleshooting
 

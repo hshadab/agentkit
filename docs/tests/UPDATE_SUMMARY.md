@@ -29,11 +29,10 @@ This update introduces OpenAI integration for intelligent workflow parsing, fixe
 ## Files Modified
 
 ### Core Files
-1. **chat_service.py**
-   - Added `parse_workflow_with_openai()` function
-   - Integrated OpenAI parsing for complex workflows
-   - Fixed JSON parsing for transfer status
-   - Added proper error handling and timeouts
+1. **Agentic Parsing (Rust)**
+   - Rust backend now calls OpenAI directly for parsing
+   - Unified parsing path for all prompts via WebSocket
+   - Improved error handling and timeouts
 
 2. **static/index.html**
    - Fixed standalone verification card creation
@@ -103,6 +102,6 @@ python3 test_openai_parser.py
 - None - all changes are backward compatible
 
 ## Notes
-- LangChain is not actually used despite the filename
+- LangChain removed; OpenAI used directly by Rust backend
 - OpenAI integration uses direct API calls for simplicity
 - The system gracefully falls back to regex parsing if OpenAI fails

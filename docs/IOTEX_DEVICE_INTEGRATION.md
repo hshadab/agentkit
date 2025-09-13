@@ -100,8 +100,8 @@ interface IDeviceVerifier {
 - ✅ Rewards claimable on success
 
 ### To Test
-1. Open UI: `http://localhost:8000/index-clean2.html`
-2. Start backend: `node api/iotex-proximity-zkengine-real.js` (port 8007)
+1. Open UI: `http://localhost:8001/`
+2. Backend runs inside Rust server (no separate 8007 service)
 3. Run workflow: register device → zkEngine proof → Groth16 verification → rewards
 4. Step 3 shows: Groth16 Verifier link + Verification TX link
 5. Step 4 shows reward claim TX when applicable

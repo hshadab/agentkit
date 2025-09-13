@@ -61,7 +61,7 @@
    cargo run
    
    # Terminal 2
-   python3 chat_service.py
+   # No chat service needed; ensure OPENAI_API_KEY is set
    
    # Browser
    http://localhost:8001

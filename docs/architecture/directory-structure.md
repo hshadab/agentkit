@@ -38,7 +38,7 @@ parsers/
 ### `/services/` - Backend services
 ```
 services/
-└── chat_service.py        # AI chat service for workflow parsing
+└── (removed)              # Chat service replaced by Rust↔OpenAI
 ```
 
 ### `/src/` - Core source code
@@ -171,9 +171,9 @@ wasm_files/
 
 ### Entry Points
 - `src/main.rs` - Rust WebSocket server
-- `services/chat_service.py` - Python AI service
+- OpenAI parsing is handled directly in Rust (no separate chat service)
 - `static/js/main.js` - Frontend entry
-- `static/index.html` - UI
+- `static/index.html` - Main UI
 
 ### Configuration
 - `.env` - Environment variables
@@ -192,7 +192,7 @@ wasm_files/
 
 1. **Frontend** (`static/`) → User interface
 2. **WebSocket Server** (`src/main.rs`) → Handles proof generation
-3. **Chat Service** (`services/chat_service.py`) → Parses natural language
+3. **OpenAI Parsing (Rust)** → Parses natural language
 4. **Parsers** (`parsers/`) → Process workflows and proofs
 5. **Smart Contracts** (`contracts/`) → On-chain verification
 
@@ -200,6 +200,6 @@ wasm_files/
 
 1. User input → `static/index.html`
 2. WebSocket → `src/main.rs` (proof generation)
-3. HTTP API → `services/chat_service.py` (workflow parsing)
+3. HTTP API → Rust integrates OpenAI directly for workflow parsing
 4. Blockchain → Various verifier contracts
 5. Results → Back to UI

@@ -82,14 +82,28 @@ const signature = await wallet._signTypedData(domain, types, burnIntent);
 Address: 0x0077777d7EBA4688BDeF3E311b846F25870A19B9
 ```
 
-### Minimum Transfer Amounts
-- **Per chain**: 2.000001 USDC
-- **Total for 2 chains**: 4.000002 USDC
+### Value vs Fees (Testnet Behavior)
+- There is no enforced 2.00 USDC minimum transfer value per chain.
+- Testnet charges an approximately fixed per‑intent fee of ~2.0000 USDC (reported in the response as `fees.total`).
+- Total debit from your Gateway balance per chain ≈ `transfer value + fees.total`.
 
-### API Configuration
+Examples observed in this repo (Circle testnet):
+- 1 chain, value = 2.00 → fees.total ≈ 2.0001 → debit ≈ 4.00 USDC
+- 1 chain, value = 1.00 → fees.total ≈ 2.00005 → debit ≈ 3.00 USDC
+- 2 chains, value = 2.00 each → debit ≈ 8.00 USDC total
+
+Notes:
+- Attestation returns immediately; balance reflects the debit right away, while destination settlement follows batch timing.
+- Fees and behavior may differ on mainnet; consult Circle docs for current production pricing.
+
+### API Configuration (through local proxy)
 ```javascript
-const GATEWAY_API = 'https://gateway-api-testnet.circle.com';
-const API_KEY = 'SAND_API_KEY:...'; // Sandbox key
+// UI submits through local proxy to keep API key server‑side
+POST http://localhost:8006/gateway/transfer
+POST http://localhost:8006/gateway/balance
+
+// Set your key once in env for the proxy:
+// export CIRCLE_GATEWAY_API_KEY='SAND_API_KEY:...' 
 ```
 
 ## Transfer Flow
@@ -119,16 +133,11 @@ const signature = await wallet._signTypedData(domain, types, burnIntent);
 
 ### 3. Submit to Gateway
 ```javascript
-const response = await fetch(`${GATEWAY_API}/v1/burn`, {
-    method: 'POST',
-    headers: {
-        'Authorization': `Bearer ${API_KEY}`,
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        signature,
-        intent: signedIntent
-    })
+// Prefer submitting via local proxy to avoid exposing your API key in the browser:
+const response = await fetch('http://localhost:8006/gateway/transfer', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify([signedBurnIntent])
 });
 ```
 

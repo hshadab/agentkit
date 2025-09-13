@@ -46,7 +46,7 @@
 4. **Reward Distribution** → Links to reward transaction and wallet
 
 ### Files Updated:
-- `/home/hshadab/agentkit/static/index-clean2.html` - Fixed UI workflow functions
+- `/home/hshadab/agentkit/static/index.html` - Fixed UI workflow functions
 - `/home/hshadab/agentkit/api/iotex-proximity-zkengine-real.js` - Backend running on port 8007
 
 All on-chain elements are now properly linked and users can verify every step of the process on the IoTeX testnet blockchain explorer.

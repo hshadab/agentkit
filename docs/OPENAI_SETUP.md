@@ -2,8 +2,8 @@
 
 The system has been updated to send ALL prompts through OpenAI for parsing, as requested. This means:
 
-1. **All regex and pattern matching has been removed** from `chat_service.py`
-2. **Every user prompt** is now processed by OpenAI's workflow parser
+1. **Rust backend calls OpenAI directly** for agentic parsing
+2. **Every user prompt** is processed by OpenAI's workflow parser
 3. **The system requires a valid OpenAI API key** to function
 
 ## Setup Instructions
@@ -19,11 +19,10 @@ The system has been updated to send ALL prompts through OpenAI for parsing, as r
    OPENAI_API_KEY=sk-your-actual-api-key-here
    ```
 
-3. Restart the chat service:
+3. Restart the Rust server:
    ```bash
-   pkill -f "python.*chat_service.py"
-   source venv/bin/activate
-   python chat_service.py
+   pkill -f "cargo run"
+   cargo run
    ```
 
 ## What Changed

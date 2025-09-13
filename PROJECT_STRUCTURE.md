@@ -6,12 +6,9 @@
 agentkit/
 ├── api/                          # Backend Services
 │   ├── zkml-llm-decision-backend.js              # REAL zkML proof generation (port 8002)
-│   ├── groth16-jolt-backend-real.js              # REAL on-chain verification (port 3004)
+│   ├── (removed)                                 # Groth16 backend now integrated in Rust
 │   ├── avalanche-medical-groth16.js              # Medical records with Groth16 (port 8003)
-│   ├── base-ai-prediction-groth16.js             # AI commit-reveal predictions (port 8004)
-│   ├── base-ai-prediction-zkengine-groth16.js    # Hybrid zkEngine+Groth16 (port 8005)
-│   ├── iotex-proximity-zkengine.js               # IoT proximity proofs (port 8006)
-│   ├── gateway-balance-proxy.js                  # Circle balance tracking (port 8007)
+│   ├── (removed)                                 # Base/IoTeX backends integrated in Rust
 │   ├── unified-backend.js                        # Unified endpoint for all proofs
 │   └── [chain]-backend.js                        # Other chain-specific backends
 │

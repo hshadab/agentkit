@@ -7,7 +7,7 @@ All tests completed successfully after the codebase reorganization. The system i
 
 ### 1. ✅ Services Started
 - **Rust server**: Running on port 8001 (WebSocket for zkEngine)
-- **Chat service**: Running on port 8002 (OpenAI integration)
+- **Chat service**: Removed (Rust uses OpenAI directly)
 - **Web server**: Running on port 8000 (static files)
 
 ### 2. ✅ Device Proximity Proof Generation
@@ -63,7 +63,7 @@ All tests completed successfully after the codebase reorganization. The system i
 4. **Check UI**: Open `test_ui_workflow.html` and click "Check Workflow Display"
 
 ## Notes
-- Chat service uses port 8002 (not 5000 as in old tests)
+- No chat service; ensure `OPENAI_API_KEY` is configured
 - All import paths have been updated
 - Rust server has warnings about unused imports but is functional
 - zkEngine proof generation works but on-chain verification needs real proofs

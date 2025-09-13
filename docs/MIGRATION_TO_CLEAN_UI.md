@@ -63,7 +63,7 @@ This guide documents the migration from the legacy `index.html` interface to the
 ### For Users
 1. Start using the new interface immediately:
    ```
-   http://localhost:8000/index-clean.html
+   http://localhost:8001/
    ```
 
 2. All features work the same way:
@@ -210,4 +210,4 @@ If critical issues are found:
 For migration questions or assistance:
 - Check CLAUDE.md for latest updates
 - Use standalone pages if main UI has issues
-- Gateway deposit UI: http://localhost:8000/gateway-deposit.html
+- Gateway deposit UI: http://localhost:8001/gateway-deposit.html

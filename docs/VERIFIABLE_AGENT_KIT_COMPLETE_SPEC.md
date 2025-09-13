@@ -53,7 +53,7 @@ The Verifiable Agent Kit v7.2.1 is a production-ready system that generates real
 ├── .env                              # Environment variables (API keys, wallets)
 ├── Cargo.toml                        # Rust project configuration
 ├── Cargo.lock                        # Rust dependency lock file
-├── chat_service.py                   # Python service for intent detection (FIXED in v7.2.1)
+├── (removed)                         # Python chat service replaced by Rust↔OpenAI
 ├── workflow_history.json             # Persistent workflow execution history
 ├── README.md                         # Project documentation
 ├── WASM_REFERENCE.md                # WASM argument reference (created in v7.2)
@@ -132,7 +132,7 @@ The Verifiable Agent Kit v7.2.1 is a production-ready system that generates real
 ## System Architecture
 
 ### Request Flow
-1. User Input → index.html → chat_service.py
+1. User Input → index.html → Rust (OpenAI)
 2. Intent Detection → Route to appropriate handler
 3. Proof Generation:
    - Python → Node.js (for workflows)
@@ -187,11 +187,11 @@ The Verifiable Agent Kit v7.2.1 is a production-ready system that generates real
 │                         Application Services Layer                       │
 ├─────────────────────────────────────────────────────────────────────────┤
 │  ┌─────────────────────┐  ┌──────────────────────┐  ┌────────────────┐│
-│  │   Rust WS Server    │  │  Python AI Service   │  │ Workflow Engine││
-│  │   (Port 8001)       │  │  (Port 8002)         │  │  (Node.js)     ││
-│  │ • WebSocket handler │  │ • OpenAI GPT-4       │  │ • Step executor││
-│  │ • HTTP endpoints    │  │ • Command parser     │  │ • Conditional  ││
-│  │ • Proof exports     │  │ • Workflow router    │  │   logic        ││
+│  │   Rust WS Server    │  │  OpenAI (JSON)       │  │ Workflow Engine││
+│  │   (Port 8001)       │  │  (HTTPS)             │  │  (Node.js)     ││
+│  │ • WebSocket handler │  │ • Agentic parsing    │  │ • Step executor││
+│  │ • HTTP endpoints    │  │ • JSON intent        │  │ • Conditional  ││
+│  │ • Proof exports     │  │ • No local service   │  │   logic        ││
 │  └─────────────────────┘  └──────────────────────┘  └────────────────┘│
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
@@ -248,7 +248,7 @@ The main user interface providing:
 Key Functions:
 ```javascript
 async function sendMessage(messageText) {
-    // Routes messages to Python service for intent detection
+    // Routes messages to OpenAI for intent detection (Rust)
     // Then sends to Rust via WebSocket for proof operations
 }
 
@@ -485,7 +485,7 @@ ETHEREUM_RPC_URL=https://sepolia.infura.io/v3/YOUR_PROJECT_ID
 SOLANA_RPC_URL=https://api.devnet.solana.com
 
 # Service Configuration
-LANGCHAIN_SERVICE_URL=http://localhost:8002
+OPENAI_API_KEY=sk-...
 ZKENGINE_BINARY=./zkengine_binary/zkEngine
 PROOFS_DIR=./proofs
 WASM_DIR=./zkengine_binary
@@ -505,10 +505,7 @@ ln -sf ../.env .env
 cd ~/agentkit
 cargo run
 
-# Terminal 2: Python service
-cd ~/agentkit
-source venv/bin/activate
-python chat_service.py
+# No Python chat service needed. Rust uses OpenAI directly.
 
 # Terminal 3: Open browser
 # Access http://localhost:8001
@@ -516,7 +513,7 @@ python chat_service.py
 
 ## API Reference
 
-### chat_service.py Endpoints
+### OpenAI Integration
 
 #### POST /chat
 ```json

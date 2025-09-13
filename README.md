@@ -181,18 +181,36 @@ cd agentkit
 npm install
 cargo build --release
 
-# Start all services (recommended)
-./start-all-services.sh
+# Start unified backend + real services
+cargo run                                   # Port 8001 - UI + unified API (proxies + OpenAI parsing)
+node api/zkml-llm-decision-backend.js       # Port 8002 - REAL zkML proof (JOLT‑Atlas)
+```
 
-# Or start specific services
-node api/zkml-llm-decision-backend.js      # Port 8002 - zkML proofs
-node api/groth16-jolt-backend-real.js      # Port 3004 - On-chain verification
-node api/avalanche-medical-groth16.js      # Port 8003 - Medical records
-node api/base-ai-prediction-groth16.js     # Port 8004 - AI predictions
-node api/base-ai-prediction-zkengine-groth16.js # Port 8005 - Hybrid proofs
-node api/iotex-proximity-zkengine.js       # Port 8006 - IoT proximity
-node api/gateway-balance-proxy.js          # Port 8007 - Circle balance
-python3 scripts/utils/serve-no-cache.py    # Port 8000 - Web UI
+### Run zkML Gateway (REAL)
+```bash
+# 1) Start services (in separate terminals)
+cargo run                                   # http://localhost:8001/
+node api/zkml-llm-decision-backend.js       # zkML at http://localhost:8002
+export CIRCLE_GATEWAY_API_KEY='SAND_API_KEY:...'  # Circle sandbox key
+
+# 2) Open the UI
+open http://localhost:8001/
+
+# 3) In the UI, trigger "Circle Gateway zkML Workflow"
+#    Step 1: REAL zkML proof
+#    Step 2: REAL on‑chain verification → returns transaction hash + Etherscan link
+#    Step 3: REAL Circle Gateway attestation via Rust (keeps API key server‑side)
+```
+
+### Circle Gateway Testnet Fees & Values (Observed)
+- No enforced 2.00 USDC minimum transfer value per chain.
+- Per‑intent fee on testnet ≈ 2.0000 USDC (response `fees.total`).
+- Debit per chain ≈ transfer value + fees.total.
+
+Examples:
+- 1 chain, value 2.00 → fees ≈ 2.0001 → debit ≈ 4.00 USDC
+- 1 chain, value 1.00 → fees ≈ 2.00005 → debit ≈ 3.00 USDC
+- 2 chains, value 2.00 each → debit ≈ 8.00 USDC total
 ```
 
 ### Running Different Proof Types

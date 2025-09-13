@@ -35,11 +35,13 @@ All verifications performed real on-chain transactions:
 ## How to Test
 
 ### Via UI (index.html)
-1. Open http://localhost:8080/
-2. Click any Gateway prompt in sidebar
-3. Watch the 3-step workflow execute
-4. Step 2 will perform real on-chain verification
-5. Transaction link to Etherscan will be displayed
+1. Start services:
+   - `cargo run` (UI at http://localhost:8001)
+   - `node api/zkml-llm-decision-backend.js` (zkML at 8002)
+2. Open http://localhost:8001/
+3. Click a Gateway zkML prompt in the sidebar
+4. Watch the 3-step workflow execute
+5. Step 2 performs REAL on-chain verification and returns a transaction hash with an Etherscan link
 
 ### Via CLI
 ```bash

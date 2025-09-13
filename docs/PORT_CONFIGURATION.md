@@ -16,14 +16,9 @@ The Rust server handles:
 - REST API endpoints for proof verification
 - zkEngine binary execution
 
-### Port 8002 - Python AI Service
-- **Chat API**: `http://localhost:8002/chat`
-- **Health Check**: `http://localhost:8002/health`
-
-The Python service handles:
-- Natural language processing with OpenAI
-- Workflow parsing and execution
-- Command interpretation
+### OpenAI Parsing (no separate port)
+- Rust backend calls OpenAI directly using `OPENAI_API_KEY`.
+- No separate Python chat service is required.
 
 ## No Separate Web Server
 
@@ -37,12 +32,11 @@ Unlike many web applications, AgentKit does **NOT** use a separate web server on
 ## Accessing the Application
 
 1. Start the Rust server: `cargo run`
-2. Start the Python service: `python3 services/chat_service.py`
-3. Open browser to: `http://localhost:8001`
+2. Open browser to: `http://localhost:8001`
 
 ## URL Structure
 
-- Main UI: `http://localhost:8001` (redirects to `/static/index.html`)
+- Main UI: `http://localhost:8001` (serves `static/index.html`)
 - Static files: `http://localhost:8001/static/*`
 - API endpoints: `http://localhost:8001/api/v1/*`
 - WebSocket: `ws://localhost:8001/ws`
@@ -52,7 +46,7 @@ Unlike many web applications, AgentKit does **NOT** use a separate web server on
 In `.env`:
 ```env
 PORT=8001                    # Rust server port
-CHAT_SERVICE_PORT=8002       # Python AI service port
+OPENAI_API_KEY=...           # OpenAI key for agentic parsing
 ```
 
 ## Common Mistakes

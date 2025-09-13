@@ -83,7 +83,7 @@ Integration test shows **16/17 components working (94% complete)**:
 
 The Gateway workflow is now **fully integrated** and ready for testing:
 
-1. **Open**: `http://localhost:8000/`
+1. **Open**: `http://localhost:8001/`
 2. **Click**: Any "Gateway Multi-Chain" sample query  
 3. **Watch**: Real zkEngine → verification → Gateway flow
 4. **Verify**: All blockchain links work correctly

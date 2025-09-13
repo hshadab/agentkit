@@ -37,7 +37,8 @@ app.get('/health', (req, res) => {
 });
 
 // zkML proof generation endpoint - REAL 14-PARAMETER MODEL ONLY
-app.post('/zkml/prove', (req, res) => {
+// Accept both /zkml/prove and /prove (when behind a proxy that strips prefix)
+app.post(['/zkml/prove', '/prove'], (req, res) => {
     const { agentId, agentType, amount, operation, riskScore } = req.body;
     
     const sessionId = crypto.randomBytes(16).toString('hex');
@@ -226,7 +227,8 @@ async function generate14ParamProof(sessionId, agentType, amount, operation, ris
 }
 
 // zkML status endpoint
-app.get('/zkml/status/:sessionId', (req, res) => {
+// Accept both /zkml/status/:id and /status/:id
+app.get(['/zkml/status/:sessionId', '/status/:sessionId'], (req, res) => {
     const session = zkMLSessions[req.params.sessionId];
     if (!session) {
         return res.status(404).json({ error: 'Session not found' });

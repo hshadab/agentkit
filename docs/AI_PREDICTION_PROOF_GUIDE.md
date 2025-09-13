@@ -82,7 +82,7 @@ The WASM proof validates:
 The proof integrates seamlessly:
 
 ```javascript
-// In chat_service.py or workflow
+// In Rust (OpenAI parsing) or workflow
 if (proofType === "ai_prediction") {
   const result = await zkEngine.generateProof({
     wasmPath: "ai_prediction_commitment.wasm",

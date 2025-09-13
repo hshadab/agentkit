@@ -29,17 +29,16 @@ The Verifiable Agent Kit is a production-ready framework for generating and veri
          │                           │                             │
          ▼                           ▼                             ▼
 ┌─────────────────────┐     ┌──────────────────────┐     ┌─────────────────────┐
-│ Blockchain Wallets  │     │ Python AI Service    │     │   Circle API        │
-│ • MetaMask (ETH)    │     │ • OpenAI GPT-4o     │     │ • Real USDC         │
-│ • Solflare (SOL)    │     │ • Workflow Parser    │     │ • Sandbox Network   │
+│ Blockchain Wallets  │     │ OpenAI (direct)      │     │   Circle API        │
+│ • MetaMask (ETH)    │     │ • Agentic parsing    │     │ • Real USDC         │
+│ • Solflare (SOL)    │     │ • JSON intent        │     │ • Sandbox Network   │
 └─────────────────────┘     └──────────────────────┘     └─────────────────────┘
 ```
 
 ### Component Communication
 
 - **Frontend ↔ Rust Server**: WebSocket connection for real-time updates
-- **Frontend → Python Service**: HTTP POST for natural language processing
-- **Python Service → Rust Server**: HTTP POST for workflow execution
+- **Rust Server → OpenAI**: HTTPS for natural language parsing (JSON intent)
 - **Rust Server → zkEngine**: Process spawning with file I/O
 - **Frontend → Blockchain**: Direct wallet integration via Web3.js/Solana Web3
 
@@ -66,22 +65,19 @@ GET  /api/proof/:id/verify // Verify proof locally
 POST /api/proof/:id/update-verification // Persist verification data
 ```
 
-### 2. Python AI Service (`services/chat_service.py`)
+### 2. Agentic Parsing (Rust ↔ OpenAI)
 
-**Purpose**: Natural language understanding and command routing
+**Purpose**: Natural language understanding and command routing via OpenAI
 
 **Key Responsibilities**:
-- OpenAI GPT-4o integration
-- Command parsing and intent detection
-- Workflow generation
-- Response formatting
+- Call OpenAI Chat Completions with JSON schema response
+- Parse `intent` with `{ function, arguments, step_size, explanation, additional_context }`
+- Return `response` and optional `metadata`
 
 **Technical Implementation**:
-```python
-# Key functions
-async def parse_workflow_with_openai(message: str) -> Dict
-async def process_with_ai(request: str, context: str) -> str
-async def execute_workflow(request: WorkflowRequest) -> Dict
+```rust
+// Key function in src/main.rs
+async fn call_openai_and_parse(state: &AppState, payload: &Value) -> Result<Value, String>
 ```
 
 ### 3. zkEngine Binary (Real Nova Recursive SNARKs)
@@ -426,7 +422,7 @@ CIRCLE_SOL_WALLET_ID=...
 
 # Ports
 PORT=8001
-CHAT_SERVICE_PORT=8002
+OPENAI_API_KEY=sk-...
 ```
 
 ### Production Recommendations
