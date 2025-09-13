@@ -109,7 +109,7 @@
                     step2.querySelector('div:last-child').textContent = 'Submitting to Ethereum Sepolia...';
                 }
                 
-                const verifyResp = await fetch('http://localhost:3003/zkml/verify', {
+                const verifyResp = await fetch('/zkml/verify', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

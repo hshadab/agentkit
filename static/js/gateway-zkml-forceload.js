@@ -104,7 +104,7 @@
             document.getElementById('zkml-status-2').textContent = 'IN PROGRESS';
             document.getElementById('zkml-content-2').textContent = 'Submitting to Ethereum Sepolia...';
             
-            const verifyResp = await fetch('http://localhost:3003/zkml/verify', {
+            const verifyResp = await fetch('/zkml/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

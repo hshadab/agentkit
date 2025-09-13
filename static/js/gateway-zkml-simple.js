@@ -89,7 +89,7 @@ window.executeGatewayZKMLWorkflow = async function(amount) {
         
         updateCardStatus(card, 'Verifying proof on Ethereum Sepolia...', 'verifying');
         
-        const verifyResponse = await fetch('http://localhost:3003/zkml/verify', {
+        const verifyResponse = await fetch('/zkml/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

@@ -222,6 +222,7 @@ async fn main() {
         .route("/zkml/prove", post(zkml_prove_local))
         .route("/zkml/status/:id", get(zkml_status_local))
         .route("/zkml/proof/:id", get(zkml_proof_local))
+        .route("/zkml/verify", post(zkml_verify_onchain))
         // Groth16 proxy
         .route("/groth16/health", get(groth16_health))
         .route("/groth16/workflow", post(groth16_workflow))
@@ -458,6 +459,19 @@ async fn run_llm_prover(params: &Value) -> Result<Value, String> {
     let payload = &json_str[..end].trim();
     let proof: Value = serde_json::from_str(payload).map_err(|e| format!("Invalid proof JSON: {}", e))?;
     Ok(proof)
+}
+
+// zkML on-chain verification (Groth16 proof-of-proof via Node CLI)
+async fn zkml_verify_onchain(Json(payload): Json<Value>) -> Result<axum::response::Response, (StatusCode, String)> {
+    // Expect payload with { proof: {...}, publicSignals: [...] }
+    if payload.get("proof").is_none() || payload.get("publicSignals").is_none() {
+        return Err((StatusCode::BAD_REQUEST, "Missing proof or publicSignals".into()));
+    }
+    let json = run_node_json("scripts/cli_groth16_onchain_verify.js", &payload).await?;
+    Ok(axum::response::Response::builder()
+        .status(StatusCode::OK)
+        .body(axum::body::boxed(axum::body::Full::from(json.to_string())))
+        .unwrap())
 }
 
 // --- Groth16 (local, via Node CLI helpers) ---

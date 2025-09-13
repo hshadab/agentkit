@@ -916,7 +916,7 @@ export class GatewayWorkflowManager {
                     const useRealChain = true; // Always real for production workflow
                     
                     // Use zkml-verifier-backend on port 3003 for REAL verification
-                    const verifyResponse = await fetch(`http://localhost:3003/zkml/verify`, {
+                    const verifyResponse = await fetch(`/zkml/verify`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({

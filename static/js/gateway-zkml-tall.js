@@ -147,7 +147,7 @@ window.executeGatewayZKMLWorkflow = async function(amount) {
         // Step 2: On-chain verification
         activateStep2(workflowId);
         
-        const verifyResponse = await fetch('http://localhost:3003/zkml/verify', {
+        const verifyResponse = await fetch('/zkml/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

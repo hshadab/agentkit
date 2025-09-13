@@ -93,7 +93,7 @@ window.handleGatewayZKML = async function(message) {
         `;
         document.getElementById(`step-2-${workflowId}`).style.borderLeftColor = '#fbbf24';
         
-        const verifyResp = await fetch('http://localhost:3003/zkml/verify', {
+        const verifyResp = await fetch('/zkml/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

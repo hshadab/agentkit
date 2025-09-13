@@ -146,7 +146,7 @@
                 // Step 2: On-chain verification
                 log('\nSTEP 2: On-chain verification...', 'warning');
                 
-                const verifyResp = await fetch(`http://localhost:3003/zkml/verify?cb=${cacheBuster}`, {
+                const verifyResp = await fetch(`/zkml/verify?cb=${cacheBuster}`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',

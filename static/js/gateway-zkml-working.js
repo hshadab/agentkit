@@ -205,7 +205,7 @@ window.executeGatewayZKMLWorkflow = async function(amount) {
         
         try {
             // Include proof data for real verification (based on working test)
-            const response = await fetch('http://localhost:3003/zkml/verify', {
+            const response = await fetch('/zkml/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
