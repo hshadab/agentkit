@@ -160,10 +160,10 @@ curl -X POST http://localhost:8001/zkml/prove \\
   }'`
                 },
                 {
-                    endpoint: "GET /api/verify/:proofId",
-                    description: "Check verification status",
+                    endpoint: "GET /zkml/proof/:sessionId",
+                    description: "Fetch zkML proof JSON (local)",
                     example: `
-curl http://localhost:8001/zkml/status/abc123`
+curl http://localhost:8001/zkml/proof/abc123`
                 }
             ]
         }

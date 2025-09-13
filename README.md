@@ -19,6 +19,7 @@ AgentKit is a **production-ready framework** for building verifiable AI agents t
 ### Recent Changes (Unified 8001 Backend)
 - Unified Rust backend on port `8001` now serves UI, WebSocket, and all APIs.
 - zkML endpoints (`/zkml/*`) now run locally via JOLT‑Atlas `llm_prover` (no external proxy on 8002).
+  - Note: There is no `/zkml/verify` route; fetch results via `GET /zkml/proof/:sessionId`.
 - IoTeX proximity, Avalanche medical, and Base AI endpoints are wired to run real zkEngine proofs (WASM) locally:
   - IoTeX step1 uses `zkengine/example_wasms/prove_location.wasm` (step 1000).
   - Avalanche `/medical/generate-proof` uses `wasm_files/medical_integrity.wasm` (step 10).

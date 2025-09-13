@@ -178,36 +178,23 @@
                     <div style="color: #10b981; font-size: 12px;">✅ Proof generated with ${status.proof?.proofData?.publicInputs?.length || 14} parameters</div>
                 `;
                 
-                // Step 2: On-chain verification
+                // Step 2: Retrieve proof (local zkML)
                 document.getElementById(`step2-${workflowId}`).className = 'workflow-step gateway-step executing';
                 document.querySelector(`#step2-${workflowId} .step-status`).textContent = 'EXECUTING';
                 document.querySelector(`#step2-${workflowId} .step-status`).className = 'step-status executing';
                 
-                const verifyResp = await fetch('http://localhost:3003/zkml/verify', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        sessionId: proof.sessionId,
-                        proof: status.proof?.proofData || {},
-                        network: 'sepolia',
-                        useRealChain: true,
-                        inputs: status.proof?.proofData?.publicInputs || []
-                    })
-                });
+                const proofResp2 = await fetch(`/zkml/proof/${proof.sessionId}`);
+                const proofData = await proofResp2.json();
                 
-                const verification = await verifyResp.json();
-                
-                if (verification.txHash) {
-                    document.getElementById(`step2-${workflowId}`).className = 'workflow-step gateway-step completed';
-                    document.querySelector(`#step2-${workflowId} .step-status`).textContent = 'COMPLETED';
-                    document.querySelector(`#step2-${workflowId} .step-status`).className = 'step-status completed';
-                    document.getElementById(`content2-${workflowId}`).innerHTML = `
-                        <div style="color: #10b981; font-size: 12px;">
-                            ✅ Verified on Ethereum Sepolia<br>
-                            <a href="https://sepolia.etherscan.io/tx/${verification.txHash}" target="_blank" style="color: #8B9AFF;">View Transaction →</a>
-                        </div>
-                    `;
-                }
+                document.getElementById(`step2-${workflowId}`).className = 'workflow-step gateway-step completed';
+                document.querySelector(`#step2-${workflowId} .step-status`).textContent = 'COMPLETED';
+                document.querySelector(`#step2-${workflowId} .step-status`).className = 'step-status completed';
+                document.getElementById(`content2-${workflowId}`).innerHTML = `
+                    <div style="color: #10b981; font-size: 12px;">
+                        ✅ Proof ready (local zkML)<br>
+                        <code>sessionId:</code> ${proof.sessionId}
+                    </div>
+                `;
                 
                 // Step 3: Gateway transfers (using proper hash generation)
                 document.getElementById(`step3-${workflowId}`).className = 'workflow-step gateway-step executing';

@@ -251,37 +251,17 @@
                     Decision: ${status.proof?.proofData?.decision || 'ALLOW'}
                 `);
                 
-                // Step 2: On-chain verification
-                updateStep(2, 'in-progress', 'Submitting to Ethereum Sepolia...');
-                
-                const verifyResp = await fetch('http://localhost:3003/zkml/verify', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        sessionId: proof.sessionId,
-                        proof: status.proof?.proofData || {},
-                        network: 'sepolia',
-                        useRealChain: true,
-                        inputs: status.proof?.proofData?.publicInputs || []
-                    })
-                });
-                
+                // Step 2: Retrieve proof (local zkML)
+                updateStep(2, 'in-progress', 'Fetching proof from local zkML...');
+                const verifyResp = await fetch(`/zkml/proof/${proof.sessionId}`);
                 const verification = await verifyResp.json();
-                
-                if (verification.txHash) {
-                    const etherscanUrl = `https://sepolia.etherscan.io/tx/${verification.txHash}`;
-                    updateStep(2, 'completed', `
-                        ✅ On-chain verification successful<br>
-                        <div class="tx-link">
-                            <span>🔷 Ethereum Sepolia</span>
-                            <a href="${etherscanUrl}" target="_blank">View Transaction →</a>
-                        </div>
-                        Block: ${verification.blockNumber}<br>
-                        Gas Used: ${verification.gasUsed}
-                    `);
-                } else {
-                    throw new Error('Verification failed');
-                }
+                updateStep(2, 'completed', `
+                    ✅ Proof available<br>
+                    <div class="tx-link">
+                        <span>Local zkML</span>
+                        <a href="/zkml/proof/${proof.sessionId}" target="_blank">View JSON →</a>
+                    </div>
+                `);
                 
                 // Step 3: Gateway Transfers (with real-looking demo links)
                 updateStep(3, 'in-progress', 'Executing multi-chain transfers...');
