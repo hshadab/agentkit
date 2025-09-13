@@ -16,7 +16,7 @@ async function testGroth16UIWorkflow() {
     
     try {
         // Navigate to the UI
-        await page.goto('http://localhost:8000/index-clean.html');
+        await page.goto('http://localhost:8001/');
         console.log('✅ Loaded UI page');
         
         // Wait for the page to load

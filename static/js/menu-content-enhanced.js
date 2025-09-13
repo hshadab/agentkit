@@ -119,7 +119,7 @@ console.log('Proof valid:', isValid);`
                 },
                 {
                     name: "Proof Explorer",
-                    url: "http://localhost:8000/explorer",
+                    url: "/explorer",
                     description: "Visual debugger for proof generation",
                     features: [
                         "Step-by-step proof visualization",

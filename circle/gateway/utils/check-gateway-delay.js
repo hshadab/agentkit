@@ -91,7 +91,7 @@ checkGatewayAfterDelay().then(result => {
         console.log('✅ GATEWAY DEPOSIT SUCCESSFUL!');
         console.log('');
         console.log('🎯 NEXT: Test the Gateway Transfer');
-        console.log('   1. Go to: http://localhost:8000');
+        console.log('   1. Go to: http://localhost:8001/');
         console.log('   2. Connect MetaMask');
         console.log('   3. Try: "Transfer 2 USDC to Base via Gateway"');
         console.log('   4. Should work perfectly now! 🚀');

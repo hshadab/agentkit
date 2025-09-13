@@ -168,7 +168,7 @@ async function runRealWorkflow() {
         if (error.message.includes('ECONNREFUSED')) {
             console.log('\n⚠️  Make sure backends are running:');
             console.log('   1. node api/zkml-llm-decision-backend.js');
-            console.log('   2. node api/groth16-jolt-backend-real.js');
+            console.log('   2. cargo run (unified backend)');
         } else if (error.message.includes('Insufficient')) {
             console.log('\n⚠️  Need testnet ETH for gas costs');
             console.log('   Get from: https://sepolia-faucet.pk910.de/');

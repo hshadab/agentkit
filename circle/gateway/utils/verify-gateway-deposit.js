@@ -112,7 +112,7 @@ verifyGatewayDeposit().then(result => {
         console.log('✅ DEPOSIT SUCCESSFUL - READY TO TEST!');
         console.log('');
         console.log('🚀 NEXT STEP: Test Gateway Transfer');
-        console.log('   1. Go to: http://localhost:8000');
+        console.log('   1. Go to: http://localhost:8001/');
         console.log('   2. Connect MetaMask (Ethereum Sepolia)');
         console.log('   3. Try: "Transfer 1 USDC to Base via Gateway"');
         console.log('   4. Accept MetaMask signature when prompted');

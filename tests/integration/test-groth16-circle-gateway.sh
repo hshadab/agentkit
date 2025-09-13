@@ -37,7 +37,7 @@ fi
 
 # Check web server (port 8000)
 echo -n "3. Web Server (port 8000): "
-if curl -s http://localhost:8000/ > /dev/null 2>&1; then
+if curl -s http://localhost:8001/ > /dev/null 2>&1; then
     echo -e "${GREEN}✓ Running${NC}"
 else
     echo -e "${RED}✗ Not running${NC}"
@@ -174,7 +174,7 @@ echo "2. REAL Groth16 proof-of-proof on Ethereum Sepolia"
 echo "3. REAL Circle Gateway transfers to Base and Avalanche"
 echo ""
 echo "To test the complete workflow:"
-echo "1. Open http://localhost:8000/index-clean.html"
+echo "1. Open http://localhost:8001/"
 echo "2. Type: 'gateway zkml transfer to multiple chains'"
 echo "3. Watch the 3-step process execute with real proofs and transfers"
 echo ""

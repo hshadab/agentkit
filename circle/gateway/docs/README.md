@@ -234,7 +234,7 @@ node api/zkml-verifier-backend.js &  # Port 3003
 python3 serve-no-cache.py         # Port 8000
 
 # Open browser
-open http://localhost:8000
+open http://localhost:8001/
 ```
 
 ### Environment Configuration

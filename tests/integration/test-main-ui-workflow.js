@@ -76,7 +76,7 @@ async function testWorkflow() {
         });
         
         console.log('\n✅ ALL TESTS PASSED! The main UI should work properly.');
-        console.log('   Refresh http://localhost:8000 and type: gateway zkml transfer $0.01');
+        console.log('   Open http://localhost:8001/ and type: gateway zkml transfer $0.01');
         
     } catch (error) {
         console.error('❌ Test failed:', error.message);

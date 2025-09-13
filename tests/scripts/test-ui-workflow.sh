@@ -73,5 +73,5 @@ echo "   🔺 Arbitrum Sepolia: https://sepolia.arbiscan.io/tx/0x$(openssl rand 
 
 echo ""
 echo "✅ WORKFLOW TEST COMPLETE!"
-echo "   The main UI at http://localhost:8000 should work the same way."
+echo "   The main UI at http://localhost:8001 should work the same way."
 echo "   Type: gateway zkml transfer \$0.01"

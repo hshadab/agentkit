@@ -85,7 +85,7 @@ class DeviceProximityDemo {
             await this.executeWorkflow();
             
             console.log('\n✅ Demo completed successfully!');
-            console.log('   Check the UI at http://localhost:8000 to see the workflow cards');
+            console.log('   Check the UI at http://localhost:8001/ to see the workflow cards');
             
         } catch (error) {
             console.error('❌ Demo failed:', error);
