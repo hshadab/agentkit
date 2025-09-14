@@ -41,6 +41,7 @@ AgentKit is a **production-ready framework** for building verifiable AI agents t
   - Generate zkEngine: `curl -s -X POST localhost:8001/medical/generate-proof -H 'content-type: application/json' -d '{"sessionId":"<sessionId>"}'`
   - Verify (state-changing TX): `curl -s -X POST localhost:8001/medical/verify -H 'content-type: application/json' -d '{"sessionId":"<sessionId>"}'`
   - Groth16 Verify (view): `curl -s -X POST localhost:8001/medical/groth16-verify -H 'content-type: application/json' -d '{"proof":{...},"publicSignals":[...]}'`
+  - Groth16 Verify (storage): `curl -s -X POST localhost:8001/medical/groth16-verify-store -H 'content-type: application/json' -d '{"proof":{...},"publicSignals":[...]}'`
 - Base AI prediction (Sepolia):
   - Commit: `curl -s -X POST localhost:8001/ai/commit -H 'content-type: application/json' -d '{"prompt":"Will ETH > $5000?","response":"Yes"}'`
   - zkEngine proof: `curl -s -X POST localhost:8001/ai/generate-zkengine-proof -H 'content-type: application/json' -d '{"sessionId":"<sessionId>"}'`
