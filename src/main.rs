@@ -241,6 +241,7 @@ async fn main() {
         .route("/medical/create", post(medical_create))
         .route("/medical/generate-proof", post(medical_generate_proof))
         .route("/medical/verify", post(medical_verify))
+        .route("/medical/groth16-verify", post(medical_groth16_verify))
         .route("/medical/record/:id", get(medical_get_record))
         // AI commit/proof proxy (Base)
         .route("/ai/commit", post(ai_commit))
@@ -1139,6 +1140,69 @@ async fn medical_get_record(State(state): State<AppState>, Path(id): Path<String
             "accessCount": r.4.to_string(),
             "integrityScore": r.5.to_string()
         }
+    });
+    Ok(axum::response::Response::builder().status(StatusCode::OK).body(axum::body::boxed(axum::body::Full::from(resp.to_string()))).unwrap())
+}
+
+#[derive(serde::Deserialize)]
+struct AvaxGroth16Deployment { #[serde(rename = "contractAddress")] contract_address: String }
+
+fn read_avax_groth16_address() -> Option<Address> {
+    let p = std::path::Path::new("data/deployment-avalanche-fuji-real.json");
+    if let Ok(txt) = std::fs::read_to_string(p) {
+        if let Ok(v) = serde_json::from_str::<AvaxGroth16Deployment>(&txt) {
+            return v.contract_address.parse::<Address>().ok();
+        }
+    }
+    None
+}
+
+// Verify a provided Groth16 proof on Avalanche Fuji using RealProofOfProofVerifier_New
+async fn medical_groth16_verify(State(state): State<AppState>, Json(payload): Json<Value>) -> Result<axum::response::Response, (StatusCode, String)> {
+    // Expect { proof: {a,b,c}, publicSignals: [..] }
+    let proof = payload.get("proof").ok_or((StatusCode::BAD_REQUEST, "missing proof".into()))?;
+    let public_signals = payload.get("publicSignals").ok_or((StatusCode::BAD_REQUEST, "missing publicSignals".into()))?;
+
+    // Parse arrays to U256
+    let arr_to_u256_2 = |arr: &Value| -> Result<[U256;2], String> {
+        let a0v = arr.get(0).ok_or("missing [0]")?;
+        let a1v = arr.get(1).ok_or("missing [1]")?;
+        let s0 = if let Some(s) = a0v.as_str() { s.to_string() } else { a0v.to_string() };
+        let s1 = if let Some(s) = a1v.as_str() { s.to_string() } else { a1v.to_string() };
+        let p0 = U256::from_dec_str(&s0).or_else(|_| U256::from_str_radix(s0.trim_start_matches("0x"), 16)).map_err(|e| e.to_string())?;
+        let p1 = U256::from_dec_str(&s1).or_else(|_| U256::from_str_radix(s1.trim_start_matches("0x"), 16)).map_err(|e| e.to_string())?;
+        Ok([p0, p1])
+    };
+
+    let a = arr_to_u256_2(proof.get("a").ok_or("missing proof.a").map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?).map_err(|e| (StatusCode::BAD_REQUEST, e))?;
+    let b_arr = proof.get("b").ok_or((StatusCode::BAD_REQUEST, "missing proof.b".into()))?;
+    let b0 = arr_to_u256_2(&b_arr.get(0).ok_or((StatusCode::BAD_REQUEST, "missing b[0]".into()))?.clone()).map_err(|e| (StatusCode::BAD_REQUEST, e))?;
+    let b1 = arr_to_u256_2(&b_arr.get(1).ok_or((StatusCode::BAD_REQUEST, "missing b[1]".into()))?.clone()).map_err(|e| (StatusCode::BAD_REQUEST, e))?;
+    let b = [[b0[0], b0[1]],[b1[0], b1[1]]];
+    let c = arr_to_u256_2(proof.get("c").ok_or((StatusCode::BAD_REQUEST, "missing proof.c".into()))?).map_err(|e| (StatusCode::BAD_REQUEST, e))?;
+
+    // publicSignals for RealProofOfProofVerifier_New uses 6 inputs
+    let mut inputs: [U256;6] = [U256::from(0u64);6];
+    for i in 0..6 {
+        let s = public_signals.get(i).ok_or((StatusCode::BAD_REQUEST, format!("missing pub signal {}", i)))?;
+        let s_owned = if let Some(ss) = s.as_str() { ss.to_string() } else { s.to_string() };
+        inputs[i]= U256::from_dec_str(&s_owned).unwrap_or_else(|_| U256::from_str_radix(s_owned.trim_start_matches("0x"), 16).unwrap());
+    }
+
+    // Provider (Fuji) and contract
+    let provider = Provider::<Http>::try_from(state.avalanche_rpc_url.clone()).map_err(|e| (StatusCode::BAD_GATEWAY, e.to_string()))?;
+    let addr = read_avax_groth16_address().ok_or((StatusCode::INTERNAL_SERVER_ERROR, "Avax Groth16 verifier address not found".into()))?;
+    abigen!(AvaxGroth16, r#"[
+        function verifyProof(uint[2] a, uint[2][2] b, uint[2] c, uint[6] input) view returns (bool)
+    ]"#);
+    let contract = AvaxGroth16::new(addr, Arc::new(provider));
+    let ok = contract.verify_proof(a, b, c, inputs).call().await.map_err(|e| (StatusCode::BAD_GATEWAY, e.to_string()))?;
+
+    let resp = json!({
+        "success": true,
+        "verified": ok,
+        "verifierAddress": format!("0x{:x}", addr),
+        "network": "avalanche-fuji"
     });
     Ok(axum::response::Response::builder().status(StatusCode::OK).body(axum::body::boxed(axum::body::Full::from(resp.to_string()))).unwrap())
 }

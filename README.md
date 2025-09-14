@@ -18,8 +18,7 @@ AgentKit is a **production-ready framework** for building verifiable AI agents t
 
 ### Recent Changes (Unified 8001 Backend)
 - Unified Rust backend on port `8001` now serves UI, WebSocket, and all APIs.
-- zkML endpoints (`/zkml/*`) now run locally via JOLT‑Atlas `llm_prover` (no external proxy on 8002).
-  - Note: There is no `/zkml/verify` route; fetch results via `GET /zkml/proof/:sessionId`.
+- zkML endpoints (`/zkml/*`) now run locally via JOLT‑Atlas `llm_prover` (no external proxy on 8002). On‑chain verify is available via `POST /zkml/verify`.
 - IoTeX proximity, Avalanche medical, and Base AI endpoints are wired to run real zkEngine proofs (WASM) locally:
   - IoTeX step1 uses `zkengine/example_wasms/prove_location.wasm` (step 1000).
   - Avalanche `/medical/generate-proof` uses `wasm_files/medical_integrity.wasm` (step 10).
@@ -32,6 +31,8 @@ AgentKit is a **production-ready framework** for building verifiable AI agents t
   - Prove: `curl -s -X POST localhost:8001/zkml/prove -H 'content-type: application/json' -d '{"prompt":"gateway zkml transfer $0.01"}'`
   - Check status: `curl -s localhost:8001/zkml/status/<sessionId>`
   - Get proof: `curl -s localhost:8001/zkml/proof/<sessionId>`
+  - Health: `curl -s localhost:8001/zkml/verify/health`
+  - Full workflow (prove -> Groth16 -> on-chain): `curl -s -X POST localhost:8001/zkml/workflow -H 'content-type: application/json' -d '{"prompt":"gateway zkml transfer $0.01"}'`
 - IoTeX proximity (Testnet):
   - `curl -s -X POST localhost:8001/iotex/verify-proximity -H 'content-type: application/json' -d '{"deviceX":5005,"deviceY":4995,"deviceSecret":"demo-device"}'`
   - Returns workflow with step1 zkEngine (prove_location.wasm), Groth16 proof-of-proof, and on-chain TX.
@@ -39,6 +40,7 @@ AgentKit is a **production-ready framework** for building verifiable AI agents t
   - Create: `curl -s -X POST localhost:8001/medical/create -H 'content-type: application/json' -d '{"patientId":3,"diagnosis":"encrypted","treatment":"encrypted","provider":"Demo"}'`
   - Generate zkEngine: `curl -s -X POST localhost:8001/medical/generate-proof -H 'content-type: application/json' -d '{"sessionId":"<sessionId>"}'`
   - Verify (state-changing TX): `curl -s -X POST localhost:8001/medical/verify -H 'content-type: application/json' -d '{"sessionId":"<sessionId>"}'`
+  - Groth16 Verify (view): `curl -s -X POST localhost:8001/medical/groth16-verify -H 'content-type: application/json' -d '{"proof":{...},"publicSignals":[...]}'`
 - Base AI prediction (Sepolia):
   - Commit: `curl -s -X POST localhost:8001/ai/commit -H 'content-type: application/json' -d '{"prompt":"Will ETH > $5000?","response":"Yes"}'`
   - zkEngine proof: `curl -s -X POST localhost:8001/ai/generate-zkengine-proof -H 'content-type: application/json' -d '{"sessionId":"<sessionId>"}'`
