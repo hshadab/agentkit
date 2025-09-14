@@ -75,6 +75,7 @@ struct MedicalSession {
     block_number: u64,
     proof: Option<Value>,
     proof_id: Option<String>,
+    proof_dir: Option<String>,
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -223,6 +224,8 @@ async fn main() {
         .route("/zkml/status/:id", get(zkml_status_local))
         .route("/zkml/proof/:id", get(zkml_proof_local))
         .route("/zkml/verify", post(zkml_verify_onchain))
+        .route("/zkml/verify/health", get(zkml_verify_health))
+        .route("/zkml/workflow", post(zkml_full_workflow))
         // Groth16 proxy
         .route("/groth16/health", get(groth16_health))
         .route("/groth16/workflow", post(groth16_workflow))
@@ -472,6 +475,64 @@ async fn zkml_verify_onchain(Json(payload): Json<Value>) -> Result<axum::respons
         .status(StatusCode::OK)
         .body(axum::body::boxed(axum::body::Full::from(json.to_string())))
         .unwrap())
+}
+
+async fn zkml_verify_health() -> impl IntoResponse {
+    // Check deployment file and provider/wallet health
+    let depl_path = "deployments/jolt-storage-verifier-sepolia.json";
+    let depl_ok = std::path::Path::new(depl_path).exists();
+    let eth_rpc = std::env::var("ETH_RPC").unwrap_or_else(|_| "https://eth-sepolia.public.blastapi.io".into());
+    let pk = std::env::var("GROTH16_PRIVATE_KEY").ok().or_else(|| std::env::var("PRIVATE_KEY").ok());
+    let mut balance_str = "".to_string();
+    let mut chain_id: Option<u64> = None;
+    if let Ok(provider) = Provider::<Http>::try_from(eth_rpc.clone()) {
+        if let Ok(id) = provider.get_chainid().await { chain_id = Some(id.as_u64()); }
+        if let Some(pk_s) = pk.clone() {
+            if let Ok(w) = pk_s.parse::<LocalWallet>() { if let Ok(b) = provider.get_balance(w.address(), None).await { balance_str = ethers::utils::format_units(b, 18).unwrap_or_default(); } }
+        }
+    }
+    axum::response::Json(json!({
+        "deploymentFile": depl_ok,
+        "rpc": eth_rpc,
+        "chainId": chain_id,
+        "hasPrivateKey": pk.is_some(),
+        "walletBalanceEth": balance_str
+    }))
+}
+
+// Full zkML workflow: llm_prover -> Groth16 proof-of-proof -> on-chain verify
+async fn zkml_full_workflow(State(_state): State<AppState>, Json(payload): Json<Value>) -> Result<axum::response::Response, (StatusCode, String)> {
+    // 1) Run llm_prover for decision metadata
+    let llm = run_llm_prover(&payload).await.map_err(|e| (StatusCode::BAD_GATEWAY, e))?;
+    let decision = llm.get("decision").and_then(|v| v.as_u64()).unwrap_or(1);
+    let confidence = llm.get("confidence").and_then(|v| v.as_u64()).unwrap_or(95);
+    let threshold = payload.get("threshold").and_then(|v| v.as_u64()).unwrap_or(80);
+    let llm_json_str = llm.to_string();
+    let ph = keccak256(llm_json_str.as_bytes());
+    let proof_hash = U256::from_big_endian(&ph);
+    let timestamp = chrono::Utc::now().timestamp() as u64;
+
+    // 2) Generate Groth16 proof-of-proof against JOLT decision verifier circuit
+    let jolt_input = json!({
+        "decision": decision,
+        "confidence": confidence,
+        "threshold": threshold,
+        "proofHash": proof_hash.to_string(),
+        "timestamp": timestamp
+    });
+    let groth = run_node_json("scripts/cli_zkml_jolt_groth16_proof.js", &jolt_input).await?;
+
+    // 3) On-chain verify (Ethereum Sepolia JOLT storage verifier)
+    let onchain = run_node_json("scripts/cli_groth16_onchain_verify.js", &groth).await?;
+
+    let resp = json!({
+        "success": true,
+        "step1_llmProver": llm,
+        "step2_groth16": groth,
+        "step3_onChain": onchain,
+        "message": "zkML proof verified on-chain"
+    });
+    Ok(axum::response::Response::builder().status(StatusCode::OK).body(axum::body::boxed(axum::body::Full::from(resp.to_string()))).unwrap())
 }
 
 // --- Groth16 (local, via Node CLI helpers) ---
@@ -947,6 +1008,7 @@ async fn medical_create(State(state): State<AppState>, Json(payload): Json<Value
             block_number: receipt.block_number.unwrap_or_default().as_u64(),
             proof: None,
             proof_id: None,
+            proof_dir: None,
         });
     }
 
@@ -988,6 +1050,7 @@ async fn medical_generate_proof(State(state): State<AppState>, Json(payload): Js
                 let proof_id = format!("medical_{}", session_id);
                 entry.proof = Some(json!({"proofSize": proof_size, "publicSignals": public}));
                 entry.proof_id = Some(proof_id.clone());
+                entry.proof_dir = Some(out_dir.to_string_lossy().to_string());
                 if output.status.success() {
                     json!({
                         "success": true,
@@ -1028,8 +1091,13 @@ async fn medical_verify(State(state): State<AppState>, Json(payload): Json<Value
         function getRecord(bytes32 recordId) view returns (bytes32,uint256,address,address,uint256,uint256)
     ]"#);
     let contract = MedicalWrite::new(address, client.clone());
-    // Build proof bytes (demo)
-    let proof_bytes = vec![0u8; 256];
+    // Build proof bytes from zkEngine output if available
+    let mut proof_bytes: Vec<u8> = vec![];
+    if let Some(dir) = &entry.proof_dir {
+        let path = PathBuf::from(dir).join("proof.bin");
+        if let Ok(bytes) = std::fs::read(&path) { proof_bytes = bytes; }
+    }
+    if proof_bytes.is_empty() { proof_bytes = vec![0u8; 32]; }
     let record_id = hex_to_h256(&entry.record_id).unwrap_or_default();
     let current_hash = hex_to_h256(&entry.record_hash).unwrap_or_default();
     let call = contract.verify_integrity(record_id.0, Bytes::from(proof_bytes), current_hash.0);
