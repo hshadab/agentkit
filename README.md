@@ -16,6 +16,70 @@
 
 AgentKit is a **production-ready framework** for building verifiable AI agents that can operate across multiple blockchains with cryptographic proof of correct execution. From healthcare records on Avalanche to DeFi operations on Base, from IoT device verification on IoTeX to high-speed trading on Solana - AgentKit provides the infrastructure for trustless AI operations at scale.
 
+## 🔐 Environment Variables
+
+All sensitive keys are read from your local environment (never committed). Create a `.env` file in the repo root (gitignored) and set values as needed.
+
+- Core
+  - `OPENAI_API_KEY` (required for chat routing)
+  - `OPENAI_MODEL` (default: `gpt-4o-mini`)
+  - `ZKENGINE_BINARY` (default: `./zkengine/zkEngine`)
+  - `WASM_DIR` (default: `./zkengine/example_wasms`)
+  - `PROOFS_DIR` (default: `./proofs`)
+
+- Circle Gateway (server forwards with Bearer auth)
+  - `CIRCLE_GATEWAY_API_BASE` = `https://gateway-api-testnet.circle.com`
+  - `CIRCLE_GATEWAY_API_KEY` = `<apiKey>:<apiSecret>` (testnet)
+
+- Ethereum Sepolia (zkML Groth16 storage verify)
+  - `ETH_RPC` = `https://eth-sepolia.public.blastapi.io` (or other)
+  - `GROTH16_PRIVATE_KEY` or `PRIVATE_KEY` = `0x...` (EVM key)
+
+- Base (Sepolia)
+  - `BASE_RPC_URL` = `https://sepolia.base.org`
+  - `BASE_CHAIN_ID` = `84532`
+  - `BASE_PRIVATE_KEY` = `0x...`
+  - `BASE_AI_COMMITMENT` = Commitment contract (default present in code)
+
+- Avalanche (Fuji)
+  - `AVALANCHE_RPC_URL` = `https://api.avax-test.network/ext/bc/C/rpc`
+  - `AVALANCHE_CHAIN_ID` = `43113`
+  - `AVALANCHE_PRIVATE_KEY` = `0x...`
+  - `AVALANCHE_MEDICAL_CONTRACT` = Medical records contract (default from deployments)
+  - Optional (storage verifier): `deployments/avax-groth16-storage-fuji.json` is written by the deploy script and auto‑read by `/medical/groth16-verify-store`.
+
+- IoTeX (Testnet 4690)
+  - `IOTEX_RPC_URL` = `https://4690.rpc.thirdweb.com` (or other)
+  - `IOTEX_PRIVATE_KEY` = `0x...`
+
+Example `.env`
+```
+OPENAI_API_KEY=sk-...redacted...
+OPENAI_MODEL=gpt-4o-mini
+
+# Circle
+CIRCLE_GATEWAY_API_BASE=https://gateway-api-testnet.circle.com
+CIRCLE_GATEWAY_API_KEY=YOUR_API_KEY:YOUR_API_SECRET
+
+# Ethereum Sepolia
+ETH_RPC=https://eth-sepolia.public.blastapi.io
+GROTH16_PRIVATE_KEY=0xYOUR_EVM_PRIVATE_KEY
+
+# Base Sepolia
+BASE_RPC_URL=https://sepolia.base.org
+BASE_CHAIN_ID=84532
+BASE_PRIVATE_KEY=0xYOUR_EVM_PRIVATE_KEY
+
+# Avalanche Fuji
+AVALANCHE_RPC_URL=https://api.avax-test.network/ext/bc/C/rpc
+AVALANCHE_CHAIN_ID=43113
+AVALANCHE_PRIVATE_KEY=0xYOUR_EVM_PRIVATE_KEY
+
+# IoTeX Testnet
+IOTEX_RPC_URL=https://4690.rpc.thirdweb.com
+IOTEX_PRIVATE_KEY=0xYOUR_EVM_PRIVATE_KEY
+```
+
 ### Recent Changes (Unified 8001 Backend)
 - Unified Rust backend on port `8001` now serves UI, WebSocket, and all APIs.
 - zkML endpoints (`/zkml/*`) now run locally via JOLT‑Atlas `llm_prover` (no external proxy on 8002). On‑chain verify is available via `POST /zkml/verify`.
