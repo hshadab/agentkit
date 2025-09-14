@@ -242,6 +242,7 @@ async fn main() {
         .route("/medical/generate-proof", post(medical_generate_proof))
         .route("/medical/verify", post(medical_verify))
         .route("/medical/groth16-verify", post(medical_groth16_verify))
+        .route("/medical/groth16-verify-store", post(medical_groth16_verify_store))
         .route("/medical/record/:id", get(medical_get_record))
         // AI commit/proof proxy (Base)
         .route("/ai/commit", post(ai_commit))
@@ -1203,6 +1204,72 @@ async fn medical_groth16_verify(State(state): State<AppState>, Json(payload): Js
         "verified": ok,
         "verifierAddress": format!("0x{:x}", addr),
         "network": "avalanche-fuji"
+    });
+    Ok(axum::response::Response::builder().status(StatusCode::OK).body(axum::body::boxed(axum::body::Full::from(resp.to_string()))).unwrap())
+}
+
+#[derive(serde::Deserialize)]
+struct AvaxStorageDeployment { address: String }
+
+fn read_avax_storage_address() -> Option<Address> {
+    let p = std::path::Path::new("deployments/avax-groth16-storage-fuji.json");
+    if let Ok(txt) = std::fs::read_to_string(p) {
+        if let Ok(v) = serde_json::from_str::<AvaxStorageDeployment>(&txt) {
+            return v.address.parse::<Address>().ok();
+        }
+    }
+    None
+}
+
+// State-changing verifyAndStore on Avalanche Fuji storage wrapper
+async fn medical_groth16_verify_store(State(state): State<AppState>, Json(payload): Json<Value>) -> Result<axum::response::Response, (StatusCode, String)> {
+    let proof = payload.get("proof").ok_or((StatusCode::BAD_REQUEST, "missing proof".into()))?;
+    let public_signals = payload.get("publicSignals").ok_or((StatusCode::BAD_REQUEST, "missing publicSignals".into()))?;
+
+    let arr_to_u256_2 = |arr: &Value| -> Result<[U256;2], String> {
+        let a0v = arr.get(0).ok_or("missing [0]")?;
+        let a1v = arr.get(1).ok_or("missing [1]")?;
+        let s0 = if let Some(s) = a0v.as_str() { s.to_string() } else { a0v.to_string() };
+        let s1 = if let Some(s) = a1v.as_str() { s.to_string() } else { a1v.to_string() };
+        let p0 = U256::from_dec_str(&s0).or_else(|_| U256::from_str_radix(s0.trim_start_matches("0x"), 16)).map_err(|e| e.to_string())?;
+        let p1 = U256::from_dec_str(&s1).or_else(|_| U256::from_str_radix(s1.trim_start_matches("0x"), 16)).map_err(|e| e.to_string())?;
+        Ok([p0, p1])
+    };
+    let a = arr_to_u256_2(proof.get("a").ok_or("missing proof.a").map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?).map_err(|e| (StatusCode::BAD_REQUEST, e))?;
+    let b_arr = proof.get("b").ok_or((StatusCode::BAD_REQUEST, "missing proof.b".into()))?;
+    let b0 = arr_to_u256_2(&b_arr.get(0).ok_or((StatusCode::BAD_REQUEST, "missing b[0]".into()))?.clone()).map_err(|e| (StatusCode::BAD_REQUEST, e))?;
+    let b1 = arr_to_u256_2(&b_arr.get(1).ok_or((StatusCode::BAD_REQUEST, "missing b[1]".into()))?.clone()).map_err(|e| (StatusCode::BAD_REQUEST, e))?;
+    let b = [[b0[0], b0[1]],[b1[0], b1[1]]];
+    let c = arr_to_u256_2(proof.get("c").ok_or((StatusCode::BAD_REQUEST, "missing proof.c".into()))?).map_err(|e| (StatusCode::BAD_REQUEST, e))?;
+    let mut inputs: [U256;6] = [U256::from(0u64);6];
+    for i in 0..6 {
+        let s = public_signals.get(i).ok_or((StatusCode::BAD_REQUEST, format!("missing pub signal {}", i)))?;
+        let s_owned = if let Some(ss) = s.as_str() { ss.to_string() } else { s.to_string() };
+        inputs[i]= U256::from_dec_str(&s_owned).unwrap_or_else(|_| U256::from_str_radix(s_owned.trim_start_matches("0x"), 16).unwrap());
+    }
+
+    // Provider + signer
+    let provider = Provider::<Http>::try_from(state.avalanche_rpc_url.clone()).map_err(|e| (StatusCode::BAD_GATEWAY, e.to_string()))?;
+    let pk = state.avalanche_private_key.clone().ok_or((StatusCode::INTERNAL_SERVER_ERROR, "AVALANCHE_PRIVATE_KEY not set".into()))?;
+    use std::str::FromStr; let wallet = LocalWallet::from_str(&pk).map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?.with_chain_id(state.avalanche_chain_id);
+    let client = Arc::new(SignerMiddleware::new(provider, wallet));
+
+    let addr = read_avax_storage_address().ok_or((StatusCode::INTERNAL_SERVER_ERROR, "Avax storage verifier not deployed".into()))?;
+    abigen!(AvaxGroth16Storage, r#"[
+        function verifyAndStore(uint[2] a, uint[2][2] b, uint[2] c, uint[6] input) returns (bool)
+    ]"#);
+    let contract = AvaxGroth16Storage::new(addr, client.clone());
+    let call = contract.verify_and_store(a, b, c, inputs);
+    let pending = call.send().await.map_err(|e| (StatusCode::BAD_GATEWAY, e.to_string()))?;
+    let receipt = pending.await.map_err(|e| (StatusCode::BAD_GATEWAY, e.to_string()))?.ok_or((StatusCode::BAD_GATEWAY, "No receipt".into()))?;
+    let tx_hash = format!("0x{:x}", receipt.transaction_hash);
+    let resp = json!({
+        "success": true,
+        "stored": true,
+        "verifierAddress": format!("0x{:x}", addr),
+        "transactionHash": tx_hash,
+        "blockNumber": receipt.block_number.unwrap_or_default().as_u64(),
+        "explorerUrl": format!("https://testnet.snowtrace.io/tx/{}", tx_hash)
     });
     Ok(axum::response::Response::builder().status(StatusCode::OK).body(axum::body::boxed(axum::body::Full::from(resp.to_string()))).unwrap())
 }
