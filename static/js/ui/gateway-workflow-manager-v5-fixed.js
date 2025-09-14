@@ -1710,12 +1710,11 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
             console.log('   Starts with 0x:', signature.startsWith('0x'));
             console.log('   Is hex:', /^0x[0-9a-fA-F]+$/.test(signature));
             
-            const response = await fetch('https://gateway-api-testnet.circle.com/v1/transfer', {
+            const response = await fetch('/gateway/transfer', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${this.getCircleAPIKey()}`
+                    'Accept': 'application/json'
                 },
                 body: safeStringify(apiPayload) // Send as array as required by API
             });

@@ -1710,12 +1710,11 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
             console.log('   Starts with 0x:', signature.startsWith('0x'));
             console.log('   Is hex:', /^0x[0-9a-fA-F]+$/.test(signature));
             
-            const response = await fetch('https://gateway-api-testnet.circle.com/v1/transfer', {
+            const response = await fetch('/gateway/transfer', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${this.getCircleAPIKey()}`
+                    'Accept': 'application/json'
                 },
                 body: safeStringify(apiPayload) // Send as array as required by API
             });
@@ -2115,18 +2114,15 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
             }
             
             // Call real Circle Gateway API with correct format
-            const response = await fetch(`https://gateway-api-testnet.circle.com/v1/balances?t=${Date.now()}`, {
+            const response = await fetch('/gateway/balance', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.getCircleAPIKey()}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: safeStringify({
                     token: "USDC",
                     sources: [
-                        { domain: 0, depositor: userAddress }, // Ethereum
-                        { domain: 1, depositor: userAddress }, // Avalanche  
-                        { domain: 6, depositor: userAddress }  // Base
+                        { domain: 0, depositor: userAddress },
+                        { domain: 1, depositor: userAddress },
+                        { domain: 6, depositor: userAddress }
                     ]
                 })
             });
@@ -2164,18 +2160,15 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
                 throw new Error('No wallet connected. Please connect MetaMask first.');
             }
             
-            const response = await fetch(`https://gateway-api-testnet.circle.com/v1/balances?t=${Date.now()}`, {
+            const response = await fetch('/gateway/balance', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.getCircleAPIKey()}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: safeStringify({
                     token: "USDC",
                     sources: [
-                        { domain: 0, depositor: userAddress }, // Ethereum Sepolia
-                        { domain: 1, depositor: userAddress }, // Avalanche Fuji  
-                        { domain: 6, depositor: userAddress }  // Base Sepolia
+                        { domain: 0, depositor: userAddress },
+                        { domain: 1, depositor: userAddress },
+                        { domain: 6, depositor: userAddress }
                     ]
                 })
             });
@@ -2312,12 +2305,9 @@ ${balanceBreakdown || 'Could not fetch breakdown'}`);
         }
         
         try {
-            const response = await fetch(`https://gateway-api-testnet.circle.com/v1/balances?t=${Date.now()}`, {
+            const response = await fetch('/gateway/balance', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.getCircleAPIKey()}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: safeStringify({
                     token: "USDC",
                     sources: [
