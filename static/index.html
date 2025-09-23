@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>AgentKit v2 - Universal Verifiable AI Agent Framework</title>
+    <title>Verifiable Agent Kit - Universal Verifiable AI Agent Framework</title>
     
     <style>
         /* Core styles */
@@ -150,9 +150,18 @@
         
         /* Medical Workflow Styles */
         .medical-workflow { background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(30, 30, 30, 0.9) 100%); border: 1px solid rgba(239, 68, 68, 0.3); }
-        .medical-workflow .workflow-header { border-bottom: 1px solid rgba(239, 68, 68, 0.2); padding-bottom: 16px; }
-        .medical-workflow .workflow-step { background: rgba(239, 68, 68, 0.03); border: 1px solid rgba(239, 68, 68, 0.15); margin: 16px 0; padding: 20px; border-radius: 12px; transition: all 0.3s; }
+        .medical-workflow .workflow-header { border-bottom: 1px solid rgba(239, 68, 68, 0.2); padding: 12px 16px 16px 16px; display: flex; justify-content: space-between; align-items: center; }
+        .medical-workflow .workflow-header .workflow-title-row { display: flex; align-items: center; gap: 10px; }
+        .medical-workflow .workflow-header .workflow-status { margin-right: 6px; }
+        /* Horizontal layout: steps flow left → right */
+        .medical-workflow .workflow-content { display: flex; gap: 16px; align-items: stretch; }
+        .medical-workflow .workflow-step { background: rgba(239, 68, 68, 0.03); border: 1px solid rgba(239, 68, 68, 0.15); margin: 0; padding: 20px; border-radius: 12px; transition: all 0.3s; flex: 1; position: relative; min-width: 260px; display: flex; flex-direction: column; }
         .medical-workflow .workflow-step:hover { background: rgba(239, 68, 68, 0.08); }
+        /* Executing state pulse + top progress bar */
+        @keyframes pulseCard { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.18); } 50% { box-shadow: 0 0 0 8px rgba(239,68,68,0.06); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.00); } }
+        @keyframes stepProgress { 0% { width: 0%; } 100% { width: 100%; } }
+        .medical-workflow .workflow-step.executing { border-color: rgba(239, 68, 68, 0.35); animation: pulseCard 2.4s ease-in-out infinite; }
+        .medical-workflow .workflow-step.executing::before { content: ""; position: absolute; left: 0; top: 0; height: 3px; width: 0; background: linear-gradient(90deg, rgba(239,68,68,0.85), rgba(239,68,68,0.3)); border-top-left-radius: 12px; border-top-right-radius: 12px; animation: stepProgress 2.4s ease-in-out infinite; }
         .medical-workflow .step-number { color: #ef4444; text-transform: uppercase; letter-spacing: 0.1em; }
         .medical-workflow .step-title { color: #ffffff; }
         .medical-workflow .step-description { color: #9ca3af; }
@@ -160,6 +169,16 @@
         .medical-workflow .step-header { display: flex; justify-content: space-between; align-items: flex-start; }
         .medical-workflow .step-info { flex: 1; }
         .medical-workflow .step-content { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(239, 68, 68, 0.1); }
+        /* Connector between steps - removed per request */
+        .medical-workflow .workflow-content .workflow-step:not(:last-child)::after { display: none; }
+        /* Responsive fallback to vertical on narrow screens */
+        @media (max-width: 1100px) {
+            .medical-workflow .workflow-content { flex-direction: column; }
+            .medical-workflow .workflow-content .workflow-step:not(:last-child)::after { display: none; }
+            .medical-workflow .workflow-step { margin: 8px 0; }
+        }
+        /* Completed card uniform brightening */
+        .medical-workflow .workflow-step.completed { background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.34); }
 
         /* IoTeX Proximity workflow cards (Gateway-style) */
         .iotex-proximity-workflow .workflow-steps { display: grid; grid-template-columns: 1fr; gap: 14px; }
@@ -338,7 +357,12 @@
                 </div>
             </div>
         </div>
-        
+
+        <div class="example-category">
+            <h4>Helpers</h4>
+            <div class="example-item" onclick="window.open('/static/add-networks.html','_blank')">MetaMask: Add Testnets & USDC</div>
+        </div>
+
         <h3>Quick Examples</h3>
         <div class="info-box">
             Click any example to try it. Combine proof types with chains for multi-chain verification.
@@ -380,38 +404,26 @@
     </div>
     
     <div class="main-container">
-        <div class="header">
-            <h1>🚀 <span>AgentKit v2.0</span></h1>
+        <div class="header" style="gap: 14px;">
+            <h1 style="display:flex; align-items:center; gap:12px;">
+                <img src="https://cdn.prod.website-files.com/65d52b07d5bc41614daa723f/665df12739c532f45b665fe7_logo-novanet.svg" alt="NovaNet" style="height:24px; vertical-align:middle;"/>
+                <span>Verifiable Agent Kit</span>
+            </h1>
             <div class="demo-controls">
+                <div class="status disconnected" title="Backend connection status">
+                    <span class="status-dot"></span>
+                    <span>Connecting...</span>
+                </div>
                 <div class="control-card" id="chainsControl">
                     <label>Chains</label>
+                    <span class="chip active" data-chain="ethereum">Ethereum</span>
                     <span class="chip active" data-chain="base">Base</span>
                     <span class="chip active" data-chain="avalanche">Avalanche</span>
-                    <span class="chip" data-chain="arbitrum">Arbitrum</span>
+                    <span class="chip" data-chain="iotex">IoTeX</span>
                 </div>
-                <div class="control-card" id="valueControl">
-                    <label>Per‑chain value</label>
-                    <span class="chip" data-value="0.10">0.10</span>
-                    <span class="chip active" data-value="1.00">1.00</span>
-                    <span class="chip" data-value="2.00">2.00</span>
-                </div>
-                <div class="control-card" id="speedControl">
-                    <label>Speed</label>
-                    <span class="chip active" data-speed="1">1x</span>
-                    <span class="chip" data-speed="1.5">1.5x</span>
-                    <span class="chip" data-speed="2">2x</span>
-                </div>
-                <label class="toggle" title="Presenter Mode">
-                    <input type="checkbox" id="presenterToggle" />
-                    <span class="knob"></span>
-                    <span style="font-size:12px;color:#9ca3af">Presenter</span>
-                </label>
             </div>
         </div>
         
-        <div class="info-box" style="margin: 16px 32px 0 32px;">
-            Note: Unified backend runs on <code>http://localhost:8001</code>. zkML now runs locally — use <code>/zkml/prove</code>, <code>/zkml/status/:id</code>, and <code>/zkml/proof/:id</code>.
-        </div>
         <div class="messages-container">
             <div id="messages"></div>
         </div>
@@ -494,27 +506,7 @@
                     const key=ch.dataset.chain; if(ch.classList.contains('active')) demoState.chains.add(key); else demoState.chains.delete(key);
                 });
             });
-            // Value
-            document.querySelectorAll('#valueControl .chip').forEach(v=>{
-                v.addEventListener('click',()=>{
-                    document.querySelectorAll('#valueControl .chip').forEach(x=>x.classList.remove('active'));
-                    v.classList.add('active');
-                    demoState.perChainValue = parseFloat(v.dataset.value);
-                });
-            });
-            // Speed
-            document.querySelectorAll('#speedControl .chip').forEach(s=>{
-                s.addEventListener('click',()=>{
-                    document.querySelectorAll('#speedControl .chip').forEach(x=>x.classList.remove('active'));
-                    s.classList.add('active');
-                    demoState.speed = parseFloat(s.dataset.speed);
-                });
-            });
-            // Presenter
-            document.getElementById('presenterToggle').addEventListener('change', (e)=>{
-                demoState.presenter = e.target.checked;
-                document.documentElement.classList.toggle('presenter', demoState.presenter);
-            });
+            // Optional controls (value/speed/presenter) removed from UI; keep chains only
         }
         'use strict';
         // SES-safe implementation - no dynamic code generation
@@ -1740,7 +1732,7 @@ int factorial(int n) {
                                 <div class="step-info">
                                     <div class="step-number">STEP 2</div>
                                     <div class="step-title">Generate zkEngine Proof</div>
-                                    <div class="step-description">Creating execution trace proof with zkEngine (~25s)</div>
+                                    <div class="step-description">Creating execution trace proof with zkEngine</div>
                                 </div>
                                 <div class="step-status pending">PENDING</div>
                             </div>
@@ -1777,6 +1769,7 @@ int factorial(int n) {
             
             step1Status.textContent = 'EXECUTING';
             step1Status.className = 'step-status executing';
+            step1.classList.add('executing');
             step1Content.innerHTML = '<div style="color: #fbbf24; font-size: 12px;">🔄 Creating medical record on Avalanche...</div>';
             
             try {
@@ -1801,6 +1794,8 @@ int factorial(int n) {
                     // Update UI with success
                     step1Status.textContent = 'COMPLETED';
                     step1Status.className = 'step-status completed';
+                    step1.classList.remove('executing');
+                    step1.classList.add('completed');
                     step1Content.innerHTML = `
                         <div style="color: #10b981; font-size: 12px; margin-bottom: 8px;">✅ Medical record created on Avalanche!</div>
                         <div style="font-size: 11px; color: #9ca3af;">
@@ -1821,6 +1816,7 @@ int factorial(int n) {
                 console.error('Step 1 failed:', error);
                 step1Status.textContent = 'FAILED';
                 step1Status.className = 'step-status failed';
+                step1.classList.remove('executing');
                 step1Content.innerHTML = `<div style="color: #ef4444; font-size: 12px;">❌ ${error.message}</div>`;
                 
                 // Update workflow status
@@ -1838,6 +1834,7 @@ int factorial(int n) {
             
             step2Status.textContent = 'EXECUTING';
             step2Status.className = 'step-status executing';
+            step2.classList.add('executing');
             step2Content.innerHTML = '<div style="color: #fbbf24; font-size: 12px;">🔐 Generating zkEngine proof incorporating on-chain hash...</div>';
             
             try {
@@ -1854,6 +1851,8 @@ int factorial(int n) {
                     // Update Step 2 as complete
                     step2Status.textContent = 'COMPLETED';
                     step2Status.className = 'step-status completed';
+                    step2.classList.remove('executing');
+                    step2.classList.add('completed');
                     
                     step2Content.innerHTML = `
                         <div style="color: #10b981; font-size: 12px; margin-bottom: 8px;">✅ zkEngine proof generated!</div>
@@ -1873,6 +1872,7 @@ int factorial(int n) {
                 console.error('Step 2 failed:', error);
                 step2Status.textContent = 'FAILED';
                 step2Status.className = 'step-status failed';
+                step2.classList.remove('executing');
                 step2Content.innerHTML = `<div style="color: #ef4444; font-size: 12px;">❌ ${error.message}</div>`;
                 
                 // Update workflow status
@@ -1890,6 +1890,7 @@ int factorial(int n) {
             
             step3Status.textContent = 'EXECUTING';
             step3Status.className = 'step-status executing';
+            step3.classList.add('executing');
             step3Content.innerHTML = '<div style="color: #8b9aff; font-size: 12px;">📤 Executing on-chain verification transaction...</div>';
             
             try {
@@ -1906,6 +1907,8 @@ int factorial(int n) {
                     // Update Step 3 as complete
                     step3Status.textContent = 'COMPLETED';
                     step3Status.className = 'step-status completed';
+                    step3.classList.remove('executing');
+                    step3.classList.add('completed');
                     
                     step3Content.innerHTML = `
                         <div style="color: #10b981; font-size: 12px; margin-bottom: 8px;">✅ Groth16 proof-of-proof verified on-chain!</div>
@@ -1931,6 +1934,7 @@ int factorial(int n) {
                 console.error('Step 3 failed:', error);
                 step3Status.textContent = 'FAILED';
                 step3Status.className = 'step-status failed';
+                step3.classList.remove('executing');
                 step3Content.innerHTML = `<div style="color: #ef4444; font-size: 12px;">❌ ${error.message}</div>`;
                 
                 // Update workflow status
@@ -2698,9 +2702,6 @@ int factorial(int n) {
             // Set default selections
             selectProofType('zkml');
             selectChain('ethereum');
-            
-            // Show welcome message with service status
-            addMessage('Welcome to AgentKit v2.0! Select a proof type and chain, then try an example or type your own command.', 'assistant');
             
             // Check and display which services are available
             setTimeout(async () => {

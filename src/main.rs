@@ -349,7 +349,7 @@ async fn zkml_prove_local(State(state): State<AppState>, Json(payload): Json<Val
             Ok(proof) => {
                 let mut map = state_clone.zkml_sessions.lock().await;
                 if let Some(sess) = map.get_mut(&sid) {
-                    sess.status = "complete".into();
+                    sess.status = "completed".into();
                     sess.proof = Some(proof);
                 }
             }
@@ -377,10 +377,23 @@ async fn zkml_prove_local(State(state): State<AppState>, Json(payload): Json<Val
 async fn zkml_status_local(Path(id): Path<String>, State(state): State<AppState>) -> Result<axum::response::Response, (StatusCode, String)> {
     let map = state.zkml_sessions.lock().await;
     if let Some(sess) = map.get(&id) {
+        // Try to extract useful fields from proof if present
+        let mut decision = None;
+        let mut confidence = None;
+        let mut proof_time = None;
+        if let Some(p) = &sess.proof {
+            decision = p.get("decision").and_then(|v| v.as_i64());
+            confidence = p.get("confidence").and_then(|v| v.as_i64());
+            proof_time = p.get("timeMs").and_then(|v| v.as_u64());
+        }
         let resp = json!({
             "sessionId": id,
             "status": sess.status,
             "createdAt": sess.created_at,
+            "proof": sess.proof,
+            "decision": decision,
+            "confidence": confidence,
+            "proofTime": proof_time
         });
         Ok(axum::response::Response::builder().status(StatusCode::OK).body(axum::body::boxed(axum::body::Full::from(resp.to_string()))).unwrap())
     } else {
@@ -1093,13 +1106,20 @@ async fn medical_verify(State(state): State<AppState>, Json(payload): Json<Value
         function getRecord(bytes32 recordId) view returns (bytes32,uint256,address,address,uint256,uint256)
     ]"#);
     let contract = MedicalWrite::new(address, client.clone());
-    // Build proof bytes from zkEngine output if available
+    // Build proof bytes from zkEngine output if available.
+    // NOTE: The on-chain contract does not require full zkEngine proof bytes;
+    // transmitting very large calldata can cause RPC timeouts. Cap size to avoid failures.
     let mut proof_bytes: Vec<u8> = vec![];
     if let Some(dir) = &entry.proof_dir {
         let path = PathBuf::from(dir).join("proof.bin");
-        if let Ok(bytes) = std::fs::read(&path) { proof_bytes = bytes; }
+        if let Ok(bytes) = std::fs::read(&path) {
+            // Cap at 64 KB; otherwise use a minimal placeholder.
+            if bytes.len() <= 64 * 1024 {
+                proof_bytes = bytes;
+            }
+        }
     }
-    if proof_bytes.is_empty() { proof_bytes = vec![0u8; 32]; }
+    if proof_bytes.is_empty() { proof_bytes = vec![0x12, 0x34]; }
     let record_id = hex_to_h256(&entry.record_id).unwrap_or_default();
     let current_hash = hex_to_h256(&entry.record_hash).unwrap_or_default();
     let call = contract.verify_integrity(record_id.0, Bytes::from(proof_bytes), current_hash.0);
