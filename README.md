@@ -111,6 +111,30 @@ IOTEX_PRIVATE_KEY=0xYOUR_EVM_PRIVATE_KEY
   - zkEngine proof: `curl -s -X POST localhost:8001/ai/generate-zkengine-proof -H 'content-type: application/json' -d '{"sessionId":"<sessionId>"}'`
   - Groth16 reveal (real TX): `curl -s -X POST localhost:8001/ai/generate-groth16-verify -H 'content-type: application/json' -d '{"sessionId":"<sessionId>"}'`
 
+### MetaMask Setup Helper
+- Open `http://localhost:8001/static/add-networks.html` in a browser with MetaMask installed.
+- Click "Add All Networks" to add: Sepolia, Base Sepolia, Avalanche Fuji, IoTeX Testnet.
+- Click "Add USDC Tokens" to add testnet USDC on Sepolia, Base, and Fuji.
+- Import your EVM account in MetaMask once: Account icon → Import account → paste your `PRIVATE_KEY` from `.env`.
+- Note: Browser wallets require local user approval; networks/tokens must be approved in MetaMask.
+
+### Avalanche Fuji (Real On‑Chain Verification)
+- Medical records workflow (UI) performs two real Fuji transactions:
+  - Step 1: Create medical record on chain.
+  - Step 3: Verify integrity on chain (contract call).
+- Recent example TXs (Fuji):
+  - Create: https://testnet.snowtrace.io/tx/0xc1633934180effb3ed88a9cb90a2ceb3d958448a50d5787029dd1430a3a19c24
+  - Verify: https://testnet.snowtrace.io/tx/0x28b34058c090dc60d58ef07477a1ec90eac4a9a3b37d7e33e3ef7fee464afb3a
+- Deployed addresses (Fuji):
+  - MedicalRecords (integrity workflow): `0x1698ebB10e789EebE7A66bDb096F0a65ce49Dc68`
+  - Real Groth16 Verifier (view): `0xE0Add318E32F65936b8bD74DC122758f543b8166`
+  - Groth16 Storage Wrapper (verifyAndStore): `0x6121Fd93594C316B78e74B91B89A06d3Bb682a8F`
+
+### OpenAI Orchestration (Scope)
+- OpenAI (default model `gpt-4o-mini`) is used only for parsing free‑form chat into a strict JSON intent that maps to allowed workflows.
+- All proofs (zkEngine/JOLT‑Atlas) and on‑chain verification are real and run independently of OpenAI.
+- Direct REST calls and UI shortcuts do not require OpenAI.
+
 
 ### ⚠️ 100% REAL Implementation Policy
 **NO MOCKS. NO SIMULATIONS. NO DEMOS.** Every component in AgentKit is:

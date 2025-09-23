@@ -141,11 +141,11 @@ OPENAI_API_KEY=sk-...        # OpenAI key for agentic parsing
 #### MetaMask (for EVM chains)
 1. Install MetaMask browser extension
 2. Create or import wallet
-3. Add test networks:
-   - Ethereum Sepolia
-   - Base Sepolia (Chain ID: 84532)
-   - Avalanche Fuji (Chain ID: 43113)
-   - IoTeX Testnet (Chain ID: 4690)
+3. Add test networks and tokens quickly:
+   - Open the helper in your browser: `http://localhost:8001/static/add-networks.html`
+   - Click “Add All Networks” (Sepolia, Base Sepolia, Avalanche Fuji, IoTeX Testnet)
+   - Click “Add USDC Tokens” (Sepolia, Base, Fuji)
+   - Import your account via private key once (same key as `.env`)
 
 #### Solflare (for Solana)
 1. Install Solflare browser extension
@@ -167,9 +167,8 @@ OPENAI_API_KEY=sk-...        # OpenAI key for agentic parsing
 ```
 
 **Avalanche Fuji**:
-```bash
-# Visit https://faucets.chain.link/fuji
-```
+- https://faucet.avax.network/?subnet=c (recommended)
+- https://core.app/tools/testnet-faucet (alternate)
 
 **IoTeX Testnet**:
 ```bash
@@ -186,15 +185,14 @@ solana airdrop 2
 
 ## Running the Application
 
-### Start All Services
-
-**Terminal 1** - Rust WebSocket Server:
+### Start the Server
+**Terminal** — Rust unified server:
 ```bash
 cargo run
 # Should see: "🚀 Server listening on 0.0.0.0:8001"
 ```
 
-No separate Python chat service is required. The Rust backend uses OpenAI directly.
+No separate services are required. The Rust backend serves the UI, WebSocket, and REST endpoints and calls OpenAI directly (if `OPENAI_API_KEY` is set).
 
 ### Access the Application
 

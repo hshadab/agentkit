@@ -4,25 +4,29 @@
 
 AgentKit uses only **2 ports**:
 
-### Port 8001 - Rust Server (Main)
-- **WebSocket API**: `ws://localhost:8001/ws`
-- **Static Files (UI)**: `http://localhost:8001/static/*`
-- **REST API**: `http://localhost:8001/api/v1/*`
-- **Main UI Access**: `http://localhost:8001`
+### Port 8001 — Unified Rust Server
+- Main UI: `http://localhost:8001` (serves `static/index.html`)
+- Static assets: `http://localhost:8001/static/*`
+- WebSocket: `ws://localhost:8001/ws`
+- REST API (examples):
+  - `POST /medical/create`
+  - `POST /medical/generate-proof`
+  - `POST /medical/verify`
+  - `POST /zkml/prove`
 
 The Rust server handles:
-- WebSocket connections for real-time updates
-- Serving the frontend UI from `/static` directory
-- REST API endpoints for proof verification
-- zkEngine binary execution
+- Serving the frontend UI and static files
+- WebSocket events for live updates
+- REST endpoints for workflows (Avalanche/Base/IoTeX/Gateway)
+- Local zkEngine/JOLT‑Atlas proof execution
 
-### OpenAI Parsing (no separate port)
-- Rust backend calls OpenAI directly using `OPENAI_API_KEY`.
-- No separate Python chat service is required.
+### OpenAI Parsing (no separate service)
+- Rust backend calls OpenAI directly using `OPENAI_API_KEY` to parse free‑form prompts into structured intents.
+- OpenAI does not run proofs or chain transactions.
 
 ## No Separate Web Server
 
-Unlike many web applications, AgentKit does **NOT** use a separate web server on port 8000 or any other port. The Rust server on port 8001 serves everything:
+AgentKit serves everything from port 8001. Static files are mounted at `/static`:
 
 ```rust
 // From src/main.rs
@@ -31,14 +35,14 @@ Unlike many web applications, AgentKit does **NOT** use a separate web server on
 
 ## Accessing the Application
 
-1. Start the Rust server: `cargo run`
-2. Open browser to: `http://localhost:8001`
+1. Start the server: `cargo run`
+2. Open: `http://localhost:8001`
 
 ## URL Structure
 
 - Main UI: `http://localhost:8001` (serves `static/index.html`)
 - Static files: `http://localhost:8001/static/*`
-- API endpoints: `http://localhost:8001/api/v1/*`
+- REST endpoints: `http://localhost:8001/<service>/*` (see examples above)
 - WebSocket: `ws://localhost:8001/ws`
 
 ## Configuration
@@ -58,4 +62,4 @@ OPENAI_API_KEY=...           # OpenAI key for agentic parsing
 ✅ **Correct**: Access `http://localhost:8001`
 
 ❌ **Wrong**: Three terminals for three services
-✅ **Correct**: Two terminals - one for Rust, one for Python
+✅ **Correct**: One terminal for Rust is sufficient (optional second for logs)

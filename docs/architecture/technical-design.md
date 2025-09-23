@@ -396,10 +396,8 @@ Each proof type has a corresponding WASM module:
 - `serde`: Serialization
 - `sqlx`: Database (optional)
 
-**Python**:
-- `fastapi`: Web framework
-- `openai`: GPT-4o integration
-- `python-dotenv`: Environment management
+**OpenAI orchestration (Rust)**:
+- The Rust backend calls OpenAI chat completions (default: `gpt-4o-mini`) to parse free‑form input into a strict JSON intent used to select approved workflows. OpenAI is not used for cryptographic proof generation or on‑chain transactions.
 
 **JavaScript**:
 - `web3.js`: Ethereum integration
@@ -412,8 +410,8 @@ Each proof type has a corresponding WASM module:
 
 ```env
 # Required
-OPENAI_API_KEY=sk-...
-ZKENGINE_BINARY=./zkengine_binary/zkEngine
+OPENAI_API_KEY=sk-...           # Used only for intent parsing/orchestration
+ZKENGINE_BINARY=./zkengine/zkEngine
 
 # Optional
 CIRCLE_API_KEY=...
@@ -432,6 +430,7 @@ OPENAI_API_KEY=sk-...
 3. **Security**: Run behind reverse proxy (nginx)
 4. **Persistence**: Use proper database for proof metadata
 5. **Backup**: Regular backup of proof artifacts
+6. **Auditability**: Consider hashing the OpenAI intent JSON and including it in on‑chain events for end‑to‑end provenance.
 
 ## Conclusion
 
