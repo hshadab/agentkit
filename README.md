@@ -22,7 +22,7 @@ AgentKit now uses **real AI neural networks** to authorize payments:
 - 🤖 **Real-time inference** analyzing budget, risk, amount, category, velocity
 - 🔐 **zkML proofs** cryptographically prove the AI made the decision
 - ✅ **5-step verification** from AI decision to USDC transfer
-- 💡 **Example**: "Should I authorize $1.00 to an API merchant?" → AI: "Yes, 99% confidence"
+- 💡 **Example**: User: "Pay $1 to API merchant" → Agent AI: "Executing payment (99% confidence)"
 
 ## 🔐 Environment Variables
 

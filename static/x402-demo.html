@@ -12,8 +12,8 @@
       --border-grad-start:#a06cff; --border-grad-end:#5d3fd3; --shadow: 0 10px 30px rgba(155,92,255,0.12);
     }
     html, body { margin:0; padding:0; background:var(--bg); color:var(--text); font: 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
-    header { padding:20px; border-bottom:1px solid #18222e; }
-    h1 { font-size:18px; margin:0 0 6px 0; }
+    header { padding:20px 0; border-bottom:1px solid #18222e; max-width: 960px; margin: 0 auto; }
+    h1 { font-size:27px; margin:0; line-height: 27px; }
     .muted { color: var(--muted); }
     main { max-width: 960px; margin: 20px auto; padding: 0 16px; }
     .panel { background: var(--panel); border: 1px solid #1c2836; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
@@ -30,14 +30,17 @@
     .step::before { content:""; position:absolute; inset:0; pointer-events:none; border-radius:12px; padding:1px;
       background: linear-gradient(135deg, var(--border-grad-start), transparent 40%, var(--border-grad-end));
       -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
-    .step .label { font-weight:600; letter-spacing:0.1px; margin-bottom:4px; font-size:12px; color:#e6edf3; }
+    .step .label { font-weight:600; letter-spacing:0.1px; margin-bottom:4px; font-size:14px; color:#e6edf3; }
     .step .desc { font-size:10px; color:var(--muted); margin-bottom:auto; line-height:1.3; padding-bottom:8px; }
     .step-status {
       display:inline-flex; align-items:center; gap:8px; padding:4px 8px; border-radius:999px;
       border: 1px solid rgba(155,92,255,0.35);
       background: linear-gradient(135deg, rgba(155,92,255,0.12), rgba(93,63,211,0.12));
-      color: var(--text); font-size:11px; letter-spacing:0.2px; margin-top:4px; font-weight:500;
+      color: var(--text); font-size:12px; letter-spacing:0.2px; margin-top:4px; font-weight:500; text-transform:capitalize;
     }
+    .header-title { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 0 16px; }
+    .header-logos { display: flex; align-items: center; gap: 20px; }
+    .logo { height: 60px; width: auto; }
     .s-ok { color:var(--ok)!important; border-color: rgba(34,197,94,0.35)!important; }
     .s-warn { color:var(--warn)!important; }
     .s-err { color:var(--err)!important; border-color: rgba(239,68,68,0.35)!important; }
@@ -49,50 +52,116 @@
     .small { font-size:12px; }
     .bottom-panel { opacity:0.5; transition:opacity 0.2s; margin-top:40px; }
     .bottom-panel:hover { opacity:1; }
+    
+    /* Tab styles */
+    .tab-container { width: 100%; }
+    .tab-buttons { display: flex; gap: 8px; border-bottom: 1px solid #1c2836; margin-bottom: 16px; padding-bottom: 8px; flex-wrap: wrap; }
+    .tab-btn { 
+      background: transparent; 
+      border: 1px solid #1c2836; 
+      color: var(--muted); 
+      padding: 8px 16px; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover { background: rgba(255,255,255,0.05); }
+    .tab-btn.active { 
+      background: rgba(34,197,94,0.1); 
+      border-color: rgba(34,197,94,0.35); 
+      color: var(--ok); 
+    }
+    .tab-content { position: relative; min-height: 200px; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+    .tab-pane pre { margin: 0; max-height: 400px; overflow-y: auto; }
+    
+    /* Style for verification/completion links */
+    .step-status a.tx-link {
+      color: var(--ok);
+      text-decoration: underline;
+    }
+    .step-status a.tx-link:hover {
+      text-decoration: underline;
+      opacity: 0.8;
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>x402 Agent Authorization Demo</h1>
-    <div class="muted small">Autonomous agents prove they're authorized to spend USDC</div>
+    <div class="header-title">
+      <div class="header-logos">
+        <img src="https://www.x402.org/x402-logo.png" alt="x402" class="logo" />
+        <img src="https://cdn.prod.website-files.com/65d52b07d5bc41614daa723f/665df12739c532f45b665fe7_logo-novanet.svg" alt="Novanet" class="logo" style="height: 32px;" />
+      </div>
+      <h1>Trustless Agentic Payments</h1>
+    </div>
   </header>
   <main>
     <div class="panel row">
       <button id="btnStart">Start Demo</button>
-      <button id="btnMM">Pay with USDC</button>
     </div>
 
     <div class="panel steps">
       <div class="step">
-        <div class="label">1) AI inference</div>
-        <div class="desc">🧠 Neural network (5 layers)<br/>Input: 5 risk factors<br/>"Authorize $1 to API merchant?"</div>
-        <div id="s1" class="step-status muted" data-state="idle">idle</div>
+        <div class="label">1. Payment Agent Inference</div>
+        <div class="desc">🧠 Neural network (5 layers)<br/>User: "Pay $0.01 to API merchant"<br/>Agent evaluates authorization</div>
+        <div id="s1" class="step-status muted" data-state="idle">Idle</div>
       </div>
       <div class="step">
-        <div class="label">2) zkML proof</div>
-        <div class="desc">JOLT-Atlas proof<br/>Proves AI ran correctly<br/>~500ms generation</div>
-        <div id="s2" class="step-status muted" data-state="idle">idle</div>
+        <div class="label">2. zkML Proof of Correct Inference</div>
+        <div class="desc">JOLT-Atlas proof<br/>Proves AI ran correctly<br/>Privacy preserving</div>
+        <div id="s2" class="step-status muted" data-state="idle">Idle</div>
       </div>
       <div class="step">
-        <div class="label">3) x402 attestation</div>
+        <div class="label">3. x402 Attestation</div>
         <div class="desc">Bind AI to payment<br/>EIP-712 signature<br/>Links auth → USDC</div>
-        <div id="s3" class="step-status muted" data-state="idle">idle</div>
+        <div id="s3" class="step-status muted" data-state="idle">Idle</div>
       </div>
       <div class="step">
-        <div class="label">4) On-chain verify</div>
+        <div class="label">4. On-Chain Proof Verification</div>
         <div class="desc">Groth16 proof<br/>Base Sepolia<br/>~350k gas</div>
-        <div id="s4" class="step-status muted" data-state="idle">idle</div>
+        <div id="s4" class="step-status muted" data-state="idle">Idle</div>
       </div>
       <div class="step">
-        <div class="label">5) USDC payment</div>
+        <div class="label">5. USDC Payment by Agent</div>
         <div class="desc">EIP-3009 transfer<br/>$0.01 USDC<br/>AI approved ✓</div>
-        <div id="s5" class="step-status muted" data-state="idle">idle</div>
+        <div id="s5" class="step-status muted" data-state="idle">Idle</div>
       </div>
     </div>
 
     <div id="out" class="panel">
-      <div class="muted">Output</div>
-      <pre id="log"></pre>
+      <div class="tab-container">
+        <div class="tab-buttons">
+          <button class="tab-btn active" data-tab="all">Output</button>
+          <button class="tab-btn" data-tab="step1">Step 1: AI Inference</button>
+          <button class="tab-btn" data-tab="step2">Step 2: zkML Proof</button>
+          <button class="tab-btn" data-tab="step3">Step 3: Attestation</button>
+          <button class="tab-btn" data-tab="step4">Step 4: Verification</button>
+          <button class="tab-btn" data-tab="step5">Step 5: Payment</button>
+        </div>
+        <div class="tab-content">
+          <div class="tab-pane active" id="tab-all">
+            <pre id="log"></pre>
+          </div>
+          <div class="tab-pane" id="tab-step1">
+            <pre id="log-step1"></pre>
+          </div>
+          <div class="tab-pane" id="tab-step2">
+            <pre id="log-step2"></pre>
+          </div>
+          <div class="tab-pane" id="tab-step3">
+            <pre id="log-step3"></pre>
+          </div>
+          <div class="tab-pane" id="tab-step4">
+            <pre id="log-step4"></pre>
+          </div>
+          <div class="tab-pane" id="tab-step5">
+            <pre id="log-step5"></pre>
+          </div>
+        </div>
+      </div>
     </div>
     
     <div class="panel row bottom-panel">
@@ -132,11 +201,26 @@ async function zkmlFetch(path, init) {
   }
 }
 const $ = (id)=>document.getElementById(id);
-const log = (m)=>{$('log').textContent += (typeof m==='string'? m : JSON.stringify(m,null,2)) + '\n';}
-const set = (id, cls, text)=>{
+let currentStep = null;
+const log = (m, step)=>{
+  const text = (typeof m==='string'? m : JSON.stringify(m,null,2)) + '\n';
+  $('log').textContent += text;
+  
+  // Also log to step-specific log if we're in a step
+  if (step || currentStep) {
+    const stepId = step || currentStep;
+    const stepEl = $(`log-${stepId}`);
+    if (stepEl) stepEl.textContent += text;
+  }
+}
+const set = (id, cls, text, link)=>{
   const el=$(id);
   el.className = cls;
-  el.textContent = text;
+  if (link) {
+    el.innerHTML = `<a href="${link}" target="_blank" class="tx-link">${text}</a>`;
+  } else {
+    el.textContent = text;
+  }
   el.dataset.state = (text || '').toLowerCase().split(' ')[0];
 };
 
@@ -144,20 +228,29 @@ function addLink(label, url) {
   // Links now shown inline in steps
 }
 
-let last = { sid:null, proof:null, token:null, intent:null, cart:null, anchor:null, accepts:null };
+let last = { sid:null, proof:null, token:null, intent:null, cart:null, anchor:null, accepts:null, anchorId:null };
 
 async function start() {
+  // Clear all logs
   $('log').textContent = '';
-  set('s1','muted','running'); set('s2','muted','idle'); set('s3','muted','idle'); set('s4','muted','idle'); set('s5','muted','idle');
+  $('log-step1').textContent = '';
+  $('log-step2').textContent = '';
+  $('log-step3').textContent = '';
+  $('log-step4').textContent = '';
+  $('log-step5').textContent = '';
+  currentStep = null;
+  set('s1','muted','Running'); set('s2','muted','Idle'); set('s3','muted','Idle'); set('s4','muted','Idle'); set('s5','muted','Idle');
   try {
     // Step 1: AI Neural Network Inference
+    currentStep = 'step1';
     log('🧠 STEP 1: AI NEURAL NETWORK INFERENCE');
-    log('Prompt: "Should I authorize a $1.00 payment to an API merchant?"');
+    log('User instruction: "Pay $0.01 to API merchant for monthly subscription"');
+    log('Agent evaluating: Can I execute this payment within my authorization rules?');
     log('Model: 5-layer neural network (ONNX format)');
-    log('Input features:');
+    log('Analyzing transaction context:');
     log('  • Budget remaining: $95.43 (95%)');
     log('  • Merchant trust: 88/100');
-    log('  • Transaction amount: $1.00 (1% of limit)');
+    log('  • Transaction amount: $0.01 (0.1% of limit)');
     log('  • Category: API services (approved)');
     log('  • Velocity: 2 of 10 hourly limit');
     
@@ -177,13 +270,14 @@ async function start() {
     
     // Simulate AI inference time
     await new Promise(r=>setTimeout(r, 300));
-    set('s1','s-ok','AI decided');
-    log('✅ AI Decision: AUTHORIZE PAYMENT');
+    set('s1','s-ok','Authorized');
+    log('✅ AI Decision: EXECUTE PAYMENT');
     log('   Confidence: 99%');
     log('   Reasoning: All risk factors favorable');
     
     // Step 2: Generate zkML Proof
-    set('s2','muted','running');
+    currentStep = 'step2';
+    set('s2','muted','Running');
     log('\n🔐 STEP 2: GENERATING zkML PROOF');
     log('Proving the AI model ran correctly...');
     log(['zkml session', sid]);
@@ -202,12 +296,13 @@ async function start() {
     if (lastErr) throw new Error('zkML proof error: ' + lastErr);
     if (!proof) throw new Error('zkML proof timeout');
     
-    set('s2','s-ok','proof ready');
+    set('s2','s-ok','Proof ready');
     log('✅ zkML Proof Generated (JOLT-Atlas)');
     log({ proof_hash: proof.public_signals?.slice(0,2) || ['hash1', 'hash2'] });
     
     // Step 3: Request x402 attestation
-    set('s3','muted','running');
+    currentStep = 'step3';
+    set('s3','muted','Running');
     log('\n🔗 STEP 3: x402 ATTESTATION');
     const cart = { items:[{ sku:'api-pro-month', qty:1, priceCents:1 }], region:'US-NY', taxRulesVersion:'v1', totalCents:1 };
     const intent = { method:'POST', path:'/x402/pay', body:{ intent:'demo', cart:{ items:[{ sku:'api-pro-month', qty:1 }] } } };
@@ -216,13 +311,14 @@ async function start() {
     const attTxt = await attRes.text();
     let att; try { att = JSON.parse(attTxt); } catch (e) { throw new Error('attest error: ' + attTxt.slice(0,300)); }
     if (!att.ok) throw new Error('attest failed: ' + JSON.stringify(att));
-    set('s3','s-ok','attested');
+    set('s3','s-ok','Attested');
     log('✅ AI decision bound to x402 payment');
     last.proof = proof;
     log({ attestation_id: att.anchor?.attestationId?.slice(0,16) });
     last.token = att.token; last.intent = intent; last.cart = cart; last.anchor = att.anchor;
     
     // Step 4: On-chain verification
+    currentStep = 'step4';
     if (att.anchor && att.anchor.attestationId) {
       const anchorId = att.anchor.attestationId;
       last.anchorId = anchorId;
@@ -230,7 +326,7 @@ async function start() {
       s4.innerHTML = `verifying...`;
       s4.className = 's-warn'; 
       s4.dataset.state = 'pending';
-      set('s4','s-warn','verifying...');
+      set('s4','s-warn','Verifying...');
       log('\n⛓ STEP 4: ON-CHAIN VERIFICATION');
       
       // Wait for verification to complete
@@ -242,8 +338,8 @@ async function start() {
         if (tx) {
           const link = `https://sepolia.basescan.org/tx/${tx}`;
           s4.innerHTML = `<a href="${link}" target="_blank">verified</a>`;
-          s4.className = 's-ok';
-          s4.dataset.state = 'confirmed';
+          const shortTx = 'Verified: 0x' + tx.slice(2,7) + '...';
+          set('s4', 's-ok', shortTx, link);
           log('✅ On-chain verification complete');
           log('   Transaction: ' + tx.slice(0,16) + '...');
         } else {
@@ -261,7 +357,8 @@ async function start() {
     }
 
     // Step 5: Execute USDC Payment
-    set('s5','muted','preparing...');
+    currentStep = 'step5';
+    set('s5','muted','Preparing...');
     log('\n💳 STEP 5: EXECUTE USDC PAYMENT');
     const pre = await (await fetchPG('/x402/pay', { method:'POST', headers:{'content-type':'application/json', 'X-ZKML-Attestation': att.token }, body: JSON.stringify(intent.body) })).json();
     if (!pre.accepts) throw new Error('x402 preflight failed');
@@ -269,7 +366,7 @@ async function start() {
     log('Payment ready: $0.01 USDC to merchant');
     log('AI has authorized this transaction');
     last.accepts = pre.accepts;
-    set('s5','s-ok','ready');
+    set('s5','s-ok','Ready');
     try {
       if (a0.asset && a0.payTo) {
         const tokenPage = `https://sepolia.basescan.org/token/${a0.asset}?a=${a0.payTo}`;
@@ -277,7 +374,10 @@ async function start() {
         s5.innerHTML = `<a href="${tokenPage}" target="_blank">ready</a>`;
       }
     } catch {}
-    log('\n✅ All steps complete! Click "Pay with USDC" to execute.');
+    log('\n✅ All steps complete! Executing USDC payment automatically...');
+    
+    // Automatically execute payment
+    setTimeout(() => executePayment(), 1000);
   } catch (e) {
     log('Error: ' + e.message);
     if ($('s1').textContent==='running') set('s1','s-err','error');
@@ -319,6 +419,95 @@ async function waitForAnchor(id) {
   anchors.set(id, { status: 'error', error: 'Verification timeout' });
   return { status: 'error', error: 'Verification timeout' };
 }
+
+// Automated USDC payment execution function
+async function executePayment() {
+  try {
+    set('s5', 's-in', 'Executing...');
+    log('Executing automated USDC payment...');
+    
+    if (!last.token || !last.intent) {
+      log('Missing token or intent');
+      set('s5', 's-err', 'Error');
+      return;
+    }
+    
+    if (!last.anchorId) {
+      log('Missing anchor ID');
+      set('s5', 's-err', 'Error');
+      return;
+    }
+    
+    // Wait for on-chain verification to complete
+    const anchor = anchors.get(last.anchorId);
+    if (!anchor || anchor.status !== 'confirmed') {
+      log('Waiting for on-chain verification...');
+      // Try again in a second
+      setTimeout(() => executePayment(), 1000);
+      return;
+    }
+    
+    // Use the same logic as btnPay but update step 5
+    const resp = await fetchPG('/ui/pay-auto', { 
+      method:'POST', 
+      headers:{'content-type':'application/json'}, 
+      body: JSON.stringify({ 
+        token: last.token, 
+        body: last.intent.body, 
+        anchorId: last.anchorId 
+      }) 
+    });
+    
+    const txt = await resp.text();
+    let r = null; 
+    try { r = JSON.parse(txt); } catch(e) {}
+    
+    if (r) log({ paid: r }); 
+    else log('paid(raw): ' + (txt||'').slice(0,200));
+    
+    if (r && (r.payment?.usdcTxHash || r.usdcTxHash)) {
+      const tx = r.payment?.usdcTxHash || r.usdcTxHash;
+      const explorer = (r.payment?.explorer) || ('https://sepolia.basescan.org/tx/' + tx);
+      const shortHash = tx.slice(0, 7) + '…';
+      set('s5', 's-ok', `Completed: ${shortHash}`, explorer);
+      log('✅ USDC Payment successful: ' + explorer);
+      log({ usdc: { txHash: tx, explorer } });
+    } else {
+      // Poll for late redemption
+      for (let i=0;i<15;i++) {
+        try {
+          const last = await getLastRedemption();
+          if (last && last.redeemed && last.usdcTxHash) {
+            const shortHash = last.usdcTxHash.slice(0, 7) + '…';
+            set('s5', 's-ok', `Completed: ${shortHash}`, last.explorer);
+            log('✅ USDC Payment successful (late): ' + last.explorer);
+            break;
+          }
+        } catch {}
+        await new Promise(r=>setTimeout(r,300));
+      }
+    }
+    
+  } catch (e) {
+    log('Payment error: ' + e.message);
+    set('s5', 's-err', 'Error');
+  }
+}
+
+// Tab switching functionality
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const targetTab = btn.getAttribute('data-tab');
+    
+    // Update button states
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    // Update pane visibility
+    document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+    $(`tab-${targetTab}`).classList.add('active');
+  });
+});
 
 $('btnStart').addEventListener('click', start);
 
@@ -362,6 +551,8 @@ if ($('btnPay')) $('btnPay').addEventListener('click', async ()=>{
     }
   } catch (e) { log('pay error: ' + e.message); }
 });
+// MetaMask button removed - using automated payment instead
+if (false) { // Disabled MetaMask button code
 $('btnMM').addEventListener('click', async ()=>{
   try {
     if (!window.ethereum) { log('MetaMask not found'); return; }
@@ -451,6 +642,7 @@ $('btnMM').addEventListener('click', async ()=>{
     console.error('Full error:', e);
   }
 });
+} // End disabled MetaMask button code
 
 // Admin: Restart servers (local only)
 $('btnRestart').addEventListener('click', async ()=>{

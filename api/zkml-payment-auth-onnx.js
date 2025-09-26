@@ -129,11 +129,11 @@ function generateReasoning(features, authorized) {
     else reasons.push(`High transaction velocity`);
     
     return {
-        decision: authorized ? 'AUTHORIZED' : 'DENIED',
+        decision: authorized ? 'EXECUTE PAYMENT' : 'BLOCK PAYMENT',
         factors: reasons,
         summary: authorized 
-            ? 'AI model authorizes this payment based on favorable risk factors'
-            : 'AI model denies this payment due to risk factors'
+            ? 'AI agent can execute user\'s payment request - all rules satisfied'
+            : 'AI agent cannot execute payment - authorization rules violated'
     };
 }
 

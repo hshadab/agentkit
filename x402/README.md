@@ -53,7 +53,8 @@ The system uses a **real neural network** (ONNX format) that evaluates 5 key fea
 4. **Category Score**: Whether merchant category is approved
 5. **Velocity Score**: Transaction rate vs hourly limits
 
-**Example Prompt**: "Should I authorize a $1.00 payment to an API merchant?"
+**User Request**: "Pay $1.00 to API merchant for monthly subscription"  
+**Agent Evaluation**: "Can I execute this payment within my authorization rules?"
 
 **AI Decision Process**:
 - Neural network processes all 5 features simultaneously
