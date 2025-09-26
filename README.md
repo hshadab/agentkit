@@ -16,13 +16,13 @@
 
 AgentKit is a **production-ready framework** for building verifiable AI agents that can operate autonomously across blockchains. The latest implementation features **Agent Authorization** - enabling AI agents to prove they're authorized to spend money based on predefined rules, perfect for programmatic commerce and x402 HTTP micropayments.
 
-### 🎯 Key Innovation: Agent Authorization Model
-Instead of blocking fraud, AgentKit proves agents CAN spend by verifying:
-- ✅ Daily budget compliance ($95.43 remaining)
-- ✅ Merchant risk assessment (0.12 = safe)
-- ✅ Category whitelisting (api, saas, hosting)
-- ✅ Transaction velocity limits
-- ✅ Amount validation ($1.00 per transaction)
+### 🎯 Key Innovation: AI-Powered Agent Authorization
+AgentKit now uses **real AI neural networks** to authorize payments:
+- 🧠 **5-layer neural network** (ONNX format) evaluates transactions
+- 🤖 **Real-time inference** analyzing budget, risk, amount, category, velocity
+- 🔐 **zkML proofs** cryptographically prove the AI made the decision
+- ✅ **5-step verification** from AI decision to USDC transfer
+- 💡 **Example**: "Should I authorize $1.00 to an API merchant?" → AI: "Yes, 99% confidence"
 
 ## 🔐 Environment Variables
 

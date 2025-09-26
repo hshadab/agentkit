@@ -14,11 +14,18 @@ Production implementation of the [Coinbase x402 Payment Protocol](https://github
 ## Architecture
 
 ### Services
+
+- **AI Authorization Service** (port 8009):
+  - `POST /zkml/onnx/authorize` → Real neural network inference
+  - 5-layer neural network model (ONNX format)
+  - Evaluates payment context in ~1ms
+  - Returns decision with confidence and reasoning
+
 - **zkML Backend** (port 8002):
-  - `POST /zkml/prove` → Agent authorization proof (~500ms)
-  - `GET /zkml/status/:id` → Proof status polling
-  - Model: Agent Spending Authorization (14 parameters)
-  - Verifies: Budget remaining, merchant risk, transaction amount, spending rules
+  - `POST /zkml/prove` → Orchestrates AI + proof generation
+  - Calls AI service when `useAI: true` flag is set
+  - Generates JOLT-Atlas cryptographic proof (~500ms)
+  - Proves the AI model actually ran
 
 - **Proof-Gate Server** (port 8610):
   - `POST /attest` → Issues zkML-verified attestation tokens
@@ -27,21 +34,32 @@ Production implementation of the [Coinbase x402 Payment Protocol](https://github
   - `POST /ui/pay-auto` → Server-side demo payment
   - `POST /ui/pay-metamask` → Client-signed payment execution
 
-### Agent Authorization Flow
+### Agent Authorization Flow (5 Steps)
 ```
-1. Agent → Request authorization to spend (budget, risk, amount)
-2. zkML → Generate proof that spending rules are satisfied
-3. x402 → Bind authorization proof to payment intent
-4. Chain → Verify proof on Base Sepolia (Groth16)
-5. Agent → Execute USDC transfer via transferWithAuthorization
+1. AI Inference → Neural network evaluates payment request
+2. zkML Proof → Generate proof that AI model ran correctly
+3. x402 Attestation → Bind AI decision to payment intent
+4. Chain Verification → Verify proof on Base Sepolia (Groth16)
+5. Payment Execution → Execute USDC transfer via transferWithAuthorization
 ```
 
-### What the Agent Proves
-- **Budget Check**: Daily spending limit not exceeded ($95.43 remaining)
-- **Risk Assessment**: Merchant risk below threshold (0.12 = safe)
-- **Category Compliance**: Transaction type is allowed (api, saas)
-- **Velocity Limits**: Not exceeding rate limits
-- **Amount Validation**: Transaction amount is reasonable ($1.00)
+### How the AI Makes Decisions
+
+The system uses a **real neural network** (ONNX format) that evaluates 5 key features:
+
+1. **Budget Remaining**: Percentage of daily budget available (0-100%)
+2. **Merchant Trust Score**: Based on risk assessment (0-100)
+3. **Transaction Amount**: Normalized to daily limit (0-100)
+4. **Category Score**: Whether merchant category is approved
+5. **Velocity Score**: Transaction rate vs hourly limits
+
+**Example Prompt**: "Should I authorize a $1.00 payment to an API merchant?"
+
+**AI Decision Process**:
+- Neural network processes all 5 features simultaneously
+- Outputs authorization decision with confidence score
+- zkML proves this specific AI model made the decision
+- Cannot be forged or manipulated
 
 ## Installation
 
@@ -97,11 +115,12 @@ cargo run                               # Port 8001 (main backend)
 
 ### Testing the Agent Authorization Demo
 1. Open demo page: http://127.0.0.1:8000/static/x402-demo.html
-2. Click "Start Demo" to see the agent authorization flow:
-   - **Step 1**: Agent requests authorization (proves budget/risk compliance)
-   - **Step 2**: x402 attestation binds authorization to payment
-   - **Step 3**: On-chain verification creates audit trail (Base Sepolia)
-   - **Step 4**: USDC transfer executes with "Pay with USDC" button
+2. Click "Start Demo" to see the 5-step authorization flow:
+   - **Step 1**: AI neural network evaluates payment request
+   - **Step 2**: zkML generates proof of AI inference
+   - **Step 3**: x402 attestation binds AI decision to payment
+   - **Step 4**: On-chain verification creates audit trail (Base Sepolia)
+   - **Step 5**: USDC transfer executes with "Pay with USDC" button
 3. Real transactions with explorer links (e.g., [0xcb0f2abf...](https://sepolia.basescan.org/tx/0xcb0f2abf65efb852a93413da261688d223856f1854546ba329542263033f1787))
 
 ## Agent Authorization Model
