@@ -14,7 +14,15 @@
 
 ## 🌟 Overview
 
-AgentKit is a **production-ready framework** for building verifiable AI agents that can operate across multiple blockchains with cryptographic proof of correct execution. From healthcare records on Avalanche to DeFi operations on Base, from IoT device verification on IoTeX to high-speed trading on Solana - AgentKit provides the infrastructure for trustless AI operations at scale.
+AgentKit is a **production-ready framework** for building verifiable AI agents that can operate autonomously across blockchains. The latest implementation features **Agent Authorization** - enabling AI agents to prove they're authorized to spend money based on predefined rules, perfect for programmatic commerce and x402 HTTP micropayments.
+
+### 🎯 Key Innovation: Agent Authorization Model
+Instead of blocking fraud, AgentKit proves agents CAN spend by verifying:
+- ✅ Daily budget compliance ($95.43 remaining)
+- ✅ Merchant risk assessment (0.12 = safe)
+- ✅ Category whitelisting (api, saas, hosting)
+- ✅ Transaction velocity limits
+- ✅ Amount validation ($1.00 per transaction)
 
 ## 🔐 Environment Variables
 
@@ -129,6 +137,16 @@ IOTEX_PRIVATE_KEY=0xYOUR_EVM_PRIVATE_KEY
   - MedicalRecords (integrity workflow): `0x1698ebB10e789EebE7A66bDb096F0a65ce49Dc68`
   - Real Groth16 Verifier (view): `0xE0Add318E32F65936b8bD74DC122758f543b8166`
   - Groth16 Storage Wrapper (verifyAndStore): `0x6121Fd93594C316B78e74B91B89A06d3Bb682a8F`
+
+### x402 Proof‑Gated Demo (zkML + zkEngine)
+- Location: `x402/`
+- Purpose: gate an x402‑style endpoint behind a zkML proof attestation (optionally add a zkEngine policy check), illustrating how ZK extends trust before payment/compute.
+- Run:
+  - `node api/unified-backend.js` (port 8002)
+  - `node x402/proof-gate-server.js` (port 8602)
+  - `node x402/client-demo.js`
+  - The protected endpoint only authorizes when `X-ZKML-Attestation` is valid.
+  - Nonce/replay protection enforced for x402 headers (X-402-Nonce, timestamp window). Configure `.env` with `X402_SHARED_SECRET`, `X402_REPLAY_WINDOW_MS`, `X402_ALLOWED_SKEW_MS`.
 
 ### OpenAI Orchestration (Scope)
 - OpenAI (default model `gpt-4o-mini`) is used only for parsing free‑form chat into a strict JSON intent that maps to allowed workflows.

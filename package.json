@@ -2,14 +2,28 @@
   "dependencies": {
     "@circle-fin/developer-controlled-wallets": "^8.3.0",
     "circomlib": "^2.0.5",
+    "circomlibjs": "^0.1.7",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
     "ethers": "^6.15.0",
     "express": "^5.1.0",
     "http-proxy-middleware": "^3.0.5",
     "minimist": "^1.2.8",
     "node-fetch": "^3.3.2",
     "snarkjs": "^0.7.5",
-    "solc": "^0.8.30"
+    "solc": "^0.8.30",
+    "viem": "^2.37.8",
+    "web3": "^4.16.0",
+    "x402": "^0.6.1",
+    "x402-express": "^0.6.1"
   },
-  "type": "commonjs"
+  "type": "commonjs",
+  "scripts": {
+    "demo:x402:server": "node x402/proof-gate-server.js",
+    "demo:x402:client": "node x402/client-demo.js"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^4.0.1",
+    "hardhat": "^3.0.6"
+  }
 }

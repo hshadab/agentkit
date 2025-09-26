@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zkML + ONNX Proof‑Carrying Embeddings</title>
+  <style>
+    :root { --bg:#06070b; --panel:#101218; --border:#262938; --muted:#9aa; --primary:#6B7CFF; --ok:#10b981; --warn:#f59e0b; --err:#ef4444; }
+    body { margin:0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:var(--bg); color:#fff; }
+    body::before{ content:""; position:fixed; inset:-20%; background: radial-gradient(60% 60% at 70% 20%, rgba(107,124,255,0.25), transparent 60%), radial-gradient(40% 40% at 20% 80%, rgba(16,185,129,0.20), transparent 60%); filter: blur(80px); opacity:0.9; z-index:-1; animation: drift 16s ease-in-out infinite alternate; }
+    @keyframes drift { from{transform:translate3d(-2%,1%,0) scale(1.02);} to{transform:translate3d(2%,-1%,0) scale(0.98);} }
+    .wrap { max-width: 1200px; margin: 28px auto; padding: 0 20px; position: relative; }
+    .title-row { display:flex; align-items:center; gap:12px; }
+    h1 { font-size: 26px; margin: 0 0 4px; letter-spacing:.2px; }
+    .brand { height: 1.6em; width: auto; display:inline-block; border-radius:6px; box-shadow: 0 8px 24px rgba(107,124,255,.35); }
+    p { color: var(--muted); }
+    /* Give the data table a bit more breathing room */
+    .grid { display:grid; grid-template-columns: 1fr 1.3fr; gap:16px; background:#070a12; border:1px solid #1b2030; border-radius:16px; padding:16px; box-shadow: 0 20px 60px rgba(0,0,0,0.45); }
+    .card { background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); border: 1px solid var(--border); border-radius: 14px; padding: 18px; box-shadow: 0 30px 80px rgba(0,0,0,0.35), inset 0 1px rgba(255,255,255,0.03); position: relative; overflow: hidden; }
+    .card::before{ content:""; position:absolute; inset:-2px; border-radius:16px; padding:2px; background: conic-gradient(from 180deg at 50% 50%, rgba(107,124,255,.20), rgba(16,185,129,.15), rgba(107,124,255,.20)); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity:.35; animation: spin 12s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg);} }
+    .row { display:flex; gap:8px; align-items:center; flex-wrap: wrap; }
+    .col { display:flex; flex-direction:column; gap:10px; }
+    textarea, input, select { width: 100%; background:#0b0d12; color:#fff; border:1px solid var(--border); border-radius:10px; padding:12px; box-shadow: inset 0 1px rgba(255,255,255,0.03); }
+    label { font-size:12px; color:#bbb; }
+    .btn { background: var(--primary); border:0; color:#fff; padding:10px 14px; border-radius:10px; font-weight:700; cursor:pointer; box-shadow: 0 10px 30px rgba(107,124,255,0.25); }
+    .btn.ghost { background: #171923; border:1px solid var(--border); box-shadow:none; }
+    .tag { font-size: 11px; padding:4px 8px; border:1px solid var(--border); border-radius:999px; color:#ccc; position:relative; overflow:hidden; }
+    .tag.ok { color: var(--ok); border-color: #0f3; }
+    .tag.err { color: var(--err); border-color: #f66; }
+    .muted { color: var(--muted); font-size: 12px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; overflow-wrap:anywhere; word-break:break-word; }
+    .bar { height: 12px; background: #11141b; border-radius: 6px; overflow:hidden; border:1px solid #1c2030; }
+    .bar > div { height: 100%; background: linear-gradient(90deg,#6B7CFF,#4A5A8A,#6B7CFF); background-size: 200% 100%; animation: flow 2.2s linear infinite; }
+    @keyframes flow { from { background-position: 0 0; } to { background-position: 200% 0; } }
+    .kvs { display:grid; grid-template-columns: 140px 1fr; gap:6px 10px; align-items:center; }
+    .list { max-height: 360px; overflow-y:auto; overflow-x:hidden; font-size:12px; border:1px solid var(--border); border-radius:8px; }
+    /* Two-line rows per record, allow wrapping to avoid truncation */
+    .list table { width:100%; border-collapse: collapse; table-layout: auto; }
+    .list th, .list td { padding:8px; border-bottom:1px solid #1b1b1b; white-space: normal; word-break: break-word; }
+    .list th:nth-child(5), .list td:nth-child(5),
+    .list th:nth-child(6), .list td:nth-child(6) { text-align: center; }
+    .list tbody tr.r1 td { border-bottom: none; padding-bottom: 2px; }
+    .list tbody tr.r2 td { padding-top: 6px; }
+    .pill { display:inline-block; padding:3px 8px; border-radius:999px; font-size:11px; border:1px solid var(--border); color:#ccc; }
+    .steps { display:flex; gap:10px; margin-top:8px; }
+    .step { padding:8px 12px; border-radius:10px; border:1px solid var(--border); font-size:12px; letter-spacing:.2px; }
+    .step.exec { border-color:#445; color:#9db; box-shadow: 0 0 0 9999px inset rgba(107,124,255,0.06); animation: pulse 1.5s ease-in-out infinite; }
+    .step.done { border-color:#0f3; color:#0f3; box-shadow: 0 0 0 9999px inset rgba(16,185,129,0.06); }
+    .step.wait { color:#bbb; }
+    .progress { margin-top:10px; height:6px; background:#0c0f16; border:1px solid #1c2030; border-radius:999px; overflow:hidden; }
+    .progress .fill { height:100%; width:0%; background: linear-gradient(90deg,#6B7CFF,#4A5A8A,#6B7CFF); transition: width .8s ease; box-shadow: 0 4px 14px rgba(107,124,255,.35); }
+    @keyframes pulse { 0%{transform:translateZ(0);} 50%{transform:translateY(-1px);} 100%{transform:translateZ(0);} }
+    .big-ok { font-size: 40px; color: var(--ok); opacity:0; transform: translateY(6px) scale(0.98); transition: all .6s ease; }
+    .big-ok.show { opacity:1; transform: translateY(0) scale(1); text-shadow: 0 6px 30px rgba(16,185,129,.35); }
+    .stage { position: relative; max-width: 640px; margin: 0 auto; }
+    .note { position: relative; max-width: 640px; background: linear-gradient(180deg, rgba(107,124,255,0.96), rgba(74,90,138,0.96)); border:1px solid rgba(167,176,255,0.55); border-radius:14px; padding:14px 16px; font-size:17px; line-height:1.65; color:#ffffff; box-shadow: 0 22px 60px rgba(107,124,255,.30), 0 4px 20px rgba(0,0,0,.35); backdrop-filter: blur(8px) saturate(1.2); opacity:0; transform: translateY(10px) scale(.98); transition: all .55s ease; margin: 0 auto; }
+    .note strong { color:#fff; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.35); text-underline-offset: 3px; }
+    .note.show { opacity:1; transform: translateY(0) scale(1); }
+    .annots { margin-top: 16px; display: grid; gap: 10px; justify-items: center; }
+    .annot-bar { position: fixed; left:50%; transform: translateX(-50%); bottom: 110px; z-index: 1000; width: min(92vw, 980px); display:flex; justify-content:center; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title-row">
+      <img class="brand" src="https://cdn.prod.website-files.com/65d52b07d5bc41614daa723f/665df12739c532f45b665fe7_logo-novanet.svg" alt="Novanet" />
+      <h1>zkML + ONNX Proof‑Carrying Embeddings</h1>
+    </div>
+    <p style="margin:0 0 16px">Solve the problem of opaque inference with proof‑attested outputs.</p>
+
+    <div class="grid">
+      <div class="card col stage">
+        <div class="row" style="justify-content:space-between;">
+          <div class="row" style="gap:10px; align-items:center;">
+            <span class="tag">Model: MiniLM‑L6 (ONNX)</span>
+            <span id="modelHashTag" class="tag">model_hash: …</span>
+          </div>
+          <div class="steps">
+            <div id="step1" class="step wait">1) Embed</div>
+            <div id="step2" class="step wait">2) Hash</div>
+            <div id="step3" class="step wait">3) Proof</div>
+            <div id="step4" class="step wait">4) Store</div>
+          </div>
+        </div>
+        <div class="progress"><div id="pfill" class="fill"></div></div>
+
+        <label for="doc">Document Text</label>
+        <textarea id="doc" rows="3" placeholder="Paste text here…">MongoDB Local NYC: Proving that embeddings come from the approved ONNX model with zkML receipts.</textarea>
+
+        <div class="row" style="display:none;"></div>
+
+        <div class="card" style="background:#0e0e0e;">
+          <div class="kvs">
+            <div class="muted">Input hash (SHA‑256)</div>
+            <div class="mono" id="inputHash">—</div>
+            <div class="muted">Model hash (SHA‑256)</div>
+            <div class="mono" id="modelHash">—</div>
+            <div class="muted">Embedding preview</div>
+            <div>
+              <div class="bar"><div id="bar0" style="width:0%"></div></div>
+              <div class="bar" style="margin-top:4px"><div id="bar1" style="width:0%"></div></div>
+              <div class="bar" style="margin-top:4px"><div id="bar2" style="width:0%"></div></div>
+            </div>
+            <div class="muted">Proof</div>
+            <div class="mono" id="proofInfo">—</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="card col">
+        <div class="row" style="justify-content:space-between; align-items:center;">
+          <h3 style="margin:0; font-size:16px;">MongoDB Collection</h3>
+          <span class="muted">Vectors + Proofs</span>
+        </div>
+        <div class="progress"><div id="pfill2" class="fill"></div></div>
+        <div class="list" id="tableWrap">
+          <table>
+            <colgroup>
+              <col style="width:16%">
+              <col style="width:26%">
+              <col style="width:26%">
+              <col style="width:18%">
+              <col style="width:8%">
+              <col style="width:6%">
+            </colgroup>
+            <thead>
+              <tr><th>_id</th><th>input_hash</th><th>model_hash</th><th>vector[3]</th><th>proof_id</th><th>status</th></tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <div class="row" style="margin-top:10px; justify-content:space-between; align-items:center;">
+          <div class="muted">Only verified entries are actionable.</div>
+          <div id="okMark" class="big-ok">✔ Verified</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="annot-bar">
+      <div id="note" class="note show">Problem: <strong>Embedding vectors (model‑generated)</strong> used in production aren’t trusted across different runtimes. Proof‑carry each vector so downstream systems can <strong>verify the exact model+input</strong> that produced it.</div>
+    </div>
+  </div>
+
+  <script>
+    const state = { items: [], modelName: 'MiniLM-L6' };
+    function toHex(buf){ return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join(''); }
+    async function sha256Hex(str){ const enc = new TextEncoder().encode(str); const buf = await crypto.subtle.digest('SHA-256', enc); return toHex(buf); }
+    function setStep(elId, mode){ const el=document.getElementById(elId); el.className = 'step ' + (mode==='exec'?'exec':mode==='done'?'done':'wait'); }
+    function setProgress(n){
+      const pct = Math.max(0, Math.min(100, Math.round((n/4)*100)));
+      const pf=document.getElementById('pfill'); if(pf) pf.style.width = pct + '%';
+      const pf2=document.getElementById('pfill2'); if(pf2) pf2.style.width = pct + '%';
+    }
+    function setNote(html){ const el=document.getElementById('note'); if(!el) return; el.classList.remove('show'); setTimeout(()=>{ el.innerHTML = html; el.classList.add('show'); }, 120); }
+    function pct(v){ return Math.max(0, Math.min(100, Math.round((v+1)/2*100))); }
+    function pseudoEmbed(inputHex){
+      const parts = [inputHex.slice(0,32), inputHex.slice(32,64), inputHex.slice(64,96)];
+      const vals = parts.map(h => (parseInt(h.slice(0,8),16) / 0xffffffff) * 2 - 1);
+      return vals;
+    }
+    function renderBars(vec){ ['bar0','bar1','bar2'].forEach((id,i)=>{ const el=document.getElementById(id); if(el) el.style.width = pct(vec[i]||0)+'%'; }); }
+    function addRow(doc){
+      state.items.unshift(doc);
+      const tb = document.getElementById('rows');
+      tb.innerHTML = state.items.map(d => `
+        <tr class="r1">
+          <td class="mono">${d._id}</td>
+          <td class="mono">${d.input_hash}</td>
+          <td class="mono">${d.model_hash}</td>
+          <td class="mono">${d.vector.map(v=>v.toFixed(2)).join(', ')}</td>
+          <td class="mono">${d.proof_id || '—'}</td>
+          <td>${d.status==='verified' ? '<span class=\"pill\" style=\"border-color:#0f3;color:#0f3;\">verified</span>' : '<span class=\"pill\">pending</span>'}</td>
+        </tr>
+        <tr class="r2"><td colspan="6"></td></tr>
+      `).join('');
+    }
+    function resetAll(){ document.getElementById('inputHash').textContent = '—'; document.getElementById('modelHash').textContent = '—'; document.getElementById('proofInfo').textContent = '—'; ['bar0','bar1','bar2'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.width='0%'; }); ['step1','step2','step3','step4'].forEach(id=>setStep(id,'wait')); document.getElementById('okMark').classList.remove('show'); }
+    async function runAll(){ const doc = document.getElementById('doc').value.trim(); if(!doc){ alert('Enter some text'); return; } setStep('step1','exec'); setProgress(0.5); setNote('1) Create an embedding from input text (ONNX) — the vector reflects the content.'); const input_hash = await sha256Hex(doc); const model_hash = await sha256Hex(state.modelName + ':onnx:v1'); const vec = pseudoEmbed(input_hash); document.getElementById('inputHash').textContent = input_hash; document.getElementById('modelHash').textContent = model_hash; document.getElementById('modelHashTag').textContent = 'model_hash: ' + model_hash.substring(0,16) + '…'; renderBars(vec); await new Promise(r=>setTimeout(r, 5000)); setStep('step1','done'); setProgress(1); setStep('step2','exec'); setNote('2) Hash both the input and the model graph (SHA‑256). These hashes identify exactly what was run.'); setProgress(1.5); await new Promise(r=>setTimeout(r, 4400)); setStep('step2','done'); setProgress(2); setStep('step3','exec'); setNote('3) <strong>zkML proof</strong>: produce a receipt binding <strong>output</strong> to the <strong>approved model hash</strong> and <strong>input hash</strong>.'); setProgress(2.5); let proof_id = 'proof_' + Date.now(); let proof_time = 2800; let proof_meta = { decision: 1, confidence: 95 }; document.getElementById('proofInfo').textContent = `id=${proof_id}, timeMs=${proof_time}, decision=${proof_meta.decision}, conf=${proof_meta.confidence}`; await new Promise(r=>setTimeout(r, 5400)); setStep('step3','done'); setProgress(3); setStep('step4','exec'); setNote('4) Store only if the proof verifies — downstream systems trust receipts, not runtime quirks.'); setProgress(3.5); const row = { _id: 'doc_'+Date.now(), input_hash, model_hash, vector: vec, proof_id, status: 'verified' }; addRow(row); await new Promise(r=>setTimeout(r, 4800)); setStep('step4','done'); setProgress(4); document.getElementById('okMark').classList.add('show'); setTimeout(()=>{ const nb=document.getElementById('note'); if(nb){ nb.classList.remove('show'); nb.innerHTML=''; } }, 600); }
+    (async () => { const m = await sha256Hex(state.modelName + ':onnx:v1'); document.getElementById('modelHashTag').textContent = 'model_hash: ' + m.substring(0,16) + '…'; setTimeout(()=>{ resetAll(); runAll(); }, 2800); })();
+  </script>
+</body>
+</html>

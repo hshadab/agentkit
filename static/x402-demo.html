@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>x402 Agent Authorization Demo</title>
+  <style>
+    :root {
+      --bg:#0b0f14; --panel:#111821; --muted:#9aa4af; --text:#e6edf3;
+      --ok:#22c55e; --warn:#f59e0b; --err:#ef4444; --accent:#9b5cff;
+      --grad-start: rgba(155,92,255,0.18); --grad-end: rgba(93,63,211,0.18);
+      --border-grad-start:#a06cff; --border-grad-end:#5d3fd3; --shadow: 0 10px 30px rgba(155,92,255,0.12);
+    }
+    html, body { margin:0; padding:0; background:var(--bg); color:var(--text); font: 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    header { padding:20px; border-bottom:1px solid #18222e; }
+    h1 { font-size:18px; margin:0 0 6px 0; }
+    .muted { color: var(--muted); }
+    main { max-width: 960px; margin: 20px auto; padding: 0 16px; }
+    .panel { background: var(--panel); border: 1px solid #1c2836; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+    .row { display:flex; gap:10px; align-items:center; }
+    button { background:#1f2a37; color:var(--text); border:1px solid #243041; border-radius:8px; padding:8px 14px; cursor:pointer; }
+    button:hover { background:#223041; }
+    .steps { display:flex; gap:12px; }
+    .step {
+      flex:1; display:flex; flex-direction:column; position:relative; overflow:hidden;
+      background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+      border:1px solid transparent; border-radius:12px; padding:14px; box-shadow: var(--shadow); min-height:120px;
+    }
+    .step::before { content:""; position:absolute; inset:0; pointer-events:none; border-radius:12px; padding:1px;
+      background: linear-gradient(135deg, var(--border-grad-start), transparent 40%, var(--border-grad-end));
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+    .step .label { font-weight:600; letter-spacing:0.2px; margin-bottom:4px; font-size:13px; color:#e6edf3; }
+    .step .desc { font-size:11px; color:var(--muted); margin-bottom:auto; line-height:1.4; padding-bottom:8px; }
+    .step-status {
+      display:inline-flex; align-items:center; gap:8px; padding:4px 8px; border-radius:999px;
+      border: 1px solid rgba(155,92,255,0.35);
+      background: linear-gradient(135deg, rgba(155,92,255,0.12), rgba(93,63,211,0.12));
+      color: var(--text); font-size:11px; letter-spacing:0.2px; margin-top:4px; font-weight:500;
+    }
+    .s-ok { color:var(--ok)!important; border-color: rgba(34,197,94,0.35)!important; }
+    .s-warn { color:var(--warn)!important; }
+    .s-err { color:var(--err)!important; border-color: rgba(239,68,68,0.35)!important; }
+    @keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.03)} 100%{transform:scale(1)} }
+    [data-state="running"], [data-state="pending"] { animation: pulse 1.6s ease-in-out infinite; }
+    code, pre { background:#0f1620; border:1px solid #1b2533; border-radius:8px; padding:10px; overflow:auto; color:#d1d9e0; }
+    a { color: var(--accent); text-decoration:none; }
+    a:hover { text-decoration:underline; }
+    .small { font-size:12px; }
+    .bottom-panel { opacity:0.5; transition:opacity 0.2s; margin-top:40px; }
+    .bottom-panel:hover { opacity:1; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>x402 Agent Authorization Demo</h1>
+    <div class="muted small">Autonomous agents prove they're authorized to spend USDC</div>
+  </header>
+  <main>
+    <div class="panel row">
+      <button id="btnStart">Start Demo</button>
+      <button id="btnMM">Pay with USDC</button>
+    </div>
+
+    <div class="panel steps">
+      <div class="step">
+        <div class="label">1) Agent authorization proof</div>
+        <div class="desc">Proves agent can spend USDC<br/>Budget: $95.43 remaining • Risk: 0.12<br/>zkML verifies spending rules compliance</div>
+        <div id="s1" class="step-status muted" data-state="idle">idle</div>
+      </div>
+      <div class="step">
+        <div class="label">2) Request attestation</div>
+        <div class="desc">x402 payment attestation<br/>EIP-712 signed binding<br/>Links AI fraud check → HTTP micropayment</div>
+        <div id="s2" class="step-status muted" data-state="idle">idle</div>
+      </div>
+      <div class="step">
+        <div class="label">3) On‑chain verification</div>
+        <div class="desc">Groth16 proof-of-proof<br/>Base Sepolia • ~350k gas<br/>Permanent blockchain record</div>
+        <div id="s3" class="step-status muted" data-state="idle">idle</div>
+      </div>
+      <div class="step">
+        <div class="label">4) x402 payment (USDC)</div>
+        <div class="desc">EIP-3009 transferWithAuthorization<br/>Gasless for users • $0.01 USDC<br/>Only after verification ✓</div>
+        <div id="s4" class="step-status muted" data-state="idle">idle</div>
+      </div>
+    </div>
+
+    <div id="out" class="panel">
+      <div class="muted">Output</div>
+      <pre id="log"></pre>
+    </div>
+    
+    <div class="panel row bottom-panel">
+      <button id="btnRestart">Kill & Restart Servers</button>
+      <div class="muted small">Use if port 8001 binds get stuck</div>
+    </div>
+  </main>
+
+<script>
+const gate = location.origin;
+// Proof-gate candidates (try 8610 first, then 8602)
+const PG_BASES = ['http://127.0.0.1:8610','http://127.0.0.1:8602'];
+async function fetchPG(path, init) {
+  let lastErr = null;
+  for (const base of PG_BASES) {
+    try {
+      const resp = await fetch(base + path, init);
+      return resp;
+    } catch (e) { lastErr = e; }
+  }
+  // Fallback to backend proxy if PG bases failed
+  try { return await fetch(gate + path, init); } catch (e) { lastErr = e; }
+  throw lastErr || new Error('All proof-gate bases failed');
+}
+// Backend URL display removed
+// Prefer UI alias, but fall back to original /zkml if backend not updated
+async function zkmlFetch(path, init) {
+  const p = path.startsWith('/') ? path : ('/' + path);
+  try {
+    const r = await fetch(gate + '/ui/zkml' + p, init);
+    // If hard network error, it would throw; if 404/500 we still return r
+    if (r.status === 404) throw new Error('ui_alias_missing');
+    return r;
+  } catch (e) {
+    // Fallback to legacy route
+    return fetch(gate + '/zkml' + p, init);
+  }
+}
+const $ = (id)=>document.getElementById(id);
+const log = (m)=>{$('log').textContent += (typeof m==='string'? m : JSON.stringify(m,null,2)) + '\n';}
+const set = (id, cls, text)=>{
+  const el=$(id);
+  el.className = cls;
+  el.textContent = text;
+  el.dataset.state = (text || '').toLowerCase().split(' ')[0];
+};
+
+function addLink(label, url) {
+  // Links now shown inline in steps
+}
+
+let last = { sid:null, proof:null, token:null, intent:null, cart:null, anchor:null, accepts:null };
+
+async function start() {
+  $('log').textContent = '';
+  set('s1','muted','running'); set('s2','muted','idle'); set('s3','muted','idle'); set('s4','muted','idle');
+  try {
+    // 1) Agent Authorization Proof - Proves agent can spend USDC
+    const authRequest = {
+      budget_remaining: 9543, // $95.43 remaining today
+      merchant_risk: 12, // 0.12 risk score (safe)
+      amount: 100, // $1.00 transaction
+      agent_id: 42 // Agent identifier
+    };
+    log('Agent requesting authorization to spend $1.00 USDC...');
+    const prove = await zkmlFetch('/prove', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ input: authRequest }) });
+    const ptxt = await prove.text();
+    let pj; try { pj = JSON.parse(ptxt); } catch(e) { throw new Error('zkML backend not reachable or returned non‑JSON: ' + ptxt.slice(0,200)); }
+    const sid = pj.sessionId; log(['zkml session', sid]);
+    let proof = null;
+    let lastErr = null;
+    for (let i=0;i<240;i++) { // allow up to ~60s for first-time build
+      const stResp = await zkmlFetch('/status/' + sid);
+      const stTxt = await stResp.text();
+      let st; try { st = JSON.parse(stTxt); } catch(e) { throw new Error('status parse error: ' + stTxt.slice(0,200)); }
+      if (st.status === 'completed') { proof = st.proof; break; }
+      if (st.status === 'error') { lastErr = st.error || 'unknown zkML error'; break; }
+      await new Promise(r=>setTimeout(r, 250));
+    }
+    if (lastErr) throw new Error('zkML proof error: ' + (typeof lastErr==='string'? lastErr : JSON.stringify(lastErr)));
+    if (!proof) throw new Error('zkML proof timeout (try again in a few seconds — first build may take longer)');
+    set('s1','s-ok','agent authorized');
+    log(`✅ Agent authorized to spend - Budget: $95.43, Risk: 0.12`);
+    log({ authorization_proof: proof.public_signals });
+
+    // 2) Request attestation (non‑blocking on‑chain)
+    set('s2','muted','running');
+    const cart = { items:[{ sku:'api-pro-month', qty:1, priceCents:1 }], region:'US-NY', taxRulesVersion:'v1', totalCents:1 };
+    const intent = { method:'POST', path:'/x402/pay', body:{ intent:'demo', cart:{ items:[{ sku:'api-pro-month', qty:1 }] } } };
+    const attBody = { agentId:'agent-demo-1', clientId:'demo-client', merchantId:'acme-merchant', cart, intent, modelId:'risk_analysis_v1', proof, publicInputs:[3,10,1,9] };
+    const attRes = await fetchPG('/attest', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(attBody) });
+    const attTxt = await attRes.text();
+    let att; try { att = JSON.parse(attTxt); } catch (e) { throw new Error('attest non‑JSON: ' + attTxt.slice(0,300)); }
+    if (!att.ok) throw new Error('attest failed: ' + JSON.stringify(att));
+    set('s2','s-ok','x402 binding ready');
+    log('Agent authorization bound to x402 payment intent');
+    last.proof = proof;
+    log({ attestation: { onChain: att.onChain, intentHash: att.intentHash, acceptsHash: att.acceptsHash, attester: att.attester } });
+    last.token = att.token; last.intent = intent; last.cart = cart; last.anchor = att.anchor;
+    // 3) On-chain verification (REQUIRED before payment)
+    if (att.anchor && att.anchor.attestationId) {
+      const anchorId = att.anchor.attestationId;
+      last.anchorId = anchorId;
+      const s3 = document.getElementById('s3');
+      s3.innerHTML = `verifying on-chain...`;
+      s3.className = 's-warn'; 
+      s3.dataset.state = 'pending';
+      set('s3','s-warn','verifying...');
+      log('On-chain verification started (REQUIRED for payment)');
+      
+      // Wait for verification to complete
+      await waitForAnchor(anchorId);
+      
+      const anchor = anchors.get(anchorId);
+      if (anchor && anchor.status === 'confirmed') {
+        const tx = anchor.result?.transactionHash;
+        if (tx) {
+          const link = `https://sepolia.basescan.org/tx/${tx}`;
+          s3.innerHTML = `<a href="${link}" target="_blank">verified on-chain</a>`;
+          s3.className = 's-ok';
+          s3.dataset.state = 'confirmed';
+          addLink('On-chain Verification', link);
+          log('On-chain verification confirmed: ' + link);
+        } else {
+          set('s3','s-ok','verified');
+        }
+      } else {
+        set('s3','s-err','verification failed');
+        log('On-chain verification failed - payment blocked');
+        return; // Stop here if verification failed
+      }
+    } else {
+      set('s3','s-err','no verification');
+      log('No on-chain verification available');
+      return;
+    }
+
+    // 4) x402 preflight (get payment requirements)
+    set('s4','muted','getting requirements...');
+    const pre = await (await fetchPG('/x402/pay', { method:'POST', headers:{'content-type':'application/json', 'X-ZKML-Attestation': att.token }, body: JSON.stringify(intent.body) })).json();
+    if (!pre.accepts) throw new Error('x402 preflight did not return Accepts');
+    // Show a compact view of Accepts
+    const a0 = pre.accepts[0] || {};
+    log({ accepts: { network: a0.network, asset: a0.asset, payTo: a0.payTo, price: (a0.price||'n/a'), resource: a0.resource } });
+    last.accepts = pre.accepts;
+    set('s4','s-ok','ready to pay');
+    try {
+      if (a0.asset && a0.payTo) {
+        const tokenPage = `https://sepolia.basescan.org/token/${a0.asset}?a=${a0.payTo}`;
+        const s4 = document.getElementById('s4');
+        s4.innerHTML = `<a href="${tokenPage}" target="_blank">ready to pay</a>`;
+      }
+    } catch {}
+    log('Payment ready. Click "Pay with USDC" to complete x402 payment.');
+  } catch (e) {
+    log('Error: ' + e.message);
+    if ($('s1').textContent==='running') set('s1','s-err','error');
+    if ($('s2').textContent==='running') set('s2','s-err','error');
+    if ($('s3').textContent==='running') set('s3','s-err','error');
+  }
+}
+
+async function getLastRedemption() {
+  // Try backend proxy first, then fall back to proof-gate directly
+  try {
+    const r1 = await fetch(gate + '/ui/last-redemption');
+    if (r1.ok) return await r1.json();
+  } catch {}
+  return { redeemed: false };
+}
+// Store anchor results for access
+const anchors = new Map();
+
+async function waitForAnchor(id) {
+  // Poll for anchor verification with timeout
+  const maxAttempts = 20; // 60 seconds max
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      const r = await (await fetchPG('/attest/anchor/' + id)).json();
+      anchors.set(id, r);
+      if (r.status === 'confirmed' || r.status === 'error') {
+        return r;
+      }
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    } catch (e) {
+      console.error('Anchor poll error:', e);
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
+  }
+  // Timeout - mark as error
+  anchors.set(id, { status: 'error', error: 'Verification timeout' });
+  return { status: 'error', error: 'Verification timeout' };
+}
+
+$('btnStart').addEventListener('click', start);
+
+// Pay Now button removed
+if ($('btnPay')) $('btnPay').addEventListener('click', async ()=>{
+  try {
+    if (!last.token || !last.intent) { log('Run demo first'); return; }
+    if (!last.anchorId || !anchors.get(last.anchorId) || anchors.get(last.anchorId).status !== 'confirmed') {
+      log('On-chain verification required before payment'); 
+      return;
+    }
+    set('s4','muted','processing payment...');
+    const resp = await fetchPG('/ui/pay-auto', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ token: last.token, body: last.intent.body, anchorId: last.anchorId }) });
+    const txt = await resp.text();
+    let r = null; try { r = JSON.parse(txt); } catch(e) {}
+    if (r) log({ paid: r }); else log('paid(raw): ' + (txt||'').slice(0,200));
+    if (r && (r.payment?.usdcTxHash || r.usdcTxHash)) {
+      const tx = r.payment?.usdcTxHash || r.usdcTxHash;
+      const explorer = (r.payment?.explorer) || ('https://sepolia.basescan.org/tx/' + tx);
+      const el = document.getElementById('s4');
+      el.innerHTML = `<a href="${explorer}" target="_blank">paid (USDC tx)</a>`;
+      el.className = 's-ok'; el.dataset.state = 'paid';
+      addLink('USDC Payment', explorer);
+      log('Payment successful: ' + explorer);
+      log({ usdc: { txHash: tx, explorer } });
+    } else {
+      for (let i=0;i<15;i++) {
+        try {
+          const last = await getLastRedemption();
+          if (last && last.redeemed && last.usdcTxHash) {
+            const el = document.getElementById('s4');
+            el.innerHTML = `<a href="${last.explorer}" target="_blank">paid (USDC tx)</a>`;
+            el.className = 's-ok'; el.dataset.state = 'paid';
+            addLink('USDC Payment', last.explorer);
+            log('Payment successful (late): ' + last.explorer);
+            break;
+          }
+        } catch {}
+        await new Promise(r=>setTimeout(r,300));
+      }
+    }
+  } catch (e) { log('pay error: ' + e.message); }
+});
+$('btnMM').addEventListener('click', async ()=>{
+  try {
+    if (!window.ethereum) { log('MetaMask not found'); return; }
+    if (!last.token || !last.intent) { log('Run demo first'); return; }
+    const [addr] = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    log('Connected wallet: ' + addr);
+    
+    // Prepare typed data
+    const prepResp = await fetchPG('/ui/payment/prepare', { 
+      method:'POST', 
+      headers:{'content-type':'application/json'}, 
+      body: JSON.stringify({ token: last.token, body: last.intent.body, address: addr }) 
+    });
+    const prep = await prepResp.json();
+    if (!prep.ok) { 
+      log('Prepare failed: ' + JSON.stringify(prep)); 
+      return; 
+    }
+    
+    const { typedData, selected } = prep;
+    log('TypedData prepared for signing');
+    
+    // Build the proper format for MetaMask EIP-712 signing
+    const typedDataForSigning = {
+      domain: typedData.domain,
+      types: {
+        EIP712Domain: [
+          { name: 'name', type: 'string' },
+          { name: 'version', type: 'string' },
+          { name: 'chainId', type: 'uint256' },
+          { name: 'verifyingContract', type: 'address' }
+        ],
+        ...typedData.types
+      },
+      message: typedData.message,
+      primaryType: typedData.primaryType || 'TransferWithAuthorization'
+    };
+    
+    // Remove EIP712Domain from types for signing (MetaMask adds it automatically)
+    delete typedDataForSigning.types.EIP712Domain;
+    
+    try {
+      // MetaMask sign
+      const from = addr.toLowerCase();
+      const params = [ from, JSON.stringify(typedDataForSigning) ];
+      log('Requesting MetaMask signature...');
+      const signature = await window.ethereum.request({ method: 'eth_signTypedData_v4', params });
+      log('Signature obtained');
+      
+      // Finish payment - send typedData along with signature
+      const paidResp = await fetchPG('/ui/pay-metamask', { 
+        method:'POST', 
+        headers:{'content-type':'application/json'}, 
+        body: JSON.stringify({ 
+          token: last.token, 
+          body: last.intent.body, 
+          selected, 
+          signature, 
+          typedData,  // Include the typed data structure
+          anchorId: last.anchorId  // Include anchor ID for verification check
+        }) 
+      });
+      const paid = await paidResp.json();
+      log({ metamaskPaid: paid });
+      
+      if (paid && (paid.payment?.usdcTxHash || paid.usdcTxHash)) {
+        const tx = paid.payment?.usdcTxHash || paid.usdcTxHash;
+        const explorer = (paid.payment?.explorer) || ('https://sepolia.basescan.org/tx/' + tx);
+        const s4 = document.getElementById('s4');
+        s4.innerHTML = `<a href="${explorer}" target="_blank">paid (USDC tx)</a>`;
+        s4.className = 's-ok';
+        s4.dataset.state = 'paid';
+        addLink('USDC Payment', explorer);
+        log('Payment successful: ' + explorer);
+        log({ usdc: { txHash: tx, explorer } });
+      } else if (paid?.payment?.error) {
+        log('Payment execution failed: ' + paid.payment.error);
+      }
+    } catch (signError) {
+      log('MetaMask signing error: ' + signError.message);
+      if (signError.code === 4001) {
+        log('User rejected the signature request');
+      }
+    }
+  } catch (e) { 
+    log('metamask error: ' + e.message); 
+    console.error('Full error:', e);
+  }
+});
+
+// Admin: Restart servers (local only)
+$('btnRestart').addEventListener('click', async ()=>{
+  try {
+    log('Restarting servers...');
+    const r = await fetch(gate + '/admin/restart', { method:'POST' });
+    const t = await r.text();
+    log('Restart response: ' + t);
+    setTimeout(()=>location.reload(), 1500);
+  } catch (e) { log('restart error: ' + e.message); }
+});
+
+// Copy helpers
+function copy(text){ navigator.clipboard.writeText(text); log('copied'); }
+// Copy buttons removed
+if ($('btnCopyAttest')) $('btnCopyAttest').addEventListener('click', ()=>{
+  if (!last.proof && $('log').textContent.indexOf('public_signals')===-1) { log('Run demo first'); return; }
+  const body = {
+    agentId:'agent-demo-1', clientId:'demo-client', merchantId:'acme-merchant',
+    cart: last.cart || { items:[{ sku:'api-pro-month', qty:1, priceCents:1 }], region:'US-NY', taxRulesVersion:'v1', totalCents:1 },
+    intent: last.intent || { method:'POST', path:'/x402/pay', body:{ intent:'demo', cart:{ items:[{ sku:'api-pro-month', qty:1 }] } } },
+    modelId:'risk_analysis_v1', proof: last.proof || {}, publicInputs:[3,10,1,9]
+  };
+  const cmd = `curl -s -X POST ${gate}/attest -H 'content-type: application/json' -d '${JSON.stringify(body)}'`;
+  copy(cmd);
+});
+if ($('btnCopyPreflight')) $('btnCopyPreflight').addEventListener('click', ()=>{
+  if (!last.token) { log('Run demo first'); return; }
+  const cmd = `curl -s -X POST ${gate}/x402/pay -H 'content-type: application/json' -H 'X-ZKML-Attestation: ${last.token}' -d '${JSON.stringify(last.intent?.body||{})}'`;
+  copy(cmd);
+});
+if ($('btnCopyNodePay')) $('btnCopyNodePay').addEventListener('click', ()=>{
+  if (!last.token || !last.accepts) { log('Run demo first'); return; }
+  const snippet = `node - <<'NODE'
+const fetch=(...a)=>import('node-fetch').then(({default:f})=>f(...a));
+(async()=>{
+  const accepts=${JSON.stringify(last.accepts)};
+  const body='${JSON.stringify(last.intent?.body||{})}';
+  const {selectPaymentRequirements,createPaymentHeader}=await import('x402/client');
+  const {privateKeyToAccount}=await import('viem/accounts');
+  const account=privateKeyToAccount(process.env.PRIVATE_KEY);
+  const selected=selectPaymentRequirements(accepts,'base-sepolia','exact');
+  const header=await createPaymentHeader(account,1,selected);
+  const resp=await fetch('${gate}/x402/pay',{
+    method:'POST', headers:{'content-type':'application/json','X-ZKML-Attestation':'${last.token}','X-PAYMENT':header}, body
+  });
+  console.log((await resp.text()));
+})();
+NODE`;
+  copy(snippet);
+});
+</script>
+</body>
+</html>

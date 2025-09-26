@@ -1,0 +1,7 @@
+{
+  "network": "avalanche-fuji",
+  "address": "0x6121Fd93594C316B78e74B91B89A06d3Bb682a8F",
+  "groth16Verifier": "0xE0Add318E32F65936b8bD74DC122758f543b8166",
+  "deployer": "0x2e408ad62e30146404F4ED8A61253212f3f9A490",
+  "timestamp": "2025-09-22T15:46:55.835Z"
+}

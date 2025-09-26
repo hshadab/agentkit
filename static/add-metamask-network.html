@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Base Sepolia to MetaMask</title>
+    <style>
+        body { 
+            font-family: system-ui, -apple-system, sans-serif; 
+            max-width: 600px; 
+            margin: 50px auto; 
+            padding: 20px;
+            background: #0b0f14;
+            color: #e6edf3;
+        }
+        button { 
+            background: #9b5cff; 
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover { background: #7a3fe4; }
+        .error { color: #ef4444; }
+        .success { color: #22c55e; }
+        pre { 
+            background: #1b1f23; 
+            padding: 12px; 
+            border-radius: 8px; 
+            overflow-x: auto; 
+        }
+    </style>
+</head>
+<body>
+    <h1>Setup MetaMask for x402 Demo</h1>
+    
+    <h2>Step 1: Add Base Sepolia Network</h2>
+    <button onclick="addNetwork()">Add Base Sepolia to MetaMask</button>
+    <div id="networkStatus"></div>
+    
+    <h2>Step 2: Import Test Wallet (Optional)</h2>
+    <p>If you want to use the funded test wallet (9.98 USDC):</p>
+    <pre>Address: 0x2e408ad62e30146404F4ED8A61253212f3f9A490
+Private Key: Ask for it (don't import if you just want to test signing)</pre>
+    
+    <h2>Step 3: Switch to Base Sepolia</h2>
+    <button onclick="switchNetwork()">Switch to Base Sepolia</button>
+    <div id="switchStatus"></div>
+    
+    <h2>Step 4: Check Connection</h2>
+    <button onclick="checkConnection()">Check MetaMask Connection</button>
+    <div id="connectionStatus"></div>
+
+    <h2>Step 5: Go to Demo</h2>
+    <a href="http://127.0.0.1:8001/static/x402-demo.html">
+        <button>Open x402 Demo</button>
+    </a>
+
+    <script>
+        async function addNetwork() {
+            const status = document.getElementById('networkStatus');
+            
+            if (!window.ethereum) {
+                status.innerHTML = '<span class="error">MetaMask not detected! Please install it first.</span>';
+                return;
+            }
+            
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_addEthereumChain',
+                    params: [{
+                        chainId: '0x14A34', // 84532 in hex
+                        chainName: 'Base Sepolia',
+                        nativeCurrency: {
+                            name: 'Ethereum',
+                            symbol: 'ETH',
+                            decimals: 18
+                        },
+                        rpcUrls: ['https://sepolia.base.org'],
+                        blockExplorerUrls: ['https://sepolia.basescan.org']
+                    }]
+                });
+                status.innerHTML = '<span class="success">✓ Base Sepolia added successfully!</span>';
+            } catch (error) {
+                if (error.code === 4001) {
+                    status.innerHTML = '<span class="error">User rejected the request</span>';
+                } else {
+                    status.innerHTML = '<span class="error">Error: ' + error.message + '</span>';
+                }
+            }
+        }
+        
+        async function switchNetwork() {
+            const status = document.getElementById('switchStatus');
+            
+            if (!window.ethereum) {
+                status.innerHTML = '<span class="error">MetaMask not detected!</span>';
+                return;
+            }
+            
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: '0x14A34' }] // 84532 in hex
+                });
+                status.innerHTML = '<span class="success">✓ Switched to Base Sepolia!</span>';
+            } catch (error) {
+                status.innerHTML = '<span class="error">Error: ' + error.message + '</span>';
+            }
+        }
+        
+        async function checkConnection() {
+            const status = document.getElementById('connectionStatus');
+            
+            if (!window.ethereum) {
+                status.innerHTML = '<span class="error">MetaMask not detected!</span>';
+                return;
+            }
+            
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                
+                if (chainId === '0x14a34') {
+                    status.innerHTML = `
+                        <span class="success">✓ Connected!</span><br>
+                        <strong>Wallet:</strong> ${accounts[0]}<br>
+                        <strong>Network:</strong> Base Sepolia (${parseInt(chainId, 16)})
+                    `;
+                } else {
+                    status.innerHTML = `
+                        <span class="error">Wrong network! Current: ${parseInt(chainId, 16)}</span><br>
+                        Please switch to Base Sepolia (84532)
+                    `;
+                }
+            } catch (error) {
+                status.innerHTML = '<span class="error">Error: ' + error.message + '</span>';
+            }
+        }
+    </script>
+</body>
+</html>

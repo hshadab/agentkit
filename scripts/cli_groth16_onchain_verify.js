@@ -19,18 +19,24 @@ async function main() {
   const { proof, publicSignals } = payload;
   if (!proof || !publicSignals) throw new Error('Missing proof or publicSignals in input');
 
+  // Allow overriding deployment to target different networks (e.g., Base Sepolia)
+  const deploymentPath = process.env.ZKML_VERIFIER_DEPLOYMENT
+    || path.join(__dirname, '..', 'deployments', 'jolt-storage-verifier-sepolia.json');
   const deployment = JSON.parse(
-    fs.readFileSync(path.join(__dirname, '..', 'deployments', 'jolt-storage-verifier-sepolia.json'), 'utf8')
+    fs.readFileSync(deploymentPath, 'utf8')
   );
 
-  const rpc = process.env.ETH_RPC || 'https://eth-sepolia.public.blastapi.io';
-  const provider = new ethers.JsonRpcProvider(rpc, { chainId: 11155111, name: 'sepolia' });
+  const rpc = process.env.ETH_RPC || process.env.BASE_RPC_URL || 'https://sepolia.base.org';
+  const chainId = Number(process.env.CHAIN_ID || process.env.ETH_CHAIN_ID || 84532);
+  const networkName = process.env.NETWORK_NAME || 'base-sepolia';
+  const provider = new ethers.JsonRpcProvider(rpc, { chainId, name: networkName });
 
   const pk = process.env.GROTH16_PRIVATE_KEY || process.env.PRIVATE_KEY;
   if (!pk) throw new Error('Missing GROTH16_PRIVATE_KEY/PRIVATE_KEY');
 
   const wallet = new ethers.Wallet(pk, provider);
-  const contract = new ethers.Contract(deployment.address, deployment.abi, wallet);
+  const verifierAddress = process.env.ZKML_VERIFIER_ADDRESS || deployment.address;
+  const contract = new ethers.Contract(verifierAddress, deployment.abi, wallet);
 
   // Format inputs
   const a = [proof.a[0], proof.a[1]];
@@ -50,9 +56,9 @@ async function main() {
     success: true,
     transactionHash: tx.hash,
     blockNumber: receipt.blockNumber,
-    etherscanUrl: `https://sepolia.etherscan.io/tx/${tx.hash}`,
-    contractAddress: deployment.address,
-    contractUrl: `https://sepolia.etherscan.io/address/${deployment.address}`,
+    etherscanUrl: `${process.env.EXPLORER_BASE_URL || 'https://sepolia.basescan.org'}/tx/${tx.hash}`,
+    contractAddress: verifierAddress,
+    contractUrl: `${process.env.EXPLORER_BASE_URL || 'https://sepolia.basescan.org'}/address/${verifierAddress}`,
   }));
 }
 
@@ -60,4 +66,3 @@ main().catch((e) => {
   process.stderr.write(String(e && e.stack ? e.stack : e));
   process.exit(1);
 });
-

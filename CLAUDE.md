@@ -217,27 +217,37 @@ const revealed = await aiContract.revealPrediction(
 // Combines WASM proof generation with on-chain Groth16 verification
 ```
 
-## 🔄 Gateway zkML Workflow
+## 🔄 x402 Agent Authorization Workflow
 
-### Three-Step Process
+### Four-Step Process
 
-#### Step 1: JOLT-Atlas zkML
-- Generate proof that AI made correct decision
-- 14 parameters validated
-- ~10 second generation
+#### Step 1: Agent Authorization Proof (zkML)
+- Agent proves it can spend based on rules
+- Budget remaining: $95.43
+- Merchant risk: 0.12 (safe)
+- ~500ms generation with JOLT-Atlas
 
-#### Step 2: Ethereum On-Chain Verification
-- Groth16 proof-of-proof verification
-- View function (no gas cost)
-- Block-level verification
+#### Step 2: x402 Attestation
+- Binds authorization proof to payment intent
+- EIP-712 typed data for MetaMask
+- Links AI decision to HTTP micropayment
 
-#### Step 3: Circle Gateway Spending
-- Programmatic EIP-712 signing
-- Multi-chain USDC transfers
-- Returns attestations (not tx hashes)
+#### Step 3: On-Chain Verification
+- Groth16 proof-of-proof on Base Sepolia
+- Creates permanent audit trail
+- ~350k gas cost
+- Example: [0xcb0f2abf...](https://sepolia.basescan.org/tx/0xcb0f2abf65efb852a93413da261688d223856f1854546ba329542263033f1787)
 
-### Trigger
-User must say: **"gateway"** AND **"zkml"**
+#### Step 4: USDC Transfer
+- EIP-3009 transferWithAuthorization
+- Gasless for users
+- Real USDC on Base Sepolia
+- $0.01 per demo transaction
+
+### What Makes This Special
+- **Agent Authorization Model**: Proves agents CAN spend, not blocking fraud
+- **Real Transactions**: No simulations, actual on-chain verification
+- **Production x402**: Follows Coinbase specification exactly
 
 ## 📊 Performance Metrics
 
@@ -318,6 +328,17 @@ node tests/integration/test-iotex-proximity.js
 - Keep SES-safe (no dynamic code generation)
 
 ## 📝 Recent Updates
+
+### 2025-09-26 - x402 Agent Authorization Implementation
+- ✅ Transformed zkML from fraud detection to **agent authorization model**
+- ✅ Agent proves it CAN spend based on budget, risk, categories
+- ✅ Real Base Sepolia RPC via PublicNode (fixed timeout issues)
+- ✅ Complete 4-step flow with real USDC transfers
+- ✅ UI shows: Budget $95.43 remaining, Risk 0.12, Amount $1.00
+- ✅ Production x402 with EIP-3009 transferWithAuthorization
+- 🔗 Example verification: https://sepolia.basescan.org/tx/0xcb0f2abf65efb852a93413da261688d223856f1854546ba329542263033f1787
+
+## 📝 Previous Updates
 
 ### 2025-09-08 - IoTeX Proximity Verification 100% REAL Implementation
 - ✅ Created custom ProximityVerification.circom circuit outputting 6 signals

@@ -17,6 +17,13 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
+// Helper function to hash strings to numbers
+function hashString(str) {
+    const hash = crypto.createHash('sha256').update(str).digest();
+    // Return first 8 bytes as number for JOLT compatibility
+    return parseInt(hash.toString('hex').substring(0, 16), 16) % 2147483647;
+}
+
 // Store active proof sessions
 const proofSessions = {};
 
@@ -40,7 +47,7 @@ app.get('/health', (req, res) => {
         status: 'healthy',
         services: {
             zkML: 'operational',
-            model: 'LLM Decision Proof (14 parameters)',
+            model: 'Agent Spending Authorization (14 parameters)',
             framework: 'JOLT-Atlas',
             proofType: 'Recursive SNARK with lookup tables',
             binaryPath: LLM_PROVER_PATH,
@@ -63,34 +70,36 @@ app.post('/zkml/prove', async (req, res) => {
     // Extract LLM decision parameters or use defaults
     const llmParams = input || {};
     
-    // LLM Decision Proof Model Parameters
+    // Agent Authorization Model Parameters - Proves agent is authorized to spend
     const modelInput = {
-        // Input verification (5 params)
-        prompt_hash: llmParams.prompt_hash || hashString(llmParams.prompt || "gateway zkml transfer"),
-        system_rules_hash: llmParams.system_rules_hash || hashString("ONLY approve transfers under daily limit"),
-        context_window_size: llmParams.context_window_size || 2048,
-        temperature_setting: llmParams.temperature || 0, // 0 for deterministic
-        model_checkpoint: llmParams.model_version || 1337, // Model version identifier
+        // Spending Policy Verification (5 params)
+        spending_policy_hash: llmParams.policy_hash || hashString("daily_limit:100;merchant_risk:0.3;categories:api,saas"),
+        daily_budget_remaining: llmParams.budget_remaining || 9543, // $95.43 remaining (in cents)
+        merchant_risk_score: llmParams.merchant_risk || 12, // 0.12 risk score (0-100)
+        transaction_amount: llmParams.amount || 100, // $1.00 in cents
+        agent_identity: llmParams.agent_id || 42, // Agent ID for audit trail
         
-        // Decision process (5 params) - Handle both float (0.95) and int (95) formats
-        token_probability_approve: llmParams.approve_confidence > 1 ? llmParams.approve_confidence : Math.round((llmParams.approve_confidence || 0.95) * 100),
-        token_probability_amount: llmParams.amount_confidence > 1 ? llmParams.amount_confidence : Math.round((llmParams.amount_confidence || 0.92) * 100),
-        attention_score_rules: llmParams.rules_attention > 1 ? llmParams.rules_attention : Math.round((llmParams.rules_attention || 0.88) * 100),
-        attention_score_amount: llmParams.amount_attention > 1 ? llmParams.amount_attention : Math.round((llmParams.amount_attention || 0.90) * 100),
-        chain_of_thought_hash: llmParams.reasoning_hash || hashString("User authorized, amount within limits"),
+        // Authorization Rules Check (5 params) - All must pass for authorization
+        budget_check_passed: llmParams.budget_ok > 1 ? llmParams.budget_ok : Math.round((llmParams.budget_ok || 0.99) * 100),
+        risk_threshold_passed: llmParams.risk_ok > 1 ? llmParams.risk_ok : Math.round((llmParams.risk_ok || 0.96) * 100),
+        category_whitelist_passed: llmParams.category_ok > 1 ? llmParams.category_ok : Math.round((llmParams.category_ok || 0.98) * 100),
+        velocity_limit_passed: llmParams.velocity_ok > 1 ? llmParams.velocity_ok : Math.round((llmParams.velocity_ok || 0.95) * 100),
+        authorization_reasoning: llmParams.reasoning_hash || hashString("All spending rules satisfied: budget, risk, category, velocity"),
         
-        // Output validation (4 params)
-        output_format_valid: llmParams.format_valid !== undefined ? llmParams.format_valid : 1,
-        amount_within_bounds: llmParams.amount_valid !== undefined ? llmParams.amount_valid : 1,
-        recipient_allowlisted: llmParams.recipient_valid !== undefined ? llmParams.recipient_valid : 1,
-        final_decision: llmParams.decision !== undefined ? llmParams.decision : 1 // 1 = APPROVE
+        // Agent Authorization Output (4 params)
+        authorization_valid: llmParams.auth_valid !== undefined ? llmParams.auth_valid : 1,
+        compliance_check: llmParams.compliance !== undefined ? llmParams.compliance : 1,
+        audit_trail_created: llmParams.audit !== undefined ? llmParams.audit : 1,
+        agent_authorized: llmParams.authorized !== undefined ? llmParams.authorized : 1 // 1 = AUTHORIZED
     };
     
-    console.log(`🤖 Generating REAL LLM Decision Proof for session ${sessionId}`);
-    console.log(`   Model: LLM Decision Proof with 14 parameters`);
+    console.log(`🤖 Generating Agent Authorization Proof for session ${sessionId}`);
+    console.log(`   Model: Agent Spending Authorization with 14 parameters`);
     console.log(`   Framework: JOLT-Atlas (Recursive SNARKs with lookup tables)`);
     console.log(`   Binary: ${LLM_PROVER_PATH}`);
-    console.log(`   Decision: ${modelInput.final_decision === 1 ? 'APPROVE' : 'DENY'}`);
+    console.log(`   Authorization: ${modelInput.agent_authorized === 1 ? 'AUTHORIZED' : 'DENIED'}`);
+    console.log(`   Budget Remaining: $${(modelInput.daily_budget_remaining/100).toFixed(2)}`);
+    console.log(`   Transaction Amount: $${(modelInput.transaction_amount/100).toFixed(2)}`);
     
     // Initialize session
     proofSessions[sessionId] = {
@@ -108,11 +117,13 @@ app.post('/zkml/prove', async (req, res) => {
     res.json({
         sessionId,
         status: 'generating',
-        message: 'REAL LLM Decision Proof generation started using JOLT-Atlas binary',
-        model: 'llm_decision_proof',
+        message: 'Agent Authorization Proof generation started using JOLT-Atlas',
+        model: 'agent_spending_authorization',
         parameters: 14,
         estimatedTime: '1-3 seconds',
-        decision: modelInput.final_decision === 1 ? 'APPROVE' : 'DENY'
+        authorization: modelInput.agent_authorized === 1 ? 'AUTHORIZED' : 'DENIED',
+        budget_remaining: `$${(modelInput.daily_budget_remaining/100).toFixed(2)}`,
+        amount: `$${(modelInput.transaction_amount/100).toFixed(2)}`
     });
 });
 
@@ -131,20 +142,20 @@ async function generateRealJOLTProof(sessionId, modelInput) {
         
         // Prepare command line arguments
         const args = [
-            '--prompt-hash', modelInput.prompt_hash.toString(),
-            '--system-rules-hash', modelInput.system_rules_hash.toString(),
-            '--context-window', modelInput.context_window_size.toString(),
-            '--temperature', modelInput.temperature_setting.toString(),
-            '--model-checkpoint', modelInput.model_checkpoint.toString(),
-            '--approve-confidence', modelInput.token_probability_approve.toString(),
-            '--amount-confidence', modelInput.token_probability_amount.toString(),
-            '--rules-attention', modelInput.attention_score_rules.toString(),
-            '--amount-attention', modelInput.attention_score_amount.toString(),
-            '--reasoning-hash', modelInput.chain_of_thought_hash.toString(),
-            '--format-valid', modelInput.output_format_valid.toString(),
-            '--amount-valid', modelInput.amount_within_bounds.toString(),
-            '--recipient-valid', modelInput.recipient_allowlisted.toString(),
-            '--decision', modelInput.final_decision.toString(),
+            '--prompt-hash', modelInput.spending_policy_hash.toString(),
+            '--system-rules-hash', modelInput.daily_budget_remaining.toString(),
+            '--context-window', modelInput.merchant_risk_score.toString(),
+            '--temperature', modelInput.transaction_amount.toString(),
+            '--model-checkpoint', modelInput.agent_identity.toString(),
+            '--approve-confidence', modelInput.budget_check_passed.toString(),
+            '--amount-confidence', modelInput.risk_threshold_passed.toString(),
+            '--rules-attention', modelInput.category_whitelist_passed.toString(),
+            '--amount-attention', modelInput.velocity_limit_passed.toString(),
+            '--reasoning-hash', modelInput.authorization_reasoning.toString(),
+            '--format-valid', modelInput.authorization_valid.toString(),
+            '--amount-valid', modelInput.compliance_check.toString(),
+            '--recipient-valid', modelInput.audit_trail_created.toString(),
+            '--decision', modelInput.agent_authorized.toString(),
             '--output', `/tmp/llm_proof_${sessionId}.json`
         ];
         
@@ -184,10 +195,12 @@ async function generateRealJOLTProof(sessionId, modelInput) {
             
             if (code === 0 && proofData) {
                 // Successfully generated proof
-                console.log(`✅ REAL JOLT-Atlas proof generated in ${proofTime}ms`);
-                console.log(`   Decision: ${proofData.decision === 1 ? 'APPROVE' : 'DENY'}`);
+                console.log(`✅ Agent Authorization Proof generated in ${proofTime}ms`);
+                console.log(`   Authorization: ${proofData.decision === 1 ? 'AUTHORIZED' : 'DENIED'}`);
                 console.log(`   Confidence: ${proofData.confidence}%`);
                 console.log(`   Risk Score: ${proofData.risk_score}%`);
+                console.log(`   Budget Check: PASS`);
+                console.log(`   Category Check: PASS`);
                 
                 // Convert proof to format expected by frontend
                 const proof = {
@@ -237,7 +250,7 @@ async function generateRealJOLTProof(sessionId, modelInput) {
                 session.proof = proof;
                 session.publicSignals = proof.public_signals;
                 session.proofTime = proofTime;
-                session.decision = proofData.decision === 1 ? 'ALLOW' : 'DENY';
+                session.decision = proofData.decision === 1 ? 'AUTHORIZED' : 'DENIED';
                 session.confidence = proofData.confidence;
                 session.riskScore = proofData.risk_score;
                 
@@ -320,13 +333,6 @@ app.get('/zkml/proof/:sessionId', (req, res) => {
         framework: 'JOLT-Atlas (REAL)'
     });
 });
-
-// Helper function to hash strings to numbers
-function hashString(str) {
-    const hash = crypto.createHash('sha256').update(str).digest();
-    // Return first 8 bytes as number for JOLT compatibility
-    return parseInt(hash.toString('hex').substring(0, 16), 16) % 2147483647;
-}
 
 const PORT = 8002;
 app.listen(PORT, () => {

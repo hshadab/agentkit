@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>x402 + zkML Clean Demo</title>
+  <style>
+    :root { --bg:#0e1117; --panel:#111827; --mut:#9aa4af; --txt:#e6edf3; --ok:#22c55e; --warn:#f59e0b; --err:#ef4444; --link:#60a5fa; }
+    html, body { margin:0; padding:0; background:var(--bg); color:var(--txt); font: 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    header { padding:16px; border-bottom:1px solid #1f2937; }
+    h1 { margin:0 0 6px 0; font-size:18px; }
+    main { max-width: 960px; margin: 20px auto; padding: 0 16px; }
+    .panel { background: var(--panel); border: 1px solid #1f2937; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    button { background:#1f2937; color:var(--txt); border:1px solid #374151; border-radius:8px; padding:8px 12px; cursor:pointer; }
+    button:hover { background:#223041; }
+    .steps { display:grid; grid-template-columns: 1fr; gap:8px; }
+    .step { display:flex; justify-content:space-between; background:#0b1220; border:1px solid #1f2937; border-radius:8px; padding:10px 12px; }
+    .ok { color:var(--ok); } .warn { color:var(--warn); } .err { color:var(--err); } .mut { color:var(--mut); }
+    pre { background:#0b1220; border:1px solid #1f2937; border-radius:8px; padding:10px; overflow:auto; }
+    a { color: var(--link); text-decoration:none; } a:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>zkML‑Gated x402 Clean Demo</h1>
+    <div class="mut">Direct calls to backend (8001) only</div>
+  </header>
+  <main>
+    <div class="panel row">
+      <button id="btnStart">Start Demo</button>
+      <button id="btnPay">Pay $0.01 Now</button>
+      <div class="mut">Backend: <span id="apiBase"></span></div>
+    </div>
+
+    <div class="panel steps">
+      <div class="step"><div>1) Generate zkML proof</div><div id="s1" class="mut">idle</div></div>
+      <div class="step"><div>2) Request attestation (backend fallback if PG down)</div><div id="s2" class="mut">idle</div></div>
+      <div class="step"><div>3) x402 preflight (via backend proxy)</div><div id="s3" class="mut">idle</div></div>
+      <div class="step"><div>4) Anchor status</div><div id="s4" class="mut">idle</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="mut">Output</div>
+      <pre id="log"></pre>
+    </div>
+  </main>
+
+<script>
+const api = location.origin;
+document.getElementById('apiBase').textContent = api;
+const $ = id => document.getElementById(id);
+const log = m => { $('log').textContent += (typeof m==='string'? m : JSON.stringify(m,null,2)) + '\n'; };
+const set = (id, cls, text) => { const el=$(id); el.className = cls; el.textContent = text; };
+
+let proofObj = null;
+let token = null;
+let anchorId = null;
+
+async function start() {
+  $('log').textContent = '';
+  set('s1','mut','running'); set('s2','mut','idle'); set('s3','mut','idle'); set('s4','mut','idle');
+  try {
+    // 1) zkML
+    const p = await fetch(api + '/zkml/prove', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ prompt:'gateway zkml transfer $0.01' }) });
+    const pj = await p.json();
+    log(['zkml session', pj.sessionId]);
+    let st = null;
+    for (let i=0;i<120;i++) {
+      const r = await fetch(api + '/zkml/status/' + pj.sessionId);
+      st = await r.json();
+      if (st.status === 'completed') break;
+      if (st.status === 'error') throw new Error('zkML error: ' + (st.error||'unknown'));
+      await new Promise(r=>setTimeout(r,250));
+    }
+    if (!st || st.status !== 'completed') throw new Error('zkML timeout');
+    proofObj = st.proof; set('s1','ok','done'); log({ public_signals: st.proof.public_signals });
+
+    // 2) Attest (backend owns fallback)
+    set('s2','mut','running');
+    const cart = { items:[{ sku:'api-pro-month', qty:1, priceCents:1 }], region:'US-NY', taxRulesVersion:'v1', totalCents:1 };
+    const intent = { method:'POST', path:'/x402/pay', body:{ intent:'demo', cart:{ items:[{ sku:'api-pro-month', qty:1 }] } } };
+    const attBody = { agentId:'agent-demo-1', clientId:'demo-client', merchantId:'acme-merchant', cart, intent, modelId:'risk_analysis_v1', proof: proofObj, publicInputs:[3,10,1,9] };
+    const aResp = await fetch(api + '/attest/direct', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(attBody) });
+    const aTxt = await aResp.text(); let att = null; try { att = JSON.parse(aTxt); } catch {}
+    if (!att || (!att.ok && !att.token)) throw new Error('attest failed: ' + aTxt.slice(0,200));
+    token = att.token; set('s2','ok','token issued');
+    if (att.anchor && att.anchor.attestationId) { anchorId = att.anchor.attestationId; set('s4','warn','pending'); }
+    log({ attestation: { intentHash: att.intentHash, acceptsHash: att.acceptsHash } });
+
+    // 3) Preflight via backend proxy
+    set('s3','mut','running');
+    const pre = await fetch(api + '/x402/pay', { method:'POST', headers:{'content-type':'application/json','X-ZKML-Attestation': token }, body: JSON.stringify(intent.body) });
+    const preTxt = await pre.text(); let pj2=null; try { pj2=JSON.parse(preTxt); } catch {}
+    if (!pj2 || !pj2.accepts) throw new Error('preflight failed: ' + preTxt.slice(0,200));
+    set('s3','ok','accepts');
+    const a0 = pj2.accepts[0] || {}; log({ accepts: { network:a0.network, asset:a0.asset, payTo:a0.payTo, resource:a0.resource } });
+
+    // 4) Anchor (if any)
+    if (anchorId) pollAnchor(); else set('s4','mut','none');
+  } catch (e) {
+    log('Error: ' + e.message);
+    if ($('s1').textContent==='running') set('s1','err','error');
+    if ($('s2').textContent==='running') set('s2','err','error');
+    if ($('s3').textContent==='running') set('s3','err','error');
+  }
+}
+
+async function pollAnchor() {
+  try {
+    const r = await fetch(api + '/attest/anchor/' + anchorId);
+    const j = await r.json();
+    if (j.status === 'confirmed') { set('s4','ok','confirmed'); log({ verifyTx: j.result?.transactionHash }); }
+    else if (j.status === 'error') { set('s4','err','error'); log({ anchorError: j.error }); }
+    else { set('s4','warn','pending'); setTimeout(pollAnchor, 3000); }
+  } catch (e) { log('anchor poll error: ' + e.message); setTimeout(pollAnchor, 3000); }
+}
+
+$('btnStart').addEventListener('click', start);
+$('btnPay').addEventListener('click', async ()=>{
+  try {
+    if (!token) { log('Run demo first'); return; }
+    const body = { intent:'demo', cart:{ items:[{ sku:'api-pro-month', qty:1 }] } };
+    const r = await fetch(api + '/ui/pay-auto', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ token, body }) });
+    const t = await r.text(); let j = null; try { j = JSON.parse(t); } catch {}
+    if (j) log({ paid: j }); else log('paid(raw): ' + (t||'').slice(0,200));
+  } catch (e) { log('pay error: ' + e.message); }
+});
+</script>
+</body>
+</html>

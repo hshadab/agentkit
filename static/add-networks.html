@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Testnets & USDC (MetaMask)</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0b0b0b; color: #fff; padding: 24px; }
+    .card { background: #141414; border: 1px solid #333; border-radius: 12px; padding: 20px; max-width: 720px; }
+    h1 { font-size: 20px; margin: 0 0 12px; }
+    p { color: #bbb; font-size: 14px; }
+    button { background: #6B7CFF; color: #fff; border: 0; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    button.secondary { background: #2b2b2b; border: 1px solid #444; }
+    .row { display: flex; gap: 8px; margin: 10px 0; }
+    .net { margin: 16px 0; padding: 12px; border: 1px solid #2a2a2a; border-radius: 10px; }
+    code { background: #111; padding: 2px 6px; border-radius: 4px; color: #9fd; }
+    .ok { color: #10b981; }
+    .warn { color: #fbbf24; }
+    .err { color: #ef4444; }
+    .small { font-size: 12px; color: #9aa; }
+  </style>
+  <script>
+    const networks = [
+      {
+        chainId: '0xaa36a7', // 11155111
+        chainName: 'Ethereum Sepolia',
+        nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+        rpcUrls: ['https://eth-sepolia.public.blastapi.io'],
+        blockExplorerUrls: ['https://sepolia.etherscan.io'],
+        tokens: [
+          { address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238', symbol: 'USDC', decimals: 6 }
+        ]
+      },
+      {
+        chainId: '0x14A34', // 84532
+        chainName: 'Base Sepolia',
+        nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+        rpcUrls: ['https://sepolia.base.org'],
+        blockExplorerUrls: ['https://sepolia.basescan.org'],
+        tokens: [
+          { address: '0x036CbD53842c5426634e7929541eC2318f3dCF7e', symbol: 'USDC', decimals: 6 }
+        ]
+      },
+      {
+        chainId: '0xa869', // 43113
+        chainName: 'Avalanche Fuji',
+        nativeCurrency: { name: 'Avalanche', symbol: 'AVAX', decimals: 18 },
+        rpcUrls: ['https://api.avax-test.network/ext/bc/C/rpc'],
+        blockExplorerUrls: ['https://testnet.snowtrace.io'],
+        tokens: [
+          { address: '0x5425890298aed601595a70AB815c96711a31Bc65', symbol: 'USDC', decimals: 6 }
+        ]
+      },
+      {
+        chainId: '0x1252', // 4690
+        chainName: 'IoTeX Testnet',
+        nativeCurrency: { name: 'IoTeX', symbol: 'IOTX', decimals: 18 },
+        rpcUrls: ['https://4690.rpc.thirdweb.com'],
+        blockExplorerUrls: ['https://testnet.iotexscan.io'],
+        tokens: []
+      }
+    ];
+
+    function log(msg, cls) {
+      const el = document.getElementById('log');
+      const line = document.createElement('div');
+      line.className = cls || '';
+      line.textContent = msg;
+      el.appendChild(line);
+    }
+
+    function mmErrorCode(err) {
+      // MetaMask standardizes some codes; 4902 = Unrecognized chain
+      return (err && (err.code || err?.data?.originalError?.code)) || 0;
+    }
+
+    async function switchChain(chainId) {
+      return window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId }] });
+    }
+
+    async function tryAddNetwork(net) {
+      return window.ethereum.request({
+        method: 'wallet_addEthereumChain',
+        params: [{
+          chainId: net.chainId,
+          chainName: net.chainName,
+          nativeCurrency: net.nativeCurrency,
+          rpcUrls: net.rpcUrls,
+          blockExplorerUrls: net.blockExplorerUrls
+        }]
+      });
+    }
+
+    async function ensureNetwork(net) {
+      if (!window.ethereum) throw new Error('MetaMask not detected');
+      // 1) Prefer switching first; if chain exists this avoids param-mismatch errors
+      try {
+        await switchChain(net.chainId);
+        log(`✔ Network available: ${net.chainName} (${net.chainId})`, 'ok');
+        return true;
+      } catch (e) {
+        const msg = (e && (e.message || e.toString())) || '';
+        const code = mmErrorCode(e);
+        // 2) If unrecognized (4902), add it
+        if (code === 4902 || /unrecognized chain/i.test(msg)) {
+          try {
+            await tryAddNetwork(net);
+            log(`➕ Added network: ${net.chainName}`, 'ok');
+            return true;
+          } catch (addErr) {
+            const addMsg = (addErr && (addErr.message || addErr.toString())) || '';
+            // Some wallets throw on param mismatch if the chain was previously added with different metadata
+            if (/does not match currency symbol/i.test(addMsg)) {
+              // Treat as already-added under different metadata; attempt switch again
+              try { await switchChain(net.chainId); log(`✔ Network present (metadata differs): ${net.chainName}`, 'warn'); return true; } catch {}
+            }
+            log(`Failed to add ${net.chainName}: ${addMsg}`, 'err');
+            return false;
+          }
+        }
+        // Other errors (e.g., user rejected or pending request)
+        log(`Cannot switch to ${net.chainName}: ${msg}`, 'err');
+        return false;
+      }
+    }
+
+    async function addToken(token) {
+      return window.ethereum.request({
+        method: 'wallet_watchAsset',
+        params: {
+          type: 'ERC20',
+          options: {
+            address: token.address,
+            symbol: token.symbol,
+            decimals: token.decimals
+          }
+        }
+      });
+    }
+
+    async function addAllNetworks() {
+      if (!window.ethereum) { log('MetaMask not detected', 'err'); return; }
+      for (const net of networks) {
+        // continue on errors; best-effort
+        try {
+          await ensureNetwork(net);
+        } catch (e) {
+          log(`Error processing ${net.chainName}: ${(e && e.message) || e}`, 'err');
+        }
+      }
+      log('Processed all networks', 'ok');
+    }
+
+    async function addAllTokens() {
+      if (!window.ethereum) { log('MetaMask not detected', 'err'); return; }
+      for (const net of networks) {
+        if (!net.tokens || !net.tokens.length) continue;
+        try {
+          const ok = await ensureNetwork(net);
+          if (!ok) { log(`Skipping tokens on ${net.chainName} (network unavailable)`, 'warn'); continue; }
+          for (const t of net.tokens) {
+            try {
+              await addToken(t);
+              log(`✔ Added ${t.symbol} on ${net.chainName}`, 'ok');
+            } catch (e) {
+              log(`Failed to add ${t.symbol} on ${net.chainName}: ${(e && e.message) || e}`, 'err');
+            }
+          }
+        } catch (e) {
+          log(`Token step error for ${net.chainName}: ${(e && e.message) || e}`, 'err');
+        }
+      }
+      log('Processed tokens for all networks', 'ok');
+    }
+  </script>
+</head>
+<body>
+  <div class="card">
+    <h1>One‑Click Add Testnets & USDC (MetaMask)</h1>
+    <p>Use this page in a browser with MetaMask installed. It will request MetaMask to add the test networks and USDC tokens.</p>
+    <div class="row">
+      <button onclick="addAllNetworks()">Add All Networks</button>
+      <button class="secondary" onclick="addAllTokens()">Add USDC Tokens</button>
+    </div>
+    <div class="small">Networks: Ethereum Sepolia, Base Sepolia, Avalanche Fuji, IoTeX Testnet. Tokens: USDC on Sepolia, Base, Fuji (IoTeX not applicable).</div>
+    <div id="log" style="margin-top:12px"></div>
+  </div>
+</body>
+</html>

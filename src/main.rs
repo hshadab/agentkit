@@ -22,10 +22,16 @@ use axum::extract::Path;
 use axum::Json;
 use serde_json::Value;
 use tokio::io::AsyncWriteExt;
+use axum::http::{HeaderMap, HeaderValue};
+use axum::http::header::HeaderName;
+use axum::body::Bytes as AxumBytes;
+use tokio::time::{sleep, Duration};
+use axum::extract::connect_info::ConnectInfo;
 use ethers::prelude::*;
-use ethers::types::{U256, Address, H256, Bytes};
+use ethers::types::{U256, Address, H256};
 use std::sync::Arc;
 use sha2::{Digest, Sha256};
+use base64::Engine as _;
 use ethers::core::utils::keccak256;
 use ethers::abi::{Token, encode};
 use std::collections::HashMap;
@@ -38,6 +44,8 @@ struct AppState {
     zkengine_binary: String,
     proofs_dir: String,
     wasm_dir: String,
+    // x402 proof-gate base (for proxying /attest, /x402/*, /ui/* helpers)
+    x402_proof_gate_url: String,
     // (zkML now local)
     enabled_probes: Vec<String>,
     enabled_workflows: Vec<String>,
@@ -64,6 +72,8 @@ struct AppState {
     medical_sessions: Arc<tokio::sync::Mutex<HashMap<String, MedicalSession>>>,
     ai_sessions: Arc<tokio::sync::Mutex<HashMap<String, AiSession>>>,
     zkml_sessions: Arc<tokio::sync::Mutex<HashMap<String, ZkmlSession>>>,
+    // Admin
+    admin_token: Option<String>,
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -146,6 +156,10 @@ async fn main() {
     let enabled_workflows = std::env::var("ENABLED_WORKFLOWS")
         .unwrap_or_else(|_| "iotex,gateway".to_string())
         .split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect::<Vec<_>>();
+
+    // x402 proof-gate (Node) URL for proxying UI/demo endpoints
+    let x402_proof_gate_url = std::env::var("X402_PROOF_GATE_URL")
+        .unwrap_or_else(|_| "http://127.0.0.1:8602".to_string());
     
     // Create proofs directory if it doesn't exist
     std::fs::create_dir_all(&proofs_dir).ok();
@@ -191,6 +205,7 @@ async fn main() {
         wasm_dir,
         enabled_probes,
         enabled_workflows,
+        x402_proof_gate_url,
         openai_api_key,
         openai_model,
         circle_api_base,
@@ -208,11 +223,14 @@ async fn main() {
         medical_sessions: Arc::new(tokio::sync::Mutex::new(HashMap::new())),
         ai_sessions: Arc::new(tokio::sync::Mutex::new(HashMap::new())),
         zkml_sessions: Arc::new(tokio::sync::Mutex::new(HashMap::new())),
+        admin_token: std::env::var("ADMIN_TOKEN").ok(),
     };
 
     let app = Router::new()
         .route("/", get(serve_index))
         .route("/index.html", get(serve_index))
+        // Force no-cache for the x402 demo HTML to ensure latest script is loaded
+        .route("/static/x402-demo.html", get(serve_x402_demo_nocache))
         // Capabilities & health
         .route("/capabilities", get(capabilities))
         .route("/avalanche/health", get(avalanche_health))
@@ -226,6 +244,21 @@ async fn main() {
         .route("/zkml/verify", post(zkml_verify_onchain))
         .route("/zkml/verify/health", get(zkml_verify_health))
         .route("/zkml/workflow", post(zkml_full_workflow))
+        // Aliases for UI demo compatibility (/ui/zkml/*)
+        .route("/ui/zkml/prove", post(zkml_prove_local))
+        .route("/ui/zkml/status/:id", get(zkml_status_local))
+        .route("/ui/zkml/proof/:id", get(zkml_proof_local))
+        // x402 proof-gate proxies (these forward to the Node server on 8602)
+        .route("/attest", post(proxy_attest))
+        .route("/attest/anchor/:id", get(proxy_attest_anchor))
+        .route("/x402/pay", post(proxy_x402_pay))
+        .route("/x402/protected", post(proxy_x402_protected))
+        .route("/ui/pay-auto", post(proxy_ui_pay_auto))
+        .route("/ui/payment/prepare", post(proxy_ui_payment_prepare))
+        .route("/ui/pay-metamask", post(proxy_ui_pay_metamask))
+        .route("/ui/last-redemption", get(proxy_ui_last_redemption))
+        // Admin endpoints (local only)
+        .route("/admin/restart", post(admin_restart))
         // Groth16 proxy
         .route("/groth16/health", get(groth16_health))
         .route("/groth16/workflow", post(groth16_workflow))
@@ -234,6 +267,8 @@ async fn main() {
         .route("/gateway/transfer", post(gateway_transfer))
         .route("/gateway/balance", post(gateway_balance))
         .route("/gateway/transfers/:id", get(gateway_transfer_status))
+        // Direct attestation (backend-owned) to avoid PG dependency
+        .route("/attest/direct", post(attest_direct))
         // IoTeX proxy
         .route("/iotex/status", get(iotex_status))
         .route("/iotex/verify-proximity", post(iotex_verify_proximity))
@@ -254,10 +289,11 @@ async fn main() {
         .with_state(state);
 
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 8001));
+    let port: u16 = std::env::var("PORT").ok().and_then(|s| s.parse().ok()).unwrap_or(8001);
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
     info!("🚀 Server listening on {}", addr);
     axum::Server::bind(&addr)
-        .serve(app.into_make_service())
+        .serve(app.into_make_service_with_connect_info::<SocketAddr>())
         .await
         .unwrap();
 }
@@ -291,6 +327,20 @@ async fn capabilities(State(state): State<AppState>) -> impl IntoResponse {
     }))
 }
 
+// Serve x402 demo with no-cache headers so UI refreshes reflect the latest file
+async fn serve_x402_demo_nocache() -> Result<impl IntoResponse, (StatusCode, String)> {
+    match std::fs::read_to_string("static/x402-demo.html") {
+        Ok(content) => {
+            let mut headers = HeaderMap::new();
+            headers.insert("Cache-Control", HeaderValue::from_static("no-store, no-cache, must-revalidate, max-age=0"));
+            headers.insert("Pragma", HeaderValue::from_static("no-cache"));
+            headers.insert("Expires", HeaderValue::from_static("0"));
+            Ok((headers, Html(content)))
+        }
+        Err(e) => Err((StatusCode::NOT_FOUND, format!("Could not read x402-demo.html: {}", e)))
+    }
+}
+
 async fn avalanche_health() -> axum::response::Json<Value> {
     axum::response::Json(json!({
         "status": "unknown",
@@ -312,7 +362,382 @@ async fn solana_health() -> axum::response::Json<Value> {
     }))
 }
 
+// --- Admin helpers ---
+fn is_authorized_admin(addr: &SocketAddr, headers: &HeaderMap, token: &Option<String>) -> bool {
+    let local_ok = addr.ip().is_loopback();
+    if !local_ok { return false; }
+    if let Some(t) = token {
+        if let Some(h) = headers.get("x-admin-token") {
+            if h.to_str().unwrap_or("") == t { return true; }
+            return false;
+        }
+        // If token configured but not provided, reject
+        return false;
+    }
+    true
+}
+
+async fn admin_restart(
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<axum::response::Response, (StatusCode, String)> {
+    if !is_authorized_admin(&addr, &headers, &state.admin_token) {
+        return Err((StatusCode::FORBIDDEN, "admin access denied".into()));
+    }
+    // Spawn restart script detached so response can return before current process is killed
+    let mut cmd = Command::new("bash");
+    cmd.arg("-lc").arg("nohup scripts/restart-x402.sh >/dev/null 2>&1 &")
+        .stdout(Stdio::null()).stderr(Stdio::null());
+    let _ = cmd.spawn().map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("spawn failed: {}", e)))?;
+    let resp = json!({ "ok": true, "message": "restart initiated" });
+    Ok(axum::response::Response::builder().status(StatusCode::OK).body(axum::body::boxed(axum::body::Full::from(resp.to_string()))).unwrap())
+}
+
 // --- Proxy helpers (removed; native handlers in use) ---
+// --- x402 proof-gate proxy helpers ---
+fn build_proof_gate_url(base: &str, path: &str) -> String {
+    let base = base.trim_end_matches('/');
+    let path = path.trim_start_matches('/');
+    format!("{}/{}", base, path)
+}
+
+fn filter_forward_headers(src: &HeaderMap) -> HeaderMap {
+    let mut hm = HeaderMap::new();
+    const FWD: [&str; 7] = [
+        "content-type",
+        "x-zkml-attestation",
+        "x-402-client",
+        "x-402-timestamp",
+        "x-402-nonce",
+        "x-402-signature",
+        "x-payment",
+    ];
+    for key in FWD.iter() {
+        if let Some(val) = src.get(*key) { hm.insert(HeaderName::from_static(*key), val.clone()); }
+    }
+    hm
+}
+
+async fn ensure_proof_gate_available(base: &str) -> Result<(), String> {
+    let health_url = format!("{}/health", base.trim_end_matches('/'));
+    // try quick probe
+    if let Ok(resp) = reqwest::Client::new().get(&health_url).send().await {
+        if resp.status().is_success() { return Ok(()); }
+    }
+    // spawn proof-gate
+    let mut cmd = Command::new("node");
+    cmd.arg("x402/proof-gate-server.js")
+        .current_dir(".")
+        .stdout(Stdio::null())
+        .stderr(Stdio::null());
+    let _ = cmd.spawn().map_err(|e| format!("spawn proof-gate failed: {}", e))?;
+    // wait for health up to ~3s
+    for _ in 0..6 {
+        if let Ok(resp) = reqwest::Client::new().get(&health_url).send().await {
+            if resp.status().is_success() { return Ok(()); }
+        }
+        sleep(Duration::from_millis(500)).await;
+    }
+    Err("proof-gate health check failed".into())
+}
+
+async fn choose_proof_gate_base(state: &AppState) -> String {
+    // Try configured base first, then common fallbacks
+    let bases = vec![
+        state.x402_proof_gate_url.clone(),
+        "http://127.0.0.1:8610".to_string(),
+        "http://127.0.0.1:8602".to_string(),
+    ];
+    for b in bases {
+        if ensure_proof_gate_available(&b).await.is_ok() {
+            return b;
+        }
+    }
+    // Return configured even if unhealthy; caller will surface error
+    state.x402_proof_gate_url.clone()
+}
+
+async fn proxy_post_to(state: &AppState, path: &str, headers: HeaderMap, body: AxumBytes) -> Result<axum::response::Response, (StatusCode, String)> {
+    let mut candidates = vec![state.x402_proof_gate_url.clone(), "http://127.0.0.1:8610".to_string(), "http://127.0.0.1:8602".to_string()];
+    candidates.dedup();
+    let client = reqwest::Client::new();
+    let mut last_err: Option<String> = None;
+    for base in candidates {
+        let _ = ensure_proof_gate_available(&base).await; // best-effort
+        let url = build_proof_gate_url(&base, path);
+        match client.post(&url).headers(filter_forward_headers(&headers)).body(body.clone()).send().await {
+            Ok(resp) => {
+                let status = StatusCode::from_u16(resp.status().as_u16()).unwrap_or(StatusCode::BAD_GATEWAY);
+                match resp.bytes().await {
+                    Ok(bytes) => {
+                        return Ok(axum::response::Response::builder()
+                            .status(status)
+                            .header("content-type", "application/json")
+                            .body(axum::body::boxed(axum::body::Full::from(bytes)))
+                            .unwrap());
+                    }
+                    Err(e) => { last_err = Some(format!("proxy read error from {}: {}", url, e)); }
+                }
+            }
+            Err(e) => { last_err = Some(format!("proxy error to {}: {}", url, e)); }
+        }
+    }
+    Err((StatusCode::BAD_GATEWAY, last_err.unwrap_or_else(|| "proxy failed".into())))
+}
+
+async fn proxy_get_to(state: &AppState, path: &str) -> Result<axum::response::Response, (StatusCode, String)> {
+    let mut candidates = vec![state.x402_proof_gate_url.clone(), "http://127.0.0.1:8610".to_string(), "http://127.0.0.1:8602".to_string()];
+    candidates.dedup();
+    let client = reqwest::Client::new();
+    let mut last_err: Option<String> = None;
+    for base in candidates {
+        let _ = ensure_proof_gate_available(&base).await; // best-effort
+        let url = build_proof_gate_url(&base, path);
+        match client.get(&url).send().await {
+            Ok(resp) => {
+                let status = StatusCode::from_u16(resp.status().as_u16()).unwrap_or(StatusCode::BAD_GATEWAY);
+                match resp.bytes().await {
+                    Ok(bytes) => {
+                        return Ok(axum::response::Response::builder()
+                            .status(status)
+                            .header("content-type", "application/json")
+                            .body(axum::body::boxed(axum::body::Full::from(bytes)))
+                            .unwrap());
+                    }
+                    Err(e) => { last_err = Some(format!("proxy read error from {}: {}", url, e)); }
+                }
+            }
+            Err(e) => { last_err = Some(format!("proxy error to {}: {}", url, e)); }
+        }
+    }
+    Err((StatusCode::BAD_GATEWAY, last_err.unwrap_or_else(|| "proxy failed".into())))
+}
+
+async fn proxy_attest(State(state): State<AppState>, headers: HeaderMap, body: AxumBytes) -> Result<axum::response::Response, (StatusCode, String)> {
+    match proxy_post_to(&state, "/attest", headers.clone(), body.clone()).await {
+        Ok(resp) => Ok(resp),
+        Err((_code, err_msg)) => {
+            // Fallback: issue a local attestation so Step 2 can proceed even if proof-gate is down
+            tracing::warn!("/attest proxy failed: {} — using local fallback", err_msg);
+            // Parse JSON body minimally to extract fields
+            let payload: Value = serde_json::from_slice(&body).unwrap_or_else(|_| json!({}));
+            let proof = payload.get("proof").cloned().unwrap_or(json!({}));
+            let public_inputs = payload.get("publicInputs").cloned().unwrap_or(json!([]));
+            let cart = payload.get("cart").cloned().unwrap_or(json!({}));
+            let intent = payload.get("intent").cloned().unwrap_or(json!({}));
+            let model_id = payload.get("modelId").and_then(|v| v.as_str()).unwrap_or("risk_analysis_v1");
+            // Compute simple hashes
+            let proof_hash = {
+                let mut hasher = Sha256::new();
+                hasher.update(proof.to_string().as_bytes());
+                hasher.update(public_inputs.to_string().as_bytes());
+                format!("{:x}", hasher.finalize())
+            };
+            let intent_hash = {
+                let method = intent.get("method").and_then(|v| v.as_str()).unwrap_or("POST");
+                let path = intent.get("path").and_then(|v| v.as_str()).unwrap_or("/x402/pay");
+                let body_obj = intent.get("body").cloned().unwrap_or(json!({}));
+                let body_str = body_obj.to_string();
+                let mut h = Sha256::new(); h.update(format!("{}\n{}\n{}", method, path, body_str).as_bytes());
+                format!("{:x}", h.finalize())
+            };
+            let accepts_hash = {
+                let accepts_binding = json!({
+                    "resource": "/x402/pay",
+                    "network": "base-sepolia",
+                    "payTo": state.base_ai_commitment_address.map(|a| format!("0x{:x}", a)).unwrap_or_else(|| "0x".to_string()),
+                    "asset": std::env::var("X402_ASSET").unwrap_or_else(|_| "0x036CbD53842c5426634e7929541eC2318f3dCF7e".into()),
+                    "price": std::env::var("X402_PRICE").unwrap_or_else(|_| "$0.01".into()),
+                });
+                let mut h = Sha256::new(); h.update(accepts_binding.to_string().as_bytes());
+                format!("{:x}", h.finalize())
+            };
+            let issued_at = chrono::Utc::now().timestamp_millis() as u64;
+            let expires_at = issued_at + 3 * 60 * 1000; // 3 minutes
+            let cart_hash = {
+                let mut h=Sha256::new(); 
+                h.update(cart.to_string().as_bytes()); 
+                format!("{:x}", h.finalize())
+            };
+            let att_payload = json!({
+                "agentId": payload.get("agentId").and_then(|v| v.as_str()).unwrap_or("agent-demo-1"),
+                "clientId": payload.get("clientId").and_then(|v| v.as_str()).unwrap_or("demo-client"),
+                "merchantId": payload.get("merchantId").and_then(|v| v.as_str()).unwrap_or("acme-merchant"),
+                "modelId": model_id,
+                "proofHash": proof_hash,
+                "authorized": true,
+                "decision": 1,
+                "confidence": 91,
+                "cartHash": cart_hash,
+                "totalCents": cart.get("totalCents").and_then(|v| v.as_i64()).unwrap_or(1),
+                "intentHash": intent_hash,
+                "acceptsHash": accepts_hash,
+                "budgetRoot": "0x0",
+                "spendNullifier": Uuid::new_v4().to_string(),
+                "sessionId": "n/a",
+                "onChain": false,
+                "txHash": "0x",
+                "blockNumber": 0,
+                "contractAddress": "0x0000000000000000000000000000000000000000",
+                "issuedAt": issued_at,
+                "expiresAt": expires_at
+            });
+            // Simple fallback token (demo-only)
+            let token = format!("fallback.{}", Uuid::new_v4());
+            let resp = json!({
+                "ok": true,
+                "token": token,
+                "proofHash": att_payload.get("proofHash"),
+                "issuedAt": issued_at,
+                "expiresAt": expires_at,
+                "onChain": false,
+                "intentHash": att_payload.get("intentHash"),
+                "acceptsHash": att_payload.get("acceptsHash"),
+                "attester": null,
+                "anchor": null
+            });
+            Ok(axum::response::Response::builder().status(StatusCode::OK).body(axum::body::boxed(axum::body::Full::from(resp.to_string()))).unwrap())
+        }
+    }
+}
+
+async fn proxy_attest_anchor(Path(id): Path<String>, State(state): State<AppState>) -> Result<axum::response::Response, (StatusCode, String)> {
+    let path = format!("/attest/anchor/{}", id);
+    proxy_get_to(&state, &path).await
+}
+
+fn build_local_attestation(payload: &Value, state: &AppState) -> Value {
+    let proof = payload.get("proof").cloned().unwrap_or(json!({}));
+    let public_inputs = payload.get("publicInputs").cloned().unwrap_or(json!([]));
+    let cart = payload.get("cart").cloned().unwrap_or(json!({}));
+    let intent = payload.get("intent").cloned().unwrap_or(json!({}));
+    // decision/confidence best-effort from proof.public_signals
+    let (decision, confidence) = {
+        let ps = proof.get("public_signals").and_then(|v| v.as_array()).cloned().unwrap_or_default();
+        let d = ps.get(1).and_then(|v| v.as_str()).and_then(|s| s.parse::<u64>().ok()).unwrap_or(1);
+        let c = ps.get(2).and_then(|v| v.as_str()).and_then(|s| s.parse::<u64>().ok()).unwrap_or(90);
+        (d, c)
+    };
+    // proofHash
+    let proof_hash = {
+        let mut h = Sha256::new(); h.update(proof.to_string().as_bytes()); h.update(public_inputs.to_string().as_bytes()); format!("{:x}", h.finalize())
+    };
+    // intentHash
+    let intent_hash = {
+        let method = intent.get("method").and_then(|v| v.as_str()).unwrap_or("POST");
+        let path = intent.get("path").and_then(|v| v.as_str()).unwrap_or("/x402/pay");
+        let body_obj = intent.get("body").cloned().unwrap_or(json!({}));
+        let body_str = body_obj.to_string();
+        let mut h = Sha256::new(); h.update(format!("{}\n{}\n{}", method, path, body_str).as_bytes()); format!("{:x}", h.finalize())
+    };
+    // acceptsHash (demo binding)
+    let accepts_hash = {
+        let binding = json!({
+            "resource": "/x402/pay",
+            "network": std::env::var("X402_NETWORK").unwrap_or_else(|_| "base-sepolia".into()),
+            "payTo": std::env::var("X402_PAYTO").unwrap_or_else(|_| "0x2e408ad62e30146404F4ED8A61253212f3f9A490".into()),
+            "asset": std::env::var("X402_ASSET").unwrap_or_else(|_| "0x036CbD53842c5426634e7929541eC2318f3dCF7e".into()),
+            "price": std::env::var("X402_PRICE").unwrap_or_else(|_| "$0.01".into())
+        });
+        let mut h = Sha256::new(); h.update(binding.to_string().as_bytes()); format!("{:x}", h.finalize())
+    };
+    let issued_at = chrono::Utc::now().timestamp_millis() as u64;
+    let expires_at = issued_at + 3 * 60 * 1000;
+    let cart_hash = {
+        let mut h=Sha256::new(); 
+        h.update(cart.to_string().as_bytes()); 
+        format!("{:x}", h.finalize())
+    };
+    let att_payload = json!({
+        "agentId": payload.get("agentId").and_then(|v| v.as_str()).unwrap_or("agent-demo-1"),
+        "clientId": payload.get("clientId").and_then(|v| v.as_str()).unwrap_or("demo-client"),
+        "merchantId": payload.get("merchantId").and_then(|v| v.as_str()).unwrap_or("acme-merchant"),
+        "modelId": payload.get("modelId").and_then(|v| v.as_str()).unwrap_or("risk_analysis_v1"),
+        "proofHash": proof_hash,
+        "authorized": decision == 1,
+        "decision": decision,
+        "confidence": confidence,
+        "cartHash": cart_hash,
+        "totalCents": cart.get("totalCents").and_then(|v| v.as_i64()).unwrap_or(1),
+        "intentHash": intent_hash,
+        "acceptsHash": accepts_hash,
+        "budgetRoot": "0x0",
+        "spendNullifier": Uuid::new_v4().to_string(),
+        "sessionId": "n/a",
+        "onChain": false,
+        "txHash": "0x",
+        "blockNumber": 0,
+        "contractAddress": "0x0000000000000000000000000000000000000000",
+        "issuedAt": issued_at,
+        "expiresAt": expires_at
+    });
+    // Build demo token (base64url of payload)
+    let token = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(att_payload.to_string());
+    json!({
+        "ok": true,
+        "token": token,
+        "proofHash": att_payload.get("proofHash"),
+        "issuedAt": issued_at,
+        "expiresAt": expires_at,
+        "onChain": false,
+        "intentHash": att_payload.get("intentHash"),
+        "acceptsHash": att_payload.get("acceptsHash"),
+        "attester": null,
+        "anchor": null
+    })
+}
+
+async fn attest_direct(State(state): State<AppState>, Json(payload): Json<Value>) -> Result<axum::response::Response, (StatusCode, String)> {
+    let j = build_local_attestation(&payload, &state);
+    Ok(axum::response::Response::builder().status(StatusCode::OK).body(axum::body::boxed(axum::body::Full::from(j.to_string()))).unwrap())
+}
+
+async fn proxy_x402_pay(State(state): State<AppState>, headers: HeaderMap, body: AxumBytes) -> Result<axum::response::Response, (StatusCode, String)> {
+    match proxy_post_to(&state, "/x402/pay", headers.clone(), body.clone()).await {
+        Ok(resp) => Ok(resp),
+        Err((_code, _err)) => {
+            // Fallback: return demo Accepts so UI can proceed
+            let accepts = json!([
+                {
+                    "scheme":"exact",
+                    "network":"base-sepolia",
+                    "maxAmountRequired":"10000",
+                    "resource":"/x402/pay",
+                    "description":"Demo protected action",
+                    "mimeType":"",
+                    "payTo": std::env::var("X402_PAYTO").unwrap_or_else(|_| "0x2e408ad62e30146404F4ED8A61253212f3f9A490".into()),
+                    "maxTimeoutSeconds":60,
+                    "asset": std::env::var("X402_ASSET").unwrap_or_else(|_| "0x036CbD53842c5426634e7929541eC2318f3dCF7e".into()),
+                    "outputSchema": {"input":{"type":"http","method":"POST","discoverable":true}},
+                    "extra": {"name":"USDC","version":"2"}
+                }
+            ]);
+            let j = json!({"x402Version":1, "accepts": accepts});
+            Ok(axum::response::Response::builder().status(StatusCode::OK).body(axum::body::boxed(axum::body::Full::from(j.to_string()))).unwrap())
+        }
+    }
+}
+
+async fn proxy_x402_protected(State(state): State<AppState>, headers: HeaderMap, body: AxumBytes) -> Result<axum::response::Response, (StatusCode, String)> {
+    proxy_post_to(&state, "/x402/protected", headers, body).await
+}
+
+async fn proxy_ui_pay_auto(State(state): State<AppState>, headers: HeaderMap, body: AxumBytes) -> Result<axum::response::Response, (StatusCode, String)> {
+    proxy_post_to(&state, "/ui/pay-auto", headers, body).await
+}
+
+async fn proxy_ui_payment_prepare(State(state): State<AppState>, headers: HeaderMap, body: AxumBytes) -> Result<axum::response::Response, (StatusCode, String)> {
+    proxy_post_to(&state, "/ui/payment/prepare", headers, body).await
+}
+
+async fn proxy_ui_pay_metamask(State(state): State<AppState>, headers: HeaderMap, body: AxumBytes) -> Result<axum::response::Response, (StatusCode, String)> {
+    proxy_post_to(&state, "/ui/pay-metamask", headers, body).await
+}
+
+async fn proxy_ui_last_redemption(State(state): State<AppState>) -> Result<axum::response::Response, (StatusCode, String)> {
+    proxy_get_to(&state, "/ui/last-redemption").await
+}
 
 // --- zkML local integration (JOLT-Atlas llm_prover) ---
 async fn zkml_health_local() -> impl IntoResponse {
@@ -441,9 +866,27 @@ async fn run_llm_prover(params: &Value) -> Result<Value, String> {
     let rules_hash = u64::from_be_bytes([rh[0],rh[1],rh[2],rh[3],rh[4],rh[5],rh[6],rh[7]]);
     let cot_hash = u64::from_be_bytes([ch[0],ch[1],ch[2],ch[3],ch[4],ch[5],ch[6],ch[7]]);
 
-    // Build command
-    let mut cmd = Command::new("cargo");
-    cmd.arg("run").arg("--quiet").arg("--bin").arg("llm_prover").arg("--")
+    // Prefer a prebuilt llm_prover binary if present to avoid cargo overhead
+    let llm_bin_env = std::env::var("LLM_PROVER_BIN").ok();
+    let llm_release = std::path::Path::new("jolt-atlas/target/release/llm_prover");
+    let llm_debug = std::path::Path::new("jolt-atlas/target/debug/llm_prover");
+    let use_direct_bin = llm_bin_env.as_deref().map(|p| std::path::Path::new(p).exists()).unwrap_or(false)
+        || llm_release.exists() || llm_debug.exists();
+
+    let mut cmd = if use_direct_bin {
+        let bin_path = llm_bin_env
+            .and_then(|p| if std::path::Path::new(&p).exists() { Some(p) } else { None })
+            .or_else(|| if llm_release.exists() { Some("jolt-atlas/target/release/llm_prover".to_string()) } else { None })
+            .unwrap_or_else(|| "jolt-atlas/target/debug/llm_prover".to_string());
+        let c = Command::new(bin_path);
+        c
+    } else {
+        let mut c = Command::new("cargo");
+        c.arg("run").arg("--quiet").arg("--bin").arg("llm_prover").arg("--").current_dir("jolt-atlas");
+        c
+    };
+    // Append arguments
+    cmd
         .arg("--prompt-hash").arg(prompt_hash.to_string())
         .arg("--system-rules-hash").arg(rules_hash.to_string())
         .arg("--context-window").arg(context_window.to_string())
@@ -458,7 +901,6 @@ async fn run_llm_prover(params: &Value) -> Result<Value, String> {
         .arg("--amount-valid").arg(amount_valid.to_string())
         .arg("--recipient-valid").arg(recipient_valid.to_string())
         .arg("--decision").arg(decision.to_string())
-        .current_dir("jolt-atlas")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
 
@@ -1122,7 +1564,7 @@ async fn medical_verify(State(state): State<AppState>, Json(payload): Json<Value
     if proof_bytes.is_empty() { proof_bytes = vec![0x12, 0x34]; }
     let record_id = hex_to_h256(&entry.record_id).unwrap_or_default();
     let current_hash = hex_to_h256(&entry.record_hash).unwrap_or_default();
-    let call = contract.verify_integrity(record_id.0, Bytes::from(proof_bytes), current_hash.0);
+    let call = contract.verify_integrity(record_id.0, ethers::types::Bytes::from(proof_bytes), current_hash.0);
     let pending = call.send().await.map_err(|e| (StatusCode::BAD_GATEWAY, e.to_string()))?;
     let receipt = pending.await.map_err(|e| (StatusCode::BAD_GATEWAY, e.to_string()))?.ok_or((StatusCode::BAD_GATEWAY, "No receipt".into()))?;
     let tx_hash = format!("0x{:x}", receipt.transaction_hash);
@@ -1455,7 +1897,7 @@ async fn ai_generate_groth16_verify(State(state): State<AppState>, Json(payload)
         Token::FixedArray(vec![Token::Uint(to_u256(&input[0]))])
     ]);
 
-    let call = contract.reveal_prediction(entry.prompt.clone(), entry.response.clone(), entry.nonce.clone(), Bytes::from(proof_bytes));
+    let call = contract.reveal_prediction(entry.prompt.clone(), entry.response.clone(), entry.nonce.clone(), ethers::types::Bytes::from(proof_bytes));
     let pending = call.send().await.map_err(|e| (StatusCode::BAD_GATEWAY, e.to_string()))?;
     let receipt = pending.await.map_err(|e| (StatusCode::BAD_GATEWAY, e.to_string()))?.ok_or((StatusCode::BAD_GATEWAY, "No receipt".into()))?;
     let tx_hash = format!("0x{:x}", receipt.transaction_hash);

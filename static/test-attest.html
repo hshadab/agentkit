@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Test /attest/direct</title></head>
+<body>
+<button id="b">POST /attest/direct</button>
+<pre id="o"></pre>
+<script>
+const api = location.origin;
+document.getElementById('b').onclick = async () => {
+  const body = {
+    agentId:'agent-demo-1', clientId:'demo-client', merchantId:'acme-merchant',
+    cart: { items:[{ sku:'api-pro-month', qty:1, priceCents:1 }], region:'US-NY', taxRulesVersion:'v1', totalCents:1 },
+    intent: { method:'POST', path:'/x402/pay', body:{ intent:'demo', cart:{ items:[{ sku:'api-pro-month', qty:1 }] } } },
+    modelId:'risk_analysis_v1', proof:{ public_signals:["16912172694634785161","1","91","1"] }, publicInputs:[3,10,1,9]
+  };
+  const r = await fetch(api + '/attest/direct', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body) });
+  const t = await r.text();
+  try { document.getElementById('o').textContent = JSON.stringify(JSON.parse(t),null,2); }
+  catch { document.getElementById('o').textContent = 'status '+r.status+' raw:\n'+t; }
+};
+</script>
+</body>
+</html>
