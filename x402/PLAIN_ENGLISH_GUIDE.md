@@ -139,6 +139,11 @@ Proof {
 }
 ```
 
+Binding across steps (what ties it all together):
+- Step 2 → Step 3: the attestation carries a `proofHash` (commitment to the zkML proof), plus bindings to commerce and intent.
+- Step 3 → server policy: the attestation also carries `intentHash` (method + path + body hash) and `acceptsHash` (server’s configured price/network/asset/payTo), preventing TOCTOU changes.
+- Step 4: the on‑chain anchor verifies public signals (e.g., decision=1, confidence=95) and emits a transaction hash you can query via `GET /attest/anchor/:id` (using the attestation’s `attestationId`).
+
 ### Step 3: Creating the Payment Authorization (x402 Attestation)
 **Time: ~50 milliseconds**
 
@@ -213,6 +218,12 @@ Transaction Record:
 
 In our deployment, we anchor on Base Sepolia using a dedicated storage verifier contract. Your UI waits for this on‑chain transaction to confirm before proceeding to payment.
 
+Contracts (Base Sepolia)
+- Storage verifier: `0x2fD8885cC60B742ceBf5F9305f80BD0CCF3d14E8`
+- Public signals verified: `[decision, confidence]`
+- Typical gas: ~340k–360k
+- Payment is gated on anchor confirmation (server waits for Step 4 before Step 5)
+
 ### Step 5: Executing the Payment (USDC Transfer)
 **Time: ~3 seconds**
 **Amount: Exactly $0.01 USDC**
@@ -229,6 +240,12 @@ This is the "transferWithAuthorization" standard:
 5. **Receipt Generated**: Blockchain transaction confirmed
 
 In our setup, Step 5 is automatic and only runs after Step 4 confirms on‑chain. The server uses a headless agent key to sign EIP‑712 typed data for EIP‑3009, and x402 middleware executes the transfer. Your UI surfaces the USDC transaction link upon completion.
+
+Typed Data (USDC, Base Sepolia)
+- Domain: `{ name: 'USDC', version: '2', chainId: 84532, verifyingContract: '0x036CbD53842c5426634e7929541eC2318f3dCF7e' }`
+- Types: `TransferWithAuthorization(from,address; to,address; value,uint256; validAfter,uint256; validBefore,uint256; nonce,bytes32)`
+- Message: `{ from, to, value, validAfter, validBefore, nonce }`
+- Replay protection: USDC’s `authorizationState(authorizer, nonce)` prevents reuse.
 
 #### Why USDC?
 - **Stable Value**: Always worth $1.00
@@ -634,3 +651,17 @@ Welcome to the age of trustless autonomous commerce. Welcome to x402.
 *For technical documentation, see [IMPLEMENTATION_GUIDE.md](./IMPLEMENTATION_GUIDE.md)*
 *For quick start, see [README.md](./README.md)*
 *For the live demo, visit http://localhost:8000/static/x402-demo.html*
+### Operational Guidance
+- Keys: Agent (payer) needs Base Sepolia USDC; Executor (merchant) needs Base Sepolia ETH for gas. Keep keys in env/KMS; don’t hardcode.
+- Rate limiting & logging: Apply rate limits to `/attest` and `/x402/pay`; collect structured logs and metrics for anchors and payments.
+- Replay windows: Attestations have TTL; EIP‑3009 uses nonce‑based replay protection; server also enforces a timestamp/nonce window.
+
+### Automation (No MetaMask)
+- Set `X402_AUTOPAY=anchor_confirmed` so the server pays only after the on‑chain anchor confirms.
+- The server signs EIP‑712 (EIP‑3009) with an agent key and x402 middleware executes the payment.
+- The final USDC tx is available at `GET /ui/last-redemption` for the UI to display.
+
+### Troubleshooting
+- Step 4 “Invalid proof”: Verifier/proof mismatch — align the deployed verifier with the proving key used to generate the proof.
+- Step 5 node messages (“already known”, “nonce too low”): benign mempool duplication/retry; with single-source settlement via x402‑express, they should be rare.
+- USDC signature rejected: Ensure domain `{ name: 'USDC', version: '2', chainId: 84532, verifyingContract: 0x036C…CF7e }` and typed fields match.
