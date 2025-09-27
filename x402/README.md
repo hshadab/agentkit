@@ -43,6 +43,10 @@ Production implementation of the [Coinbase x402 Payment Protocol](https://github
 5. Payment Execution → Execute USDC transfer via transferWithAuthorization
 ```
 
+Deep integration (Step 3):
+- The x402 attestation includes a `proofHash` (commitment to the zkML proof), an `intentHash` (method + path + body hash), and an `acceptsHash` (server’s configured price/network/asset/payTo). This binds the AI decision to the exact payment intent and server policy, end‑to‑end.
+- With `X402_AUTOPAY=anchor_confirmed`, payment is executed only after the on‑chain anchor (Step 4) confirms.
+
 ### How the AI Makes Decisions
 
 The system uses a **real neural network** (ONNX format) that evaluates 5 key features:
@@ -262,6 +266,9 @@ Response: {
   "ok": true,
   "token": "eyJ...", # Attestation token
   "onChain": true,    # Verification status
+  "proofHash": "da099d...", # Commitment to zkML proof
+  "intentHash": "262957...", # method + path + body hash
+  "acceptsHash": "922a61...", # server-configured Accepts binding
   "anchor": { /* anchor data */ }
 }
 ```
@@ -296,8 +303,10 @@ Response (Paid): {
 - ⚠️ Audit circuits before mainnet deployment
 
 ### Attestation Binding
-- Attestations bind to specific intents via hashing
+- Attestations bind the zkML proof to the payment via `proofHash`
+- Attestations bind to specific intents via `intentHash` (method + path + body hash)
 - Commerce data (cart, merchant, client) is cryptographically bound
+- Server policy is bound via `acceptsHash` (price/network/asset/payTo)
 - Replay protection via nonces and timestamps
 - On-chain verification creates permanent audit trail
 

@@ -153,12 +153,19 @@ The system creates a digital "permission slip" that binds:
 - The specific payment details
 - A unique transaction identifier
 
-#### The Binding Process
+#### The Binding Process (zkML ↔ x402)
 Think of it like a notarized contract:
 1. **The Promise**: "AI authorizes $1.00 to OpenAI"
 2. **The Proof**: "Here's cryptographic evidence the AI decided this"
 3. **The Seal**: Digital signature that can't be forged
 4. **The Timestamp**: When this authorization was created
+
+Concretely, the attestation carries three bindings:
+- `proofHash`: a commitment to the zkML proof (ties the AI decision to the attestation)
+- `intentHash`: a hash of the HTTP method + path + body (ties the attestation to the exact API call)
+- `acceptsHash`: a hash of the server’s payment policy (price/network/asset/payTo)
+
+Together, these create a tamper‑evident link from the AI decision (Step 2) → the attestation (Step 3) → the on‑chain anchor (Step 4) → the payment (Step 5).
 
 #### EIP-712 Signature Standard
 This uses the same technology MetaMask uses for secure signatures:
