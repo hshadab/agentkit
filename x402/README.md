@@ -65,64 +65,103 @@ The system uses a **real neural network** (ONNX format) that evaluates 5 key fea
 ## Installation
 
 ### Prerequisites
+- Node.js 18.17+ (recommended 18 or 20)
+
+### Setup
 ```bash
-# Required packages
-npm install x402 x402-express viem ethers
+# Install dependencies
+npm install
 
-# Rust for zkML binary (if not built)
-cd jolt-atlas && cargo build --release --bin llm_prover
-```
-
-### Configuration (.env)
-```bash
-# Network Configuration
-BASE_RPC_URL=https://sepolia.base.org
-CHAIN_ID=84532
-EXPLORER_BASE_URL=https://sepolia.basescan.org
-
-# Wallet (needs USDC on Base Sepolia)
-BASE_PRIVATE_KEY=0x... # Your funded wallet private key
-X402_ATTEST_SIGNER=0x... # Same wallet address
-
-# x402 Configuration
-X402_NETWORK=base-sepolia
-X402_ASSET=0x036CbD53842c5426634e7929541eC2318f3dCF7e  # USDC on Base Sepolia
-X402_PAYTO=0x2e408ad62e30146404F4ED8A61253212f3f9A490  # Payment recipient
-X402_PRICE=$0.01
-X402_ZKML_PORT=8610
-
-# zkML Configuration
-X402_ZKML_VERIFY_ETH=true
-X402_ETH_VERIFY_MODE=backend
-X402_ATTEST_EIP712=true
-ZKML_VERIFIER_ADDRESS=0x6121Fd93594C316B78e74B91B89A06d3Bb682a8F
-
-# Optional: LLM Prover Binary Path
-LLM_PROVER_BIN=/path/to/jolt-atlas/target/release/llm_prover
+# Configure environment
+cp .env.example .env
+# Edit .env and set at least:
+# - BASE_RPC_URL, CHAIN_ID
+# - BASE_PRIVATE_KEY (funded on Base Sepolia)
+# - X402_PAYTO (recipient address)
 ```
 
 ## Running the System
 
 ### Quick Start
 ```bash
-# Option 1: Use the restart script
-./scripts/restart-x402.sh
+# Start proof-gate (port 8610)
+npm run start:proof-gate
 
-# Option 2: Start services manually
-node api/zkml-llm-decision-backend.js  # Port 8002
-node x402/proof-gate-server.js         # Port 8610
-cargo run                               # Port 8001 (main backend)
+# Optional: start Groth16 verifier service (for on-chain anchoring)
+# Requires: X402_ZKML_VERIFY_ETH=true, BASE_PRIVATE_KEY funded
+npm run start:verifier
+
+# If you’re using the 5‑step browser UI served by the Rust backend
+# (it proxies to proof‑gate and serves static/x402-demo.html):
+cargo run   # starts on :8001
 ```
 
-### Testing the Agent Authorization Demo
-1. Open demo page: http://127.0.0.1:8000/static/x402-demo.html
-2. Click "Start Demo" to see the 5-step authorization flow:
-   - **Step 1**: AI neural network evaluates payment request
-   - **Step 2**: zkML generates proof of AI inference
-   - **Step 3**: x402 attestation binds AI decision to payment
-   - **Step 4**: On-chain verification creates audit trail (Base Sepolia)
-   - **Step 5**: USDC transfer executes with "Pay with USDC" button
-3. Real transactions with explorer links (e.g., [0xcb0f2abf...](https://sepolia.basescan.org/tx/0xcb0f2abf65efb852a93413da261688d223856f1854546ba329542263033f1787))
+### Browser UI (5‑Step)
+- Open `http://127.0.0.1:8001/static/x402-demo.html` (served by the Rust backend).
+- The UI runs Steps 1–5 and talks to proof‑gate on :8610 via the Rust proxy routes.
+- On-chain anchoring (Step 4) is optional and controlled by env.
+
+### Test the Flow (API)
+```bash
+# 1) Get an attestation (use simple demo proof/publicInputs)
+curl -s http://127.0.0.1:8610/attest \
+  -H 'content-type: application/json' \
+  -d '{
+    "agentId":"agent-demo-1",
+    "clientId":"demo-client",
+    "merchantId":"acme-merchant",
+    "modelId":"risk_analysis_v1",
+    "proof": {"public_signals":["1","95"]},
+    "publicInputs": [3,5,1,12],
+    "cart": {"items":[{"sku":"api-pro-month","qty":1}], "totalCents":100},
+    "intent": {"method":"POST","path":"/x402/pay","body":{"intent":"demo"}}
+  }' | tee /tmp/attn.json
+
+# Extract token
+TOKEN=$(jq -r '.token' /tmp/attn.json)
+
+# 2) Preflight x402 (accepts requirements)
+curl -s http://127.0.0.1:8610/x402/pay \
+  -H 'content-type: application/json' \
+  -H "X-ZKML-Attestation: $TOKEN" \
+  -d '{"intent":"demo"}' | jq .
+
+# 3) Server-side demo payment (uses server wallet in .env)
+curl -s http://127.0.0.1:8610/ui/pay-auto \
+  -H 'content-type: application/json' \
+  -d "{\"token\":\"$TOKEN\"}" | jq .
+```
+
+For MetaMask signing, use `POST /ui/payment/prepare` to get typed data, sign it in the browser, then submit via `POST /ui/pay-metamask`.
+
+## Automatic Payments (No MetaMask)
+
+There are two ways to run fully compliant x402 payments without any wallet UI prompts:
+
+- Client-triggered auto pay (no button): Your UI calls `POST /ui/pay-auto` with the attestation token.
+- Server auto pay (no client call): The server auto‑runs payment after attestation or after on‑chain anchor confirmation.
+
+### Recommended: Server Auto‑Pay After Anchor Confirmation
+
+Set these env vars (testnet only):
+```bash
+X402_AGENT_PRIVATE_KEY=0x...      # Payer key with Base Sepolia USDC
+BASE_PRIVATE_KEY=0x...            # Executor key with Base Sepolia ETH
+X402_PAYTO=0x...                  # Recipient (usually executor address)
+X402_AUTOPAY=anchor_confirmed     # Wait for Step 4 on-chain confirmation, then pay
+
+# Optional on-chain anchoring for Step 4
+X402_ZKML_VERIFY_ETH=true         # Requires BASE_PRIVATE_KEY funded for gas
+```
+
+Behavior:
+- UI runs Steps 1–3; server anchors zkML proof (Step 4).
+- Once the anchor tx confirms, server builds an EIP‑3009 authorization (signed by the agent key) and executes `transferWithAuthorization` on-chain (Step 5). No MetaMask involved.
+- Check result with `GET /ui/last-redemption`. Logs include `[autopay]` lines.
+
+Alternative:
+- `X402_AUTOPAY=attest` — pay immediately after attestation (does not wait for on-chain anchor).
+- Leave `X402_AUTOPAY` empty to disable server auto‑pay. Your UI can still call `POST /ui/pay-auto` programmatically after Step 4.
 
 ## Agent Authorization Model
 
@@ -267,7 +306,7 @@ Response (Paid): {
 ### MetaMask "Invalid input" Error (Fixed)
 - **Issue**: x402 library's `preparePaymentHeader` returns payment data, not EIP-712 typed data
 - **Solution**: Server now converts payment data to proper EIP-712 format for MetaMask
-- **Implementation**: See `proof-gate-server.js` lines 441-478 for conversion logic
+- **Implementation**: See typed-data conversion in `proof-gate-server.js` (`/ui/payment/prepare`)
 - Ensure Base Sepolia network is selected
 - Check wallet has USDC balance
 
@@ -296,8 +335,8 @@ This implementation follows the official [x402 specification](https://github.com
 - [x402 Protocol Specification](https://github.com/coinbase/x402)
 - [EIP-3009: Transfer With Authorization](https://eips.ethereum.org/EIPS/eip-3009)
 - [EIP-712: Typed Data Signing](https://eips.ethereum.org/EIPS/eip-712)
-- [JOLT-Atlas zkML Framework](../jolt-atlas/README.md)
+- JOLT-Atlas zkML framework (external)
 - [Circle USDC Documentation](https://developers.circle.com/stablecoins/docs)
 
 ## License
-MIT - See LICENSE file for details
+MIT

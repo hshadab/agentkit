@@ -30,8 +30,8 @@ async function createAuthorization({
     from,
     to,
     value: BigInt(value).toString(),
-    validAfter,
-    validBefore,
+    validAfter: BigInt(validAfter).toString(),
+    validBefore: BigInt(validBefore).toString(),
     nonce
   };
 }
@@ -44,7 +44,8 @@ async function signAuthorization({
   chainId
 }) {
   const domain = {
-    name: 'USD Coin',  // USDC on Base Sepolia
+    // USDC on Base Sepolia reports name() = 'USDC' and version() = '2'
+    name: 'USDC',
     version: '2',
     chainId,
     verifyingContract: asset
@@ -99,7 +100,11 @@ async function executeAuthorization({
     v,
     r,
     s,
-    { gasLimit: 150000 }
+    { 
+      gasLimit: 200000,
+      maxFeePerGas: ethers.parseUnits('2', 'gwei'),
+      maxPriorityFeePerGas: ethers.parseUnits('1', 'gwei')
+    }
   );
   
   return tx;
@@ -135,6 +140,7 @@ async function createDemoPaymentHeader({
   
   // Build x402 payment header
   const payload = {
+    x402Version: 1,
     scheme: 'exact',
     network,
     payload: {
@@ -180,24 +186,15 @@ async function processX402Payment({
   const provider = new ethers.JsonRpcProvider(rpcUrl, { chainId, name: expectedNetwork });
   const executorWallet = new ethers.Wallet(privateKey, provider);
   
-  // Check if this is a demo payment from our own wallet
-  if (authorization.from.toLowerCase() === executorWallet.address.toLowerCase()) {
-    // Demo mode: Direct transfer since we're paying from our own wallet
-    const abi = ['function transfer(address to, uint256 amount) returns (bool)'];
-    const usdc = new ethers.Contract(expectedAsset, abi, executorWallet);
-    const tx = await usdc.transfer(authorization.to, BigInt(authorization.value), { gasLimit: 100000 });
-    return { tx, mode: 'demo_transfer' };
-  } else {
-    // Production mode: Execute the signed authorization
-    const tx = await executeAuthorization({
-      provider,
-      executorWallet,
-      asset: expectedAsset,
-      authorization,
-      signature
-    });
-    return { tx, mode: 'production_authorization' };
-  }
+  // Prefer production path: execute transferWithAuthorization
+  const tx = await executeAuthorization({
+    provider,
+    executorWallet,
+    asset: expectedAsset,
+    authorization,
+    signature
+  });
+  return { tx, mode: 'production_authorization' };
 }
 
 module.exports = {

@@ -45,6 +45,11 @@ const DEFAULT_USDC_BASE_SEPOLIA = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
 
 const DECISION_THRESHOLD = parseInt(env('X402_ZKML_DECISION_THRESHOLD', '80'), 10);
 
+// Auto-pay mode: '' (off), 'attest', or 'anchor_confirmed'
+const AUTOPAY_MODE = (env('X402_AUTOPAY', '').toLowerCase());
+const SELF_PORT = Number(env('X402_ZKML_PORT', '8610'));
+const autopayProcessed = new Set();
+
 function sha256Hex(input) {
   return crypto.createHash('sha256').update(input).digest('hex');
 }
@@ -187,7 +192,7 @@ app.post('/attest', async (req, res) => {
     const attnPayload = {
       agentId,
       clientId: clientId || agentId,
-      merchantId: merchantId || X402_MERCHANT_ID,
+      merchantId: merchantId || env('X402_MERCHANT_ID', 'demo-merchant'),
       modelId,
       modelCheckpoint: proof?.modelCheckpoint || 'unknown',
       proofHash,
@@ -213,6 +218,29 @@ app.post('/attest', async (req, res) => {
     const ver = verifyAttestation(token);
     const attester = ver && ver.attester ? ver.attester : undefined;
     const anchor = (env('X402_ZKML_VERIFY_ETH','') === 'true' || VERIFY_ON_CHAIN) ? { status: 'pending', attestationId, poll: `/attest/anchor/${attestationId}` } : null;
+
+    // Schedule optional auto-pay in background
+    try {
+      if (AUTOPAY_MODE === 'attest') {
+        queueImmediate(() => runAutopay({ attestationId, token, bodyJson: bodyObj }));
+      } else if (AUTOPAY_MODE === 'anchor_confirmed' && onChain && attestationId) {
+        queueImmediate(async () => {
+          // Poll anchors until confirmed or error, up to 60s
+          for (let i = 0; i < 60; i++) {
+            const a = anchors.get(attestationId);
+            if (a?.status === 'confirmed') {
+              await runAutopay({ attestationId, token, bodyJson: bodyObj, anchorId: attestationId });
+              break;
+            }
+            if (a?.status === 'error') { break; }
+            await new Promise(r => setTimeout(r, 1000));
+          }
+        });
+      }
+    } catch (apErr) {
+      console.error('[autopay] schedule error:', String(apErr?.message || apErr));
+    }
+
     return res.json({ ok: true, token, proofHash, issuedAt, expiresAt, onChain, intentHash, acceptsHash, attester, anchor });
   } catch (e) {
     console.error('attest error:', e);
@@ -263,22 +291,9 @@ try {
       return res.status(402).json({ error: 'accepts_mismatch' });
     }
     // Basic client/merchant binding checks can be added here
-    // Attempt on-chain USDC redemption (EIP-3009) if X-PAYMENT header provided
-    let payment = null;
-    try {
-      const header = req.header('X-PAYMENT');
-      if (header) {
-        payment = await redeemUsdcAuthorization({
-          header,
-          asset: X402_ASSET,
-          expectedPayTo: X402_PAYTO,
-          network: X402_NETWORK,
-        });
-      }
-    } catch (e) {
-      payment = { redeemed: false, error: String(e && e.message ? e.message : e) };
-    }
-    res.json({ ok: true, message: 'x402 payment + zkML attestation accepted', attested: req.zkmlAttestation, payment });
+    // Let x402-express handle validation and execution; do not re-execute here
+    if (res.headersSent) return; // middleware likely already responded
+    return res.json({ ok: true, message: 'x402 payment + zkML attestation accepted', attested: req.zkmlAttestation });
   });
 
   HAS_X402_MIDDLEWARE = true;
@@ -340,7 +355,13 @@ app.post('/x402/protected', async (req, res) => {
     return res.status(402).json({ error: 'intent_mismatch' });
   }
   // Verify accepts binding
-  const acceptsBinding = { resource: req.path, network: X402_NETWORK, payTo: X402_PAYTO, asset: X402_ASSET, price: X402_PRICE };
+  const acceptsBinding = {
+    resource: req.path,
+    network: env('X402_NETWORK','base-sepolia'),
+    payTo: env('X402_PAYTO','0x1111111111111111111111111111111111111111'),
+    asset: env('X402_ASSET', DEFAULT_USDC_BASE_SEPOLIA),
+    price: env('X402_PRICE','$0.01')
+  };
   const computedAcceptsHash = sha256Hex(JSON.stringify(acceptsBinding));
   if (result.payload.acceptsHash && result.payload.acceptsHash !== computedAcceptsHash) {
     return res.status(402).json({ error: 'accepts_mismatch' });
@@ -405,18 +426,23 @@ app.post('/ui/pay-auto', async (req, res) => {
     // Get payment requirements from first accept option
     const accepts = preJson.accepts[0];
     if (!accepts) return res.status(400).json({ error: 'no_accepts_available' });
-    
-    // Create proper x402 payment header using production handler
-    const pk = env('PRIVATE_KEY', env('BASE_PRIVATE_KEY'));
-    if (!pk) return res.status(500).json({ error: 'server_missing_private_key' });
-    
+
+    // Build a client-signed EIP-3009 authorization header using an AGENT (payer) key
+    // This makes the flow fully x402-compliant without MetaMask prompts.
+    const executorPk = env('PRIVATE_KEY', env('BASE_PRIVATE_KEY'));
+    const agentPk = env('X402_AGENT_PRIVATE_KEY', '');
+    if (!executorPk) return res.status(500).json({ error: 'server_missing_private_key' });
+    // Prefer agent key if provided; fallback to executor (demo)
+    const signingPk = agentPk || executorPk;
+
     const header = await createDemoPaymentHeader({
-      privateKey: pk,
+      privateKey: signingPk,
       payTo: accepts.payTo || env('X402_PAYTO','0x2e408ad62e30146404F4ED8A61253212f3f9A490'),
       asset: accepts.asset || env('X402_ASSET', DEFAULT_USDC_BASE_SEPOLIA),
-      amount: accepts.maxAmountRequired || '10000', // 0.01 USDC
+      amount: accepts.maxAmountRequired || '10000',
       network: accepts.network || env('X402_NETWORK','base-sepolia'),
-      chainId: Number(env('CHAIN_ID', 84532))
+      chainId: Number(env('CHAIN_ID', 84532)),
+      validityWindow: Number(accepts.maxTimeoutSeconds || 60)
     });
     
     // Final paid call with X-PAYMENT header
@@ -430,36 +456,37 @@ app.post('/ui/pay-auto', async (req, res) => {
       body: JSON.stringify(bodyJson),
     });
     const paidJson = await paid.json();
-    
-    // Process payment on-chain using production handler
+
+    // Attempt to discover the USDC tx emitted by middleware by parsing header and scanning recent logs
     let redemption = null;
     try {
-      const result = await processX402Payment({
-        header,
-        expectedAsset: env('X402_ASSET', DEFAULT_USDC_BASE_SEPOLIA),
-        expectedPayTo: env('X402_PAYTO','0x2e408ad62e30146404F4ED8A61253212f3f9A490'),
-        expectedNetwork: env('X402_NETWORK','base-sepolia'),
-        privateKey: pk,
-        rpcUrl: env('ETH_RPC', env('BASE_RPC_URL', 'https://sepolia.base.org')),
-        chainId: Number(env('CHAIN_ID', 84532))
-      });
-      
-      const receipt = await result.tx.wait();
-      const explorer = env('EXPLORER_BASE_URL', 'https://sepolia.basescan.org');
-      redemption = {
-        redeemed: true,
-        mode: result.mode,
-        usdcTxHash: result.tx.hash,
-        explorer: `${explorer}/tx/${result.tx.hash}`,
-        blockNumber: receipt.blockNumber
-      };
-      LAST_REDEMPTION = { ...redemption, at: Date.now() };
+      const decoded = JSON.parse(Buffer.from(header, 'base64url').toString());
+      const auth = decoded && decoded.payload && decoded.payload.authorization ? decoded.payload.authorization : null;
+      if (auth && auth.from && auth.to && auth.value) {
+        const tx = await waitForUsdcTransfer({
+          from: auth.from,
+          to: auth.to,
+          value: BigInt(auth.value),
+          rpcUrl: env('BASE_RPC_URL', 'https://sepolia.base.org'),
+          asset: env('X402_ASSET', DEFAULT_USDC_BASE_SEPOLIA)
+        });
+        if (tx) {
+          const explorer = env('EXPLORER_BASE_URL', 'https://sepolia.basescan.org');
+          redemption = {
+            redeemed: true,
+            mode: 'middleware_authorization',
+            usdcTxHash: tx.transactionHash,
+            explorer: `${explorer}/tx/${tx.transactionHash}`,
+            blockNumber: Number(tx.blockNumber || 0)
+          };
+          LAST_REDEMPTION = { ...redemption, at: Date.now() };
+        }
+      }
     } catch (e) {
-      console.error('Payment execution error:', e);
-      redemption = { redeemed: false, error: String(e && e.message ? e.message : e) };
+      // best-effort; ignore
     }
-    
-    return res.status(paid.status).json({ ...paidJson, payment: redemption });
+
+    return res.status(paid.status).json({ ...paidJson, payment: redemption || paidJson.payment || null });
   } catch (e) {
     console.error('ui/pay-auto error:', e);
     return res.status(500).json({ error: 'server_error', message: String(e && e.message ? e.message : e) });
@@ -499,7 +526,7 @@ app.post('/ui/payment/prepare', async (req, res) => {
       // Convert to proper EIP-712 typed data for MetaMask
       const typedData = {
         domain: {
-          name: 'USD Coin',
+          name: 'USDC',
           version: '2',
           chainId: Number(env('CHAIN_ID', 84532)),
           verifyingContract: selected.asset || env('X402_ASSET', DEFAULT_USDC_BASE_SEPOLIA)
@@ -532,7 +559,7 @@ app.post('/ui/payment/prepare', async (req, res) => {
       // Fallback: create typed data manually if x402 library fails
       const manualTypedData = {
         domain: {
-          name: 'USD Coin',
+          name: 'USDC',
           version: '2',
           chainId: Number(env('CHAIN_ID', 84532)),
           verifyingContract: selected.asset || env('X402_ASSET', DEFAULT_USDC_BASE_SEPOLIA)
@@ -769,3 +796,49 @@ function queueImmediate(fn) {
 app.get('/ui/last-redemption', (req, res) => {
   res.json(LAST_REDEMPTION || { redeemed: false });
 });
+
+// Discover a recent USDC Transfer that matches (from,to,value). Poll briefly.
+async function waitForUsdcTransfer({ from, to, value, rpcUrl, asset, maxTries = 6, lookbackBlocks = 2000 }) {
+  try {
+    const provider = new ethers.JsonRpcProvider(rpcUrl || 'https://sepolia.base.org', { chainId: Number(env('CHAIN_ID', 84532)), name: 'base-sepolia' });
+    const topic0 = ethers.id('Transfer(address,address,uint256)');
+    const pad = (addr) => '0x' + addr.toLowerCase().replace(/^0x/, '').padStart(64, '0');
+    const t1 = pad(ethers.getAddress(from));
+    const t2 = pad(ethers.getAddress(to));
+    for (let i = 0; i < maxTries; i++) {
+      const latest = await provider.getBlockNumber();
+      const fromBlock = Math.max(latest - lookbackBlocks, 1);
+      const logs = await provider.getLogs({ address: asset, topics: [topic0, t1, t2], fromBlock, toBlock: latest });
+      // Find a log with matching value in data
+      for (const log of logs) {
+        try {
+          const amount = BigInt(log.data);
+          if (amount === value) return log;
+        } catch {}
+      }
+      await new Promise(r => setTimeout(r, 1000));
+    }
+  } catch (e) {
+    // ignore
+  }
+  return null;
+}
+
+// Internal helper: run auto-pay by calling our own UI endpoint
+async function runAutopay({ attestationId, token, bodyJson, anchorId }) {
+  try {
+    if (!token || !attestationId) return;
+    if (autopayProcessed.has(attestationId)) return;
+    autopayProcessed.add(attestationId);
+    console.log('[autopay] starting for', attestationId, anchorId ? '(anchor confirmed)' : '(attest)');
+    const r = await fetch(`http://127.0.0.1:${SELF_PORT}/ui/pay-auto`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ token, body: bodyJson, anchorId })
+    });
+    const j = await r.json();
+    console.log('[autopay] result', attestationId, r.status, j?.payment?.mode || 'no-payment', j?.payment?.usdcTxHash || j?.error || '');
+  } catch (e) {
+    console.error('[autopay] error', attestationId, String(e?.message || e));
+  }
+}

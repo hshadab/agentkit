@@ -211,6 +211,8 @@ Transaction Record:
 - Proof: [Groth16 proof data]
 ```
 
+In our deployment, we anchor on Base Sepolia using a dedicated storage verifier contract. Your UI waits for this on‑chain transaction to confirm before proceeding to payment.
+
 ### Step 5: Executing the Payment (USDC Transfer)
 **Time: ~3 seconds**
 **Amount: Exactly $0.01 USDC**
@@ -225,6 +227,8 @@ This is the "transferWithAuthorization" standard:
 3. **Contract Validates**: Checks signature and authorization
 4. **Funds Move**: USDC transfers from user to merchant
 5. **Receipt Generated**: Blockchain transaction confirmed
+
+In our setup, Step 5 is automatic and only runs after Step 4 confirms on‑chain. The server uses a headless agent key to sign EIP‑712 typed data for EIP‑3009, and x402 middleware executes the transfer. Your UI surfaces the USDC transaction link upon completion.
 
 #### Why USDC?
 - **Stable Value**: Always worth $1.00

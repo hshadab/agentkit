@@ -1,0 +1,29 @@
+{
+  "name": "x402-proof-gate",
+  "version": "0.1.0",
+  "private": true,
+  "description": "x402 proof-gate with zkML attestation and EIP-3009 USDC payments (Base Sepolia)",
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "start:proof-gate": "node proof-gate-server.js",
+    "start:verifier": "node groth16-verifier-service.js",
+    "demo:client": "node client-demo.js",
+    "generate:proof": "node generate-valid-proof.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.2",
+    "express": "^4.19.2",
+    "node-fetch": "^3.3.2"
+  },
+  "optionalDependencies": {
+    "snarkjs": "^0.7.3",
+    "viem": "^2.13.3",
+    "x402": "^0.2.0",
+    "x402-express": "^0.2.0"
+  }
+}
+

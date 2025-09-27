@@ -1,9 +1,9 @@
 {
   "network": "base-sepolia",
-  "address": "0x6121Fd93594C316B78e74B91B89A06d3Bb682a8F",
-  "groth16Verifier": "0xE0Add318E32F65936b8bD74DC122758f543b8166",
+  "address": "0x2fD8885cC60B742ceBf5F9305f80BD0CCF3d14E8",
+  "groth16Verifier": "0x632d46e7e9a410015b4A1506eb77955585Fc0D7c",
   "deployer": "0x2e408ad62e30146404F4ED8A61253212f3f9A490",
-  "timestamp": "2025-09-25T17:08:33.615Z",
+  "timestamp": "2025-09-27T00:45:03.187Z",
   "abi": [
     {
       "inputs": [

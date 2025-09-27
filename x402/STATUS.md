@@ -11,6 +11,8 @@ The x402 system is now **production-compliant** with the official Coinbase x402 
 - ✅ **Funded Testnet**: Working with real USDC (9.98) on Base Sepolia
 - ✅ **zkML Integration**: ~500ms proof generation with JOLT-Atlas
 - ✅ **On-chain Verification**: Optional Groth16 proof-of-proof anchoring
+- ✅ **Auto‑Pay Modes**: Server can auto‑pay after attestation or after on‑chain anchor confirmation (fully compliant x402 without prompts)
+- ✅ **USDC EIP‑712 Domain**: Domain aligned with on‑chain USDC (name 'USDC', version '2') for valid EIP‑3009 signatures
 
 ## Key Components
 
@@ -120,6 +122,11 @@ LLM_PROVER_BIN=/home/hshadab/agentkit/jolt-atlas/target/release/llm_prover
 - ✅ x402 preflight (returns Accepts)
 - ✅ MetaMask EIP-712 signing
 - ✅ USDC payment execution (0.01 USDC)
+- ✅ Server auto‑pay after anchor confirm (X402_AUTOPAY=anchor_confirmed)
+
+### Current Verifier (Base Sepolia)
+- Storage verifier: `0x2fD8885cC60B742ceBf5F9305f80BD0CCF3d14E8`
+- Typical anchor gas: ~340k–360k
 - ✅ Transaction verification on Base Sepolia
 
 ## Testing Checklist
@@ -186,6 +193,7 @@ curl http://127.0.0.1:8002/zkml/status/<session_id>
 - [ ] Add comprehensive test suite
 - [ ] Implement payment receipt storage
 - [ ] Add webhook support for payment notifications
+- [ ] UI banner for on‑chain anchor status and auto‑payment result
 
 ### Future Enhancements
 - [ ] Multi-token support beyond USDC

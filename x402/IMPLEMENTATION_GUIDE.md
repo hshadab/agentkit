@@ -456,6 +456,26 @@ document.getElementById('startDemo').onclick = async () => {
 document.getElementById('payMetaMask').onclick = payWithMetaMask;
 ```
 
+### 3. Automatic Payments (No MetaMask)
+
+You can run fully compliant x402 payments without user prompts:
+
+- Client-triggered: call `POST /ui/pay-auto` after attestation (or after anchor confirms).
+- Server-triggered: set `X402_AUTOPAY` to `attest` or `anchor_confirmed` and the server will auto‑pay in the background.
+
+Environment:
+```bash
+X402_AGENT_PRIVATE_KEY=0x...      # Payer (USDC on Base Sepolia)
+BASE_PRIVATE_KEY=0x...            # Executor (ETH for gas)
+X402_PAYTO=0x...                  # Recipient (usually executor)
+X402_AUTOPAY=anchor_confirmed     # Wait for on-chain anchor before paying
+X402_ZKML_VERIFY_ETH=true         # Optional: perform on-chain anchor
+```
+
+Behavior:
+- After Step 4 confirms, the server builds an EIP‑3009 authorization (signed by the agent key) and executes `transferWithAuthorization` on-chain using the executor key.
+- `GET /ui/last-redemption` returns the last tx with explorer link.
+
 ## Testing Your Implementation
 
 ### 1. Unit Tests
