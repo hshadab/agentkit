@@ -1,0 +1,67 @@
+{
+  "id": "cs_7F8G9H0I1J2K",
+  "status": "not_ready_for_payment",
+  "currency": "usd",
+  "buyer": {
+    "first_name": "Bob",
+    "last_name": "Johnson",
+    "email": "bob@example.com"
+  },
+  "line_items": [
+    {
+      "id": "li_xyz789",
+      "item": {
+        "id": "prod_electronics_001",
+        "name": "High-End Laptop",
+        "description": "Gaming laptop with RTX 4090"
+      },
+      "quantity": 1,
+      "unit_amount": 299900,
+      "total_amount": 299900
+    }
+  ],
+  "totals": [
+    {
+      "label": "Subtotal",
+      "amount": 299900
+    },
+    {
+      "label": "Tax",
+      "amount": 23992
+    },
+    {
+      "label": "Total",
+      "amount": 323892
+    }
+  ],
+  "fulfillment_options": [
+    {
+      "id": "fulfill_shipping_001",
+      "type": "shipping",
+      "label": "Standard Shipping",
+      "amount": 0
+    }
+  ],
+  "messages": [
+    {
+      "type": "error",
+      "content": "Transaction denied by authorization model: Amount exceeds budget limit ($50,000 > $500 monthly budget)."
+    }
+  ],
+  "links": [
+    {
+      "rel": "self",
+      "href": "https://merchant.example.com/checkout_sessions/cs_7F8G9H0I1J2K"
+    }
+  ],
+  "authorization_proof": {
+    "proof": "0xjolt_real_5b5e6d65027511c125be0e5ec27ddd224979f08613b6658a78bbg4cd40cfe499...",
+    "proof_hash": "fa298718b9ac3128639d92871e7c72f751536g959eege58gc8a9c40936226dg66",
+    "proof_system": "jolt-atlas",
+    "model_hash": "deterministic_5param_a7f3bc928d1e6f45",
+    "decision": false,
+    "confidence": 0.55,
+    "inputs_hash": "1a3b5c7d9e0f2g4h6i8j0k2l4m6n8o0p",
+    "timestamp": 1727683250000
+  }
+}

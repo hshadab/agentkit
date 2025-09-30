@@ -1,0 +1,63 @@
+{
+  "id": "cs_1A2B3C4D5E6F",
+  "status": "ready_for_payment",
+  "currency": "usd",
+  "buyer": {
+    "first_name": "Alice",
+    "last_name": "Smith",
+    "email": "alice@example.com"
+  },
+  "line_items": [
+    {
+      "id": "li_abc123",
+      "item": {
+        "id": "prod_groceries_001",
+        "name": "Organic Groceries Bundle",
+        "description": "Weekly grocery delivery"
+      },
+      "quantity": 1,
+      "unit_amount": 4500,
+      "total_amount": 4500
+    }
+  ],
+  "totals": [
+    {
+      "label": "Subtotal",
+      "amount": 4500
+    },
+    {
+      "label": "Tax",
+      "amount": 360
+    },
+    {
+      "label": "Total",
+      "amount": 4860
+    }
+  ],
+  "fulfillment_options": [
+    {
+      "id": "fulfill_digital_001",
+      "type": "digital",
+      "label": "Instant Delivery"
+    }
+  ],
+  "fulfillment_option_id": "fulfill_digital_001",
+  "messages": [],
+  "links": [
+    {
+      "rel": "self",
+      "href": "https://merchant.example.com/checkout_sessions/cs_1A2B3C4D5E6F"
+    }
+  ],
+  "authorization_proof": {
+    "proof": "0xjolt_real_4a4f4c54016400b014af9d4bf16cdd113868e07602a5547967aaf3bc39bed3886503505bafaf182061500f5bdf58dc2ade488e14ff618059eef5e4758d646dc786afc34fe25464ad4c544c0dfb4ef91c42f77eaf368146fd3f85c6d8ee8214caafa79f9a138707dcc67a8fc56ecc3279741718b597fa712bb783f01e09ad851171c05a63642c2a8021d3aa58fcc4a319bd734283926fc81afa57cbc538c761a2458370c4a3196c8e713384675284760053cae0e0bfe7c9e1e4ec19f8c7eebf591c6ab559b7d92be6547339f223f37f4faad72775dce3aecceab5e9b91ec394d4fb1d469d7257ade7be8e738be0fbcc7158c0037a427e71d602cb8f1e7acc4c7c",
+    "proof_hash": "de187607a89b2017528c91760d6b61e640425f848dfd47fb798b39825115cf55",
+    "proof_system": "jolt-atlas",
+    "model_hash": "deterministic_5param_a7f3bc928d1e6f45",
+    "decision": true,
+    "confidence": 1.0,
+    "inputs_hash": "8f2e1d4c9b7a3e6f5d2c8a1b4e7f3d9c",
+    "timestamp": 1727683200000,
+    "verification_url": "https://sepolia.basescan.org/tx/0xcb0f2abf65efb852a93413da261688d223856f1854546ba329542263033f1787"
+  }
+}

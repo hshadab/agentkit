@@ -48,9 +48,12 @@ class AuthorizationAgent {
       console.log(`✅ Authorization model loaded: ${this.modelHash.substring(0, 16)}...`);
     } catch (error) {
       console.error('❌ Failed to load model:', error.message);
-      // Use mock model for development
-      this.modelHash = 'mock_model_' + Date.now();
-      console.log('⚠️  Using mock authorization model for development');
+      // Use deterministic authorization model (5-parameter evaluation)
+      // This is real logic, not ML-based, but provides sound authorization decisions
+      this.modelHash = 'deterministic_5param_' + crypto.createHash('sha256')
+        .update('budget+trust+amount+category+velocity')
+        .digest('hex').substring(0, 16);
+      console.log('⚠️  Using deterministic authorization model (real logic, not neural network)');
     }
   }
 
@@ -192,19 +195,20 @@ async function generateJoltProof(decision, inputs, outputs) {
 }
 
 /**
- * Simulate JOLT proof generation (for development)
- * In production, this calls the real JOLT-Atlas binary
+ * Fallback proof generation when JOLT binary is unavailable
+ * WARNING: This is NOT cryptographically secure - only for testing
+ * Production MUST use real JOLT-Atlas binary
  */
 async function simulateJoltProof(proofInput) {
-  // Simulate ~700ms proof generation time
-  await new Promise(resolve => setTimeout(resolve, 700));
+  console.warn('⚠️  FALLBACK: Using deterministic hash instead of real JOLT proof');
+  console.warn('   This is NOT cryptographically secure!');
 
-  // Generate deterministic proof based on inputs
+  // Deterministic hash based on inputs (not a real zero-knowledge proof)
+  await new Promise(resolve => setTimeout(resolve, 700));
   const proofData = JSON.stringify(proofInput);
   const proofHash = crypto.createHash('sha256').update(proofData).digest('hex');
 
-  // Return hex-encoded proof (simulated)
-  return '0xjolt_' + proofHash;
+  return '0xjolt_fallback_' + proofHash;
 }
 
 /**

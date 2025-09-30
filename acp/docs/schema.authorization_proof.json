@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/agentic-checkout/authorization_proof.schema.json",
+  "title": "Authorization Proof — zkML Extension",
+  "description": "Optional cryptographic proof that AI agent authorization was computed correctly",
+  "$defs": {
+    "AuthorizationProof": {
+      "type": "object",
+      "description": "Zero-knowledge machine learning proof of authorization decision",
+      "additionalProperties": false,
+      "properties": {
+        "proof": {
+          "type": "string",
+          "description": "Hex-encoded zkML proof bytes (e.g., JOLT, Groth16, PLONK, STARK)",
+          "pattern": "^0x[a-fA-F0-9]+$",
+          "minLength": 10
+        },
+        "proof_hash": {
+          "type": "string",
+          "description": "SHA-256 hash of the proof for integrity verification",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        },
+        "proof_system": {
+          "type": "string",
+          "description": "Zero-knowledge proof system used",
+          "enum": ["jolt-atlas", "groth16", "plonk", "stark", "nova", "halo2"]
+        },
+        "model_hash": {
+          "type": "string",
+          "description": "Hash identifier of the authorization model used (format: 'type_hash' or 'sha256:hash')",
+          "minLength": 16
+        },
+        "decision": {
+          "type": "boolean",
+          "description": "Authorization decision: true = approved, false = denied"
+        },
+        "confidence": {
+          "type": "number",
+          "description": "Confidence score of the authorization decision",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "inputs_hash": {
+          "type": "string",
+          "description": "Hash of the model inputs used (for verification without revealing actual inputs)",
+          "pattern": "^[a-fA-F0-9]{32,64}$"
+        },
+        "timestamp": {
+          "type": "integer",
+          "description": "Unix timestamp in milliseconds when proof was generated",
+          "minimum": 0
+        },
+        "verification_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Optional URL to on-chain verification transaction (e.g., Etherscan link)"
+        }
+      },
+      "required": [
+        "proof",
+        "proof_hash",
+        "proof_system",
+        "model_hash",
+        "decision",
+        "confidence",
+        "inputs_hash",
+        "timestamp"
+      ]
+    }
+  }
+}
