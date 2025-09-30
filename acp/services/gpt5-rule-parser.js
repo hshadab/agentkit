@@ -244,11 +244,12 @@ app.post('/convert-to-model-params', async (req, res) => {
     }
 
     // Calculate daily budget from weekly/monthly limits
+    // For demo: use monthly limit directly instead of dividing
     let daily_limit = rules.daily_limit;
     if (!daily_limit && rules.weekly_limit) {
       daily_limit = rules.weekly_limit / 7;
     } else if (!daily_limit && rules.monthly_limit) {
-      daily_limit = rules.monthly_limit / 30;
+      daily_limit = rules.monthly_limit;  // Use monthly limit directly for demo
     } else {
       daily_limit = 10000; // Default: $10k/day
     }
