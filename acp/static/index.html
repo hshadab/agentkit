@@ -479,6 +479,17 @@
         <div class="header">
             <h1>🤖 Verifiable Agent Commerce</h1>
             <p>ACP × JOLT-Atlas: Trustless AI Payment Authorization</p>
+            <div style="margin-top: 15px; padding: 15px; background: rgba(40, 167, 69, 0.1); border: 2px solid rgba(40, 167, 69, 0.3); border-radius: 12px; font-size: 0.9em;">
+                ✅ <strong>Real Components:</strong>
+                GPT-5 API (OpenAI) •
+                JOLT-Atlas Rust Binary •
+                Stripe Payments •
+                Base Sepolia Blockchain
+                <br>
+                <span style="opacity: 0.7; font-size: 0.85em;">
+                    🔗 Contract: <a href="https://sepolia.basescan.org/address/0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944" target="_blank" style="color: #667eea;">0xDCBb...9944</a>
+                </span>
+            </div>
         </div>
 
         <!-- Progress Bar -->
@@ -579,6 +590,12 @@
                     <span>💳</span> Payment Method (Real Stripe - Test Mode)
                 </h3>
                 <div class="input-group">
+                    <div style="margin-bottom: 15px; padding: 10px; background: rgba(102, 126, 234, 0.1); border-radius: 8px;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="autoFillCard" checked style="width: 20px; height: 20px; cursor: pointer;">
+                            <span>🚀 Auto-fill test card (4242 4242 4242 4242)</span>
+                        </label>
+                    </div>
                     <label>Card Information</label>
                     <div id="card-element" style="padding: 12px; background: rgba(0, 0, 0, 0.3); border: 2px solid rgba(40, 167, 69, 0.3); border-radius: 8px; min-height: 40px;"></div>
                     <div id="card-errors" style="color: #ff4444; margin-top: 10px; font-size: 0.9em;"></div>
@@ -807,11 +824,30 @@
                 if (decision) {
                     // Show Stripe card element for payment
                     document.getElementById('stripeCardSection').style.display = 'block';
-                    document.getElementById('result4').innerHTML = `
-                        Status: Waiting for card...<br>
-                        Amount: $${amount.toFixed(2)}<br>
-                        👇 Enter card details below
-                    `;
+
+                    // Check if auto-fill is enabled
+                    const autoFill = document.getElementById('autoFillCard').checked;
+
+                    if (autoFill) {
+                        document.getElementById('result4').innerHTML = `
+                            Status: Auto-filling test card...<br>
+                            Amount: $${amount.toFixed(2)}<br>
+                            🤖 Using test card 4242...
+                        `;
+
+                        // Auto-fill test card and auto-click after short delay
+                        setTimeout(() => {
+                            // Stripe.js handles test card auto-fill internally
+                            // Just trigger the confirm button
+                            document.getElementById('confirmPaymentBtn').click();
+                        }, 1000);
+                    } else {
+                        document.getElementById('result4').innerHTML = `
+                            Status: Waiting for card...<br>
+                            Amount: $${amount.toFixed(2)}<br>
+                            👇 Enter card details below
+                        `;
+                    }
 
                     // Wait for user to confirm payment
                     await new Promise((resolve) => {
@@ -821,11 +857,37 @@
                     try {
                         await updateStep(4, 'active', 'Creating payment method...');
 
-                        // Create real Stripe PaymentMethod from card
-                        const {paymentMethod, error: pmError} = await stripe.createPaymentMethod({
-                            type: 'card',
-                            card: cardElement,
-                        });
+                        let paymentMethod, pmError;
+
+                        // Use test token if auto-fill enabled, otherwise use card element
+                        if (autoFill) {
+                            // Use Stripe test card token for automatic testing
+                            const testToken = await stripe.createToken(cardElement);
+                            if (testToken.error) {
+                                // If card element is empty, create payment method directly with test card
+                                const pm = await stripe.createPaymentMethod({
+                                    type: 'card',
+                                    card: {
+                                        number: '4242424242424242',
+                                        exp_month: 12,
+                                        exp_year: 2025,
+                                        cvc: '123'
+                                    }
+                                });
+                                paymentMethod = pm.paymentMethod;
+                                pmError = pm.error;
+                            } else {
+                                paymentMethod = testToken.token;
+                            }
+                        } else {
+                            // Create real Stripe PaymentMethod from card element
+                            const pm = await stripe.createPaymentMethod({
+                                type: 'card',
+                                card: cardElement,
+                            });
+                            paymentMethod = pm.paymentMethod;
+                            pmError = pm.error;
+                        }
 
                         if (pmError) {
                             throw new Error(pmError.message);
