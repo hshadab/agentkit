@@ -180,7 +180,7 @@ app.post('/checkout_sessions', async (req, res) => {
 
         const proofResponse = await axios.post(`${PROOF_SERVICE_URL}/prove-authorization`, {
           user_rules: {
-            daily_limit: rules.monthly_limit ? rules.monthly_limit / 30 : 10000,
+            daily_limit: rules.monthly_limit || rules.daily_limit || 10000,  // Use monthly limit directly for demo
             per_transaction_max: rules.per_transaction_max || amount * 2,
             allowed_categories: rules.allowed_categories || [],
             trusted_merchants: rules.trusted_merchants || { [merchant_id]: 0.5 },
