@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifiable Agent Commerce - Chat Demo</title>
+    <link rel="stylesheet" href="css/chat.css">
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Header -->
+        <div class="chat-header">
+            <h1>Verifiable Agent Commerce</h1>
+            <div class="logo-container">
+                <img src="https://avatars.githubusercontent.com/u/232693681?s=200&v=4" alt="ACP">
+                <img src="https://ai.ls/assets/openai-logos/PNGs/openai-white-lockup.png" alt="OpenAI">
+                <img src="https://cdn.prod.website-files.com/65d52b07d5bc41614daa723f/665df12739c532f45b665fe7_logo-novanet.svg" alt="Novanet">
+            </div>
+            <p>Trustless AI Payment Authorization with zkML Proofs</p>
+        </div>
+
+        <!-- Messages Area -->
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages will be rendered here by JavaScript -->
+        </div>
+
+        <!-- Input Area -->
+        <div class="chat-input">
+            <div class="chat-input-wrapper">
+                <input
+                    type="text"
+                    id="messageInput"
+                    placeholder="Ask for product recommendations, or tell me what you're shopping for..."
+                    autocomplete="off"
+                >
+                <button id="sendBtn">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/chat-interface.js"></script>
+</body>
+</html>

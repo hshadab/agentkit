@@ -190,7 +190,7 @@ app.post('/checkout_sessions', async (req, res) => {
           transaction: {
             merchant_id: merchant_id,
             amount: amount,
-            category: line_items[0]?.category || 'general'
+            category: line_items[0]?.category || 'groceries'  // Default to groceries for demo
           }
         });
 

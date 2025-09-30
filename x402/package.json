@@ -10,7 +10,11 @@
     "start:proof-gate": "node proof-gate-server.js",
     "start:verifier": "node groth16-verifier-service.js",
     "demo:client": "node client-demo.js",
-    "generate:proof": "node generate-valid-proof.js"
+    "generate:proof": "node generate-valid-proof.js",
+    "test:conformance": "node tests/conformance-harness.js",
+    "start:unified": "node ../api/unified-backend.js",
+    "demo:up": "bash scripts/demo-up.sh",
+    "demo:down": "bash scripts/demo-down.sh"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -26,4 +30,3 @@
     "x402-express": "^0.2.0"
   }
 }
-

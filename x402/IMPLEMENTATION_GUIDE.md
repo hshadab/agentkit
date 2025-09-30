@@ -1,7 +1,7 @@
 # x402 Implementation Guide for Developers
 
 ## Overview
-This guide provides step-by-step instructions for developers implementing the x402 payment protocol with zkML attestation in their own applications.
+This guide describes a reference demo implementation of the x402 payment protocol with an experimental zkML attestation extension. The core 402 → Accepts → X-PAYMENT flow aims to be compatible with the official spec; the three-hash binding is an optional extension documented here.
 
 ## Table of Contents
 1. [Understanding the Architecture](#understanding-the-architecture)
@@ -477,6 +477,12 @@ Behavior:
 - `GET /ui/last-redemption` returns the last tx with explorer link.
 
 ## Testing Your Implementation
+
+### Quick Conformance Harness
+Run a minimal check that the server issues an attestation and responds to preflight with HTTP 402 and structured `accepts[]`:
+```bash
+npm run test:conformance
+```
 
 ### 1. Unit Tests
 ```javascript

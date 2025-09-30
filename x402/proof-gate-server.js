@@ -27,6 +27,8 @@ const { ethers } = require('ethers');
 
 const app = express();
 let LAST_REDEMPTION = null; // { redeemed, usdcTxHash, explorer, blockNumber, at }
+const METRICS = { attestIssued: 0, preflight402: 0, paidAccepted: 0, anchorSubmitted: 0, anchorConfirmed: 0, anchorError: 0, autopayRuns: 0 };
+const logEvent = (event, extra={}) => { try { console.log(JSON.stringify({ ts: new Date().toISOString(), event, ...extra })); } catch {} };
 app.use(cors({
   origin: (origin, cb) => cb(null, true),
   credentials: false,
@@ -49,6 +51,8 @@ const DECISION_THRESHOLD = parseInt(env('X402_ZKML_DECISION_THRESHOLD', '80'), 1
 const AUTOPAY_MODE = (env('X402_AUTOPAY', '').toLowerCase());
 const SELF_PORT = Number(env('X402_ZKML_PORT', '8610'));
 const autopayProcessed = new Set();
+// Ephemeral quote store for fallback flow: quoteId -> { expiresAt, accepts }
+const QUOTES = new Map();
 
 function sha256Hex(input) {
   return crypto.createHash('sha256').update(input).digest('hex');
@@ -105,8 +109,9 @@ app.post('/attest', async (req, res) => {
     let eth = null;
     let attestationId = sha256Hex(`${proofHash}:${Date.now()}`);
     if (env('X402_ZKML_VERIFY_ETH','') === 'true' || VERIFY_ON_CHAIN) {
-      anchors.set(attestationId, { status: 'pending', startedAt: Date.now() });
-      queueImmediate(async () => {
+  anchors.set(attestationId, { status: 'pending', startedAt: Date.now() });
+  METRICS.anchorSubmitted++;
+  queueImmediate(async () => {
         try {
           console.log('[anchor] Starting REAL on-chain verification...');
           
@@ -167,6 +172,8 @@ app.post('/attest', async (req, res) => {
               finishedAt: Date.now(),
               transactionHash: result.transactionHash
             });
+            METRICS.anchorConfirmed++;
+            logEvent('anchor_confirmed', { attestationId, txHash: result.transactionHash, blockNumber: result.blockNumber });
           } else {
             throw new Error(result.error || 'Verification failed');
           }
@@ -178,6 +185,8 @@ app.post('/attest', async (req, res) => {
             startedAt: anchors.get(attestationId)?.startedAt, 
             finishedAt: Date.now() 
           });
+          METRICS.anchorError++;
+          logEvent('anchor_error', { attestationId, error: String(err?.message || err) });
         }
       });
     }
@@ -241,6 +250,8 @@ app.post('/attest', async (req, res) => {
       console.error('[autopay] schedule error:', String(apErr?.message || apErr));
     }
 
+    METRICS.attestIssued++;
+    logEvent('attest_issued', { intentHash, acceptsHash, onChain });
     return res.json({ ok: true, token, proofHash, issuedAt, expiresAt, onChain, intentHash, acceptsHash, attester, anchor });
   } catch (e) {
     console.error('attest error:', e);
@@ -317,19 +328,78 @@ if (!HAS_X402_MIDDLEWARE) {
     if (attn.acceptsHash && attn.acceptsHash !== computedAcceptsHash) {
       return res.status(402).json({ error: 'accepts_mismatch' });
     }
-    // Return demo Accepts for client preflight; payment requires real middleware or manual flow
-    return res.json({
-      ok: true,
-      accepts: [
-        {
-          network: env('X402_NETWORK','base-sepolia'),
-          asset: env('X402_ASSET', DEFAULT_USDC_BASE_SEPOLIA),
-          payTo: env('X402_PAYTO','0x1111111111111111111111111111111111111111'),
-          price: env('X402_PRICE','$0.01'),
-          resource: req.path,
-        },
-      ],
-    });
+    // If client provided an X-PAYMENT header, process it directly (fallback path)
+    const paymentHeader = req.header('X-PAYMENT');
+    const expected = {
+      network: env('X402_NETWORK','base-sepolia'),
+      asset: env('X402_ASSET', DEFAULT_USDC_BASE_SEPOLIA),
+      payTo: env('X402_PAYTO','0x1111111111111111111111111111111111111111'),
+      price: env('X402_PRICE','$0.01'),
+    };
+    if (paymentHeader) {
+      try {
+        // Optional: enforce quote TTL if header includes quoteId
+        let decoded;
+        try { decoded = JSON.parse(Buffer.from(paymentHeader, 'base64url').toString('utf8')); } catch {}
+        const quoteId = decoded?.quoteId;
+        if (quoteId) {
+          const q = QUOTES.get(quoteId);
+          if (!q) return res.status(402).json({ error: 'quote_not_found' });
+          if (Date.now() > q.expiresAt) return res.status(402).json({ error: 'quote_expired' });
+        }
+
+        // Execute authorization-based payment
+        const chainId = Number(env('CHAIN_ID', 84532));
+        const rpcUrl = env('BASE_RPC_URL', 'https://sepolia.base.org');
+        const pk = env('PRIVATE_KEY', env('BASE_PRIVATE_KEY'));
+        if (!pk) return res.status(500).json({ error: 'server_missing_private_key' });
+        const { tx, mode } = await processX402Payment({
+          header: paymentHeader,
+          expectedAsset: expected.asset,
+          expectedPayTo: expected.payTo,
+          expectedNetwork: expected.network,
+          privateKey: pk,
+          rpcUrl,
+          chainId,
+        });
+
+        const explorer = env('EXPLORER_BASE_URL', 'https://sepolia.basescan.org');
+        const payment = {
+          redeemed: true,
+          mode,
+          usdcTxHash: tx.hash,
+          explorer: `${explorer}/tx/${tx.hash}`
+        };
+        LAST_REDEMPTION = { ...payment, at: Date.now() };
+        METRICS.paidAccepted++;
+        logEvent('payment_accepted', { txHash: tx.hash, mode });
+        return res.status(200).json({ ok: true, message: 'Payment accepted', payment });
+      } catch (err) {
+        return res.status(402).json({ error: 'payment_rejected', message: String(err?.message || err) });
+      }
+    }
+
+    // Return Accepts for client preflight with 402 Payment Required
+    const now = Date.now();
+    const expiresAt = now + 120000; // 2 minutes quote TTL
+    const quoteId = sha256Hex(`${computedAcceptsHash}:${now}`);
+    const accepts = {
+      x402Version: 1,
+      scheme: 'exact',
+      network: expected.network,
+      asset: expected.asset,
+      payTo: expected.payTo,
+      price: expected.price,
+      resource: req.path,
+      maxAmountRequired: '10000', // 0.01 USDC
+      maxTimeoutSeconds: 60,
+      quoteId,
+      expiresAt
+    };
+    QUOTES.set(quoteId, { expiresAt, accepts });
+    METRICS.preflight402++;
+    logEvent('preflight_402', { quoteId, expiresAt });
+    return res.status(402).json({ ok: false, error: 'payment_required', accepts: [accepts] });
   });
 }
 
@@ -442,7 +512,8 @@ app.post('/ui/pay-auto', async (req, res) => {
       amount: accepts.maxAmountRequired || '10000',
       network: accepts.network || env('X402_NETWORK','base-sepolia'),
       chainId: Number(env('CHAIN_ID', 84532)),
-      validityWindow: Number(accepts.maxTimeoutSeconds || 60)
+      validityWindow: Number(accepts.maxTimeoutSeconds || 60),
+      quoteId: accepts.quoteId
     });
     
     // Final paid call with X-PAYMENT header
@@ -676,13 +747,29 @@ try { app.use('/static', express.static(path.join(__dirname, '..', 'static'))); 
 // Simple proxies to Rust zkML backend to avoid cross-origin in browser UI
 app.post('/ui/zkml/prove', async (req, res) => {
   try {
-    const r = await fetch('http://127.0.0.1:8001/zkml/prove', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(req.body||{}) });
+    // Map UI input shape to unified-backend expected body
+    const ui = req.body || {};
+    const input = ui.input || {};
+    const body = {
+      agentId: String(input.agent_id || 'agent-demo-1'),
+      agentType: 'financial',
+      amount: typeof input.amount === 'number' ? (input.amount / 100) : 0.01,
+      operation: 'gateway-transfer',
+      riskScore: typeof input.merchant_risk === 'number' ? (input.merchant_risk / 100) : 0.12
+    };
+    const r = await fetch(`${UNIFIED_BACKEND}/zkml/prove`, { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body) });
     const j = await r.json(); res.status(r.status).json(j);
   } catch (e) { res.status(502).json({ error: 'proxy_failed', message: e.message }); }
 });
 app.get('/ui/zkml/status/:id', async (req, res) => {
   try {
-    const r = await fetch(`http://127.0.0.1:8001/zkml/status/${req.params.id}`);
+    const r = await fetch(`${UNIFIED_BACKEND}/zkml/status/${req.params.id}`);
+    const j = await r.json(); res.status(r.status).json(j);
+  } catch (e) { res.status(502).json({ error: 'proxy_failed', message: e.message }); }
+});
+app.post('/ui/zkml/verify', async (req, res) => {
+  try {
+    const r = await fetch(`${UNIFIED_BACKEND}/zkml/verify`, { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(req.body||{}) });
     const j = await r.json(); res.status(r.status).json(j);
   } catch (e) { res.status(502).json({ error: 'proxy_failed', message: e.message }); }
 });
@@ -830,6 +917,7 @@ async function runAutopay({ attestationId, token, bodyJson, anchorId }) {
     if (!token || !attestationId) return;
     if (autopayProcessed.has(attestationId)) return;
     autopayProcessed.add(attestationId);
+    METRICS.autopayRuns++;
     console.log('[autopay] starting for', attestationId, anchorId ? '(anchor confirmed)' : '(attest)');
     const r = await fetch(`http://127.0.0.1:${SELF_PORT}/ui/pay-auto`, {
       method: 'POST',
@@ -842,3 +930,8 @@ async function runAutopay({ attestationId, token, bodyJson, anchorId }) {
     console.error('[autopay] error', attestationId, String(e?.message || e));
   }
 }
+
+// Metrics endpoint
+app.get('/metrics', (req, res) => {
+  res.json({ ok: true, ...METRICS });
+});

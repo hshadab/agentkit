@@ -38,7 +38,19 @@ const NETWORKS = {
 };
 
 // Private key for programmatic signing
-const PRIVATE_KEY = '0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+const PRIVATE_KEY = process.env.UNIFIED_BACKEND_PRIVATE_KEY || '0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+
+// Simple metrics
+const METRICS = {
+  zkmlProofsStarted: 0,
+  zkmlProofsCompleted: 0,
+  verificationsSubmitted: 0,
+  verificationsConfirmed: 0,
+  verificationsFailed: 0,
+};
+const logEvent = (event, extra={}) => {
+  try { console.log(JSON.stringify({ ts: new Date().toISOString(), event, ...extra })); } catch {}
+};
 
 // === Health Check ===
 app.get('/health', (req, res) => {
@@ -118,6 +130,7 @@ app.post('/zkml/prove', async (req, res) => {
     console.log(`   Type: ${agentType}, Amount: ${amount}, Operation: ${operation}`);
     
     // Start JOLT-Atlas proof generation
+    METRICS.zkmlProofsStarted++;
     generateJoltProof(sessionId, agentType, amount, operation, riskScore);
     
     res.json({
@@ -182,6 +195,7 @@ async function generateJoltProof(sessionId, agentType, amount, operation, riskSc
                 };
                 
                 console.log(`✅ zkML proof generated in ${zkMLSessions[sessionId].proof.generationTime}s for agent ${zkMLSessions[sessionId].agentId}`);
+                try { METRICS.zkmlProofsCompleted++; } catch {}
             } else {
                 zkMLSessions[sessionId] = {
                     ...zkMLSessions[sessionId],
@@ -238,7 +252,7 @@ app.post('/zkml/verify', async (req, res) => {
         }
         
         console.log('🔗 Connecting to', networkConfig.name);
-        const provider = new ethers.providers.JsonRpcProvider(networkConfig.rpcUrl);
+        const provider = new ethers.JsonRpcProvider(networkConfig.rpcUrl);
         const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
         
         const VERIFIER_ABI = [
@@ -261,6 +275,7 @@ app.post('/zkml/verify', async (req, res) => {
         console.log('   Contract:', networkConfig.verifierAddress);
         
         // Submit transaction
+        METRICS.verificationsSubmitted++;
         const tx = await verifier.verifyZKMLProof(novaProof, publicInputs, {
             gasLimit: 100000
         });
@@ -270,6 +285,7 @@ app.post('/zkml/verify', async (req, res) => {
         
         // Wait for confirmation
         const receipt = await tx.wait();
+        METRICS.verificationsConfirmed++;
         
         console.log('✅ Transaction confirmed!');
         console.log('   Block:', receipt.blockNumber);
@@ -281,7 +297,7 @@ app.post('/zkml/verify', async (req, res) => {
             txHash: receipt.transactionHash,
             network: network,
             blockNumber: receipt.blockNumber,
-            proofHash: ethers.utils.keccak256(ethers.utils.toUtf8Bytes(JSON.stringify(proof))),
+            proofHash: ethers.keccak256(ethers.toUtf8Bytes(JSON.stringify(proof || {}))),
             gasUsed: receipt.gasUsed.toString(),
             verificationTime: new Date().toISOString(),
             contractAddress: networkConfig.verifierAddress
@@ -289,6 +305,7 @@ app.post('/zkml/verify', async (req, res) => {
         
     } catch (error) {
         console.error('❌ Verification error:', error.message);
+        METRICS.verificationsFailed++;
         res.status(500).json({
             verified: false,
             error: error.message
@@ -333,3 +350,14 @@ app.listen(PORT, () => {
 ╚════════════════════════════════════════════╝
     `);
 });
+
+// Expose metrics
+app.get('/metrics', (req, res) => {
+  res.json({ ok: true, ...METRICS });
+});
+
+// Hook: mark proof completion
+function markProofCompleted(sessionId) {
+  METRICS.zkmlProofsCompleted++;
+  logEvent('zkml_proof_completed', { sessionId });
+}

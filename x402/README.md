@@ -1,11 +1,13 @@
 # x402 Agent Authorization System with zkML
 
 ## Overview
-Production implementation of the [Coinbase x402 Payment Protocol](https://github.com/coinbase/x402) with **Agent Authorization** via zkML. This system enables autonomous AI agents to prove they're authorized to spend USDC according to predefined spending rules, using cryptographic proofs and the EIP-3009 `transferWithAuthorization` standard.
+Reference demo of the [Coinbase x402 Payment Protocol](https://github.com/coinbase/x402) with an experimental Agent Authorization (zkML) extension. It demonstrates AI authorization → zk proof → attestation → optional on‑chain anchor → payment using EIP‑3009 `transferWithAuthorization`.
+
+Note: This is a reference demo, not a spec‑verified or security‑hardened implementation.
 
 ### Key Features
 - ✅ **Agent Authorization Model**: AI agents prove they can spend based on rules
-- ✅ **Production x402 Protocol**: Full EIP-3009 `transferWithAuthorization` support
+- ✅ **x402-Compatible Flow**: EIP-3009 `transferWithAuthorization` support
 - ✅ **zkML Spending Rules**: Verifies budget, risk, categories via JOLT-Atlas
 - ✅ **On-chain Verification**: Groth16 proof-of-proof creates audit trail
 - ✅ **MetaMask Integration**: EIP-712 signing for gasless USDC transfers
@@ -43,9 +45,11 @@ Production implementation of the [Coinbase x402 Payment Protocol](https://github
 5. Payment Execution → Execute USDC transfer via transferWithAuthorization
 ```
 
-Deep integration (Step 3):
+Extension binding (Step 3, experimental):
 - The x402 attestation includes a `proofHash` (commitment to the zkML proof), an `intentHash` (method + path + body hash), and an `acceptsHash` (server’s configured price/network/asset/payTo). This binds the AI decision to the exact payment intent and server policy, end‑to‑end.
 - With `X402_AUTOPAY=anchor_confirmed`, payment is executed only after the on‑chain anchor (Step 4) confirms.
+
+This three‑hash binding is an experimental extension layered on top of x402; it is not part of the upstream protocol today.
 
 ### How the AI Makes Decisions
 
@@ -99,6 +103,38 @@ npm run start:verifier
 # (it proxies to proof‑gate and serves static/x402-demo.html):
 cargo run   # starts on :8001
 ```
+
+### One-Command Demo
+```bash
+# From x402/
+npm run demo:up    # starts unified-backend (:8002) + proof-gate (:8610)
+# Visit the 1→5 UI in your browser:
+# http://127.0.0.1:8610/static/x402-demo.html
+# Stop services:
+npm run demo:down
+```
+
+### UI Test (1→5) End-to-End
+- Prerequisites (testnet):
+  - `BASE_RPC_URL`, `CHAIN_ID=84532`, `EXPLORER_BASE_URL`
+  - `BASE_PRIVATE_KEY` (executor pays gas)
+  - `X402_AGENT_PRIVATE_KEY` (payer with Base Sepolia USDC) if using server auto‑pay
+  - Optional anchor: `X402_ZKML_VERIFY_ETH=true` (requires gas); set `X402_AUTOPAY=anchor_confirmed` to pay after confirmation
+  - Or skip anchor with `X402_AUTOPAY=attest` for quick local testing
+- Start services: `npm run demo:up`
+- Open the UI: `http://127.0.0.1:8610/static/x402-demo.html`
+- Click “Start Demo”. The UI drives:
+  - Step 1: AI inference (calls `/ui/zkml/prove`)
+  - Step 2: zkML proof (polls `/ui/zkml/status/:id`)
+  - Step 3: Attestation (`/attest`) — shows attestation id
+  - Step 4: On‑chain verification (if enabled) — shows a block/tx link on success
+  - Step 5: Payment — server auto‑pay after Step 4 or immediately after Step 3 depending on `X402_AUTOPAY`
+
+Tip: If Step 4 keeps “verifying…”, either fund the executor key with ETH and keep `X402_ZKML_VERIFY_ETH=true`, or set `X402_AUTOPAY=attest` to allow payment without on‑chain anchor.
+
+### MetaMask Option (no auto‑pay)
+- Leave `X402_AUTOPAY` empty
+- Use the “Pay with MetaMask” flow in the UI (EIP‑712 typed‑data signing) to produce a gasless EIP‑3009 authorization that the server executes.
 
 ### Browser UI (5‑Step)
 - Open `http://127.0.0.1:8001/static/x402-demo.html` (served by the Rust backend).
@@ -243,12 +279,9 @@ Open http://127.0.0.1:8001/static/add-metamask-network.html to:
 3. Signature creates gasless authorization
 4. Server executes with gas payment
 
-### Test Wallet (Funded)
-```
-Address: 0x2e408ad62e30146404F4ED8A61253212f3f9A490
-Private Key: 0xe04571b0c9adb6b75c63296fda1de67ab76e163530056c646a590a9cb07d31e5
-Balance: 9.98 USDC, 0.05 ETH (Base Sepolia)
-```
+### Test Wallet Guidance
+- Use your own test wallets funded on Base Sepolia.
+- Never commit private keys. Put secrets in `.env` (see `.env.example`) and rotate any key that was ever committed.
 
 ## API Endpoints
 
@@ -329,15 +362,28 @@ Response (Paid): {
 - Check RPC endpoint connectivity
 - Review logs: `logs-proof-gate-8602.log`
 
-## Compliance with x402 Specification
+## Conformance + Extension
+- Core x402 behavior aims to be compatible with the official spec (402 challenge → `accepts` → client `X-PAYMENT` → server settlement). The fallback route now returns HTTP 402 with structured `accepts[]` and processes `X-PAYMENT` when present.
+- The `proofHash`/`intentHash`/`acceptsHash` binding is an experimental extension (“zk-binding:v1”), clearly labeled so implementers can opt in.
 
-This implementation follows the official [x402 specification](https://github.com/coinbase/x402):
+Quick check with the included harness:
+```bash
+npm run test:conformance
+```
+It verifies:
+- `/attest` returns a signed token with intent/accepts bindings
+- `/x402/pay` preflight responds with 402 and `accepts[]` including `quoteId` and `expiresAt`
+- Missing attestation is rejected (402)
 
-✅ **EIP-3009 Support**: Full `transferWithAuthorization` implementation
-✅ **EIP-712 Signing**: Proper typed data for MetaMask
-✅ **Gasless for Users**: Server executes and pays gas
-✅ **Chain Agnostic**: Works on any EVM chain with USDC
-✅ **Trust Minimized**: Client controls authorization signing
+### Metrics and Logs
+- Proof-gate JSON metrics: `GET http://127.0.0.1:8610/metrics`
+- Unified backend metrics: `GET http://127.0.0.1:8002/metrics`
+- Structured JSON logs are emitted for key events (attest_issued, preflight_402, anchor_confirmed, payment_accepted).
+
+## What’s Mocked vs. Real
+- Real: EIP‑3009 signing and on‑chain execution (Base Sepolia), optional Groth16 on‑chain verifier, attestation signing (HMAC/EIP‑712).
+- Real: `402 → Accepts → X-PAYMENT` fallback path and `x402-express` integration when installed.
+- Mocked/demo: Tiny AI model and zkML glue for authorization; not a production risk model.
 
 ## Additional Resources
 

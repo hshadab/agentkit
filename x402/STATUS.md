@@ -1,12 +1,12 @@
-# x402 Implementation Status (2025-09-26)
+# x402 Reference Demo Status (2025-09-26)
 
-## ✅ Production Implementation Complete
+## ✅ Reference Demo Complete
 
 ### Current State
-The x402 system is now **production-compliant** with the official Coinbase x402 specification, featuring full EIP-3009 `transferWithAuthorization` support, EIP-712 MetaMask signing, and zkML attestation integration.
+This repository contains a credible reference demo aligned with the Coinbase x402 flow, featuring EIP-3009 `transferWithAuthorization` support, EIP-712 MetaMask signing, and a zkML attestation extension. It is not security‑hardened; treat it as a reference, not production.
 
 ### Major Achievements
-- ✅ **Production x402 Protocol**: Full EIP-3009 implementation with proper client/server separation
+- ✅ **x402-Compatible**: EIP-3009 implementation with proper client/server separation
 - ✅ **MetaMask Integration**: Fixed "Invalid input" error, now supports proper EIP-712 signing
 - ✅ **Funded Testnet**: Working with real USDC (9.98) on Base Sepolia
 - ✅ **zkML Integration**: ~500ms proof generation with JOLT-Atlas
@@ -77,9 +77,9 @@ BASE_RPC_URL=https://sepolia.base.org
 CHAIN_ID=84532
 EXPLORER_BASE_URL=https://sepolia.basescan.org
 
-# Funded Wallet (9.98 USDC, 0.05 ETH)
-BASE_PRIVATE_KEY=0xe04571b0c9adb6b75c63296fda1de67ab76e163530056c646a590a9cb07d31e5
-X402_ATTEST_SIGNER=0x2e408ad62e30146404F4ED8A61253212f3f9A490
+# Funded Wallet (testnet) – set in your local .env, do not commit
+# BASE_PRIVATE_KEY=0xYOUR_TESTNET_EXECUTOR_PRIVATE_KEY
+# X402_ATTEST_SIGNER=0xYourAttesterAddress
 
 # x402 Settings
 X402_NETWORK=base-sepolia
@@ -211,5 +211,5 @@ curl http://127.0.0.1:8002/zkml/status/<session_id>
 
 ---
 
-*Last Updated: 2025-09-26 by Claude Assistant*
-*Status: Production-Ready on Testnet*
+*Last Updated: 2025-09-26*
+*Status: Reference Demo on Testnet*

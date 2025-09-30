@@ -117,7 +117,8 @@ async function createDemoPaymentHeader({
   asset,
   amount,
   network,
-  chainId
+  chainId,
+  quoteId // optional, included in header for idempotency/TTL binding
 }) {
   const wallet = new ethers.Wallet(privateKey);
   
@@ -143,6 +144,7 @@ async function createDemoPaymentHeader({
     x402Version: 1,
     scheme: 'exact',
     network,
+    quoteId,
     payload: {
       authorization,
       signature
