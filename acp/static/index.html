@@ -762,7 +762,7 @@
 
     <script>
         const PROOF_SERVICE = 'http://localhost:9001';
-        const ACP_SERVICE = 'http://localhost:9002';
+        const ACP_SERVICE = 'http://localhost:9006';  // ACP OpenAI Server
         const ACP_OPENAI_SERVICE = 'http://localhost:9006';
         const BASE_EXPLORER = 'https://sepolia.basescan.org';
         const STRIPE_DASHBOARD = 'https://dashboard.stripe.com/test/payments';
@@ -1087,7 +1087,7 @@
                 let verificationTx = null;
                 try {
                     // Call REAL on-chain verification service
-                    const verifyResponse = await fetch('http://localhost:3004/verify-proof-onchain', {
+                    const verifyResponse = await fetch('http://localhost:9004/verify-onchain', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
