@@ -1,8 +1,7 @@
-# ACP × JOLT-Atlas: Verifiable Autonomous Agent Commerce
+# Verified Agentic Commerce
+## Trustless Agents for ACP
 
-## Overview
-
-This integration combines the **Agentic Commerce Protocol (ACP)** with **JOLT-Atlas zkML** to create cryptographically verifiable autonomous agent transactions.
+This integration combines the **Agentic Commerce Protocol (ACP)** with **JOLT-Atlas zkML** to create cryptographically verifiable payment authorization for **any AI agent**.
 
 ### ⚡ Implementation Status
 
@@ -16,12 +15,19 @@ This integration combines the **Agentic Commerce Protocol (ACP)** with **JOLT-At
 **To make 100% real**: See [REAL_IMPLEMENTATION.md](REAL_IMPLEMENTATION.md) for step-by-step guide.
 
 ### Core Innovation
-Agents generate zero-knowledge proofs of their authorization logic before making purchases, giving merchants cryptographic guarantees that spending is authorized and users provable enforcement of their spending rules.
+**Agent-agnostic payment authorization**: Any AI agent (Claude, GPT, Gemini, custom) can generate zero-knowledge proofs of authorization logic before making purchases, giving merchants cryptographic guarantees and users provable enforcement of spending rules.
+
+### Why ACP + zkML?
+- **ACP**: Open standard for AI agent commerce (OpenAI + Stripe)
+- **zkML**: Cryptographic proof that authorization ran correctly
+- **Agent-Agnostic**: Works with ANY AI agent, not just ChatGPT
 
 ## Architecture
 
 ```
-User Rules → Agent (ONNX) → Decision → JOLT Proof → ACP Payment → Merchant Verification
+Any AI Agent → User Rules → ONNX Model → Decision → JOLT Proof → ACP Payment → Verification
+  (Claude,         Natural        5-param      Authorize/   262 bytes    Checkout      On-chain
+   GPT, etc.)      Language       NN           Deny         ~500ms       Session       Optional
 ```
 
 ### Key Components

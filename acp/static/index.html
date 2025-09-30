@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACP × JOLT-Atlas: Verifiable Agent Commerce</title>
+    <title>Verified Agentic Commerce - Trustless Agents for ACP</title>
     <script src="https://js.stripe.com/v3/"></script>
     <style>
         * {
@@ -488,22 +488,23 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Verifiable Agent Commerce</h1>
+            <h1>Verified Agentic Commerce</h1>
             <div class="logo-container">
-                <img src="https://avatars.githubusercontent.com/u/232693681?s=200&v=4" alt="ACP">
-                <img src="https://ai.ls/assets/openai-logos/PNGs/openai-white-lockup.png" alt="OpenAI">
-                <img src="https://cdn.prod.website-files.com/65d52b07d5bc41614daa723f/665df12739c532f45b665fe7_logo-novanet.svg" alt="Novanet">
+                <img src="https://avatars.githubusercontent.com/u/232693681?s=200&v=4" alt="ACP" title="Agentic Commerce Protocol">
+                <span style="font-size: 2em; opacity: 0.5; margin: 0 5px;">×</span>
+                <img src="https://cdn.prod.website-files.com/65d52b07d5bc41614daa723f/665df12739c532f45b665fe7_logo-novanet.svg" alt="NovaNet zkML" title="NovaNet JOLT-Atlas">
             </div>
-            <p>Trustless AI Payment Authorization</p>
+            <p style="margin-top: 15px; font-size: 1.3em; font-weight: 500;">Trustless Agents for ACP</p>
+            <p style="margin-top: 8px; font-size: 0.95em; opacity: 0.7;">Cryptographic proof of payment authorization • Agent-agnostic • Real ONNX inference</p>
         </div>
 
         <!-- Why zkML Matters -->
         <div style="max-width: 900px; margin: 30px auto; padding: 24px; background: linear-gradient(135deg, rgba(107, 70, 193, 0.12) 0%, rgba(102, 126, 234, 0.08) 100%); border: 2px solid rgba(107, 70, 193, 0.3); border-radius: 16px;">
-            <h2 style="font-size: 1.5em; margin-bottom: 16px; color: #667eea;">🔐 Why zkML Matters for Agent Commerce</h2>
+            <h2 style="font-size: 1.5em; margin-bottom: 16px; color: #667eea;">🔐 Why zkML Matters for Agentic Commerce</h2>
             <p style="font-size: 1.05em; line-height: 1.6; margin-bottom: 16px; opacity: 0.95;">
                 When AI agents spend your money, you need <strong>cryptographic proof they followed your rules</strong>.
-                This demo shows how zkML (zero-knowledge machine learning) integrates with OpenAI's Agentic Commerce Protocol (ACP)
-                to provide verifiable, trustless AI payments.
+                This demo shows how zkML (zero-knowledge machine learning) integrates with the Agentic Commerce Protocol (ACP)
+                to provide verifiable, trustless payments for <strong>any AI agent</strong>.
             </p>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 20px;">
                 <div style="padding: 12px; background: rgba(0, 0, 0, 0.3); border-radius: 8px;">
@@ -523,29 +524,30 @@
                 </div>
                 <div style="padding: 12px; background: rgba(0, 0, 0, 0.3); border-radius: 8px;">
                     <div style="font-size: 1.8em; margin-bottom: 8px;">🔌</div>
-                    <div style="font-weight: 600; margin-bottom: 4px;">ACP Compatible</div>
-                    <div style="font-size: 0.9em; opacity: 0.8;">Works with OpenAI's open standard</div>
+                    <div style="font-weight: 600; margin-bottom: 4px;">Agent-Agnostic</div>
+                    <div style="font-size: 0.9em; opacity: 0.8;">Works with any AI agent (Claude, GPT, etc.)</div>
                 </div>
             </div>
         </div>
 
         <!-- How It Works -->
         <div style="max-width: 900px; margin: 30px auto; padding: 24px; background: rgba(20, 15, 35, 0.5); border: 1px solid rgba(102, 126, 234, 0.2); border-radius: 16px;">
-            <h2 style="font-size: 1.4em; margin-bottom: 20px; text-align: center;">How zkML Enhances OpenAI's ACP</h2>
+            <h2 style="font-size: 1.4em; margin-bottom: 20px; text-align: center;">How zkML Enhances ACP</h2>
             <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px; align-items: center;">
                 <div>
-                    <h3 style="font-size: 1.1em; color: #667eea; margin-bottom: 12px;">OpenAI ACP Flow</h3>
+                    <h3 style="font-size: 1.1em; color: #667eea; margin-bottom: 12px;">Standard ACP Flow</h3>
                     <div style="font-size: 0.95em; line-height: 2;">
                         <div>1️⃣ Agent decides to authorize</div>
                         <div>2️⃣ Create checkout session</div>
                         <div>3️⃣ Process payment</div>
+                        <div style="margin-top: 8px; opacity: 0.6; font-size: 0.85em;">⚠️ "Trust us" model</div>
                     </div>
                 </div>
                 <div style="font-size: 2em; opacity: 0.5;">→</div>
                 <div>
-                    <h3 style="font-size: 1.1em; color: #6B46C1; margin-bottom: 12px;">+ zkML Enhancement</h3>
+                    <h3 style="font-size: 1.1em; color: #6B46C1; margin-bottom: 12px;">+ zkML Verification</h3>
                     <div style="font-size: 0.95em; line-height: 2;">
-                        <div>🔐 Generate proof of decision</div>
+                        <div>🔐 Generate zkML proof</div>
                         <div>📎 Bind proof to ACP session</div>
                         <div>✅ Verify proof on-chain</div>
                     </div>
@@ -611,36 +613,36 @@
         <div class="workflow-container" id="workflowSteps">
             <div class="workflow-step" id="step1">
                 <div class="step-number">1</div>
-                <div class="step-title">Input Transaction</div>
-                <div class="step-content">Configure payment parameters and spending rules</div>
+                <div class="step-title">Agent Request</div>
+                <div class="step-content">AI agent initiates payment (any agent: Claude, GPT, etc.)</div>
                 <div class="step-result" id="result1"></div>
             </div>
 
             <div class="workflow-step" id="step2">
                 <div class="step-number">2</div>
-                <div class="step-title">AI Authorization</div>
-                <div class="step-content">Neural network evaluates transaction against rules</div>
+                <div class="step-title">ONNX Authorization</div>
+                <div class="step-content">Neural network evaluates against user rules</div>
                 <div class="step-result" id="result2"></div>
             </div>
 
             <div class="workflow-step" id="step3">
                 <div class="step-number">3</div>
                 <div class="step-title">zkML Proof</div>
-                <div class="step-content">Generate cryptographic proof with JOLT-Atlas</div>
+                <div class="step-content">JOLT-Atlas generates cryptographic proof</div>
                 <div class="step-result" id="result3"></div>
             </div>
 
             <div class="workflow-step" id="step4">
                 <div class="step-number">4</div>
-                <div class="step-title">Stripe Payment</div>
-                <div class="step-content">Process payment with proof binding</div>
+                <div class="step-title">ACP Payment</div>
+                <div class="step-content">Process via Agentic Commerce Protocol</div>
                 <div class="step-result" id="result4"></div>
             </div>
 
             <div class="workflow-step" id="step5">
                 <div class="step-number">5</div>
-                <div class="step-title">Verification</div>
-                <div class="step-content">Optional on-chain verification</div>
+                <div class="step-title">On-Chain Verify</div>
+                <div class="step-content">Optional blockchain verification (Base Sepolia)</div>
                 <div class="step-result" id="result5"></div>
             </div>
         </div>
@@ -665,7 +667,20 @@
 
             <div class="input-grid">
                 <div>
-                    <h3 style="margin-bottom: 15px; font-size: 1.1em; opacity: 0.9;">Spending Rules</h3>
+                    <h3 style="margin-bottom: 15px; font-size: 1.1em; opacity: 0.9;">Agent & Rules</h3>
+                    <div class="input-group">
+                        <label>🤖 AI Agent (Cosmetic)</label>
+                        <select id="agentType" style="padding: 12px; border: 2px solid rgba(102, 126, 234, 0.3); border-radius: 8px; font-size: 16px; background: rgba(20, 15, 35, 0.5); color: white; width: 100%;">
+                            <option value="claude">Claude (Anthropic)</option>
+                            <option value="gpt">ChatGPT (OpenAI)</option>
+                            <option value="gemini">Gemini (Google)</option>
+                            <option value="llama">Llama (Meta)</option>
+                            <option value="custom">Custom Agent</option>
+                        </select>
+                        <div style="margin-top: 6px; font-size: 0.8em; opacity: 0.6;">
+                            Works with any agent - zkML is agent-agnostic
+                        </div>
+                    </div>
                     <div class="input-group">
                         <label>Budget Remaining ($)</label>
                         <input type="number" id="budgetRemaining" value="500" min="0" step="0.01">
