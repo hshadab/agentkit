@@ -820,8 +820,8 @@
                 await updateStep(4, 'active', decision ? 'Ready for payment...' : 'Skipping payment...');
 
                 let paymentData = null;
-                if (decision) {
-                    // Show Stripe card element for payment
+                if (decision && checkoutSession.id) {
+                    // Show Stripe card element for payment (only in natural language mode with session)
                     document.getElementById('stripeCardSection').style.display = 'block';
 
                     document.getElementById('result4').innerHTML = `
@@ -917,10 +917,18 @@
                             Note: Proof generated successfully
                         `;
                     }
-                } else {
+                } else if (decision && !checkoutSession.id) {
+                    // Authorized but no session (manual mode - payment not supported)
                     document.getElementById('result4').innerHTML = `
-                        Status: Not processed<br>
-                        Reason: Transaction denied<br>
+                        Status: ✅ Authorized<br>
+                        Confidence: ${(confidence * 100).toFixed(2)}%<br>
+                        Note: Payment requires natural language mode
+                    `;
+                } else {
+                    // Denied
+                    document.getElementById('result4').innerHTML = `
+                        Status: ❌ Denied<br>
+                        Reason: Transaction not authorized<br>
                         Confidence: ${(confidence * 100).toFixed(2)}%
                     `;
                 }
