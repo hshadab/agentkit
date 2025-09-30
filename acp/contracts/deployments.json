@@ -2,12 +2,15 @@
   "base-sepolia": {
     "network": "base-sepolia",
     "chainId": 84532,
-    "contractName": "Groth16Verifier",
-    "address": "0xa5fa96D5DBA2081201bd621D8D993c43F1c0a677",
+    "contractName": "JOLTDecisionVerifier",
+    "address": "0xf752509cb5af017f465B42053d41B730991c6624",
     "deployer": "0x2e408ad62e30146404F4ED8A61253212f3f9A490",
-    "deploymentTx": "0xaab6ac95e740c179e928d96ba1a16a9d4c8a95da7706ada8ffa91a6c740baf49",
-    "timestamp": "2025-09-30T02:32:43.716Z",
-    "rpcUrl": "https://sepolia.base.org",
-    "explorer": "https://sepolia.basescan.org/address/0xa5fa96D5DBA2081201bd621D8D993c43F1c0a677"
+    "deploymentTx": "0xcadc18929ba483bbde2df7ae9b9209a4447485f3fa596a963a08527ca842bd06",
+    "timestamp": "2025-09-30T20:35:36.392Z",
+    "rpcUrl": "https://base-sepolia-rpc.publicnode.com",
+    "explorer": "https://sepolia.basescan.org/address/0xf752509cb5af017f465B42053d41B730991c6624",
+    "verifierType": "Groth16",
+    "publicSignals": 2,
+    "description": "JOLT zkML Decision Verifier (2 params: decision, confidence)"
   }
 }

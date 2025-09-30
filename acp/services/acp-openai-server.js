@@ -7,13 +7,14 @@
  * Port: 9006
  */
 
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
 const axios = require('axios');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-require('dotenv').config();
 
 const app = express();
 app.use(cors());
@@ -190,7 +191,7 @@ app.post('/checkout_sessions', async (req, res) => {
           transaction: {
             merchant_id: merchant_id,
             amount: amount,
-            category: line_items[0]?.category || 'groceries'  // Default to groceries for demo
+            category: session.line_items[0]?.category || 'groceries'  // Default to groceries for demo
           }
         });
 
@@ -282,24 +283,24 @@ app.post('/checkout_sessions/:id', async (req, res) => {
 
     if (customer) session.customer = customer;
 
-    // Handle test card auto-fill (server-side PaymentMethod creation)
+    // Handle test card auto-fill (use test token instead of raw card data)
     if (use_test_card) {
       try {
-        console.log('🧪 Creating test PaymentMethod server-side...');
+        console.log('🧪 Creating test PaymentMethod from token...');
+        // Use Stripe test token instead of raw card data
         const paymentMethod = await stripe.paymentMethods.create({
           type: 'card',
           card: {
-            number: '4242424242424242',
-            exp_month: 12,
-            exp_year: 2025,
-            cvc: '123',
+            token: 'tok_visa',  // Stripe test token
           },
         });
         session.payment_method = paymentMethod.id;
         console.log(`✅ Test PaymentMethod created: ${paymentMethod.id}`);
       } catch (pmError) {
         console.error('❌ Failed to create test PaymentMethod:', pmError.message);
-        throw pmError;
+        // Fallback: use a hardcoded test payment method ID
+        session.payment_method = 'pm_card_visa';
+        console.log('⚠️  Using fallback test PaymentMethod: pm_card_visa');
       }
     } else if (payment_method) {
       session.payment_method = payment_method;
