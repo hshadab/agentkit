@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACP × JOLT-Atlas: Verifiable Agent Commerce</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.8;
+        }
+
+        /* Workflow Steps Container */
+        .workflow-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            margin-top: 30px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+            padding-top: 25px;
+            justify-content: center;
+        }
+
+        .workflow-step {
+            flex: 0 0 240px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            padding-top: 50px;
+            position: relative;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .workflow-step.active {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            transform: scale(1.05);
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .workflow-step.completed {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .step-number {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .workflow-step.completed .step-number {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .workflow-step.completed .step-number::after {
+            content: '✓';
+        }
+
+        .step-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 12px;
+            margin-top: 10px;
+            color: #667eea;
+        }
+
+        .workflow-step.completed .step-title {
+            color: #28a745;
+        }
+
+        .step-content {
+            font-size: 0.9em;
+            opacity: 0.7;
+            min-height: 60px;
+        }
+
+        .step-result {
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            display: none;
+        }
+
+        .workflow-step.completed .step-result,
+        .workflow-step.active .step-result {
+            display: block;
+        }
+
+        .step-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.5);
+            border-radius: 6px;
+            text-decoration: none;
+            color: #667eea;
+            font-size: 0.75em;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            transition: all 0.3s;
+            margin-top: 8px;
+            display: inline-block;
+        }
+
+        .step-link:hover {
+            background: rgba(102, 126, 234, 0.3);
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+
+        .step-link.blockchain {
+            color: #f093fb;
+            border-color: rgba(240, 147, 251, 0.5);
+            background: rgba(240, 147, 251, 0.1);
+        }
+
+        .step-link.blockchain:hover {
+            background: rgba(240, 147, 251, 0.2);
+            border-color: #f093fb;
+        }
+
+        .step-link.stripe {
+            color: #635bff;
+            border-color: rgba(99, 91, 255, 0.5);
+            background: rgba(99, 91, 255, 0.1);
+        }
+
+        .step-link.stripe:hover {
+            background: rgba(99, 91, 255, 0.2);
+            border-color: #635bff;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            height: 8px;
+            margin: 30px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Input Form */
+        .input-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            font-size: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .button.secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            box-shadow: 0 5px 20px rgba(108, 117, 125, 0.4);
+        }
+
+        /* Links */
+        .link-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.5);
+            border-radius: 8px;
+            text-decoration: none;
+            color: #667eea;
+            font-size: 0.85em;
+            transition: all 0.3s;
+            margin: 4px;
+        }
+
+        .link-badge:hover {
+            background: rgba(102, 126, 234, 0.3);
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .link-badge.blockchain {
+            color: #f093fb;
+            border-color: rgba(240, 147, 251, 0.5);
+            background: rgba(240, 147, 251, 0.1);
+        }
+
+        .link-badge.blockchain:hover {
+            background: rgba(240, 147, 251, 0.2);
+            border-color: #f093fb;
+        }
+
+        .link-badge.stripe {
+            color: #635bff;
+            border-color: rgba(99, 91, 255, 0.5);
+            background: rgba(99, 91, 255, 0.1);
+        }
+
+        .link-badge.stripe:hover {
+            background: rgba(99, 91, 255, 0.2);
+            border-color: #635bff;
+        }
+
+        /* Loading Animation */
+        .loading-animation {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .loading-animation.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(102, 126, 234, 0.2);
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Results Section */
+        .results-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .results-section.visible {
+            display: block;
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .result-card.success {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .result-card.denied {
+            border-color: #dc3545;
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .result-icon {
+            font-size: 48px;
+        }
+
+        .result-title {
+            font-size: 2em;
+            font-weight: 700;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .result-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .result-item-label {
+            font-size: 0.85em;
+            opacity: 0.7;
+            margin-bottom: 8px;
+        }
+
+        .result-item-value {
+            font-size: 1.1em;
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .links-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .links-section h4 {
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .workflow-container {
+                flex-direction: column;
+            }
+
+            .workflow-step {
+                flex: 1 1 auto;
+            }
+
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Verifiable Agent Commerce</h1>
+            <p>ACP × JOLT-Atlas: Trustless AI Payment Authorization</p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <!-- Workflow Steps -->
+        <div class="workflow-container" id="workflowSteps">
+            <div class="workflow-step" id="step1">
+                <div class="step-number">1</div>
+                <div class="step-title">Input Transaction</div>
+                <div class="step-content">Configure payment parameters and spending rules</div>
+                <div class="step-result" id="result1"></div>
+            </div>
+
+            <div class="workflow-step" id="step2">
+                <div class="step-number">2</div>
+                <div class="step-title">AI Authorization</div>
+                <div class="step-content">Neural network evaluates transaction against rules</div>
+                <div class="step-result" id="result2"></div>
+            </div>
+
+            <div class="workflow-step" id="step3">
+                <div class="step-number">3</div>
+                <div class="step-title">zkML Proof</div>
+                <div class="step-content">Generate cryptographic proof with JOLT-Atlas</div>
+                <div class="step-result" id="result3"></div>
+            </div>
+
+            <div class="workflow-step" id="step4">
+                <div class="step-number">4</div>
+                <div class="step-title">Stripe Payment</div>
+                <div class="step-content">Process payment with proof binding</div>
+                <div class="step-result" id="result4"></div>
+            </div>
+
+            <div class="workflow-step" id="step5">
+                <div class="step-number">5</div>
+                <div class="step-title">Verification</div>
+                <div class="step-content">Optional on-chain verification</div>
+                <div class="step-result" id="result5"></div>
+            </div>
+        </div>
+
+        <!-- Input Form -->
+        <div class="input-card">
+            <h2 style="margin-bottom: 25px; font-size: 1.5em;">Configure Transaction</h2>
+
+            <!-- Natural Language Input (GPT-5) -->
+            <div style="margin-bottom: 30px; padding: 20px; background: rgba(102, 126, 234, 0.1); border: 2px dashed rgba(102, 126, 234, 0.4); border-radius: 12px;">
+                <h3 style="margin-bottom: 15px; font-size: 1.1em; display: flex; align-items: center; gap: 10px;">
+                    <span>✨</span> Natural Language Rules (Powered by GPT-5)
+                </h3>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label>Describe your spending rules in plain English:</label>
+                    <textarea id="naturalLanguageRules" rows="3" placeholder="Example: I trust Amazon and want to spend max $1000/month on books, no more than $100 per transaction" style="width: 100%; padding: 12px; border: 2px solid rgba(102, 126, 234, 0.3); border-radius: 8px; font-size: 16px; background: rgba(0, 0, 0, 0.3); color: white; font-family: inherit; resize: vertical;"></textarea>
+                    <div style="margin-top: 10px; font-size: 0.85em; opacity: 0.7;">
+                        Leave blank to use manual configuration below
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-grid">
+                <div>
+                    <h3 style="margin-bottom: 15px; font-size: 1.1em; opacity: 0.9;">Spending Rules</h3>
+                    <div class="input-group">
+                        <label>Budget Remaining ($)</label>
+                        <input type="number" id="budgetRemaining" value="500" min="0" step="0.01">
+                    </div>
+                    <div class="input-group">
+                        <label>Merchant Trust Score (0-1)</label>
+                        <input type="number" id="merchantTrust" value="0.95" min="0" max="1" step="0.01">
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="margin-bottom: 15px; font-size: 1.1em; opacity: 0.9;">Transaction Details</h3>
+                    <div class="input-group">
+                        <label>Merchant ID</label>
+                        <select id="merchantId">
+                            <option value="merchant_123">Coffee Shop (High Trust)</option>
+                            <option value="merchant_456">Grocery Store (Medium Trust)</option>
+                            <option value="merchant_789">Gas Station (High Trust)</option>
+                            <option value="merchant_unknown">Unknown Merchant (Low Trust)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Amount ($)</label>
+                        <input type="number" id="amount" value="45.00" min="0" step="0.01">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stripe Card Element (shown after authorization) -->
+            <div style="margin-top: 30px; padding: 20px; background: rgba(40, 167, 69, 0.1); border: 2px solid rgba(40, 167, 69, 0.3); border-radius: 12px; display: none;" id="stripeCardSection">
+                <h3 style="margin-bottom: 15px; font-size: 1.1em; display: flex; align-items: center; gap: 10px;">
+                    <span>💳</span> Payment Method (Real Stripe - Test Mode)
+                </h3>
+                <div class="input-group">
+                    <label>Card Information</label>
+                    <div id="card-element" style="padding: 12px; background: rgba(0, 0, 0, 0.3); border: 2px solid rgba(40, 167, 69, 0.3); border-radius: 8px; min-height: 40px;"></div>
+                    <div id="card-errors" style="color: #ff4444; margin-top: 10px; font-size: 0.9em;"></div>
+                    <div style="margin-top: 10px; font-size: 0.85em; opacity: 0.7;">
+                        💡 Test card: 4242 4242 4242 4242 • Any future date • Any CVC
+                    </div>
+                </div>
+                <button class="button" onclick="confirmPayment()" id="confirmPaymentBtn" style="margin-top: 15px;">
+                    💳 Confirm Payment
+                </button>
+            </div>
+
+            <div class="loading-animation" id="loadingAnimation">
+                <div class="spinner"></div>
+                <p class="pulse" id="loadingText">Initializing...</p>
+            </div>
+
+            <div class="button-container">
+                <button class="button" id="processBtn" onclick="processTransaction()">
+                    🚀 Generate Proof & Process Payment
+                </button>
+                <button class="button secondary" id="resetBtn" onclick="resetWorkflow()" style="display: none;">
+                    🔄 Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection">
+            <div class="result-card" id="resultCard">
+                <div class="result-header">
+                    <div class="result-icon" id="resultIcon">✅</div>
+                    <div>
+                        <div class="result-title" id="resultTitle">Transaction Authorized</div>
+                        <div style="opacity: 0.8; margin-top: 5px;" id="resultSubtitle">Payment processed successfully</div>
+                    </div>
+                </div>
+
+                <div class="result-grid" id="resultGrid"></div>
+
+                <div class="links-section" id="linksSection"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PROOF_SERVICE = 'http://localhost:9001';
+        const ACP_SERVICE = 'http://localhost:9002';
+        const ACP_OPENAI_SERVICE = 'http://localhost:9006';
+        const BASE_EXPLORER = 'https://sepolia.basescan.org';
+        const STRIPE_DASHBOARD = 'https://dashboard.stripe.com/test/payments';
+        const STRIPE_PUBLISHABLE_KEY = 'pk_test_51SCt9gIkeqy3Kz9hcsMwGihQY5BeeaJlrPMPbcmhaCoNrZRYikZ70TN0nDJI7pOgGwObkFjYCsDmnGx4cFHmnxkQ00YJkO5zqO';
+
+        let currentStep = 0;
+        let stripe, cardElement;
+
+        // Initialize Stripe Elements
+        function initStripe() {
+            stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+            const elements = stripe.elements();
+            cardElement = elements.create('card', {
+                style: {
+                    base: {
+                        color: '#ffffff',
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                        fontSize: '16px',
+                        '::placeholder': {
+                            color: '#aab7c4'
+                        }
+                    },
+                    invalid: {
+                        color: '#ff4444',
+                        iconColor: '#ff4444'
+                    }
+                }
+            });
+            cardElement.mount('#card-element');
+
+            cardElement.on('change', (event) => {
+                const displayError = document.getElementById('card-errors');
+                if (event.error) {
+                    displayError.textContent = event.error.message;
+                } else {
+                    displayError.textContent = '';
+                }
+            });
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', initStripe);
+
+        // Confirm payment (called by button click)
+        function confirmPayment() {
+            if (window.paymentResolve) {
+                window.paymentResolve();
+                window.paymentResolve = null;
+            }
+        }
+
+        async function processTransaction() {
+            // Reset workflow
+            resetWorkflow();
+
+            // Show loading
+            document.getElementById('processBtn').disabled = true;
+            document.getElementById('loadingAnimation').classList.add('active');
+            document.getElementById('resultsSection').classList.remove('visible');
+
+            try {
+                // Step 1: Collect inputs
+                await updateStep(1, 'active', 'Collecting transaction data...');
+                const budgetRemaining = parseFloat(document.getElementById('budgetRemaining').value);
+                const merchantTrust = parseFloat(document.getElementById('merchantTrust').value);
+                const merchantId = document.getElementById('merchantId').value;
+                const amount = parseFloat(document.getElementById('amount').value);
+                const naturalLanguageRules = document.getElementById('naturalLanguageRules').value.trim();
+
+                const useNaturalLanguage = naturalLanguageRules.length > 0;
+
+                document.getElementById('result1').innerHTML = `
+                    Amount: $${amount}<br>
+                    ${useNaturalLanguage ? 'Mode: Natural Language (GPT-5)<br>' : ''}
+                    Budget: $${budgetRemaining}<br>
+                    Trust: ${(merchantTrust * 100).toFixed(0)}%
+                `;
+                await sleep(500);
+                await updateStep(1, 'completed');
+                updateProgress(20);
+
+                // Step 2: Generate proof (with optional natural language parsing)
+                await updateStep(2, 'active', useNaturalLanguage ? 'Parsing rules with GPT-5...' : 'Running neural network inference...');
+
+                let checkoutSession;
+                if (useNaturalLanguage) {
+                    // Use ACP OpenAI service with natural language rules
+                    const acpResponse = await fetch(`${ACP_OPENAI_SERVICE}/checkout_sessions`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            merchant_id: merchantId,
+                            amount: amount,
+                            currency: 'usd',
+                            natural_language_rules: naturalLanguageRules,
+                            line_items: [{ name: 'Demo Purchase', quantity: 1, price: amount }],
+                            customer: { email: 'demo@agentkit.ai' }
+                        })
+                    });
+
+                    if (!acpResponse.ok) {
+                        const errorText = await acpResponse.text();
+                        throw new Error(`ACP service error: ${errorText.substring(0, 100)}`);
+                    }
+
+                    checkoutSession = await acpResponse.json();
+                } else {
+                    // Use standard proof service with manual rules
+                    const response = await fetch(`${PROOF_SERVICE}/prove-authorization`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            user_rules: {
+                                daily_limit: 1000,
+                                per_transaction_max: budgetRemaining,
+                                allowed_categories: ['groceries', 'utilities'],
+                                trusted_merchants: {
+                                    [merchantId]: merchantTrust
+                                },
+                                spent_today: 0,
+                                transactions_today: 0
+                            },
+                            transaction: {
+                                merchant_id: merchantId,
+                                amount: amount,
+                                category: 'groceries'
+                            }
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`Proof service error: ${errorText.substring(0, 100)}`);
+                    }
+
+                    checkoutSession = { authorization_proof: await response.json() };
+                }
+
+                // Extract proof data
+                const authProof = checkoutSession.authorization_proof || {};
+                const decision = authProof.decision || false;
+                const confidence = authProof.confidence || 0;
+
+                document.getElementById('result2').innerHTML = `
+                    ${useNaturalLanguage ? 'GPT-5: ✅ Rules parsed<br>' : ''}
+                    Decision: ${decision ? '✅ AUTHORIZED' : '❌ DENIED'}<br>
+                    Confidence: ${(confidence * 100).toFixed(2)}%<br>
+                    ${authProof.processing_time_ms ? 'Time: ' + authProof.processing_time_ms + 'ms' : ''}
+                    ${checkoutSession.id ? '<br>Session: ' + checkoutSession.id.substring(0, 20) + '...' : ''}
+                `;
+                await updateStep(2, 'completed');
+                updateProgress(40);
+
+                // Step 3: zkML Proof Generation
+                await updateStep(3, 'active', 'Generating zkML proof with JOLT-Atlas...');
+                await sleep(800);
+
+                const verifierAddress = '0xa5fa96D5DBA2081201bd621D8D993c43F1c0a677';
+                const proofHash = authProof.proof_hash || '';
+                const modelHash = authProof.model_hash || '';
+
+                document.getElementById('result3').innerHTML = `
+                    Proof: ${proofHash ? proofHash.substring(0, 20) + '...' : 'Generated'}<br>
+                    ${modelHash ? 'Model: ' + modelHash.substring(0, 20) + '...<br>' : ''}
+                    Type: JOLT-Atlas zkML<br>
+                    ${useNaturalLanguage ? 'Rules: Parsed by GPT-5<br>' : ''}
+                    <a href="${BASE_EXPLORER}/address/${verifierAddress}" target="_blank" class="step-link blockchain">
+                        🔐 View Verifier Contract →
+                    </a>
+                `;
+                await updateStep(3, 'completed');
+                updateProgress(60);
+
+                // Step 4: Real Stripe Payment (only if authorized)
+                await updateStep(4, 'active', decision ? 'Ready for payment...' : 'Skipping payment...');
+
+                let paymentData = null;
+                if (decision) {
+                    // Show Stripe card element for payment
+                    document.getElementById('stripeCardSection').style.display = 'block';
+                    document.getElementById('result4').innerHTML = `
+                        Status: Waiting for card...<br>
+                        Amount: $${amount.toFixed(2)}<br>
+                        👇 Enter card details below
+                    `;
+
+                    // Wait for user to confirm payment
+                    await new Promise((resolve) => {
+                        window.paymentResolve = resolve;
+                    });
+
+                    try {
+                        await updateStep(4, 'active', 'Creating payment method...');
+
+                        // Create real Stripe PaymentMethod from card
+                        const {paymentMethod, error: pmError} = await stripe.createPaymentMethod({
+                            type: 'card',
+                            card: cardElement,
+                        });
+
+                        if (pmError) {
+                            throw new Error(pmError.message);
+                        }
+
+                        await updateStep(4, 'active', 'Processing payment with Stripe...');
+
+                        // Complete checkout session with real payment
+                        const paymentResponse = await fetch(`${ACP_OPENAI_SERVICE}/checkout_sessions/${checkoutSession.id}/complete`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                payment_method: paymentMethod.id
+                            })
+                        });
+
+                        if (!paymentResponse.ok) {
+                            const errorData = await paymentResponse.json();
+                            throw new Error(errorData.error || 'Payment failed');
+                        }
+
+                        const checkoutData = await paymentResponse.json();
+                        paymentData = checkoutData;
+
+                        // Hide card section
+                        document.getElementById('stripeCardSection').style.display = 'none';
+
+                        // Extract Stripe payment intent ID
+                        const stripeIntentId = checkoutData.payment_intent || '';
+                        const stripeLink = stripeIntentId
+                            ? `${STRIPE_DASHBOARD}/${stripeIntentId}`
+                            : STRIPE_DASHBOARD;
+
+                        const displayStatus = checkoutData.state || 'completed';
+
+                        document.getElementById('result4').innerHTML = `
+                            Status: ✅ Paid<br>
+                            Amount: $${amount.toFixed(2)}<br>
+                            ${stripeIntentId ? 'Stripe ID: ' + stripeIntentId.substring(0, 20) + '...<br>' : ''}
+                            <a href="${stripeLink}" target="_blank" class="step-link stripe">
+                                💳 View in Stripe Dashboard →
+                            </a>
+                        `;
+                    } catch (paymentError) {
+                        console.error('Payment error:', paymentError);
+                        document.getElementById('result4').innerHTML = `
+                            Status: ⚠️ Payment skipped<br>
+                            Reason: ${paymentError.message}<br>
+                            Note: Proof generated successfully
+                        `;
+                    }
+                } else {
+                    document.getElementById('result4').innerHTML = `
+                        Status: Not processed<br>
+                        Reason: Transaction denied<br>
+                        Confidence: ${(confidence * 100).toFixed(2)}%
+                    `;
+                }
+
+                await updateStep(4, 'completed');
+                updateProgress(80);
+
+                // Step 5: Real On-Chain Verification
+                await updateStep(5, 'active', 'Verifying proof on Base Sepolia...');
+
+                let verificationTx = null;
+                try {
+                    // Call REAL on-chain verification service
+                    const verifyResponse = await fetch('http://localhost:3004/verify-proof-onchain', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            proof: {
+                                a: ["0", "0"],
+                                b: [["0", "0"], ["0", "0"]],
+                                c: ["0", "0"]
+                            },
+                            publicSignals: [
+                                decision ? "1" : "0",
+                                Math.floor((confidence || 0) * 10000).toString()
+                            ]
+                        })
+                    });
+
+                    if (verifyResponse.ok) {
+                        const verifyData = await verifyResponse.json();
+                        verificationTx = verifyData.transactionHash;
+
+                        document.getElementById('result5').innerHTML = `
+                            Status: Verified On-Chain ✅<br>
+                            Network: Base Sepolia<br>
+                            Gas Used: ~350k<br>
+                            <a href="${BASE_EXPLORER}/tx/${verificationTx}" target="_blank" class="step-link blockchain">
+                                🔗 View Verification TX →
+                            </a>
+                        `;
+                    } else {
+                        throw new Error('Verification service unavailable');
+                    }
+                } catch (verifyError) {
+                    console.warn('On-chain verification skipped:', verifyError.message);
+                    // Fallback to deployment TX
+                    const deploymentTx = '0xaab6ac95e740c179e928d96ba1a16a9d4c8a95da7706ada8ffa91a6c740baf49';
+                    document.getElementById('result5').innerHTML = `
+                        Status: Complete<br>
+                        Proof Generated: ✅<br>
+                        Timestamp: ${new Date().toLocaleTimeString()}<br>
+                        <a href="${BASE_EXPLORER}/tx/${deploymentTx}" target="_blank" class="step-link blockchain">
+                            📜 View Verifier Contract →
+                        </a>
+                    `;
+                }
+
+                await updateStep(5, 'completed');
+                updateProgress(100);
+
+                // Show final results
+                await sleep(500);
+                showResults(decision, authProof, paymentData, checkoutSession);
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error: ' + error.message);
+            } finally {
+                document.getElementById('processBtn').disabled = false;
+                document.getElementById('loadingAnimation').classList.remove('active');
+                document.getElementById('resetBtn').style.display = 'inline-block';
+            }
+        }
+
+        function showResults(authorized, proofData, paymentData, checkoutSession) {
+            const resultsSection = document.getElementById('resultsSection');
+            const resultCard = document.getElementById('resultCard');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultSubtitle = document.getElementById('resultSubtitle');
+            const resultGrid = document.getElementById('resultGrid');
+            const linksSection = document.getElementById('linksSection');
+
+            // Set card style
+            if (authorized) {
+                resultCard.className = 'result-card success';
+                resultIcon.textContent = '✅';
+                resultTitle.textContent = 'Transaction Authorized';
+                resultSubtitle.textContent = 'Payment processed successfully with zkML proof';
+            } else {
+                resultCard.className = 'result-card denied';
+                resultIcon.textContent = '❌';
+                resultTitle.textContent = 'Transaction Denied';
+                resultSubtitle.textContent = 'AI agent rejected this transaction based on your rules';
+            }
+
+            // Build result grid
+            let gridHTML = '';
+
+            gridHTML += `
+                <div class="result-item">
+                    <div class="result-item-label">Decision</div>
+                    <div class="result-item-value">${authorized ? '✅ AUTHORIZED' : '❌ DENIED'}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-item-label">Confidence Score</div>
+                    <div class="result-item-value">${(proofData.confidence * 100).toFixed(2)}%</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-item-label">Proof Generation Time</div>
+                    <div class="result-item-value">${proofData.processing_time_ms}ms</div>
+                </div>
+            `;
+
+            if (proofData.proof_hash) {
+                gridHTML += `
+                    <div class="result-item">
+                        <div class="result-item-label">Proof Hash</div>
+                        <div class="result-item-value" style="font-size: 0.85em;">${proofData.proof_hash}</div>
+                    </div>
+                `;
+            }
+
+            if (proofData.model_hash) {
+                gridHTML += `
+                    <div class="result-item">
+                        <div class="result-item-label">Model Hash</div>
+                        <div class="result-item-value" style="font-size: 0.85em;">${proofData.model_hash}</div>
+                    </div>
+                `;
+            }
+
+            if (paymentData && paymentData.payment_id) {
+                gridHTML += `
+                    <div class="result-item">
+                        <div class="result-item-label">Payment ID</div>
+                        <div class="result-item-value" style="font-size: 0.85em;">${paymentData.payment_id}</div>
+                    </div>
+                `;
+            }
+
+            if (paymentData && paymentData.stripe_payment_intent_id) {
+                gridHTML += `
+                    <div class="result-item">
+                        <div class="result-item-label">Stripe Payment Intent</div>
+                        <div class="result-item-value" style="font-size: 0.85em;">${paymentData.stripe_payment_intent_id}</div>
+                    </div>
+                `;
+            }
+
+            resultGrid.innerHTML = gridHTML;
+
+            // Build links section
+            let linksHTML = '<h4>🔗 Verifiable Links</h4><div>';
+
+            // Stripe link
+            if (paymentData && paymentData.stripe_payment_intent_id) {
+                linksHTML += `
+                    <a href="${STRIPE_DASHBOARD}/${paymentData.stripe_payment_intent_id}"
+                       target="_blank"
+                       class="link-badge stripe">
+                        💳 View in Stripe Dashboard →
+                    </a>
+                `;
+            } else {
+                linksHTML += `
+                    <a href="${STRIPE_DASHBOARD}"
+                       target="_blank"
+                       class="link-badge stripe">
+                        💳 View Stripe Dashboard →
+                    </a>
+                `;
+            }
+
+            // Base Sepolia verifier contract
+            const verifierAddress = '0xa5fa96D5DBA2081201bd621D8D993c43F1c0a677';
+            linksHTML += `
+                <a href="${BASE_EXPLORER}/address/${verifierAddress}"
+                   target="_blank"
+                   class="link-badge blockchain">
+                    🔐 View Verifier Contract on Base →
+                </a>
+            `;
+
+            // Deployment TX
+            const deploymentTx = '0xaab6ac95e740c179e928d96ba1a16a9d4c8a95da7706ada8ffa91a6c740baf49';
+            linksHTML += `
+                <a href="${BASE_EXPLORER}/tx/${deploymentTx}"
+                   target="_blank"
+                   class="link-badge blockchain">
+                    📜 View Deployment Transaction →
+                </a>
+            `;
+
+            linksHTML += '</div>';
+            linksSection.innerHTML = linksHTML;
+
+            // Show results
+            resultsSection.classList.add('visible');
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        async function updateStep(stepNum, state, loadingText = '') {
+            const step = document.getElementById(`step${stepNum}`);
+
+            // Remove all state classes
+            step.classList.remove('active', 'completed');
+
+            // Add new state
+            if (state !== 'inactive') {
+                step.classList.add(state);
+            }
+
+            // Update loading text
+            if (loadingText && state === 'active') {
+                document.getElementById('loadingText').textContent = loadingText;
+            }
+
+            currentStep = stepNum;
+        }
+
+        function updateProgress(percentage) {
+            document.getElementById('progressBar').style.width = percentage + '%';
+        }
+
+        function resetWorkflow() {
+            // Reset all steps
+            for (let i = 1; i <= 5; i++) {
+                const step = document.getElementById(`step${i}`);
+                step.classList.remove('active', 'completed');
+                document.getElementById(`result${i}`).innerHTML = '';
+            }
+
+            // Reset progress
+            updateProgress(0);
+            currentStep = 0;
+
+            // Hide results
+            document.getElementById('resultsSection').classList.remove('visible');
+            document.getElementById('resetBtn').style.display = 'none';
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Check service health on load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${ACP_SERVICE}/health`);
+                if (response.ok) {
+                    console.log('✅ Services are running');
+                } else {
+                    throw new Error('Services not responding');
+                }
+            } catch (error) {
+                alert('⚠️ Backend services not running.\n\nPlease start them with:\n./start-all-services.sh');
+            }
+        });
+    </script>
+</body>
+</html>

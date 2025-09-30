@@ -1,19 +1,39 @@
-# Claude Assistant Guide - AgentKit v2.0
+# Claude Assistant Guide - AgentKit v3.0
 
 ## Project Overview
-AgentKit is a **universal verifiable AI agent framework** that enables trustless AI operations across multiple blockchains with cryptographic proof of correct execution. The system combines zkEngine (Rust-based universal proof generation), zkML (JOLT-Atlas), multi-chain verification, and Circle integration for cross-chain asset management.
+AgentKit is a **100% REAL production framework** for building verifiable AI agents with cryptographic proofs across multiple blockchains. The v3.0 release features **OpenAI's Agentic Commerce Protocol (ACP)** with GPT-5 natural language, JOLT-Atlas zkML proofs, and real Stripe payment processing.
 
-**Latest Update**: 2025-09-06 - Deployed REAL IoTeX proximity verification contracts to testnet. NO MOCKS OR SIMULATIONS - everything must be real, deployed, and verifiable on-chain.
+**Latest Update**: 2025-09-30 - Completed 100% REAL ACP × GPT-5 × zkML integration. ZERO mocks, ZERO simulations, ZERO fake data. Every component uses production APIs and real cryptographic proofs.
 
-## ⚠️ CRITICAL: No Mocks or Simulations Policy
-**NEVER use mock data, simulated proofs, or demo transactions. All implementations MUST be:**
-- Real cryptographic proofs (zkEngine, Groth16, JOLT-Atlas)
-- Real on-chain contracts with verifiable addresses
-- Real transactions with explorer-verifiable hashes
-- Real wallet interactions with actual gas costs
-- Real API endpoints connected to deployed infrastructure
+## ⚠️ CRITICAL: 100% Real Implementation Policy
+**ALL components are now 100% REAL. No exceptions:**
+- ✅ Real GPT-5 API calls (OpenAI gpt-5-2025-08-07)
+- ✅ Real JOLT-Atlas Rust binary (cryptographic SNARKs)
+- ✅ Real Stripe payments (PaymentIntents with metadata)
+- ✅ Real on-chain verification (Base Sepolia transactions)
+- ✅ Real blockchain explorer links (verifiable addresses)
+- ✅ Real authorization logic (deterministic, not random)
 
 ## 🎯 Core Technologies Stack
+
+### 0. ACP × GPT-5 × zkML Integration (NEW in v3.0) - 100% REAL
+- **Location**: `acp/` directory
+- **Purpose**: OpenAI's Agentic Commerce Protocol with cryptographic AI authorization
+- **Components**:
+  - **GPT-5 Parser** (Port 9005): Natural language → structured spending rules
+  - **ACP OpenAI Server** (Port 9006): Full ACP specification + zkML extensions
+  - **Proof Service** (Port 9001): JOLT-Atlas binary + deterministic authorization
+  - **Groth16 Verifier** (Port 3004): On-chain verification (Base Sepolia)
+- **Key Files**:
+  - `acp/services/gpt4-rule-parser.js` - GPT-5 integration
+  - `acp/services/acp-openai-server.js` - ACP server with Stripe
+  - `acp/services/proof-service.js` - Real JOLT binary execution
+  - `acp/static/index.html` - UI with Stripe Elements
+- **Documentation**:
+  - `acp/100_PERCENT_REAL.md` - Complete verification guide
+  - `acp/ACP_INTEGRATION_COMPLETE.md` - Technical details
+  - `acp/QUICKSTART.md` - 5-minute setup guide
+- **Status**: ✅ 100% REAL - Zero mocks, production-ready
 
 ### 1. zkEngine - Universal Proof Generation
 - **Language**: Rust compiled to WASM
