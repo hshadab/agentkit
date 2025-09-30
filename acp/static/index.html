@@ -593,8 +593,11 @@
                     <div style="margin-bottom: 15px; padding: 10px; background: rgba(102, 126, 234, 0.1); border-radius: 8px;">
                         <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                             <input type="checkbox" id="autoFillCard" checked style="width: 20px; height: 20px; cursor: pointer;">
-                            <span>🚀 Auto-fill test card (4242 4242 4242 4242)</span>
+                            <span>🚀 Demo mode (skip real Stripe payment)</span>
                         </label>
+                        <div style="margin-top: 8px; font-size: 0.85em; opacity: 0.7; margin-left: 30px;">
+                            Uncheck to test real Stripe Elements with card 4242 4242 4242 4242
+                        </div>
                     </div>
                     <label>Card Information</label>
                     <div id="card-element" style="padding: 12px; background: rgba(0, 0, 0, 0.3); border: 2px solid rgba(40, 167, 69, 0.3); border-radius: 8px; min-height: 40px;"></div>
@@ -861,16 +864,23 @@
 
                         // Use test payment method if auto-fill enabled, otherwise use card element
                         if (autoFill) {
-                            // Use Stripe's pre-built test payment method token
-                            // This simulates a successful card without needing Elements
-                            try {
-                                // Try to use a pre-created test payment method token
-                                // Format: pm_card_visa for basic test card
-                                paymentMethod = { id: 'pm_card_visa' };
-                                pmError = null;
-                            } catch (err) {
-                                pmError = { message: 'Test payment method creation failed' };
-                            }
+                            // For auto-fill mode, skip actual Stripe payment (demo mode)
+                            // Show success without calling Stripe API
+                            document.getElementById('stripeCardSection').style.display = 'none';
+                            document.getElementById('result4').innerHTML = `
+                                Status: ✅ Demo Payment Success<br>
+                                Amount: $${amount.toFixed(2)}<br>
+                                Note: Auto-fill mode skips real Stripe<br>
+                                <span style="opacity: 0.7; font-size: 0.85em;">
+                                    Uncheck "Auto-fill" to test real Stripe Elements
+                                </span>
+                            `;
+                            await updateStep(4, 'completed');
+                            updateProgress(80);
+
+                            // Skip to Step 5
+                            paymentData = { state: 'demo', amount: amount };
+                            paymentMethod = null; // Signal to skip
                         } else {
                             // Create real Stripe PaymentMethod from card element
                             const pm = await stripe.createPaymentMethod({
@@ -885,44 +895,58 @@
                             throw new Error(pmError.message);
                         }
 
-                        await updateStep(4, 'active', 'Processing payment with Stripe...');
+                        // Only call Stripe backend if we have a real payment method
+                        if (paymentMethod) {
+                            await updateStep(4, 'active', 'Processing payment with Stripe...');
 
-                        // Complete checkout session with real payment
-                        const paymentResponse = await fetch(`${ACP_OPENAI_SERVICE}/checkout_sessions/${checkoutSession.id}/complete`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                payment_method: paymentMethod.id
-                            })
-                        });
+                            console.log('Payment method:', paymentMethod);
+                            console.log('Sending to backend:', { payment_method: paymentMethod.id });
 
-                        if (!paymentResponse.ok) {
-                            const errorData = await paymentResponse.json();
-                            throw new Error(errorData.error || 'Payment failed');
+                            // Complete checkout session with real payment
+                            const paymentResponse = await fetch(`${ACP_OPENAI_SERVICE}/checkout_sessions/${checkoutSession.id}/complete`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    payment_method: paymentMethod.id
+                                })
+                            });
+
+                            if (!paymentResponse.ok) {
+                                const errorText = await paymentResponse.text();
+                                console.error('Payment response error:', errorText);
+                                let errorMsg = 'Payment failed';
+                                try {
+                                    const errorData = JSON.parse(errorText);
+                                    errorMsg = errorData.error?.message || errorData.error || errorText;
+                                } catch {
+                                    errorMsg = errorText;
+                                }
+                                throw new Error(errorMsg);
+                            }
+
+                            const checkoutData = await paymentResponse.json();
+                            paymentData = checkoutData;
+
+                            // Hide card section
+                            document.getElementById('stripeCardSection').style.display = 'none';
+
+                            // Extract Stripe payment intent ID
+                            const stripeIntentId = checkoutData.payment_intent || '';
+                            const stripeLink = stripeIntentId
+                                ? `${STRIPE_DASHBOARD}/${stripeIntentId}`
+                                : STRIPE_DASHBOARD;
+
+                            const displayStatus = checkoutData.state || 'completed';
+
+                            document.getElementById('result4').innerHTML = `
+                                Status: ✅ Paid<br>
+                                Amount: $${amount.toFixed(2)}<br>
+                                ${stripeIntentId ? 'Stripe ID: ' + stripeIntentId.substring(0, 20) + '...<br>' : ''}
+                                <a href="${stripeLink}" target="_blank" class="step-link stripe">
+                                    💳 View in Stripe Dashboard →
+                                </a>
+                            `;
                         }
-
-                        const checkoutData = await paymentResponse.json();
-                        paymentData = checkoutData;
-
-                        // Hide card section
-                        document.getElementById('stripeCardSection').style.display = 'none';
-
-                        // Extract Stripe payment intent ID
-                        const stripeIntentId = checkoutData.payment_intent || '';
-                        const stripeLink = stripeIntentId
-                            ? `${STRIPE_DASHBOARD}/${stripeIntentId}`
-                            : STRIPE_DASHBOARD;
-
-                        const displayStatus = checkoutData.state || 'completed';
-
-                        document.getElementById('result4').innerHTML = `
-                            Status: ✅ Paid<br>
-                            Amount: $${amount.toFixed(2)}<br>
-                            ${stripeIntentId ? 'Stripe ID: ' + stripeIntentId.substring(0, 20) + '...<br>' : ''}
-                            <a href="${stripeLink}" target="_blank" class="step-link stripe">
-                                💳 View in Stripe Dashboard →
-                            </a>
-                        `;
                     } catch (paymentError) {
                         console.error('Payment error:', paymentError);
                         document.getElementById('result4').innerHTML = `
