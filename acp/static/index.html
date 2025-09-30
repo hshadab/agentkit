@@ -843,7 +843,7 @@
                             amount: amount,
                             currency: 'usd',
                             natural_language_rules: naturalLanguageRules,
-                            line_items: [{ name: 'Demo Purchase', quantity: 1, price: amount }],
+                            line_items: [{ name: 'Groceries', quantity: 1, amount: amount, currency: 'usd', category: 'groceries' }],
                             customer: { email: 'demo@agentkit.ai' }
                         })
                     });
