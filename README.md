@@ -161,13 +161,46 @@ IOTEX_PRIVATE_KEY=0xYOUR_EVM_PRIVATE_KEY
   - 🔐 Extended ACP protocol with authorization proofs
   - ✅ Merchant verification in ~50ms
   - 💳 Complete payment flow with Stripe integration
-- **Quick Start**:
-  ```bash
-  cd acp/
-  npm install
-  ./start-all-services.sh
-  # Open http://localhost:9000/index.html
-  ```
+
+#### Quick Start (3 Steps)
+
+```bash
+# Step 1: Start Services (30 seconds)
+cd acp/
+node services/gpt4-rule-parser.js > logs/gpt5-parser.log 2>&1 &
+node services/acp-openai-server.js > logs/acp-openai.log 2>&1 &
+node services/proof-service.js > logs/proof-service.log 2>&1 &
+
+# Step 2: Open UI
+open http://localhost:8000/acp/static/index.html
+
+# Step 3: Try a sample prompt (see below)
+```
+
+#### Sample Natural Language Prompts
+
+**✅ Authorize Example** (Will Pass):
+```
+I trust Amazon and want to spend max $1000/month on books
+```
+Expected: Authorized at 80% confidence → Payment card appears
+
+**✅ Weekly Budget** (Will Pass):
+```
+Spend max $500/week on groceries from trusted stores, no more than $100 per transaction. I trust Whole Foods and Trader Joe's
+```
+Expected: Authorized for transactions under $71/day
+
+**❌ Restrictive Rules** (Will Deny):
+```
+No entertainment spending, and ask me before buying anything over $200
+```
+Expected: Denied at 40% confidence → No payment processed
+
+**Test Card**: Use `4242 4242 4242 4242` with any future expiry and any 3-digit CVC
+
+**Full Guide**: See [USAGE_GUIDE.md](acp/USAGE_GUIDE.md) for 6 detailed examples with expected outcomes
+
 - **Documentation**: See `acp/README.md`, `acp/QUICKSTART.md`, and `acp/INTEGRATION_GUIDE.md`
 - **Use Cases**: Personal finance agents, corporate procurement, travel booking, IoT micropayments
 
