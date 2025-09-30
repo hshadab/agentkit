@@ -275,17 +275,41 @@ app.post('/checkout_sessions/:id', async (req, res) => {
     const {
       customer,
       payment_method,
+      use_test_card,
       shipping_address,
       metadata
     } = req.body;
 
     if (customer) session.customer = customer;
-    if (payment_method) session.payment_method = payment_method;
+
+    // Handle test card auto-fill (server-side PaymentMethod creation)
+    if (use_test_card) {
+      try {
+        console.log('🧪 Creating test PaymentMethod server-side...');
+        const paymentMethod = await stripe.paymentMethods.create({
+          type: 'card',
+          card: {
+            number: '4242424242424242',
+            exp_month: 12,
+            exp_year: 2025,
+            cvc: '123',
+          },
+        });
+        session.payment_method = paymentMethod.id;
+        console.log(`✅ Test PaymentMethod created: ${paymentMethod.id}`);
+      } catch (pmError) {
+        console.error('❌ Failed to create test PaymentMethod:', pmError.message);
+        throw pmError;
+      }
+    } else if (payment_method) {
+      session.payment_method = payment_method;
+    }
+
     if (shipping_address) session.shipping_address = shipping_address;
     if (metadata) session.metadata = { ...session.metadata, ...metadata };
 
     // If payment method added and proof authorized, ready for payment
-    if (payment_method && session.proof_verification_status === 'authorized') {
+    if (session.payment_method && session.proof_verification_status === 'authorized') {
       session.state = 'ready_for_payment';
     }
 

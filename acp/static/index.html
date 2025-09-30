@@ -69,8 +69,8 @@
 
         .workflow-step {
             flex: 0 0 240px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(102, 126, 234, 0.3);
+            background: linear-gradient(135deg, rgba(107, 70, 193, 0.08) 0%, rgba(102, 126, 234, 0.05) 100%);
+            border: 2px solid rgba(102, 126, 234, 0.2);
             border-radius: 16px;
             padding: 24px;
             padding-top: 50px;
@@ -81,14 +81,14 @@
 
         .workflow-step.active {
             border-color: #667eea;
-            background: rgba(102, 126, 234, 0.1);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(107, 70, 193, 0.12) 100%);
             transform: scale(1.05);
             box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
         }
 
         .workflow-step.completed {
             border-color: #28a745;
-            background: rgba(40, 167, 69, 0.1);
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.12) 0%, rgba(32, 201, 151, 0.08) 100%);
         }
 
         .step-number {
@@ -136,7 +136,7 @@
         .step-result {
             margin-top: 12px;
             padding: 12px;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(20, 15, 35, 0.5);
             border-radius: 8px;
             font-family: 'Courier New', monospace;
             font-size: 0.85em;
@@ -263,7 +263,7 @@
             border: 2px solid rgba(102, 126, 234, 0.3);
             border-radius: 8px;
             font-size: 16px;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(20, 15, 35, 0.5);
             color: white;
             transition: all 0.3s;
         }
@@ -441,7 +441,7 @@
         }
 
         .result-item {
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(20, 15, 35, 0.5);
             padding: 15px;
             border-radius: 8px;
         }
@@ -491,7 +491,7 @@
             <h1>Verifiable Agent Commerce</h1>
             <div class="logo-container">
                 <img src="https://avatars.githubusercontent.com/u/232693681?s=200&v=4" alt="ACP">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/OpenAI_Logo.svg/1024px-OpenAI_Logo.svg.png?20230731013808" alt="OpenAI">
+                <img src="https://ai.ls/assets/openai-logos/PNGs/openai-white-lockup.png" alt="OpenAI">
                 <img src="https://cdn.prod.website-files.com/65d52b07d5bc41614daa723f/665df12739c532f45b665fe7_logo-novanet.svg" alt="Novanet">
             </div>
             <p>Trustless AI Payment Authorization</p>
@@ -551,7 +551,7 @@
                 </h3>
                 <div class="input-group" style="margin-bottom: 0;">
                     <label>Describe your spending rules in plain English:</label>
-                    <textarea id="naturalLanguageRules" rows="3" placeholder="Example: I trust Amazon and want to spend max $1000/month on books, no more than $100 per transaction" style="width: 100%; padding: 12px; border: 2px solid rgba(102, 126, 234, 0.3); border-radius: 8px; font-size: 16px; background: rgba(0, 0, 0, 0.3); color: white; font-family: inherit; resize: vertical;"></textarea>
+                    <textarea id="naturalLanguageRules" rows="3" placeholder="Example: I trust Amazon and want to spend max $1000/month on books, no more than $100 per transaction" style="width: 100%; padding: 12px; border: 2px solid rgba(102, 126, 234, 0.3); border-radius: 8px; font-size: 16px; background: rgba(20, 15, 35, 0.5); color: white; font-family: inherit; resize: vertical;"></textarea>
                     <div style="margin-top: 10px; font-size: 0.85em; opacity: 0.7;">
                         Leave blank to use manual configuration below
                     </div>
@@ -596,7 +596,7 @@
                 </h3>
                 <div class="input-group">
                     <label>Card Information</label>
-                    <div id="card-element" style="padding: 12px; background: rgba(0, 0, 0, 0.3); border: 2px solid rgba(40, 167, 69, 0.3); border-radius: 8px; min-height: 40px;"></div>
+                    <div id="card-element" style="padding: 12px; background: rgba(20, 15, 35, 0.5); border: 2px solid rgba(40, 167, 69, 0.3); border-radius: 8px; min-height: 40px;"></div>
                     <div id="card-errors" style="color: #ff4444; margin-top: 10px; font-size: 0.9em;"></div>
                     <div style="margin-top: 10px; font-size: 0.85em; opacity: 0.7;">
                         💡 Test card: 4242 4242 4242 4242 • Any future date • Any CVC
@@ -845,65 +845,62 @@
                     try {
                         await updateStep(4, 'active', 'Creating test payment method...');
 
-                        // Use Stripe's test card directly (works without Elements for test mode)
-                        // This creates a PaymentMethod using test card token
-                        const {paymentMethod, error: pmError} = await stripe.createPaymentMethod({
-                            type: 'card',
-                            card: {
-                                number: '4242424242424242',
-                                exp_month: 12,
-                                exp_year: 2025,
-                                cvc: '123',
-                            },
+                        // First, update session with test card flag - backend will create PaymentMethod
+                        await updateStep(4, 'active', 'Setting up test payment...');
+
+                        const updateResponse = await fetch(`${ACP_OPENAI_SERVICE}/checkout_sessions/${checkoutSession.id}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                use_test_card: true  // Backend creates PaymentMethod server-side
+                            })
                         });
 
-                        if (pmError) {
-                            throw new Error(pmError.message);
+                        if (!updateResponse.ok) {
+                            const errorText = await updateResponse.text();
+                            throw new Error(`Failed to set up payment: ${errorText}`);
                         }
 
-                        if (paymentMethod) {
-                            await updateStep(4, 'active', 'Processing payment with Stripe...');
+                        const updatedSession = await updateResponse.json();
+                        console.log('✅ Test payment method created:', updatedSession.payment_method);
 
-                            console.log('Payment method:', paymentMethod);
-                            console.log('Sending to backend:', { payment_method: paymentMethod.id });
+                        await updateStep(4, 'active', 'Processing payment with Stripe...');
 
-                            // Complete checkout session with real payment
-                            const paymentResponse = await fetch(`${ACP_OPENAI_SERVICE}/checkout_sessions/${checkoutSession.id}/complete`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    payment_method: paymentMethod.id
-                                })
-                            });
+                        // Complete checkout session with payment
+                        const paymentResponse = await fetch(`${ACP_OPENAI_SERVICE}/checkout_sessions/${checkoutSession.id}/complete`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({})
+                        });
 
-                            if (!paymentResponse.ok) {
-                                const errorText = await paymentResponse.text();
-                                console.error('Payment response error:', errorText);
-                                let errorMsg = 'Payment failed';
-                                try {
-                                    const errorData = JSON.parse(errorText);
-                                    errorMsg = errorData.error?.message || errorData.error || errorText;
-                                } catch {
-                                    errorMsg = errorText;
-                                }
-                                throw new Error(errorMsg);
+                        if (!paymentResponse.ok) {
+                            const errorText = await paymentResponse.text();
+                            console.error('Payment response error:', errorText);
+                            let errorMsg = 'Payment failed';
+                            try {
+                                const errorData = JSON.parse(errorText);
+                                errorMsg = errorData.error?.message || errorData.error || errorText;
+                            } catch {
+                                errorMsg = errorText;
                             }
+                            throw new Error(errorMsg);
+                        }
 
-                            const checkoutData = await paymentResponse.json();
-                            paymentData = checkoutData;
+                        const checkoutData = await paymentResponse.json();
+                        paymentData = checkoutData;
 
-                            // Hide card section
-                            document.getElementById('stripeCardSection').style.display = 'none';
+                        // Hide card section
+                        document.getElementById('stripeCardSection').style.display = 'none';
 
-                            // Extract Stripe payment intent ID
-                            const stripeIntentId = checkoutData.payment_intent || '';
-                            const stripeLink = stripeIntentId
-                                ? `${STRIPE_DASHBOARD}/${stripeIntentId}`
-                                : STRIPE_DASHBOARD;
+                        // Extract Stripe payment intent ID
+                        const stripeIntentId = checkoutData.payment_intent || '';
+                        const stripeLink = stripeIntentId
+                            ? `${STRIPE_DASHBOARD}/${stripeIntentId}`
+                            : STRIPE_DASHBOARD;
 
-                            const displayStatus = checkoutData.state || 'completed';
+                        const displayStatus = checkoutData.state || 'completed';
 
-                            document.getElementById('result4').innerHTML = `
+                        document.getElementById('result4').innerHTML = `
                                 Status: ✅ Paid<br>
                                 Amount: $${amount.toFixed(2)}<br>
                                 ${stripeIntentId ? 'Stripe ID: ' + stripeIntentId.substring(0, 20) + '...<br>' : ''}
@@ -911,7 +908,7 @@
                                     💳 View in Stripe Dashboard →
                                 </a>
                             `;
-                        }
+
                     } catch (paymentError) {
                         console.error('Payment error:', paymentError);
                         document.getElementById('result4').innerHTML = `
