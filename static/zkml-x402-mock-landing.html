@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>x402 AgentKit • zkML + x402 Landing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0b0e14; --panel:#0f1420; --stroke:#1b2433; --fg:#e8eefc; --muted:#a6b2c9; --accent:#5ab0ff; --ok:#2ad4a9; }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    .wrap{max-width:1120px;margin-inline:auto;padding:16px}
+    .nav{display:flex;justify-content:space-between;align-items:center;padding:10px 0}
+    .brand{font-weight:800;letter-spacing:.2px}
+    .cta{display:flex;gap:10px}
+    .btn{padding:10px 14px;border-radius:10px;border:1px solid var(--stroke);background:var(--panel);color:var(--fg);font-weight:700}
+    .btn.primary{background:linear-gradient(135deg,#2a7bf6,#56c2ff);border-color:transparent}
+    .hero{margin-top:10px;padding:18px;border:1px solid var(--stroke);border-radius:14px;background:linear-gradient(180deg,rgba(90,176,255,.08),rgba(15,20,32,.6))}
+    h1{margin:.2rem 0 .6rem;font-size:clamp(24px,4vw,34px)}
+    .sub{color:var(--muted)}
+    .grid{display:grid;gap:12px;margin-top:16px}
+    @media(min-width:960px){.grid{grid-template-columns:repeat(3,1fr)}}
+    .card{background:var(--panel);border:1px solid var(--stroke);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;min-height:220px}
+    .card h3{margin:0;font-size:16px}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid var(--stroke);background:rgba(255,255,255,.03);font-size:12px}
+    .ok{border-color:rgba(42,212,169,.4);color:#c9f7ea}
+    .mono{font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; color:#cfe5ff; background:#0c111b; border:1px solid #1a2231; border-radius:8px; padding:8px}
+    .footer{padding:16px 0;color:var(--muted);font-size:12px;text-align:center}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav">
+      <div class="brand">x402 AgentKit</div>
+      <div class="cta">
+        <a class="btn" href="/static/x402-demo.html">Live Demo</a>
+        <a class="btn primary" href="#" onclick="alert('Visual mock');return false;">Run Mock</a>
+      </div>
+    </div>
+
+    <div class="hero">
+      <h1>Trustless Agentic Payments</h1>
+      <div class="sub">AI + zkML attestation bound to x402, anchored on‑chain, and settled in USDC (EIP‑3009).</div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>AI + zkML</h3>
+        <div>Approved model evaluates budget, risk, category, velocity. A zero‑knowledge proof certifies the decision was computed correctly.</div>
+        <div class="mono">proofHash: 0x…c4a6</div>
+        <span class="pill ok">Authorized • Confidence 95%</span>
+      </div>
+      <div class="card">
+        <h3>x402 Attestation</h3>
+        <div>The server signs an attestation binding <strong>proofHash</strong> (zkML), <strong>intentHash</strong> (method+path+body), and <strong>acceptsHash</strong> (price/network/asset/payTo).</div>
+        <div class="mono">intentHash: 0x…f8687</div>
+        <span class="pill">EIP‑712 typed‑data</span>
+      </div>
+      <div class="card">
+        <h3>On‑Chain & USDC</h3>
+        <div>Groth16 verification on Base Sepolia confirms the decision. Then EIP‑3009 TransferWithAuthorization settles USDC. Server pays gas.</div>
+        <div class="mono">anchor: 0x…1615a<br/>paid: 0x…ad75a</div>
+        <span class="pill ok">Auto‑pay after anchor</span>
+      </div>
+    </div>
+
+    <div class="footer">Visual mock • For the live flow, see /static/x402-demo.html</div>
+  </div>
+</body>
+</html>
+

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+  <title>x402 Agent Authorization Demo (AgentKitUI Mock)</title>
+  <meta name="description" content="Static mock of the AgentKitUI x402 demo UI for /x402 integration." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+  <style>
+    :root { --radius:.5rem; --font-sans:Inter,system-ui,-apple-system,sans-serif; --font-mono:'JetBrains Mono',Menlo,monospace; --background:10 15% 8%; --foreground:0 0% 95%; --border:220 13% 15%; --card:220 13% 12%; --card-foreground:0 0% 95%; --card-border:220 13% 18%; --primary:200 95% 55%; --primary-foreground:220 13% 8%; --secondary:220 13% 18%; --secondary-foreground:0 0% 95%; --muted:220 13% 16%; --muted-foreground:0 0% 65%; --chart-1:200 95% 70%; --chart-2:142 76% 50%; --chart-3:38 92% 65%; --chart-4:271 91% 75%; --chart-5:16 84% 65%; }
+    *{box-sizing:border-box} html,body{margin:0;padding:0} body{background:hsl(var(--background));color:hsl(var(--foreground));font-family:var(--font-sans);line-height:1.45} a{color:inherit;text-decoration:none} code,.mono{font-family:var(--font-mono)}
+    .container{max-width:1100px;margin:0 auto;padding:0 16px} .header{border-bottom:1px solid hsl(var(--border));background:hsl(var(--card))} .header-inner{display:flex;align-items:center;justify-content:space-between;padding:24px 0} h1{margin:0;font-size:24px;font-weight:700} .sub{margin-top:4px;color:hsl(var(--muted-foreground));font-size:14px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:36px;padding:0 14px;border-radius:8px;border:1px solid transparent;font-weight:600;cursor:pointer} .btn:disabled{opacity:.6;cursor:default} .btn-outline{background:transparent;color:hsl(var(--foreground));border-color:hsl(var(--border))} .btn-primary{background:hsl(var(--primary));color:hsl(var(--primary-foreground))} .badge{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:8px;border:1px solid color-mix(in hsl, hsl(var(--chart-2)) 20%, transparent);color:hsl(var(--chart-2));background:color-mix(in hsl, hsl(var(--chart-2)) 10%, transparent);font-size:12px;font-weight:600}
+    .card{background:hsl(var(--card));border:1px solid hsl(var(--card-border));border-radius:var(--radius)} .card-header{padding:24px;border-bottom:0} .card-title{font-size:20px;font-weight:700} .card-sub{margin-top:6px;font-size:14px;color:hsl(var(--muted-foreground))} .card-content{padding:0 24px 24px}
+    .progress-wrap{border-bottom:1px solid hsl(var(--border));background:hsl(var(--card))} .steps{display:flex;justify-content:space-between;gap:10px;padding:16px 0;position:relative} .step{flex:1;display:flex;flex-direction:column;align-items:center;position:relative} .circle{width:48px;height:48px;border-radius:999px;border:2px solid;display:grid;place-items:center;font-weight:700;font-size:14px;transition:.25s ease} .circle.upcoming{background:hsl(var(--background));color:hsl(var(--muted-foreground));border-color:hsl(var(--border))} .circle.current{background:hsl(var(--primary));color:hsl(var(--primary-foreground));border-color:hsl(var(--primary));box-shadow:0 0 0 2px color-mix(in hsl, hsl(var(--primary)) 60%, transparent)} .circle.done{background:hsl(var(--chart-2));color:#fff;border-color:hsl(var(--chart-2))} .ring{position:absolute;inset:-6px;border-radius:999px;border:2px solid hsl(var(--primary));animation:pulse 1.5s ease-in-out infinite} @keyframes pulse{0%{opacity:1}70%{opacity:0}100%{opacity:0}} .label{margin-top:8px;text-align:center;max-width:96px} .label .t{font-size:12px;font-weight:600;color:hsl(var(--foreground))} .label .d{font-size:12px;color:hsl(var(--muted-foreground));margin-top:4px} .connector{position:absolute;top:24px;left:calc(50% + 24px);right:-24px;height:2px;background:hsl(var(--border));z-index:-1} .connector.fill{background:hsl(var(--chart-2))}
+    .grid-2{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center} .mt-6{margin-top:24px} .center{text-align:center} .muted{color:hsl(var(--muted-foreground))}
+    .bar{width:100%;height:16px;border-radius:999px;background:hsl(var(--secondary));overflow:hidden;border:1px solid hsl(var(--border))} .bar>span{display:block;height:100%;width:0;background:hsl(var(--primary));transition:width .3s ease}
+    .banner{display:flex;gap:12px;align-items:center;padding:12px;border-radius:10px;border:1px solid} .ok-2{background:color-mix(in hsl, hsl(var(--chart-2)) 10%, transparent);border-color:color-mix(in hsl, hsl(var(--chart-2)) 20%, transparent)} .ok-1{background:color-mix(in hsl, hsl(var(--chart-1)) 10%, transparent);border-color:color-mix(in hsl, hsl(var(--chart-1)) 20%, transparent)} .ok-3{background:color-mix(in hsl, hsl(var(--chart-3)) 10%, transparent);border-color:color-mix(in hsl, hsl(var(--chart-3)) 20%, transparent)} .ok-4{background:color-mix(in hsl, hsl(var(--chart-4)) 10%, transparent);border-color:color-mix(in hsl, hsl(var(--chart-4)) 20%, transparent)}
+    .chip{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px} .chip.c1{background:color-mix(in hsl, hsl(var(--primary)) 10%, transparent)} .chip.c2{background:color-mix(in hsl, hsl(var(--chart-1)) 10%, transparent)} .chip.c3{background:color-mix(in hsl, hsl(var(--chart-3)) 10%, transparent)} .chip.c4{background:color-mix(in hsl, hsl(var(--chart-4)) 10%, transparent)}
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const state = { step: 1, data: {} };
+      const qs = (s)=>document.querySelector(s), qsa=(s)=>Array.from(document.querySelectorAll(s));
+      const stepCircles=[1,2,3,4,5].map(i=>({el:qs(`#step-${i}-circle`),conn:qs(`#step-${i}-conn`)}));
+      const showOnly=(ids)=>{qsa('[data-card]').forEach(el=>el.style.display='none');ids.forEach(id=>{const el=qs(id); if(el) el.style.display='block';});};
+      const setCircle=(i,mode)=>{const m=stepCircles[i-1]; if(!m||!m.el)return; m.el.classList.remove('upcoming','current','done'); m.el.classList.add(mode); if(m.conn) m.conn.classList.toggle('fill', mode==='done');};
+      const updateStepper=()=>{for(let i=1;i<=5;i++){if(state.step===6||i<state.step) setCircle(i,'done'); else if(i===state.step) setCircle(i,'current'); else setCircle(i,'upcoming');}};
+      const goStep=(n)=>{state.step=n; updateStepper(); if(n===1)showOnly(['#card-1','#ctx-1']); if(n===2)showOnly(['#card-2','#ctx-2']); if(n===3)showOnly(['#card-3','#ctx-3']); if(n===4)showOnly(['#card-4','#ctx-4']); if(n===5)showOnly(['#card-5','#ctx-5']); if(n===6)showOnly(['#card-complete']);};
+      const reset=()=>{qsa('[data-sub]').forEach(el=>el.style.display='none'); ['#ai','#zk','#att','#cv','#pay'].forEach(p=>qs(p+'-idle').style.display='block'); qsa('[data-bar]').forEach(el=>el.style.width='0%'); state.step=1; state.data={}; updateStepper(); goStep(1);};
+      qs('#btn-reset').addEventListener('click', reset);
+      // Step 1
+      (()=>{const idle=qs('#ai-idle'),proc=qs('#ai-proc'),done=qs('#ai-done'),bar=qs('#ai-bar'); qs('#start-ai').addEventListener('click',()=>{idle.style.display='none';proc.style.display='block';let p=0;const t=setInterval(()=>{p=Math.min(100,p+15+Math.random()*10); bar.style.width=p+'%'; if(p>=100){clearInterval(t); state.data[1]={authorized:true,confidence:0.87,parameters:{budgetRemaining:67.50,riskScore:0.12,transactionAmount:1.00,categoryScore:0.95,velocityScore:0.78}}; proc.style.display='none'; done.style.display='block'; setTimeout(()=>goStep(2),700);}},180);});})();
+      // Step 2
+      (()=>{const idle=qs('#zk-idle'),proc=qs('#zk-proc'),done=qs('#zk-done'),bar=qs('#zk-bar'),btn=qs('#btn-gen-proof'),timeEl=qs('#zk-time'),hashEl=qs('#zk-hash'),inputsEl=qs('#zk-inputs'); const start=()=>{idle.style.display='none';proc.style.display='block';let p=0;const t0=Date.now();const t=setInterval(()=>{p=Math.min(100,p+12+Math.random()*8); bar.style.width=p+'%'; if(p>=100){clearInterval(t); const gen=Date.now()-t0; const proofHash='0x2a4b8c9d7f1e3a5c8b2d4f6a9c1e5b7d9f2a4c6e8b1d3f5a7c9e2b4d6f8a0c2e4'; state.data[2]={generationTime:gen,proofHash,publicInputs:[3,5,1,12,95,87,23]}; timeEl.textContent=gen+'ms'; hashEl.textContent=proofHash.slice(0,10)+'...'+proofHash.slice(-6); inputsEl.textContent='[3, 5, 1, 12, 95, 87, 23, ...]'; proc.style.display='none'; done.style.display='block'; setTimeout(()=>goStep(3),700);}},60);}; btn.addEventListener('click',start); const obs=new MutationObserver(()=>{if(state.step===2&&idle.style.display!=='none') start();}); obs.observe(document.body,{attributes:true,childList:true,subtree:true});})();
+      // Step 3
+      (()=>{const idle=qs('#att-idle'),proc=qs('#att-proc'),done=qs('#att-done'),bar=qs('#att-bar'),btn=qs('#btn-attest'),proofHashEl=qs('#att-proof-hash'),intentEl=qs('#att-intent'),amountEl=qs('#att-amount'),networkEl=qs('#att-network'),assetEl=qs('#att-asset'); const start=()=>{idle.style.display='none';proc.style.display='block';let p=0;const t=setInterval(()=>{p=Math.min(100,p+14+Math.random()*8); bar.style.width=p+'%'; if(p>=100){clearInterval(t); const proofHash=state.data[2]?.proofHash||'0x...'; state.data[3]={token:'eyJhbGciOi...xyz',proofHash,intentHash:'0xabcdef...7890',acceptsHash:'0x123456...cdef',binding:{intent:{method:'POST',path:'/x402/pay'},accepts:{price:'0.01 USDC',network:'Base Sepolia',asset:'USDC'}}}; proofHashEl.textContent=proofHash.slice(0,10)+'...'+proofHash.slice(-6); intentEl.textContent='POST /x402/pay'; amountEl.textContent='0.01 USDC'; networkEl.textContent='Base Sepolia'; assetEl.textContent='USDC'; proc.style.display='none'; done.style.display='block'; setTimeout(()=>goStep(4),700);}},100);}; btn.addEventListener('click',start); const obs=new MutationObserver(()=>{if(state.step===3&&idle.style.display!=='none') start();}); obs.observe(document.body,{attributes:true,childList:true,subtree:true});})();
+      // Step 4
+      (()=>{const idle=qs('#cv-idle'),proc=qs('#cv-proc'),done=qs('#cv-done'),bar=qs('#cv-bar'),btn=qs('#btn-verify'),blockEl=qs('#cv-block'),txLink=qs('#cv-tx'); const start=()=>{idle.style.display='none';proc.style.display='block';let p=0;const t=setInterval(()=>{p=Math.min(100,p+10+Math.random()*6); bar.style.width=p+'%'; if(p>=100){clearInterval(t); const tx='0xcb0f2abf65efb852a93413da261688d223856f1787a4b8c9d7f1e3a5c8b2d4f6a'; const block=8751234; state.data[4]={verified:true,txHash:tx,blockNumber:block}; blockEl.textContent='#'+block; txLink.href=`https://sepolia.basescan.org/tx/${tx}`; txLink.textContent=tx.slice(0,10)+'...'+tx.slice(-6); proc.style.display='none'; done.style.display='block'; setTimeout(()=>goStep(5),700);}},180);}; btn.addEventListener('click',start); const obs=new MutationObserver(()=>{if(state.step===4&&idle.style.display!=='none') start();}); obs.observe(document.body,{attributes:true,childList:true,subtree:true});})();
+      // Step 5
+      (()=>{const idle=qs('#pay-idle'),proc=qs('#pay-proc'),done=qs('#pay-done'),bar=qs('#pay-bar'),btnMM=qs('#btn-pay-metamask'),btnAuto=qs('#btn-pay-auto'),txLink=qs('#pay-tx'),amountEl=qs('#pay-amount'),fromEl=qs('#pay-from'),toEl=qs('#pay-to'); const start=(method)=>{idle.style.display='none';proc.style.display='block';let p=0;const t=setInterval(()=>{p=Math.min(100,p+12+Math.random()*8); bar.style.width=p+'%'; if(p>=100){clearInterval(t); const tx=method==='metamask'?'0xa1b2c3d4e5f6789012345678901234567890abcdef123456789012345678901234':'0xb2c3d4e5f6789012345678901234567890abcdef123456789012345678901234a'; state.data[5]={txHash:tx,amount:'0.01',method,from:'0x2e408ad62e30146404F4ED8A61253212f3f9A490',to:'0x6121Fd93594C316B78e74B91B89A06d3Bb682a8F'}; txLink.href=`https://sepolia.basescan.org/tx/${tx}`; txLink.textContent=tx.slice(0,10)+'...'+tx.slice(-6); amountEl.textContent='0.01 USDC'; fromEl.textContent='0x2e408a...A490'; toEl.textContent='0x6121Fd...2a8F'; proc.style.display='none'; done.style.display='block'; setTimeout(()=>{goStep(6); const s1=state.data[1],s2=state.data[2],s4=state.data[4],s5=state.data[5]; qs('#cmp-auth').textContent=Math.round((s1?.confidence||0.87)*100)+'% confidence'; qs('#cmp-proof').textContent=(s2?.generationTime||487)+'ms'; qs('#cmp-block').textContent='Block #'+(s4?.blockNumber||8751234); qs('#cmp-amount').textContent=(s5?.amount||'0.01')+' USDC'; if(s4?.txHash) qs('#cmp-verify-tx').textContent=s4.txHash.slice(0,10)+'...'+s4.txHash.slice(-6); if(s5?.txHash) qs('#cmp-pay-tx').textContent=s5.txHash.slice(0,10)+'...'+s5.txHash.slice(-6); },600);}},150);}; btnMM.addEventListener('click',()=>start('metamask')); btnAuto.addEventListener('click',()=>start('auto'));})();
+      updateStepper(); goStep(1);
+    });
+  </script>
+</head>
+<body>
+  <div class="header">
+    <div class="container header-inner">
+      <div>
+        <h1>x402 Agent Authorization Demo</h1>
+        <div class="sub">AI Payment Authorization with zkML and Blockchain Verification</div>
+      </div>
+      <button id="btn-reset" class="btn btn-outline" type="button">Reset Demo</button>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="container">
+      <div class="steps">
+        <div class="step">
+          <div id="step-1-circle" class="circle current">1</div>
+          <div class="ring"></div>
+          <div class="label"><div class="t">AI Inference</div><div class="d">Neural network evaluates</div></div>
+          <div id="step-1-conn" class="connector"></div>
+        </div>
+        <div class="step">
+          <div id="step-2-circle" class="circle upcoming">2</div>
+          <div class="label"><div class="t">zkML Proof</div><div class="d">Generate cryptographic proof</div></div>
+          <div id="step-2-conn" class="connector"></div>
+        </div>
+        <div class="step">
+          <div id="step-3-circle" class="circle upcoming">3</div>
+          <div class="label"><div class="t">x402 Attestation</div><div class="d">Bind AI decision to payment</div></div>
+          <div id="step-3-conn" class="connector"></div>
+        </div>
+        <div class="step">
+          <div id="step-4-circle" class="circle upcoming">4</div>
+          <div class="label"><div class="t">Chain Verification</div><div class="d">Verify proof on-chain</div></div>
+          <div id="step-4-conn" class="connector"></div>
+        </div>
+        <div class="step">
+          <div id="step-5-circle" class="circle upcoming">5</div>
+          <div class="label"><div class="t">Payment Execution</div><div class="d">Execute USDC transfer</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" style="padding:32px 16px;">
+    <div style="max-width:860px;margin:0 auto;">
+      <div id="card-1" class="card" data-card>
+        <div class="card-header">
+          <div class="grid-2">
+            <div style="display:flex;gap:12px;align-items:center;">
+              <div class="chip c1"></div>
+              <div>
+                <div class="card-title">AI Agent Authorization</div>
+                <div class="card-sub">Neural network evaluates payment request against authorization rules</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-content">
+          <div id="ai-idle" data-sub class="center" style="padding:32px 0 8px;">
+            <div class="muted" style="margin-bottom:16px;">Ready to evaluate payment authorization using 5-layer neural network</div>
+            <button id="start-ai" class="btn btn-primary" type="button">Start AI Inference</button>
+          </div>
+          <div id="ai-proc" data-sub style="display:none;">
+            <div class="mt-2">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><div style="width:8px;height:8px;background:hsl(var(--primary));border-radius:999px;animation:pulse 1.4s ease-in-out infinite;"></div><div style="font-size:14px;font-weight:600;">Processing Neural Network Inference</div></div>
+              <div class="bar"><span id="ai-bar" style="width:0%" data-bar></span></div>
+              <div class="center muted" style="font-size:12px;margin-top:8px;">Evaluating 5 authorization parameters (~1ms processing time)</div>
+              <div class="mt-3" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;color:hsl(var(--muted-foreground));">
+                <div style="display:flex;align-items:center;gap:8px;"><div style="width:8px;height:8px;border-radius:999px;background:hsl(var(--chart-2));"></div>Budget Analysis</div>
+                <div style="display:flex;align-items:center;gap:8px;"><div style="width:8px;height:8px;border-radius:999px;background:hsl(var(--muted));"></div>Risk Assessment</div>
+                <div style="display:flex;align-items:center;gap:8px;"><div style="width:8px;height:8px;border-radius:999px;background:hsl(var(--muted));"></div>Amount Validation</div>
+                <div style="display:flex;align-items:center;gap:8px;"><div style="width:8px;height:8px;border-radius:999px;background:hsl(var(--muted));"></div>Category Check</div>
+                <div style="display:flex;align-items:center;gap:8px;"><div style="width:8px;height:8px;border-radius:999px;background:hsl(var(--muted));"></div>Velocity Limits</div>
+              </div>
+            </div>
+          </div>
+          <div id="ai-done" data-sub style="display:none;">
+            <div class="banner ok-2"><div class="chip c2"></div><div><div style="display:flex;align-items:center;gap:8px;"><span style="font-weight:600;color:hsl(var(--chart-2));">Authorized</span><span class="badge" style="height:20px;">87% confidence</span></div><div class="muted" style="font-size:14px;margin-top:4px;">Transaction meets all authorization criteria: sufficient budget, low risk merchant, approved category, within velocity limits.</div></div></div>
+            <div class="mt-4" style="background:color-mix(in hsl, hsl(var(--muted)) 30%, transparent);padding:16px;border-radius:10px;">
+              <div class="grid-2" style="font-size:14px;">
+                <div class="muted">Budget Remaining</div><div class="mono">$67.50</div>
+                <div class="muted">Transaction Amount</div><div class="mono">$1.00</div>
+                <div class="muted">Risk Score</div><div class="mono" style="color:hsl(var(--chart-2));">0.12</div>
+                <div class="muted">Category Score</div><div class="mono" style="color:hsl(var(--chart-2));">95%</div>
+                <div class="muted">Velocity Score</div><div class="mono" style="color:hsl(var(--chart-2));">78%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="ctx-1" class="card mt-6" data-card>
+        <div class="card-header"><div class="card-title" style="font-size:16px;">Step 1 Context</div></div>
+        <div class="card-content"><div class="muted" style="font-size:14px;">The AI agent evaluates whether this payment request meets authorization criteria using a 5-layer neural network. It checks budget remaining, merchant risk score, transaction amount, category approval, and velocity limits.</div></div>
+      </div>
+
+      <div id="card-2" class="card mt-6" style="display:none;" data-card>
+        <div class="card-header"><div class="grid-2"><div style="display:flex;gap:12px;align-items:center;"><div class="chip c2"></div><div><div class="card-title">zkML Proof Generation</div><div class="card-sub">Generate cryptographic proof that AI model ran correctly</div></div></div></div></div>
+        <div class="card-content">
+          <div id="zk-idle" data-sub class="center" style="padding:32px 0 8px;"><div class="muted" style="margin-bottom:16px;">Ready to generate zkML proof from authorization result</div><button id="btn-gen-proof" class="btn btn-primary" type="button">Generate Proof</button></div>
+          <div id="zk-proc" data-sub style="display:none;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><div style="width:8px;height:8px;background:hsl(var(--chart-1));border-radius:999px;animation:pulse 1.4s ease-in-out infinite;"></div><div style="font-size:14px;font-weight:600;">Generating JOLT-Atlas Proof</div><span class="badge" style="margin-left:auto;" id="zk-time">~0.5s</span></div><div class="bar"><span id="zk-bar" style="width:0%" data-bar></span></div><div class="center muted" style="font-size:12px;margin-top:8px;">Expected generation time: ~500ms</div><div class="mt-3" style="font-size:12px;color:hsl(var(--muted-foreground));"><div style="display:flex;align-items:center;gap:8px;"><div style="width:8px;height:8px;border-radius:999px;background:hsl(var(--muted));"></div>Compiling circuit constraints</div><div class="mt-2" style="display:flex;align-items:center;gap:8px;"><div style="width:8px;height:8px;border-radius:999px;background:hsl(var(--muted));"></div>Computing witness</div><div class="mt-2" style="display:flex;align-items:center;gap:8px;"><div style="width:8px;height:8px;border-radius:999px;background:hsl(var(--muted));"></div>Generating Groth16 proof</div></div></div>
+          <div id="zk-done" data-sub style="display:none;"><div class="banner ok-1"><div class="chip c2"></div><div><div style="display:flex;align-items:center;gap:8px;"><span style="font-weight:600;color:hsl(var(--chart-1));">Proof Generated</span><span class="badge" style="height:20px;" id="zk-time-done">Time</span></div><div class="muted" style="font-size:14px;margin-top:4px;">Cryptographic proof successfully created using JOLT-Atlas</div></div></div><div class="mt-4" style="background:color-mix(in hsl, hsl(var(--muted)) 30%, transparent);padding:16px;border-radius:10px;font-size:14px;"><div class="grid-2"><div class="muted">Proof Hash</div><div class="mono"><span id="zk-hash">0x2a4b...0c2e4</span></div></div><div class="grid-2 mt-2"><div class="muted">Public Inputs</div><div class="mono"><span id="zk-inputs">[3, 5, 1, 12, 95, 87, 23, ...]</span></div></div></div></div>
+        </div>
+      </div>
+
+      <div id="ctx-2" class="card mt-6" style="display:none;" data-card><div class="card-header"><div class="card-title" style="font-size:16px;">Step 2 Context</div></div><div class="card-content"><div class="muted" style="font-size:14px;">A cryptographic proof is generated using JOLT-Atlas to prove that the specific AI model ran correctly and produced the authorization decision. This prevents forgery or manipulation of the AI's decision.</div></div></div>
+
+      <div id="card-3" class="card mt-6" style="display:none;" data-card>
+        <div class="card-header"><div class="grid-2"><div style="display:flex;gap:12px;align-items:center;"><div class="chip c3"></div><div><div class="card-title">x402 Attestation</div><div class="card-sub">Bind AI decision to payment intent and server policy</div></div></div></div></div>
+        <div class="card-content">
+          <div id="att-idle" data-sub class="center" style="padding:32px 0 8px;"><div class="muted" style="margin-bottom:16px;">Ready to create x402 attestation</div><button id="btn-attest" class="btn btn-primary" type="button">Create Attestation</button></div>
+          <div id="att-proc" data-sub style="display:none;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><div style="width:8px;height:8px;background:hsl(var(--chart-3));border-radius:999px;animation:pulse 1.4s ease-in-out infinite;"></div><div style="font-size:14px;font-weight:600;">Creating x402 Attestation Token</div></div><div class="bar"><span id="att-bar" style="width:0%" data-bar></span></div><div class="center muted" style="font-size:12px;margin-top:8px;">Binding proof to payment intent with cryptographic hashes</div><div class="mt-3" style="font-size:12px;color:hsl(var(--muted-foreground));"><div>• Computing proof commitment (proofHash)</div><div class="mt-2">• Hashing payment intent (intentHash)</div><div class="mt-2">• Binding server accepts policy (acceptsHash)</div></div></div>
+          <div id="att-done" data-sub style="display:none;"><div class="banner ok-3"><div class="chip c3"></div><div><div style="display:flex;align-items:center;gap:8px;"><span style="font-weight:600;color:hsl(var(--chart-3));">Attestation Created</span><span class="badge" style="height:20px;">JWT Token</span></div><div class="muted" style="font-size:14px;margin-top:4px;">AI decision cryptographically bound to payment intent and server policy</div></div></div><div class="mt-4" style="background:color-mix(in hsl, hsl(var(--muted)) 30%, transparent);padding:16px;border-radius:10px;font-size:14px;"><div class="grid-2"><div class="muted">Proof Hash</div><div class="mono" id="att-proof-hash">0x2a4b...0c2e4</div></div><div class="grid-2 mt-2"><div class="muted">Payment Intent</div><div class="mono" id="att-intent">POST /x402/pay</div></div><div class="grid-2 mt-2"><div class="muted">Amount</div><div class="mono" id="att-amount">0.01 USDC</div></div><div class="grid-2 mt-2"><div class="muted">Network</div><div class="mono" id="att-network">Base Sepolia</div></div><div class="grid-2 mt-2"><div class="muted">Asset</div><div class="mono" id="att-asset">USDC</div></div></div></div>
+        </div>
+      </div>
+
+      <div id="ctx-3" class="card mt-6" style="display:none;" data-card><div class="card-header"><div class="card-title" style="font-size:16px;">Step 3 Context</div></div><div class="card-content"><div class="muted" style="font-size:14px;">The x402 attestation creates a cryptographic binding between the zkML proof, the payment intent, and the server's configured policy. This ensures end-to-end integrity from AI decision to payment execution.</div></div></div>
+
+      <div id="card-4" class="card mt-6" style="display:none;" data-card>
+        <div class="card-header"><div class="grid-2"><div style="display:flex;gap:12px;align-items:center;"><div class="chip c4"></div><div><div class="card-title">Chain Verification</div><div class="card-sub">Verify zkML proof on-chain using Groth16 verification</div></div></div></div></div>
+        <div class="card-content">
+          <div id="cv-idle" data-sub class="center" style="padding:32px 0 8px;"><div class="muted" style="margin-bottom:16px;">Ready to anchor zkML proof on Base Sepolia blockchain</div><button id="btn-verify" class="btn btn-primary" type="button">Verify On-Chain</button></div>
+          <div id="cv-proc" data-sub style="display:none;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><div style="width:8px;height:8px;background:hsl(var(--chart-4));border-radius:999px;animation:pulse 1.4s ease-in-out infinite;"></div><div style="font-size:14px;font-weight:600;">Submitting Groth16 Verification</div></div><div class="bar"><span id="cv-bar" style="width:0%" data-bar></span></div><div class="center muted" style="font-size:12px;margin-top:8px;">Broadcasting transaction to Base Sepolia (~2-3s confirmation)</div><div class="mt-3" style="font-size:12px;color:hsl(var(--muted-foreground));"><div>• Preparing Groth16 proof data</div><div class="mt-2">• Submitting to verification contract</div><div class="mt-2">• Waiting for block confirmation</div></div></div>
+          <div id="cv-done" data-sub style="display:none;"><div class="banner ok-4"><div class="chip c4"></div><div><div style="display:flex;align-items:center;gap:8px;"><span style="font-weight:600;color:hsl(var(--chart-4));">Proof Verified On-Chain</span><span id="cv-block" class="badge" style="height:20px;">Block #8751234</span></div><div class="muted" style="font-size:14px;margin-top:4px;">zkML proof permanently anchored on Base Sepolia blockchain</div></div></div><div class="mt-4" style="background:color-mix(in hsl, hsl(var(--muted)) 30%, transparent);padding:16px;border-radius:10px;font-size:14px;"><div class="grid-2"><div class="muted">Verification Tx</div><div class="mono"><a id="cv-tx" href="#" target="_blank" rel="noreferrer">0xcb0f2abf...2d4f6a</a></div></div></div></div>
+        </div>
+      </div>
+
+      <div id="ctx-4" class="card mt-6" style="display:none;" data-card><div class="card-header"><div class="card-title" style="font-size:16px;">Step 4 Context</div></div><div class="card-content"><div class="muted" style="font-size:14px;">The zkML proof is anchored on the Base Sepolia blockchain using Groth16 verification, creating a permanent, tamper-proof audit trail that can be independently verified by anyone.</div></div></div>
+
+      <div id="card-5" class="card mt-6" style="display:none;" data-card>
+        <div class="card-header"><div class="grid-2"><div style="display:flex;gap:12px;align-items:center;"><div class="chip" style="background:color-mix(in hsl, hsl(var(--chart-2)) 10%, transparent);"></div><div><div class="card-title">Payment Execution</div><div class="card-sub">Execute USDC transfer via EIP-3009 authorization</div></div></div></div></div>
+        <div class="card-content">
+          <div id="pay-idle" data-sub><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"><button id="btn-pay-metamask" class="btn btn-outline" style="justify-content:flex-start;gap:12px;height:48px;"><span style="font-weight:600;">Pay with MetaMask</span><span class="muted" style="font-size:12px;">Sign EIP-712 typed data</span></button><button id="btn-pay-auto" class="btn btn-outline" style="justify-content:flex-start;gap:12px;height:48px;"><span style="font-weight:600;">Server Auto-Pay</span><span class="muted" style="font-size:12px;">Automatic after anchor confirmation</span></button></div><div class="mt-4" style="background:color-mix(in hsl, hsl(var(--muted)) 30%, transparent);padding:16px;border-radius:10px;font-size:14px;"><div class="grid-2"><div class="muted">Amount</div><div class="mono">0.01 USDC</div></div><div class="grid-2 mt-2"><div class="muted">Network</div><div class="mono">Base Sepolia</div></div></div></div>
+          <div id="pay-proc" data-sub style="display:none;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><div style="width:8px;height:8px;background:hsl(var(--chart-2));border-radius:999px;animation:pulse 1.4s ease-in-out infinite;"></div><div style="font-size:14px;font-weight:600;">Processing Payment</div></div><div class="bar"><span id="pay-bar" style="width:0%" data-bar></span></div><div class="center muted" style="font-size:12px;margin-top:8px;">Creating EIP-3009 authorization and executing transfer</div><div class="mt-3" style="font-size:12px;color:hsl(var(--muted-foreground));"><div>• Creating EIP-3009 authorization</div><div class="mt-2">• Signing (wallet or server)</div><div class="mt-2">• Executing transferWithAuthorization</div></div></div>
+          <div id="pay-done" data-sub style="display:none;"><div class="banner ok-2"><div class="chip" style="background:color-mix(in hsl, hsl(var(--chart-2)) 10%, transparent);"></div><div><div style="display:flex;align-items:center;gap:8px;"><span style="font-weight:600;color:hsl(var(--chart-2));">Payment Executed</span><span class="badge" style="height:20px;">MetaMask/Auto</span></div><div class="muted" style="font-size:14px;margin-top:4px;">0.01 USDC successfully transferred</div></div></div><div class="mt-4" style="background:color-mix(in hsl, hsl(var(--muted)) 30%, transparent);padding:16px;border-radius:10px;font-size:14px;"><div class="grid-2"><div class="muted">Transaction</div><div class="mono"><a id="pay-tx" href="#" target="_blank" rel="noreferrer">0xa1b2c3d4...901234</a></div></div><div class="grid-2 mt-2"><div class="muted">Amount</div><div class="mono" id="pay-amount">0.01 USDC</div></div><div class="grid-2 mt-2"><div class="muted">From</div><div class="mono" id="pay-from">0x2e408a...A490</div></div><div class="grid-2 mt-2"><div class="muted">To</div><div class="mono" id="pay-to">0x6121Fd...2a8F</div></div></div></div>
+        </div>
+      </div>
+
+      <div id="ctx-5" class="card mt-6" style="display:none;" data-card><div class="card-header"><div class="card-title" style="font-size:16px;">Step 5 Context</div></div><div class="card-content"><div class="muted" style="font-size:14px;">The USDC payment is executed using EIP-3009 transferWithAuthorization, enabling gasless transactions where the recipient pays gas fees. Choose between MetaMask signing or server auto-execution.</div></div></div>
+
+      <div id="card-complete" class="card mt-6" style="display:none;" data-card>
+        <div class="card-header"><div class="card-title" style="color:hsl(var(--chart-2));">🎉 Workflow Complete!</div></div>
+        <div class="card-content">
+          <div class="muted" style="margin-bottom:16px;">Successfully completed the full x402 Agent Authorization workflow: AI inference → zkML proof → x402 attestation → chain verification → payment execution</div>
+          <div class="mt-4" style="display:grid;gap:12px;font-size:14px;">
+            <div class="grid-2"><div>✅ AI authorization</div><div class="mono" id="cmp-auth">87% confidence</div></div>
+            <div class="grid-2"><div>✅ zkML proof generated</div><div class="mono" id="cmp-proof">487ms</div></div>
+            <div class="grid-2"><div>✅ x402 attestation created</div><div class="mono">✓</div></div>
+            <div class="grid-2"><div>✅ On-chain verification</div><div class="mono" id="cmp-block">Block #8751234</div></div>
+            <div class="grid-2"><div>✅ USDC payment executed</div><div class="mono" id="cmp-amount">0.01 USDC</div></div>
+          </div>
+          <div class="mt-6" style="background:color-mix(in hsl, hsl(var(--muted)) 30%, transparent);padding:16px;border-radius:10px;font-size:14px;">
+            <div style="font-weight:600;margin-bottom:8px;">Key Transactions</div>
+            <div class="grid-2"><div class="muted">Verification</div><div class="mono" id="cmp-verify-tx">0xcb0f2abf...2d4f6a</div></div>
+            <div class="grid-2 mt-2"><div class="muted">Payment</div><div class="mono" id="cmp-pay-tx">0xa1b2c3d4...901234</div></div>
+          </div>
+          <div class="center mt-6"><button class="btn btn-outline" type="button" onclick="location.reload()">Try Another Payment</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+

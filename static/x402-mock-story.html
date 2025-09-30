@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>x402 Novanet • Story Mode</title>
+  <style>
+    :root { --bg:#0a0b0f; --bubble:#111522; --you:#1b2233; --fg:#e8eefc; --muted:#a4b1cd; --ok:#23d997; --ink:#1f2633; }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#0a0b0f,#0c0f17);color:var(--fg);font-family:system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Arial}
+    .wrap{max-width:760px;margin-inline:auto;padding:18px}
+    .hdr{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+    .badge{padding:6px 10px;border-radius:999px;background:#101829;border:1px solid #1c2535;font-size:12px}
+    h1{margin:6px 0 0;font-size:22px}
+
+    .chat{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+    .msg{max-width:88%;padding:12px 14px;border-radius:14px;background:var(--bubble);border:1px solid var(--ink);line-height:1.45}
+    .me{align-self:flex-end;background:var(--you)}
+    .meta{margin-top:6px;color:var(--muted);font-size:12px}
+    .ok{color:var(--ok);font-weight:700}
+    .chip{display:inline-block;margin-top:8px;padding:4px 8px;border-radius:999px;background:#0f1626;border:1px solid #20283a;font-size:12px}
+
+    .sticky{position:sticky;bottom:8px;display:flex;gap:8px;margin-top:12px}
+    .btn{flex:1;padding:12px;border-radius:12px;border:1px solid #20283a;background:#101829;color:var(--fg);font-weight:800}
+    .btn.primary{background:linear-gradient(135deg,#845ef7,#22d1ee);border-color:transparent}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hdr">
+      <span class="badge">x402 Novanet</span>
+      <span class="badge">Story Mode</span>
+    </div>
+    <h1>Trustless Agentic Payments</h1>
+
+    <div class="chat">
+      <div class="msg">User: “Pay $0.01 to the API merchant.”</div>
+      <div class="msg me">AI Agent: Checking budget, risk, category, and velocity… ✅ Authorized (95% confidence).</div>
+      <div class="msg">zkML: Generated proof that the exact model ran on the intended inputs. <span class="chip">proofHash bound</span></div>
+      <div class="msg me">x402: Created attestation that binds <em>proofHash</em>, <em>intentHash</em>, and <em>acceptsHash</em> — locking decision → API call → policy.</div>
+      <div class="msg">Anchor: On‑chain Groth16 verification confirmed on Base Sepolia. <span class="ok">Verified: 0x…</span></div>
+      <div class="msg me">USDC: Submitted EIP‑3009 TransferWithAuthorization. <span class="ok">Paid: 0x…</span></div>
+      <div class="meta">The user never paid gas. The agent followed the rules. The chain has the receipt.</div>
+    </div>
+
+    <div class="sticky">
+      <button class="btn" onclick="alert('This is a visual mock. Use /static/x402-demo.html for the live flow.')">Explore Attestation</button>
+      <button class="btn primary" onclick="alert('This is a visual mock. Use /static/x402-demo.html for the live flow.')">Run Live Demo</button>
+    </div>
+  </div>
+</body>
+</html>
+

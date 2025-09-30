@@ -7,7 +7,7 @@
 - **Cost**: ~$0.01 per parse (~800 tokens)
 - **Performance**: 4-7 seconds per parse
 - **Evidence**: Logs show "✅ Rules parsed in 6223ms" with real model name
-- **Service**: `services/gpt4-rule-parser.js` (Port 9005)
+- **Service**: `services/gpt5-rule-parser.js` (Port 9005)
 
 ### 2. Authorization Logic ✅ 100% REAL (FIXED)
 - **Changed from**: Random confidence (0.3 + Math.random() * 0.2)

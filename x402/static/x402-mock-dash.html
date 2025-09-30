@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>x402 Novanet • Mobile Dashboard</title>
+  <style>
+    :root { --bg:#0c0e12; --panel:#121722; --stroke:#1f2633; --fg:#e9eef9; --muted:#9fb1c9; --accent:#4cc9f0; --green:#76f2c0; --amber:#ffd166; }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Arial, sans-serif}
+    .wrap{max-width:880px;margin-inline:auto;padding:14px}
+    .hdr{display:flex;align-items:center;gap:12px;padding:10px 6px}
+    .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#4cc9f0, #4361ee);box-shadow:0 8px 24px rgba(67,97,238,.35)}
+    h1{margin:0;font-size:20px}
+    .sub{color:var(--muted);font-size:13px}
+
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+    .card{background:var(--panel);border:1px solid var(--stroke);border-radius:16px;padding:14px}
+    .k{font-size:12px;color:var(--muted)}
+    .v{font-size:22px;font-weight:800;letter-spacing:.5px}
+    .ok{color:var(--green)}
+    .bar{height:8px;border-radius:999px;background:#0f1420;overflow:hidden;margin-top:10px;border:1px solid var(--stroke)}
+    .bar>span{display:block;height:100%;background:linear-gradient(90deg, #2af598, #009efd)}
+
+    .prog{display:flex;gap:8px;margin-top:14px}
+    .step{flex:1;padding:12px;border-radius:12px;background:#101521;border:1px solid var(--stroke)}
+    .step .t{font-size:12px;color:var(--muted)}
+    .step .s{margin-top:6px;font-size:13px;font-weight:700}
+    .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--amber)}
+    .good .dot{background:var(--green)}
+
+    .feed{margin-top:14px}
+    .row{display:flex;gap:10px;padding:12px;border-bottom:1px solid var(--stroke)}
+    .ico{width:36px;height:36px;border-radius:8px;background:#0f1420;display:grid;place-items:center;font-size:16px}
+    .row h3{margin:0;font-size:14px}
+    .row p{margin:4px 0 0;color:var(--muted);font-size:12px}
+    .tx{color:var(--green);font-weight:700}
+
+    .cta{position:sticky;bottom:10px;margin-top:16px;display:flex;gap:10px}
+    .cta button{flex:1;padding:14px;border-radius:12px;border:1px solid var(--stroke);background:var(--panel);color:var(--fg);font-weight:800}
+    .cta .primary{background:linear-gradient(135deg,#22d1ee,#6a7cfe);border-color:transparent;color:white;box-shadow:0 10px 32px rgba(34,209,238,.25)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hdr">
+      <div class="logo"></div>
+      <div>
+        <h1>x402 Novanet</h1>
+        <div class="sub">Agentic Payments • Mobile Dashboard</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="k">Daily budget used</div>
+        <div class="v">12%</div>
+        <div class="bar"><span style="width:12%"></span></div>
+      </div>
+      <div class="card">
+        <div class="k">Risk gate</div>
+        <div class="v ok">Passed</div>
+        <div class="k">Confidence 95%</div>
+      </div>
+    </div>
+
+    <div class="prog">
+      <div class="step good"><div class="t">1) Inference</div><div class="s"><span class="dot"></span>Authorized</div></div>
+      <div class="step good"><div class="t">2) zkML Proof</div><div class="s"><span class="dot"></span>Verified</div></div>
+      <div class="step good"><div class="t">3) Attestation</div><div class="s"><span class="dot"></span>Bound</div></div>
+      <div class="step good"><div class="t">4) Anchor</div><div class="s"><span class="dot"></span>On‑chain</div></div>
+      <div class="step good"><div class="t">5) Payment</div><div class="s"><span class="dot"></span>Paid</div></div>
+    </div>
+
+    <div class="card feed">
+      <div class="row">
+        <div class="ico">🧠</div>
+        <div>
+          <h3>AI decision</h3>
+          <p>Budget, risk, category, velocity → <strong>Authorize</strong></p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="ico">🧩</div>
+        <div>
+          <h3>zkML proof</h3>
+          <p>proofHash bound to attestation</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="ico">🔗</div>
+        <div>
+          <h3>Attestation</h3>
+          <p>intentHash + acceptsHash bind to payment</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="ico">⛓️</div>
+        <div>
+          <h3>On‑chain anchor</h3>
+          <p>Verified: <span class="tx">0x…1615a</span></p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="ico">💳</div>
+        <div>
+          <h3>USDC payment</h3>
+          <p>Paid: <span class="tx">0x…ad75a</span></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta">
+      <button onclick="alert('Visual mock only — use /static/x402-demo.html for the live flow')">View Attestation</button>
+      <button class="primary" onclick="alert('Visual mock only — use /static/x402-demo.html for the live flow')">Run Live Demo</button>
+    </div>
+  </div>
+</body>
+<script>
+// no-op (visual mock)
+</script>
+</html>
+

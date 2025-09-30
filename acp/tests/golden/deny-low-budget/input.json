@@ -1,0 +1,11 @@
+{
+  "test_name": "deny-low-budget",
+  "description": "Insufficient budget - should deny",
+  "authorization_params": {
+    "budget_remaining": 30.0,
+    "merchant_trust": 0.95,
+    "amount": 45.0,
+    "category_score": 0.8,
+    "velocity": 2
+  }
+}

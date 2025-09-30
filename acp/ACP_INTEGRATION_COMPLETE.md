@@ -280,7 +280,7 @@ curl -X POST http://localhost:9006/checkout_sessions/cs_fa83ff989de2e2eb2bdc6f99
 
 ### For Developers
 - **API Reference**: `/home/hshadab/agentkit/acp/services/acp-openai-server.js`
-- **GPT-5 Parser**: `/home/hshadab/agentkit/acp/services/gpt4-rule-parser.js`
+- **GPT-5 Parser**: `/home/hshadab/agentkit/acp/services/gpt5-rule-parser.js`
 - **UI Code**: `/home/hshadab/agentkit/acp/static/index.html`
 - **Integration Guide**: This document
 

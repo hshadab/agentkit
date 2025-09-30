@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>x402 AgentKit • Demo (Mock)</title>
+  <link rel="stylesheet" href="/static/replit-mock/styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav">
+      <div class="brand">x402 AgentKit</div>
+      <div>
+        <a href="/static/replit-mock/index.html">Home</a>
+        <a class="active" href="/static/replit-mock/demo.html">Demo</a>
+        <a href="/static/replit-mock/attestation.html">Attestation</a>
+        <a href="/static/replit-mock/anchor.html">Anchor</a>
+        <a href="/static/replit-mock/payment.html">Payment</a>
+      </div>
+      <a class="btn" href="/static/x402-demo.html">Live Demo</a>
+    </div>
+
+    <div class="lane">
+      <div class="step">
+        <h3>1) AI Inference</h3>
+        <div class="muted">Model evaluates budget, risk, category, velocity; outputs decision.</div>
+        <div class="mono">decision: authorize
+confidence: 95%</div>
+      </div>
+      <div class="step">
+        <h3>2) zkML Proof</h3>
+        <div class="muted">Zero‑knowledge proof that the exact model ran on intended inputs.</div>
+        <div class="mono">proofHash: 0x…c4a6</div>
+      </div>
+      <div class="step">
+        <h3>3) x402 Attestation</h3>
+        <div class="muted">Binds <strong>proofHash</strong>, <strong>intentHash</strong>, <strong>acceptsHash</strong>; EIP‑712 signed.</div>
+        <div class="mono">intentHash: 0x…f8687
+acceptsHash: 0x…26d1</div>
+      </div>
+      <div class="step">
+        <h3>4) On‑Chain Anchor</h3>
+        <div class="muted">Groth16 verification on Base Sepolia confirms public signals.</div>
+        <div class="mono">anchor tx: 0x…1615a</div>
+      </div>
+      <div class="step">
+        <h3>5) USDC Payment</h3>
+        <div class="muted">EIP‑3009 TransferWithAuthorization; server pays gas.</div>
+        <div class="mono">payment tx: 0x…ad75a</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+

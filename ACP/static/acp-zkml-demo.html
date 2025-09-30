@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ACP + zkML 5-Step Demo</title>
+  <style>
+    body{margin:0;background:#0e1117;color:#e6edf3;font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    .wrap{max-width:960px;margin:20px auto;padding:0 16px}
+    .card{background:#111827;border:1px solid #1f2937;border-radius:10px;margin:12px 0}
+    .card h2{margin:0;padding:16px;border-bottom:1px solid #1f2937}
+    .card .content{padding:16px}
+    button{background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:10px 14px;cursor:pointer}
+    .row{display:flex;gap:12px;align-items:center}
+    code{background:#0b1220;border:1px solid #1f2937;border-radius:6px;padding:2px 6px}
+    .ok{color:#22c55e}
+    .muted{color:#9aa4af}
+  </style>
+  <script>
+    async function post(url, body){
+      const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+      const j = await r.json(); if(!r.ok) throw new Error(JSON.stringify(j)); return j;
+    }
+    async function get(url){ const r=await fetch(url); const j=await r.json(); if(!r.ok) throw new Error(JSON.stringify(j)); return j; }
+    let vt=null, csn=null;
+    async function step1(){ document.querySelector('#s1').textContent='AI authorized (mock)'; }
+    async function step2(){ document.querySelector('#s2').textContent='zkML proof generated (mock/external)'; }
+    async function step3(){
+      const body={
+        payment_method:{type:'card',card_number_type:'fpan',number:'4242424242424242',exp_month:'11',exp_year:'2026',name:'Jane Doe',cvc:'223',checks_performed:['avs','cvv'],iin:'424242',display_card_funding_type:'credit',display_brand:'visa',display_last4:'4242',metadata:{}},
+        allowance:{reason:'one_time',max_amount:100, currency:'usd', checkout_session_id:'csn_pending', merchant_id:'acme',expires_at:new Date(Date.now()+3600_000).toISOString()},
+        risk_signals:[{type:'card_testing',score:1,action:'authorized'}],
+        metadata:{source:'demo'}
+      };
+      const j = await post('/agentic_commerce/delegate_payment', body);
+      vt=j.id; document.querySelector('#s3').textContent='vt token: '+vt;
+    }
+    async function step4(){
+      document.querySelector('#s4').textContent='Anchored on-chain (see messages in session complete)';
+    }
+    async function step5(){
+      // create session
+      csn = await post('/checkout_sessions', { items:[{id:'item_1', quantity:1}], currency:'usd' });
+      const j = await post(`/checkout_sessions/${csn.id}/complete`, { payment_data:{ token: vt }, buyer:{ name:'John' } });
+      document.querySelector('#s5').textContent='Completed: '+j.status+' / order '+j?.order?.id;
+      document.querySelector('#out').textContent=JSON.stringify(j, null, 2);
+    }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <h1>ACP + zkML 5-Step Demo</h1>
+    <div class="muted">AI → zkML → Delegate Token → On-Chain Verify → Checkout Complete</div>
+
+    <div class="card"><h2>1) AI Inference</h2><div class="content row"><button onclick="step1()">Run</button><div id="s1" class="ok"></div></div></div>
+    <div class="card"><h2>2) zkML Proof</h2><div class="content row"><button onclick="step2()">Generate</button><div id="s2" class="ok"></div></div></div>
+    <div class="card"><h2>3) Delegate Payment (vt_)</h2><div class="content row"><button onclick="step3()">Tokenize</button><div id="s3" class="ok"></div></div></div>
+    <div class="card"><h2>4) On-Chain Verify</h2><div class="content row"><button onclick="step4()">Verify</button><div id="s4" class="ok"></div></div></div>
+    <div class="card"><h2>5) Checkout Complete</h2><div class="content row"><button onclick="step5()">Complete</button><div id="s5" class="ok"></div></div></div>
+
+    <div class="card"><h2>Response</h2><div class="content"><pre id="out" style="white-space:pre-wrap"></pre></div></div>
+  </div>
+</body>
+</html>
+

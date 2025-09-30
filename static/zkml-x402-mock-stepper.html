@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>x402 AgentKit • Stepper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"> 
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0b0e14; --panel:#0f1420; --stroke:#1b2433; --fg:#e8eefc; --muted:#a6b2c9; --accent:#5ab0ff; --ok:#2ad4a9 }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    .wrap{max-width:1120px;margin-inline:auto;padding:16px}
+    .header{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--stroke)}
+    .title{font-weight:800}
+    .btn{padding:10px 14px;border-radius:10px;border:1px solid var(--stroke);background:var(--panel);color:var(--fg);font-weight:700}
+    .lane{display:grid;gap:12px;margin-top:16px}
+    @media(min-width:980px){.lane{grid-template-columns:repeat(5,1fr)}}
+    .step{background:var(--panel);border:1px solid var(--stroke);border-radius:14px;min-height:220px;padding:14px;display:flex;flex-direction:column;gap:8px}
+    .step h3{margin:0;font-size:14px}
+    .muted{color:var(--muted);font-size:13px}
+    .mono{font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; color:#cfe5ff; background:#0c111b; border:1px solid #1a2231; border-radius:8px; padding:8px; margin-top:auto; white-space:pre-line}
+    .ok{color:#baf3e6}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div class="title">x402 AgentKit • Stepper</div>
+      <a class="btn" href="/static/x402-demo.html">Live Demo</a>
+    </div>
+    <div class="lane">
+      <div class="step">
+        <h3>1) AI Inference</h3>
+        <div class="muted">Model evaluates budget, risk, category, velocity; outputs decision.</div>
+        <div class="mono">decision: authorize
+confidence: 95%</div>
+      </div>
+      <div class="step">
+        <h3>2) zkML Proof</h3>
+        <div class="muted">Zero‑knowledge proof that the exact model ran on intended inputs.</div>
+        <div class="mono">proofHash: 0x…c4a6</div>
+      </div>
+      <div class="step">
+        <h3>3) x402 Attestation</h3>
+        <div class="muted">Binds <strong>proofHash</strong>, <strong>intentHash</strong>, <strong>acceptsHash</strong>; EIP‑712 signed.</div>
+        <div class="mono">intentHash: 0x…f8687
+acceptsHash: 0x…26d1</div>
+      </div>
+      <div class="step">
+        <h3>4) On‑Chain Anchor</h3>
+        <div class="muted">Groth16 verification on Base Sepolia confirms public signals.</div>
+        <div class="mono">anchor tx: 0x…1615a</div>
+      </div>
+      <div class="step">
+        <h3>5) USDC Payment</h3>
+        <div class="muted">EIP‑3009 TransferWithAuthorization; server pays gas.</div>
+        <div class="mono">payment tx: 0x…ad75a</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>x402 AgentKit • Attestation (Mock)</title>
+  <link rel="stylesheet" href="/static/replit-mock/styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav">
+      <div class="brand">x402 AgentKit</div>
+      <div>
+        <a href="/static/replit-mock/index.html">Home</a>
+        <a href="/static/replit-mock/demo.html">Demo</a>
+        <a class="active" href="/static/replit-mock/attestation.html">Attestation</a>
+        <a href="/static/replit-mock/anchor.html">Anchor</a>
+        <a href="/static/replit-mock/payment.html">Payment</a>
+      </div>
+      <a class="btn" href="/static/x402-demo.html">Live Demo</a>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Attestation Summary</h3>
+        <div class="kv">
+          <div>agentId</div><div>agent-demo-1</div>
+          <div>modelId</div><div>risk_v1</div>
+          <div>authorized</div><div>true</div>
+          <div>confidence</div><div>95</div>
+          <div>issuedAt</div><div>…</div>
+          <div>expiresAt</div><div>…</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Bindings</h3>
+        <div class="mono">proofHash: 0x…c4a6
+intentHash: 0x…f8687
+acceptsHash: 0x…26d1</div>
+        <span class="pill">EIP‑712 signature</span>
+      </div>
+      <div class="card">
+        <h3>Intent (HTTP)</h3>
+        <table class="table">
+          <thead><tr><th>Key</th><th>Value</th></tr></thead>
+          <tbody>
+            <tr><td>method</td><td>POST</td></tr>
+            <tr><td>path</td><td>/x402/pay</td></tr>
+            <tr><td>body</td><td>{ intent: "demo" }</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="footer">Visual mock • For the live flow, see /static/x402-demo.html</div>
+  </div>
+</body>
+</html>
+

@@ -8,7 +8,7 @@
 cd /home/hshadab/agentkit/acp
 
 # Start GPT-5 Parser
-node services/gpt4-rule-parser.js > logs/gpt5-parser.log 2>&1 &
+node services/gpt5-rule-parser.js > logs/gpt5-parser.log 2>&1 &
 
 # Start ACP OpenAI Server
 node services/acp-openai-server.js > logs/acp-openai.log 2>&1 &
@@ -335,13 +335,13 @@ curl -X POST http://localhost:9006/checkout_sessions/cs_abc123/complete \
 lsof -i :9005 :9006 :9001
 
 # Kill existing processes
-pkill -f gpt4-rule-parser
+pkill -f gpt5-rule-parser
 pkill -f acp-openai-server
 pkill -f proof-service
 
 # Restart
 cd /home/hshadab/agentkit/acp
-node services/gpt4-rule-parser.js > logs/gpt5-parser.log 2>&1 &
+node services/gpt5-rule-parser.js > logs/gpt5-parser.log 2>&1 &
 node services/acp-openai-server.js > logs/acp-openai.log 2>&1 &
 node services/proof-service.js > logs/proof-service.log 2>&1 &
 ```

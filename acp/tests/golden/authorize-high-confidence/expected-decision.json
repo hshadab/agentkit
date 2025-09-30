@@ -1,0 +1,32 @@
+{
+  "authorized": true,
+  "confidence": 1.0,
+  "score": 100,
+  "checks": {
+    "budget": {
+      "passed": true,
+      "weight": 25,
+      "reason": "Budget remaining ($500.00) >= amount ($45.00)"
+    },
+    "trust": {
+      "passed": true,
+      "weight": 25,
+      "reason": "Merchant trust (0.95) >= threshold (0.5)"
+    },
+    "amount": {
+      "passed": true,
+      "weight": 20,
+      "reason": "Amount ($45.00) <= 50% of budget ($250.00)"
+    },
+    "category": {
+      "passed": true,
+      "weight": 15,
+      "reason": "Category score (0.8) > threshold (0.5)"
+    },
+    "velocity": {
+      "passed": true,
+      "weight": 15,
+      "reason": "Velocity (2) < limit (10)"
+    }
+  }
+}

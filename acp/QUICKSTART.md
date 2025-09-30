@@ -8,7 +8,7 @@
 cd /home/hshadab/agentkit/acp
 
 # Start GPT-5 rule parser (Port 9005)
-node services/gpt4-rule-parser.js > logs/gpt5-parser.log 2>&1 &
+node services/gpt5-rule-parser.js > logs/gpt5-parser.log 2>&1 &
 
 # Start ACP OpenAI server (Port 9006)
 node services/acp-openai-server.js > logs/acp-openai.log 2>&1 &
@@ -125,12 +125,12 @@ curl http://localhost:9001/health  # Proof service
 lsof -i :9005 :9006 :9001
 
 # Kill if needed
-pkill -f gpt4-rule-parser
+pkill -f gpt5-rule-parser
 pkill -f acp-openai-server
 
 # Restart
 cd /home/hshadab/agentkit/acp
-node services/gpt4-rule-parser.js > logs/gpt5-parser.log 2>&1 &
+node services/gpt5-rule-parser.js > logs/gpt5-parser.log 2>&1 &
 node services/acp-openai-server.js > logs/acp-openai.log 2>&1 &
 ```
 

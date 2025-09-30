@@ -1,0 +1,24 @@
+{
+  "name": "acp-zkml-demo",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server/acp-server.js",
+    "dev": "node --watch server/acp-server.js"
+  },
+  "dependencies": {
+    "snarkjs": "^0.7.3",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "axios": "^1.7.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.4",
+    "express": "^4.19.2",
+    "morgan": "^1.10.0",
+    "stripe": "^16.0.0",
+    "uuid": "^9.0.1",
+    "solc": "^0.8.17"
+  }
+}

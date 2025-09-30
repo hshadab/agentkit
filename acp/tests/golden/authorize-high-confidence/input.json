@@ -1,0 +1,11 @@
+{
+  "test_name": "authorize-high-confidence",
+  "description": "High trust merchant, sufficient budget, reasonable amount - should authorize",
+  "authorization_params": {
+    "budget_remaining": 500.0,
+    "merchant_trust": 0.95,
+    "amount": 45.0,
+    "category_score": 0.8,
+    "velocity": 2
+  }
+}

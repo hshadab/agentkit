@@ -17,7 +17,7 @@ Integrate OpenAI's GPT-4 with our ACP × JOLT-Atlas demo to create the world's f
 - ✅ Installed OpenAI SDK (`npm install openai`)
 
 ### 3. GPT-4 Rule Parser Service
-- ✅ Created `services/gpt4-rule-parser.js` (Port 9005)
+- ✅ Created `services/gpt5-rule-parser.js` (Port 9005)
 - ✅ Implemented natural language → structured rules parsing
 - ✅ Added pattern-matching fallback for demo
 - ✅ Created 2 endpoints:
@@ -74,7 +74,7 @@ curl -X POST http://localhost:9005/parse-rules \
 ### Phase 1: Fix & Test Rule Parser (30 mins)
 1. Regenerate OpenAI API key at https://platform.openai.com/api-keys
 2. Update `.env` with new key
-3. Restart service: `node services/gpt4-rule-parser.js`
+3. Restart service: `node services/gpt5-rule-parser.js`
 4. Test with example queries
 5. Verify both GPT-4 and pattern-matching fallback work
 

@@ -301,7 +301,7 @@ app.post('/convert-to-model-params', async (req, res) => {
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
-    service: 'gpt4-rule-parser',
+    service: 'gpt5-rule-parser',
     openai_configured: !!OPENAI_API_KEY && !OPENAI_API_KEY.includes('your-key'),
     model: 'gpt-4',
     uptime: process.uptime()

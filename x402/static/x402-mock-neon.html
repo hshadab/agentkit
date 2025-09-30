@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>x402 Novanet • Neon Timeline</title>
+  <style>
+    :root {
+      --bg: #0b0f1a;
+      --fg: #e6f0ff;
+      --muted: #9fb2d6;
+      --accentA: #7c4dff;
+      --accentB: #00e1ff;
+      --accentC: #ff8a00;
+      --ok: #10d28a;
+      --warn: #ffd166;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif; }
+    .hero {
+      position: relative; padding: 6vh 5vw 3vh; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .bursts::before, .bursts::after{
+      content: ""; position: absolute; inset: -30vmax; z-index: -1; filter: blur(70px);
+      background: radial-gradient(60vmax 60vmax at 20% 10%, rgba(124,77,255,.22), transparent 60%),
+                  radial-gradient(50vmax 50vmax at 80% 0%, rgba(0,225,255,.18), transparent 60%),
+                  radial-gradient(40vmax 40vmax at 50% 100%, rgba(255,138,0,.14), transparent 60%);
+      animation: float 18s ease-in-out infinite alternate;
+    }
+    .bursts::after { animation-duration: 24s; opacity: .8; }
+    @keyframes float { from { transform: translateY(-3vh) } to { transform: translateY(3vh) } }
+
+    .title { font-size: clamp(28px, 6vw, 48px); font-weight: 800; letter-spacing: -0.02em; }
+    .subtitle { margin-top: .6rem; color: var(--muted); font-size: clamp(14px, 3.5vw, 18px); }
+    .chips { margin-top: 1rem; display: flex; gap: .6rem; flex-wrap: wrap; }
+    .chip { padding: .4rem .7rem; border-radius: 999px; font-size: 12px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); }
+    .chip.ok { background: rgba(16,210,138,.12); border-color: rgba(16,210,138,.4); color: #9ff4d3; }
+
+    .timeline { position: relative; padding: 2vh 5vw 10vh; }
+    .step { position: relative; display: grid; grid-template-columns: 56px 1fr; gap: 14px; padding: 16px; margin: 18px 0; border-radius: 16px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); backdrop-filter: blur(4px); }
+    .icon { width: 56px; height: 56px; border-radius: 12px; display: grid; place-items: center; font-size: 26px; background: linear-gradient(135deg, rgba(124,77,255,.25), rgba(0,225,255,.18)); border: 1px solid rgba(255,255,255,.12); }
+    .step h3 { margin: 0; font-size: 16px; letter-spacing: .02em; }
+    .step p { margin: 6px 0 0; font-size: 13px; color: var(--muted); line-height: 1.45; }
+    .pill { display: inline-block; margin-top: 8px; padding: 4px 8px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); font-size: 12px; }
+    .tx { color: var(--ok); font-weight: 600; }
+
+    .footer { position: sticky; bottom: 0; padding: 10px 5vw 16px; background: linear-gradient(180deg, rgba(11,15,26,0), rgba(11,15,26,.95)); display: flex; gap: 12px; }
+    .cta { flex: 1; padding: 14px 16px; border-radius: 14px; background: linear-gradient(135deg, var(--accentA), var(--accentB)); border: none; color: white; font-weight: 700; font-size: 16px; letter-spacing: .02em; box-shadow: 0 10px 30px rgba(124,77,255,.35), 0 8px 18px rgba(0,225,255,.2); }
+    .ghost { padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,.06); color: var(--fg); border: 1px solid rgba(255,255,255,.12); font-weight: 700; }
+
+    @media (min-width: 880px) {
+      .timeline { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .step { margin: 10px 0; }
+      .footer { position: static; background: none; }
+    }
+  </style>
+</head>
+<body>
+  <section class="hero bursts">
+    <div class="title">x402 Novanet</div>
+    <div class="subtitle">Trustless Agentic Payments • AI + zkML + EIP‑3009</div>
+    <div class="chips">
+      <span class="chip">zkML Attestation</span>
+      <span class="chip">Groth16 Anchor</span>
+      <span class="chip">USDC • Base Sepolia</span>
+      <span class="chip ok">Auto‑pay after on‑chain verify</span>
+    </div>
+  </section>
+
+  <section class="timeline">
+    <div class="step">
+      <div class="icon">🧠</div>
+      <div>
+        <h3>1) AI Inference</h3>
+        <p>The agent evaluates budget, risk, category, and velocity with the approved model.</p>
+        <span class="pill">Decision: <strong>Authorize</strong> • Confidence: <strong>95%</strong></span>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="icon">🧩</div>
+      <div>
+        <h3>2) zkML Proof</h3>
+        <p>Generates a zero‑knowledge proof that the exact model ran on the intended inputs (NovaNet/JOLT‑Atlas).</p>
+        <span class="pill">Proof: <code>proofHash</code> bound</span>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="icon">🔗</div>
+      <div>
+        <h3>3) x402 Attestation</h3>
+        <p>Binds the zkML proof to this payment via <em>proofHash</em>, <em>intentHash</em>, and <em>acceptsHash</em>. Tamper‑evident and portable.</p>
+        <span class="pill">EIP‑712 attestation</span>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="icon">⛓️</div>
+      <div>
+        <h3>4) On‑Chain Anchor</h3>
+        <p>Groth16 verification on Base Sepolia confirms the decision’s public signals. Creates an immutable audit trail.</p>
+        <span class="pill">Verified: <span class="tx">0x…</span></span>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="icon">💳</div>
+      <div>
+        <h3>5) USDC Payment</h3>
+        <p>After the anchor confirms, x402 submits an EIP‑3009 TransferWithAuthorization to USDC. The server pays gas. Funds move.</p>
+        <span class="pill">Paid: <span class="tx">0x…</span></span>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <button class="cta" onclick="alert('This mock is visual only. The live demo remains at /static/x402-demo.html')">Try Live Demo</button>
+    <button class="ghost" onclick="window.scrollTo({top:0, behavior:'smooth'})">Top</button>
+  </div>
+
+</body>
+</html>
+

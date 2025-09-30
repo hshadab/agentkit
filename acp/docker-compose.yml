@@ -1,0 +1,156 @@
+version: '3.8'
+
+services:
+  # GPT-5 Rule Parser - Parses natural language spending rules
+  gpt5-parser:
+    image: node:18-alpine
+    container_name: acp-gpt5-parser
+    working_dir: /app
+    command: node services/gpt5-rule-parser.js
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "9005:9005"
+    environment:
+      - PORT=9005
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-5-2025-08-07}
+      - NODE_ENV=${NODE_ENV:-development}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9005/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - acp-network
+
+  # Proof Service - Generates zkML authorization proofs
+  proof-service:
+    image: node:18-alpine
+    container_name: acp-proof-service
+    working_dir: /app
+    command: node services/proof-service.js
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ../jolt-atlas:/jolt-atlas:ro
+    ports:
+      - "9001:9001"
+    environment:
+      - PORT=9001
+      - JOLT_BINARY=/jolt-atlas/target/release/llm_prover
+      - NODE_ENV=${NODE_ENV:-development}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - acp-network
+
+  # ACP OpenAI Server - Main ACP implementation
+  acp-server:
+    image: node:18-alpine
+    container_name: acp-openai-server
+    working_dir: /app
+    command: node services/acp-openai-server.js
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "9006:9006"
+    environment:
+      - PORT=9006
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+      - PROOF_SERVICE_URL=http://proof-service:9001
+      - GPT5_PARSER_URL=http://gpt5-parser:9005
+      - NODE_ENV=${NODE_ENV:-development}
+    depends_on:
+      gpt5-parser:
+        condition: service_healthy
+      proof-service:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9006/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+    networks:
+      - acp-network
+
+  # Groth16 Verifier - On-chain proof verification
+  groth16-verifier:
+    image: node:18-alpine
+    container_name: acp-groth16-verifier
+    working_dir: /app
+    command: node api/groth16-jolt-backend-real.js
+    volumes:
+      - ..:/app
+      - /app/node_modules
+    ports:
+      - "3004:3004"
+    environment:
+      - PORT=3004
+      - ETH_RPC=${ETH_RPC:-https://eth-sepolia.public.blastapi.io}
+      - GROTH16_PRIVATE_KEY=${GROTH16_PRIVATE_KEY}
+      - GROTH16_VERIFIER_ADDRESS=${GROTH16_VERIFIER_ADDRESS:-0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944}
+      - NODE_ENV=${NODE_ENV:-development}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3004/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      - acp-network
+
+  # Web UI - Static file server
+  web-ui:
+    image: python:3.11-alpine
+    container_name: acp-web-ui
+    working_dir: /app
+    command: python3 -m http.server 8000 --directory .
+    volumes:
+      - ./static:/app:ro
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    networks:
+      - acp-network
+
+  # Nginx Reverse Proxy (optional, for production)
+  nginx:
+    image: nginx:alpine
+    container_name: acp-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - acp-server
+      - web-ui
+    restart: unless-stopped
+    networks:
+      - acp-network
+    profiles:
+      - production
+
+networks:
+  acp-network:
+    driver: bridge
+    name: acp-network
+
+volumes:
+  node_modules:
+    name: acp-node-modules

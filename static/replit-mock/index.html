@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>x402 AgentKit • Landing (Mock)</title>
+  <link rel="stylesheet" href="/static/replit-mock/styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav">
+      <div class="brand">x402 AgentKit</div>
+      <div>
+        <a class="active" href="/static/replit-mock/index.html">Home</a>
+        <a href="/static/replit-mock/demo.html">Demo</a>
+        <a href="/static/replit-mock/attestation.html">Attestation</a>
+        <a href="/static/replit-mock/anchor.html">Anchor</a>
+        <a href="/static/replit-mock/payment.html">Payment</a>
+      </div>
+      <a class="btn" href="/static/x402-demo.html">Live Demo</a>
+    </div>
+
+    <div class="hero">
+      <h1>Trustless Agentic Payments</h1>
+      <div class="sub">AI + zkML attestation bound to x402, anchored on‑chain, and settled in USDC (EIP‑3009).</div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>AI + zkML</h3>
+        <div>Approved model evaluates budget, risk, category, velocity. A zero‑knowledge proof certifies the decision.</div>
+        <div class="mono">proofHash: 0x…c4a6</div>
+        <span class="pill ok">Authorized • Confidence 95%</span>
+      </div>
+      <div class="card">
+        <h3>x402 Attestation</h3>
+        <div>Binds <strong>proofHash</strong> (zkML), <strong>intentHash</strong> (method+path+body), <strong>acceptsHash</strong> (policy).</div>
+        <div class="mono">intentHash: 0x…f8687</div>
+        <span class="pill">EIP‑712 typed‑data</span>
+      </div>
+      <div class="card">
+        <h3>On‑Chain & USDC</h3>
+        <div>Groth16 verification on Base Sepolia confirms the decision. Then EIP‑3009 settles USDC. Server pays gas.</div>
+        <div class="mono">anchor: 0x…1615a
+paid: 0x…ad75a</div>
+        <span class="pill ok">Auto‑pay after anchor</span>
+      </div>
+    </div>
+
+    <div class="footer">Visual mock • For the live flow, see /static/x402-demo.html</div>
+  </div>
+</body>
+</html>
+

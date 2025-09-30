@@ -201,8 +201,17 @@ Expected: Denied at 40% confidence → No payment processed
 
 **Full Guide**: See [USAGE_GUIDE.md](acp/USAGE_GUIDE.md) for 6 detailed examples with expected outcomes
 
-- **Documentation**: See `acp/README.md`, `acp/QUICKSTART.md`, and `acp/INTEGRATION_GUIDE.md`
-- **Use Cases**: Personal finance agents, corporate procurement, travel booking, IoT micropayments
+#### Documentation
+
+- **[USAGE_GUIDE.md](acp/USAGE_GUIDE.md)** - Complete usage guide with sample prompts
+- **[VERIFICATION.md](acp/VERIFICATION.md)** - Independent verification steps (no marketing)
+- **[ACP_ENDPOINTS.md](acp/ACP_ENDPOINTS.md)** - Complete API reference with state machine
+- **[DOCKER.md](acp/DOCKER.md)** - Docker setup (one-command deployment)
+- **[contracts/README.md](acp/contracts/README.md)** - Smart contract documentation
+- **[tests/golden/README.md](acp/tests/golden/README.md)** - Deterministic test corpus
+
+#### Use Cases
+Personal finance agents, corporate procurement, travel booking, IoT micropayments
 
 ### x402 Proof‑Gated Demo (zkML + zkEngine)
 - Location: `x402/`

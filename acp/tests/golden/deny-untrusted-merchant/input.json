@@ -1,0 +1,11 @@
+{
+  "test_name": "deny-untrusted-merchant",
+  "description": "Low trust merchant - should deny",
+  "authorization_params": {
+    "budget_remaining": 500.0,
+    "merchant_trust": 0.2,
+    "amount": 45.0,
+    "category_score": 0.8,
+    "velocity": 2
+  }
+}

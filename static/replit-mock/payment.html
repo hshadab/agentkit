@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>x402 AgentKit • Payment (Mock)</title>
+  <link rel="stylesheet" href="/static/replit-mock/styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav">
+      <div class="brand">x402 AgentKit</div>
+      <div>
+        <a href="/static/replit-mock/index.html">Home</a>
+        <a href="/static/replit-mock/demo.html">Demo</a>
+        <a href="/static/replit-mock/attestation.html">Attestation</a>
+        <a href="/static/replit-mock/anchor.html">Anchor</a>
+        <a class="active" href="/static/replit-mock/payment.html">Payment</a>
+      </div>
+      <a class="btn" href="/static/x402-demo.html">Live Demo</a>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>USDC Transfer (EIP‑3009)</h3>
+        <div class="muted">transferWithAuthorization; server pays gas; replay‑safe via nonce.</div>
+        <div class="mono">from: 0x…e408a
+to:   0x…e408a
+value: 10000 (6dp)
+validAfter: …
+validBefore: …
+nonce: 0x…</div>
+      </div>
+      <div class="card">
+        <h3>On‑chain Result</h3>
+        <div class="mono">txHash: 0x…ad75a
+explorer: https://sepolia.basescan.org/tx/0x…ad75a</div>
+        <span class="pill ok">Completed</span>
+      </div>
+      <div class="card">
+        <h3>EIP‑712 Domain</h3>
+        <div class="mono">{ name: 'USDC', version: '2',
+chainId: 84532,
+verifyingContract: 0x036C…CF7e }</div>
+      </div>
+    </div>
+
+    <div class="footer">Visual mock • For the live flow, see /static/x402-demo.html</div>
+  </div>
+</body>
+</html>
+

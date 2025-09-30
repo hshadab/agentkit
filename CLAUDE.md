@@ -5,14 +5,15 @@ AgentKit is a **100% REAL production framework** for building verifiable AI agen
 
 **Latest Update**: 2025-09-30 - Completed 100% REAL ACP × GPT-5 × zkML integration. ZERO mocks, ZERO simulations, ZERO fake data. Every component uses production APIs and real cryptographic proofs.
 
-## ⚠️ CRITICAL: 100% Real Implementation Policy
-**ALL components are now 100% REAL. No exceptions:**
-- ✅ Real GPT-5 API calls (OpenAI gpt-5-2025-08-07)
-- ✅ Real JOLT-Atlas Rust binary (cryptographic SNARKs)
-- ✅ Real Stripe payments (PaymentIntents with metadata)
-- ✅ Real on-chain verification (Base Sepolia transactions)
-- ✅ Real blockchain explorer links (verifiable addresses)
-- ✅ Real authorization logic (deterministic, not random)
+## ⚠️ Implementation Policy: Show, Don't Tell
+**Verification Over Marketing**: Every claim is independently reproducible.
+
+- ✅ Real GPT-5 API calls → See logs for model name + token usage
+- ✅ Real JOLT-Atlas binary → Binary exists, executes, generates proofs
+- ✅ Real Stripe payments → PaymentIntent IDs in Stripe Dashboard
+- ✅ Real on-chain verification → Transaction hashes on Basescan
+- ✅ Deterministic authorization → Golden test corpus with byte-for-byte matching
+- 📝 **Verification Guide**: `acp/VERIFICATION.md` - No marketing, just commands
 
 ## 🎯 Core Technologies Stack
 
@@ -25,15 +26,18 @@ AgentKit is a **100% REAL production framework** for building verifiable AI agen
   - **Proof Service** (Port 9001): JOLT-Atlas binary + deterministic authorization
   - **Groth16 Verifier** (Port 3004): On-chain verification (Base Sepolia)
 - **Key Files**:
-  - `acp/services/gpt4-rule-parser.js` - GPT-5 integration
+  - `acp/services/gpt5-rule-parser.js` - GPT-5 integration
   - `acp/services/acp-openai-server.js` - ACP server with Stripe
   - `acp/services/proof-service.js` - Real JOLT binary execution
   - `acp/static/index.html` - UI with Stripe Elements
 - **Documentation**:
-  - `acp/100_PERCENT_REAL.md` - Complete verification guide
-  - `acp/ACP_INTEGRATION_COMPLETE.md` - Technical details
-  - `acp/QUICKSTART.md` - 5-minute setup guide
-- **Status**: ✅ 100% REAL - Zero mocks, production-ready
+  - `acp/VERIFICATION.md` - Independent verification steps (no marketing)
+  - `acp/USAGE_GUIDE.md` - Sample prompts and expected outcomes
+  - `acp/ACP_ENDPOINTS.md` - Complete API reference with state machine
+  - `acp/DOCKER.md` - One-command Docker deployment
+  - `acp/contracts/README.md` - Smart contract documentation
+  - `acp/tests/golden/README.md` - Deterministic test corpus
+- **Status**: Production-ready with independent verification
 
 ### 1. zkEngine - Universal Proof Generation
 - **Language**: Rust compiled to WASM
