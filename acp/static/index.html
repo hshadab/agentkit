@@ -14,7 +14,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background: #000000;
             min-height: 100vh;
             padding: 20px;
             color: white;
@@ -33,15 +33,26 @@
         .header h1 {
             font-size: 2.8em;
             margin-bottom: 10px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #6B46C1;
         }
 
         .header p {
             font-size: 1.2em;
             opacity: 0.8;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .logo-container img {
+            height: 32px;
+            width: auto;
+            object-fit: contain;
         }
 
         /* Workflow Steps Container */
@@ -477,19 +488,13 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🤖 Verifiable Agent Commerce</h1>
-            <p>ACP × JOLT-Atlas: Trustless AI Payment Authorization</p>
-            <div style="margin-top: 15px; padding: 15px; background: rgba(40, 167, 69, 0.1); border: 2px solid rgba(40, 167, 69, 0.3); border-radius: 12px; font-size: 0.9em;">
-                ✅ <strong>Real Components:</strong>
-                GPT-5 API (OpenAI) •
-                JOLT-Atlas Rust Binary •
-                Stripe Payments •
-                Base Sepolia Blockchain
-                <br>
-                <span style="opacity: 0.7; font-size: 0.85em;">
-                    🔗 Contract: <a href="https://sepolia.basescan.org/address/0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944" target="_blank" style="color: #667eea;">0xDCBb...9944</a>
-                </span>
+            <h1>Verifiable Agent Commerce</h1>
+            <div class="logo-container">
+                <img src="https://avatars.githubusercontent.com/u/232693681?s=200&v=4" alt="ACP">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/OpenAI_Logo.svg/1024px-OpenAI_Logo.svg.png?20230731013808" alt="OpenAI">
+                <img src="https://cdn.prod.website-files.com/65d52b07d5bc41614daa723f/665df12739c532f45b665fe7_logo-novanet.svg" alt="Novanet">
             </div>
+            <p>Trustless AI Payment Authorization</p>
         </div>
 
         <!-- Progress Bar -->
