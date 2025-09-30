@@ -18,7 +18,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const PORT = process.env.PROOF_SERVICE_PORT || 9001;
-const JOLT_BINARY = process.env.JOLT_BINARY_PATH || '../jolt-atlas/target/release/llm_prover';
+const JOLT_BINARY = process.env.JOLT_BINARY_PATH || path.join(__dirname, '../../jolt-atlas/target/debug/llm_prover');
 const MODEL_PATH = process.env.JOLT_MODEL_PATH || path.join(__dirname, '../models/authorization_model.onnx');
 
 // In-memory store for proof sessions
@@ -279,10 +279,13 @@ async function generateRealJoltProof(proofInput) {
           const proofContent = await fs.readFile(proofFile, 'utf8');
           const proofJson = JSON.parse(proofContent);
 
-          // Extract proof hex from JOLT output
-          const proofHex = proofJson.proof || proofJson.snark_proof || crypto.randomBytes(32).toString('hex');
+          // Extract proof bytes from JOLT output and convert to hex
+          const proofBytes = proofJson.proof_bytes || [];
+          const proofHex = Buffer.from(proofBytes).toString('hex');
 
-          console.log(`✅ REAL JOLT proof generated: ${proofHex.substring(0, 40)}...`);
+          console.log(`✅ REAL JOLT proof generated: ${proofBytes.length} bytes`);
+          console.log(`   Decision: ${proofJson.decision} Confidence: ${proofJson.confidence}%`);
+          console.log(`   Proof hash: ${proofHex.substring(0, 40)}...`);
 
           resolve('0xjolt_real_' + proofHex);
 
