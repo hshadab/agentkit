@@ -590,15 +590,6 @@
                     <span>💳</span> Payment Method (Real Stripe - Test Mode)
                 </h3>
                 <div class="input-group">
-                    <div style="margin-bottom: 15px; padding: 10px; background: rgba(102, 126, 234, 0.1); border-radius: 8px;">
-                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                            <input type="checkbox" id="autoFillCard" checked style="width: 20px; height: 20px; cursor: pointer;">
-                            <span>🚀 Demo mode (skip real Stripe payment)</span>
-                        </label>
-                        <div style="margin-top: 8px; font-size: 0.85em; opacity: 0.7; margin-left: 30px;">
-                            Uncheck to test real Stripe Elements with card 4242 4242 4242 4242
-                        </div>
-                    </div>
                     <label>Card Information</label>
                     <div id="card-element" style="padding: 12px; background: rgba(0, 0, 0, 0.3); border: 2px solid rgba(40, 167, 69, 0.3); border-radius: 8px; min-height: 40px;"></div>
                     <div id="card-errors" style="color: #ff4444; margin-top: 10px; font-size: 0.9em;"></div>
@@ -828,29 +819,11 @@
                     // Show Stripe card element for payment
                     document.getElementById('stripeCardSection').style.display = 'block';
 
-                    // Check if auto-fill is enabled
-                    const autoFill = document.getElementById('autoFillCard').checked;
-
-                    if (autoFill) {
-                        document.getElementById('result4').innerHTML = `
-                            Status: Auto-filling test card...<br>
-                            Amount: $${amount.toFixed(2)}<br>
-                            🤖 Using test card 4242...
-                        `;
-
-                        // Auto-fill test card and auto-click after short delay
-                        setTimeout(() => {
-                            // Stripe.js handles test card auto-fill internally
-                            // Just trigger the confirm button
-                            document.getElementById('confirmPaymentBtn').click();
-                        }, 1000);
-                    } else {
-                        document.getElementById('result4').innerHTML = `
-                            Status: Waiting for card...<br>
-                            Amount: $${amount.toFixed(2)}<br>
-                            👇 Enter card details below
-                        `;
-                    }
+                    document.getElementById('result4').innerHTML = `
+                        Status: Waiting for card...<br>
+                        Amount: $${amount.toFixed(2)}<br>
+                        👇 Enter card details below
+                    `;
 
                     // Wait for user to confirm payment
                     await new Promise((resolve) => {
@@ -860,42 +833,16 @@
                     try {
                         await updateStep(4, 'active', 'Creating payment method...');
 
-                        let paymentMethod, pmError;
-
-                        // Use test payment method if auto-fill enabled, otherwise use card element
-                        if (autoFill) {
-                            // For auto-fill mode, skip actual Stripe payment (demo mode)
-                            // Show success without calling Stripe API
-                            document.getElementById('stripeCardSection').style.display = 'none';
-                            document.getElementById('result4').innerHTML = `
-                                Status: ✅ Demo Payment Success<br>
-                                Amount: $${amount.toFixed(2)}<br>
-                                Note: Auto-fill mode skips real Stripe<br>
-                                <span style="opacity: 0.7; font-size: 0.85em;">
-                                    Uncheck "Auto-fill" to test real Stripe Elements
-                                </span>
-                            `;
-                            await updateStep(4, 'completed');
-                            updateProgress(80);
-
-                            // Skip to Step 5
-                            paymentData = { state: 'demo', amount: amount };
-                            paymentMethod = null; // Signal to skip
-                        } else {
-                            // Create real Stripe PaymentMethod from card element
-                            const pm = await stripe.createPaymentMethod({
-                                type: 'card',
-                                card: cardElement,
-                            });
-                            paymentMethod = pm.paymentMethod;
-                            pmError = pm.error;
-                        }
+                        // Create real Stripe PaymentMethod from card element
+                        const {paymentMethod, error: pmError} = await stripe.createPaymentMethod({
+                            type: 'card',
+                            card: cardElement,
+                        });
 
                         if (pmError) {
                             throw new Error(pmError.message);
                         }
 
-                        // Only call Stripe backend if we have a real payment method
                         if (paymentMethod) {
                             await updateStep(4, 'active', 'Processing payment with Stripe...');
 
