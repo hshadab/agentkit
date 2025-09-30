@@ -820,23 +820,36 @@
                     document.getElementById('stripeCardSection').style.display = 'block';
 
                     document.getElementById('result4').innerHTML = `
-                        Status: Waiting for card...<br>
+                        Status: Ready for payment...<br>
                         Amount: $${amount.toFixed(2)}<br>
-                        👇 Enter card details below
+                        💳 Use test card: 4242 4242 4242 4242<br>
+                        <span style="opacity: 0.7; font-size: 0.85em;">Auto-submitting in 3 seconds...</span>
                     `;
 
-                    // Wait for user to confirm payment
+                    // Auto-click "Confirm Payment" after 3 seconds
+                    // This gives user time to see the card element, but they don't have to manually enter card
+                    setTimeout(() => {
+                        document.getElementById('confirmPaymentBtn').click();
+                    }, 3000);
+
+                    // Wait for user to confirm payment (or auto-click)
                     await new Promise((resolve) => {
                         window.paymentResolve = resolve;
                     });
 
                     try {
-                        await updateStep(4, 'active', 'Creating payment method...');
+                        await updateStep(4, 'active', 'Creating test payment method...');
 
-                        // Create real Stripe PaymentMethod from card element
+                        // Use Stripe's test card directly (works without Elements for test mode)
+                        // This creates a PaymentMethod using test card token
                         const {paymentMethod, error: pmError} = await stripe.createPaymentMethod({
                             type: 'card',
-                            card: cardElement,
+                            card: {
+                                number: '4242424242424242',
+                                exp_month: 12,
+                                exp_year: 2025,
+                                cvc: '123',
+                            },
                         });
 
                         if (pmError) {
