@@ -859,25 +859,17 @@
 
                         let paymentMethod, pmError;
 
-                        // Use test token if auto-fill enabled, otherwise use card element
+                        // Use test payment method if auto-fill enabled, otherwise use card element
                         if (autoFill) {
-                            // Use Stripe test card token for automatic testing
-                            const testToken = await stripe.createToken(cardElement);
-                            if (testToken.error) {
-                                // If card element is empty, create payment method directly with test card
-                                const pm = await stripe.createPaymentMethod({
-                                    type: 'card',
-                                    card: {
-                                        number: '4242424242424242',
-                                        exp_month: 12,
-                                        exp_year: 2025,
-                                        cvc: '123'
-                                    }
-                                });
-                                paymentMethod = pm.paymentMethod;
-                                pmError = pm.error;
-                            } else {
-                                paymentMethod = testToken.token;
+                            // Use Stripe's pre-built test payment method token
+                            // This simulates a successful card without needing Elements
+                            try {
+                                // Try to use a pre-created test payment method token
+                                // Format: pm_card_visa for basic test card
+                                paymentMethod = { id: 'pm_card_visa' };
+                                pmError = null;
+                            } catch (err) {
+                                pmError = { message: 'Test payment method creation failed' };
                             }
                         } else {
                             // Create real Stripe PaymentMethod from card element
