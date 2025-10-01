@@ -153,6 +153,16 @@ async function generateJoltProof(sessionId, agentType, amount, operation, riskSc
             cwd: examplePath,
             env: { ...process.env, RUST_LOG: 'info' }
         });
+        joltProcess.on('error', (err) => {
+            console.error('❌ JOLT spawn error:', err && err.message ? err.message : String(err));
+            try {
+                zkMLSessions[sessionId] = {
+                    ...zkMLSessions[sessionId],
+                    status: 'failed',
+                    error: 'JOLT binary missing or failed to start'
+                };
+            } catch {}
+        });
         
         let output = '';
         joltProcess.stdout.on('data', (data) => {
