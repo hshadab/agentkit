@@ -294,12 +294,11 @@ acp/
 ├── stop-all-services.sh          # Service stopper
 │
 ├── docs/                         # Documentation
-│   ├── architecture/             # System design docs
-│   ├── integration/              # Integration guides
-│   ├── deployment/               # Deployment docs
-│   ├── api/                      # API reference
-│   ├── guides/                   # Usage guides
-│   └── archive/                  # Historical docs
+│   ├── architecture/             # System design docs (3 files)
+│   ├── integration/              # Integration guide (1 file)
+│   ├── deployment/               # Deployment docs (2 files)
+│   ├── api/                      # API reference (1 file)
+│   └── guides/                   # Usage guide (1 file)
 │
 ├── scripts/                      # Utilities
 │   ├── deployment/               # Contract deployment
@@ -387,12 +386,14 @@ OPENAI_API_KEY=sk-proj-...
 - [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md) - System architecture
 - [docs/architecture/AGENT_AGNOSTIC.md](docs/architecture/AGENT_AGNOSTIC.md) - Agent marketplace concept
 
-### Integration & Deployment
-- [docs/integration/](docs/integration/) - Integration guides and status
+### Integration
+- [docs/integration/ACP_INTEGRATION_COMPLETE.md](docs/integration/ACP_INTEGRATION_COMPLETE.md) - Complete integration guide
+
+### Deployment
 - [docs/deployment/DOCKER.md](docs/deployment/DOCKER.md) - Docker deployment
 - [docs/deployment/QUICKSTART.md](docs/deployment/QUICKSTART.md) - Quick start guide
 
-### API & Guides
+### API & Usage
 - [docs/api/ACP_ENDPOINTS.md](docs/api/ACP_ENDPOINTS.md) - Complete API reference
 - [docs/guides/USAGE_GUIDE.md](docs/guides/USAGE_GUIDE.md) - Usage examples
 
