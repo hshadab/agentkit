@@ -1,9 +1,9 @@
 # Claude Assistant Guide - AgentKit v3.0
 
 ## Project Overview
-AgentKit is a **100% REAL production framework** for building verifiable AI agents with cryptographic proofs across multiple blockchains. The v3.0 release features **OpenAI's Agentic Commerce Protocol (ACP)** with GPT-5 natural language, JOLT-Atlas zkML proofs, and real Stripe payment processing.
+AgentKit is a **100% REAL production framework** for building verifiable AI agents with cryptographic proofs across multiple blockchains. The v3.0 release features **OpenAI's Agentic Commerce Protocol (ACP)** deeply integrated with JOLT-Atlas zkML proofs, enabling the world's first trustless autonomous agent marketplace.
 
-**Latest Update**: 2025-09-30 - Completed 100% REAL ACP × GPT-5 × zkML integration. ZERO mocks, ZERO simulations, ZERO fake data. Every component uses production APIs and real cryptographic proofs.
+**Latest Update**: 2025-10-01 - Deep ACP × zkML integration complete. Solved the Agent Marketplace Problem: how to safely use unverified third-party agents with cryptographic guarantees. ZERO mocks, ZERO simulations, every agent decision cryptographically proven before payment execution.
 
 ## ⚠️ Implementation Policy: Show, Don't Tell
 **Verification Over Marketing**: Every claim is independently reproducible.
@@ -61,18 +61,18 @@ AgentKit is a **100% REAL production framework** for building verifiable AI agen
    - File: `acp/services/onchain-verification-service.js`
 
 **5-Step Workflow**:
-1. **Choose Agent** - Select from trusted (ChatGPT, Claude) or unverified marketplace agents
-2. **Agent Decision** - ONNX model evaluates 5-parameter authorization
-3. **zkML Proof** - JOLT-Atlas generates cryptographic proof (~550ms)
-4. **ACP Payment** - Real Stripe PaymentIntent with test card
-5. **On-Chain Verify** - Optional permanent record on Base Sepolia
+1. **Agent Chosen** - Select unverified agent from marketplace dropdown
+2. **AI Agent Inference** - ONNX neural network runs authorization (5 inputs → decision + confidence)
+3. **zkML Inference Proof** - JOLT-Atlas generates cryptographic proof (~600ms)
+4. **On-Chain Proof Verification** - Groth16 verifier contract on Base Sepolia (permanent record)
+5. **ACP Payment** - Real Stripe PaymentIntent only executes after verification succeeds
 
-**UI Features**:
-- Agent marketplace dropdown (trusted vs unverified)
-- Scenario buttons: ✅ Approved ($2.50/$500) vs ❌ Denied ($300/$50)
-- Real-time step progress with substeps
-- Contract links: verifier + deployment transaction
-- Stripe Elements integration for card input
+**UI Features** (http://localhost:9000/index.html):
+- Unverified agent marketplace dropdown (TravelDealHunter, GroceryOptimizer, ResearchAgent Pro, Custom)
+- Pre-configured test scenarios: ✅ Approved ($45/$50, 90% budget) vs ❌ Denied ($15/$500, fraud signals)
+- Real-time workflow progress with animated cards
+- Live contract links: deployed verifier + explorer
+- Automatic test card integration (4242...)
 
 **Status**: 100% production-ready, NO mocks or simulations
 

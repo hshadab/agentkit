@@ -65,10 +65,11 @@
             gap: 20px;
             margin-bottom: 30px;
             margin-top: 30px;
-            overflow-x: auto;
+            overflow-x: visible;
             padding-bottom: 20px;
-            padding-top: 25px;
-            justify-content: center;
+            padding-top: 45px;
+            justify-content: flex-start;
+            max-width: 1560px;
         }
 
         .workflow-step {
@@ -104,7 +105,9 @@
 
         .workflow-step.completed {
             border-color: #28a745;
-            background: linear-gradient(135deg, rgba(40, 167, 69, 0.12) 0%, rgba(32, 201, 151, 0.08) 100%);
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.12) 0%, rgba(32, 201, 151, 0.08) 100%),
+                        linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.4));
+            opacity: 0.85;
         }
 
         .step-number {
@@ -216,6 +219,7 @@
             height: 8px;
             margin: 30px 0;
             overflow: hidden;
+            max-width: 1560px;
         }
 
         .progress-bar {
@@ -250,8 +254,8 @@
             border: 2px solid rgba(102, 126, 234, 0.3);
             border-radius: 16px;
             padding: 30px;
-            margin: 0 auto 20px auto;
-            max-width: 1400px;
+            margin: 0 0 20px 0;
+            max-width: 1560px;
             backdrop-filter: blur(10px);
         }
 
@@ -395,9 +399,9 @@
 </head>
 <body>
     <div class="container">
-        <div class="header" style="text-align: left; max-width: 1400px; margin: 0 auto 30px auto; padding: 30px 20px 0 20px;">
+        <div class="header" style="text-align: left; max-width: 1560px; margin: 0 0 30px 0; padding: 30px 20px 0 20px;">
             <div class="logo-container" style="justify-content: flex-start; margin-bottom: 20px; align-items: center;">
-                <span style="background: #2563eb; padding: 10px 18px; border-radius: 6px; font-weight: 700; font-size: 1.4em; line-height: 1.2;">Agentic Commerce Protocol</span>
+                <span style="background: #2563eb; padding: 12px 20px; border-radius: 6px; font-weight: 700; font-size: 1.68em; line-height: 1.2;">Agentic Commerce Protocol</span>
                 <span style="font-size: 2em; opacity: 0.5; margin: 0 8px;">×</span>
                 <img src="https://cdn.prod.website-files.com/65d52b07d5bc41614daa723f/665df12739c532f45b665fe7_logo-novanet.svg" alt="NovaNet zkML" title="NovaNet JOLT-Atlas" style="height: 42px;">
             </div>
@@ -410,59 +414,47 @@
             <h2 style="margin-bottom: 25px; font-size: 1.5em;">Configure Transaction</h2>
 
             <!-- Compact Layout -->
-            <div style="max-width: 800px;">
-                <!-- Top Row: Agent Selection + Action Buttons -->
-                <div style="display: grid; grid-template-columns: 1fr auto; gap: 20px; margin-bottom: 20px; align-items: start;">
-                    <!-- Agent Selection -->
-                    <div class="input-group">
-                        <label>🏪 Choose Agent from Marketplace</label>
-                        <select id="agentType" style="padding: 12px; border: 2px solid rgba(102, 126, 234, 0.3); border-radius: 8px; font-size: 15px; background: rgba(20, 15, 35, 0.5); color: white; width: 100%;">
-                            <optgroup label="✅ Trusted (No zkML required)">
-                                <option value="gpt">🏆 ChatGPT (OpenAI)</option>
-                                <option value="claude">🏆 Claude (Anthropic)</option>
-                            </optgroup>
-                            <optgroup label="⚠️ Unverified (zkML required)">
-                                <option value="travel" selected>✈️ TravelDealHunter - Best hotel prices</option>
-                                <option value="grocery">🛒 GroceryOptimizer - Meal planning</option>
-                                <option value="research">🔬 ResearchAgent Pro - Academic papers</option>
-                                <option value="custom">🔧 Custom Agent - Your own</option>
-                            </optgroup>
-                        </select>
-                        <div style="margin-top: 8px; font-size: 0.9em; opacity: 0.7;">
-                            ⚠️ Selected agent is unverified - zkML proof required
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons Column -->
-                    <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 24px;">
-                        <button class="button" id="processBtn" onclick="processTransaction()" style="white-space: nowrap; padding: 12px 24px;">
-                            Run Agent Inference
-                        </button>
-                        <button class="button secondary" id="resetBtn" onclick="resetWorkflow()" style="display: none; white-space: nowrap; padding: 12px 24px;">
-                            🔄 Reset
-                        </button>
-                    </div>
+            <div style="max-width: 700px;">
+                <!-- Agent Selection (Full Width, Larger) -->
+                <div class="input-group" style="margin-bottom: 20px;">
+                    <label style="font-size: 1.05em; font-weight: 600; margin-bottom: 10px;">🏪 Choose Unverified Agent from Marketplace</label>
+                    <select id="agentType" style="padding: 16px 20px; border: 2px solid rgba(102, 126, 234, 0.3); border-radius: 10px; font-size: 17px; background: rgba(20, 15, 35, 0.5); color: white; width: 100%;">
+                        <option value="travel" selected>✈️ TravelDealHunter - Best hotel prices</option>
+                        <option value="grocery">🛒 GroceryOptimizer - Meal planning</option>
+                        <option value="research">🔬 ResearchAgent Pro - Academic papers</option>
+                        <option value="custom">🔧 Custom Agent - Your own</option>
+                    </select>
                 </div>
 
-                <!-- Bottom Row: Scenario Selection -->
-                <div>
-                    <label style="display: block; margin-bottom: 10px; font-weight: 600; font-size: 0.9em;">Choose Test Scenario:</label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <button id="passScenarioBtn" class="button scenario-btn" onclick="loadScenario('pass')" style="background: rgba(40, 167, 69, 0.2); border: 2px solid #28a745; text-align: left; padding: 12px;">
-                            <div style="font-weight: 600; margin-bottom: 6px; font-size: 0.95em;">✅ Approved (Complex ML)</div>
-                            <div style="font-size: 0.9em; line-height: 1.5;">
-                                <strong>$45 of $50 (90%!)</strong><br>
-                                Trust: 0.95 | Velocity: 0.2
-                            </div>
-                        </button>
-                        <button id="failScenarioBtn" class="button scenario-btn" onclick="loadScenario('fail')" style="background: rgba(220, 53, 69, 0.2); border: 2px solid #dc3545; text-align: left; padding: 12px;">
-                            <div style="font-weight: 600; margin-bottom: 6px; font-size: 0.95em;">❌ Denied (Complex ML)</div>
-                            <div style="font-size: 0.9em; line-height: 1.5;">
-                                <strong>$15 of $500 (3%)</strong><br>
-                                Trust: 0.15 | Velocity: 0.9
-                            </div>
-                        </button>
-                    </div>
+                <!-- Single Row: Scenarios + Action Buttons -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 12px; align-items: stretch;">
+                    <!-- Scenario 1: Approved -->
+                    <button id="passScenarioBtn" class="button scenario-btn" onclick="loadScenario('pass')" style="background: rgba(40, 167, 69, 0.2); border: 2px solid #28a745; text-align: left; padding: 14px; min-height: 85px;">
+                        <div style="font-weight: 600; margin-bottom: 6px; font-size: 0.95em;">✅ Approved</div>
+                        <div style="font-size: 0.85em; line-height: 1.4; opacity: 0.9;">
+                            $45 / $50 (90%)<br>
+                            Trust: 0.95
+                        </div>
+                    </button>
+
+                    <!-- Scenario 2: Denied -->
+                    <button id="failScenarioBtn" class="button scenario-btn" onclick="loadScenario('fail')" style="background: rgba(220, 53, 69, 0.2); border: 2px solid #dc3545; text-align: left; padding: 14px; min-height: 85px;">
+                        <div style="font-weight: 600; margin-bottom: 6px; font-size: 0.95em;">❌ Denied</div>
+                        <div style="font-size: 0.85em; line-height: 1.4; opacity: 0.9;">
+                            $15 / $500 (3%)<br>
+                            Trust: 0.15
+                        </div>
+                    </button>
+
+                    <!-- Run Button -->
+                    <button class="button" id="processBtn" onclick="processTransaction()" style="white-space: nowrap; padding: 14px 32px; font-size: 16px; min-width: 180px; background: rgba(102, 126, 234, 0.3); backdrop-filter: blur(10px);">
+                        Run Agent Inference
+                    </button>
+
+                    <!-- Reset Button -->
+                    <button class="button secondary" id="resetBtn" onclick="resetWorkflow()" style="display: none; white-space: nowrap; padding: 14px 28px; font-size: 16px; min-width: 140px; background: rgba(108, 117, 125, 0.3); backdrop-filter: blur(10px);">
+                        Reset
+                    </button>
                 </div>
             </div>
 
@@ -587,13 +579,11 @@
                     <strong>Merchant Trust:</strong> ${merchantTrust.toFixed(2)}<br>
                     <strong>Spending Velocity:</strong> ${spendingVelocity.toFixed(2)}
                 `;
-                await sleep(500);
                 await updateStep(1, 'completed');
                 updateProgress(16);
 
                 // Step 2: Agent Decision (parsing rules and running inference)
-                await updateStep(2, 'active', '🔄 Parsing spending rules...');
-                await sleep(300);
+                await updateStep(2, 'active', '🧠 Running inference + generating proof...');
 
                 let checkoutSession;
                 if (useNaturalLanguage) {
@@ -670,15 +660,11 @@
                 }
 
                 // Show Step 2 result: Agent Decision with 5-parameter evaluation
-                await updateStep(2, 'active', '🧠 Running agent inference...');
-                await sleep(500);
-
                 document.getElementById('result2').innerHTML = `
                     <div style="margin-bottom: 12px;">
                         <div style="font-weight: 600; font-size: 1.1em; margin-bottom: 8px;">
                             ${decision ? '✅ AUTHORIZED' : '❌ DENIED'} (${(confidence * 100).toFixed(0)}% confidence)
                         </div>
-                        ${useNaturalLanguage ? '<div style="opacity: 0.8; font-size: 0.85em; margin-bottom: 8px;">GPT-5 parsed rules: ' + authProof.processing_time_ms + 'ms</div>' : ''}
                     </div>
 
                     <div style="margin-bottom: 12px;">
