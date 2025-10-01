@@ -808,9 +808,10 @@ function extractDecisionConfidence(proof, publicInputs) {
   try {
     // Prefer explicit public_signals from LLM prover
     const ps = proof?.public_signals || proof?.publicSignals;
-    if (Array.isArray(ps) && ps.length >= 3) {
-      const decision = Number(ps[1]);
-      const confidence = Number(ps[2]);
+    if (Array.isArray(ps) && ps.length >= 2) {
+      // Interpret as [decision, confidence]
+      const decision = Number(ps[0]);
+      const confidence = Number(ps[1]);
       if (Number.isFinite(decision) && Number.isFinite(confidence)) return { decision, confidence };
     }
   } catch {}

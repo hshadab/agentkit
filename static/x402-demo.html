@@ -243,14 +243,17 @@ async function start() {
   try {
     // Quick assets check for zkML
     try {
-      const assets = await (await fetchPG('/ui/zkml/assets-check')).json();
-      if (!assets.ok) {
-        log('Error: zkML circuit assets missing');
-        log(assets);
-        set('s2','s-err','assets missing');
-        return;
+      const resp = await fetchPG('/ui/zkml/assets-check');
+      if (resp && resp.ok) {
+        const assets = await resp.json().catch(()=>null);
+        if (assets && assets.ok === false) {
+          log('Error: zkML circuit assets missing');
+          log(assets);
+          set('s2','s-err','assets missing');
+          return;
+        }
       }
-    } catch (e) { log('assets check error: ' + e.message); }
+    } catch {}
 
     // Step 1: AI Neural Network Inference
     currentStep = 'step1';
