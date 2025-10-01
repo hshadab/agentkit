@@ -102,7 +102,7 @@ function hexToField(hex) {
 
 app.get('/health', (req, res) => {
   const onChain = env('X402_ZKML_VERIFY_ETH', '') === 'true' || VERIFY_ON_CHAIN;
-  res.json({ ok: true, unifiedBackend: UNIFIED_BACKEND, onChain: !!onChain, ethVerifyMode: ETH_VERIFY_MODE, onnx: { url: env('X402_ONNX_URL','http://127.0.0.1:8009'), require: env('X402_REQUIRE_ONNX','true') } });
+  res.json({ ok: true, unifiedBackend: UNIFIED_BACKEND, onChain: !!onChain, ethVerifyMode: ETH_VERIFY_MODE, onnx: { url: env('X402_ONNX_URL','http://127.0.0.1:8009'), require: env('X402_REQUIRE_ONNX','true') }, aiMinConfidence: Number(env('X402_AI_MIN_CONFIDENCE','0')) });
 });
 
 // In-memory anchor store for non-blocking on-chain verification
@@ -362,7 +362,7 @@ app.post('/attest', async (req, res) => {
 
     METRICS.attestIssued++;
     logEvent('attest_issued', { intentHash, acceptsHash, onChain });
-    return res.json({ ok: true, token, proofHash, issuedAt, expiresAt, onChain, intentHash, acceptsHash, attester, anchor });
+    return res.json({ ok: true, token, proofHash, modelHash: modelHashHex || null, policyHash: policyHashHex, issuedAt, expiresAt, onChain, intentHash, acceptsHash, attester, anchor });
   } catch (e) {
     console.error('attest error:', e);
     return res.status(500).json({ error: 'server_error', message: e.message });
@@ -565,7 +565,7 @@ app.post('/ui/pay-auto', async (req, res) => {
             explorer: `${explorer}/tx/${tx.transactionHash}`,
             blockNumber: Number(tx.blockNumber || 0)
           };
-          LAST_REDEMPTION = { ...redemption, at: Date.now() };
+          LAST_REDEMPTION = { ...redemption, authorization: auth, at: Date.now() };
         }
       }
     } catch (e) {
@@ -768,9 +768,9 @@ app.post('/ui/zkml/prove', async (req, res) => {
           inferenceMs = Number(j && j.performance && j.performance.inferenceTimeMs ? j.performance.inferenceTimeMs : (Date.now() - t0));
           METRICS.onnxCalls++;
           METRICS.onnxMs += inferenceMs;
-          // Surface AI result early for UI
+          // Surface AI result early for UI (include feature metadata if present)
           const cur = ZKML_SESSIONS.get(sessionId) || {};
-          ZKML_SESSIONS.set(sessionId, { ...cur, status: 'ai_ready', aiDecision, aiConfidence, inferenceMs });
+          ZKML_SESSIONS.set(sessionId, { ...cur, status: 'ai_ready', aiDecision, aiConfidence, inferenceMs, aiFeatures: j && j.features ? j.features : null });
           // Enforce: if AI denies, stop here and do not proceed to zk proof
           const ENFORCE_AI = (env('X402_ENFORCE_AI','true').toLowerCase() === 'true');
           if (ENFORCE_AI && aiDecision !== 1) {
@@ -994,6 +994,9 @@ app.get('/metrics', (req, res) => {
   res.json({ ok: true, ...METRICS });
 });
 
+// Share: return sanitized session snapshot
+// Share endpoints removed per request
+
 // --- Admin endpoints (local convenience) ---
 app.post('/admin/restart', async (req, res) => {
   try {
@@ -1064,6 +1067,42 @@ app.get('/verifier/info', async (req, res) => {
     res.status(500).json({ ok: false, error: String(e?.message || e) });
   }
 });
+
+// Wallet receipt: given txHash or uses last redemption, return balances pre/post and EIP-3009 fields if available
+app.get('/ui/wallet-receipt', async (req, res) => {
+  try {
+    const txHash = req.query.tx || (LAST_REDEMPTION && LAST_REDEMPTION.usdcTxHash);
+    if (!txHash) return res.status(400).json({ ok:false, error:'missing_tx' });
+    const provider = new ethers.JsonRpcProvider(process.env.BASE_RPC_URL || process.env.ETH_RPC || 'https://base-sepolia-rpc.publicnode.com', { chainId: Number(env('CHAIN_ID',84532)), name:'base-sepolia' });
+    const rec = await provider.getTransactionReceipt(txHash);
+    if (!rec) return res.status(404).json({ ok:false, error:'tx_not_found' });
+    const erc20 = new ethers.Interface([ 'function balanceOf(address) view returns (uint256)' ]);
+    const usdc = env('X402_ASSET', '0x036CbD53842c5426634e7929541eC2318f3dCF7e');
+    // Try to decode transfer log to infer from/to
+    const topic = ethers.id('Transfer(address,address,uint256)');
+    let from=null,to=null,value=null;
+    for (const log of rec.logs||[]) {
+      if (log.address.toLowerCase() === usdc.toLowerCase() && log.topics && log.topics[0] === topic) {
+        from = '0x' + log.topics[1].slice(26);
+        to = '0x' + log.topics[2].slice(26);
+        try { value = BigInt(log.data); } catch {}
+        break;
+      }
+    }
+    // Balances pre/post
+    let fromPre=null,fromPost=null,toPre=null,toPost=null;
+    if (from) {
+      fromPre = await provider.call({ to: usdc, data: erc20.encodeFunctionData('balanceOf',[from]) }, rec.blockNumber-1).then(d=> BigInt(d)).catch(()=>null);
+      fromPost = await provider.call({ to: usdc, data: erc20.encodeFunctionData('balanceOf',[from]) }, rec.blockNumber).then(d=> BigInt(d)).catch(()=>null);
+    }
+    if (to) {
+      toPre = await provider.call({ to: usdc, data: erc20.encodeFunctionData('balanceOf',[to]) }, rec.blockNumber-1).then(d=> BigInt(d)).catch(()=>null);
+      toPost = await provider.call({ to: usdc, data: erc20.encodeFunctionData('balanceOf',[to]) }, rec.blockNumber).then(d=> BigInt(d)).catch(()=>null);
+    }
+    const authorization = LAST_REDEMPTION && LAST_REDEMPTION.authorization ? LAST_REDEMPTION.authorization : null;
+    res.json({ ok:true, txHash, from, to, value: value? value.toString(): null, gasUsed: rec.gasUsed? rec.gasUsed.toString(): null, balances: { fromPre: fromPre? fromPre.toString(): null, fromPost: fromPost? fromPost.toString(): null, toPre: toPre? toPre.toString(): null, toPost: toPost? toPost.toString(): null }, authorization });
+  } catch (e) { res.status(500).json({ ok:false, error:String(e?.message||e) }); }
+});
 // ONNX health proxy for UI
 app.get('/ui/onnx/health', async (req, res) => {
   try {
@@ -1074,3 +1113,6 @@ app.get('/ui/onnx/health', async (req, res) => {
     return res.json({ ok: !!j.ok || j.status==='healthy', url, ...j });
   } catch (e) { return res.status(500).json({ ok:false, error:String(e?.message || e) }); }
 });
+
+// Share by anchor id → resolve to session snapshot
+// Share endpoints removed per request

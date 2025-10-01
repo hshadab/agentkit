@@ -100,35 +100,41 @@
     </div>
   </header>
   <main>
-    <div class="panel row">
-      <button id="btnStart">Start Demo</button>
-    </div>
+  <div class="panel row">
+    <button id="btnStart">Start Demo</button>
+    
+  </div>
 
   <div class="panel steps">
       <div class="step">
         <div class="label">1. Payment Agent Inference</div>
         <div class="desc">🧠 Neural network (5 layers)<br/>User: "Pay $0.01 to API merchant"<br/>Agent evaluates authorization</div>
         <div id="s1" class="step-status muted" data-state="idle">Idle</div>
+        <div id="s1Info" class="small muted"></div>
       </div>
       <div class="step">
         <div class="label">2. zkML Proof of Correct Inference</div>
         <div class="desc">JOLT-Atlas proof<br/>Proves AI ran correctly<br/>Privacy preserving</div>
         <div id="s2" class="step-status muted" data-state="idle">Idle</div>
+        <div id="s2Info" class="small muted"></div>
       </div>
       <div class="step">
         <div class="label">3. x402 Attestation</div>
         <div class="desc">Bind AI to payment<br/>EIP-712 signature<br/>Links auth → USDC</div>
         <div id="s3" class="step-status muted" data-state="idle">Idle</div>
+        <div id="s3Info" class="small muted"></div>
       </div>
       <div class="step">
         <div class="label">4. On-Chain Proof Verification</div>
         <div class="desc">Groth16 proof<br/>Base Sepolia<br/>~350k gas</div>
         <div id="s4" class="step-status muted" data-state="idle">Idle</div>
+        <div id="s4Info" class="small muted"></div>
       </div>
       <div class="step">
         <div class="label">5. USDC Payment by Agent</div>
         <div class="desc">EIP-3009 transfer<br/>$0.01 USDC<br/>AI approved ✓</div>
         <div id="s5" class="step-status muted" data-state="idle">Idle</div>
+        <div id="s5Info" class="small muted"></div>
       </div>
     </div>
 
@@ -324,6 +330,34 @@ async function start() {
         log(`   Confidence: ${c}%`, 'step1');
         log(`   Inference time: ${ms}`, 'step1');
         set('s1', st.aiDecision ? 's-ok' : 's-err', st.aiDecision ? 'Authorized' : 'Denied');
+        try { const s1i = document.getElementById('s1Info'); s1i.innerHTML = `Decision: ${d} · Confidence: ${c}% · ${ms}`; } catch {}
+        // Decision explainer: feature bars
+        try {
+          const health = await (await fetchPG('/health')).json();
+          const thr = (health && health.aiMinConfidence) ? Number(health.aiMinConfidence) : null;
+          const ex = document.createElement('div');
+          ex.innerHTML = `<div class=\"small muted\">Decision Explainer</div>`;
+          const feats = st.aiFeatures || {};
+          const pairs = [ ['Budget', feats.budget], ['Trust', feats.trust], ['Amount', feats.amount], ['Category', feats.category], ['Velocity', feats.velocity] ];
+          const wrap = document.createElement('div');
+          for (const [k,v] of pairs) {
+            const pct = (typeof v==='string' && v.includes('%')) ? parseInt(v) : (typeof v==='number' ? Math.round(v*100) : null);
+            const w = (pct!=null) ? Math.max(6, Math.min(100, pct)) : 6;
+            const row = document.createElement('div'); row.style.display='flex'; row.style.alignItems='center'; row.style.gap='8px'; row.style.margin='4px 0';
+            row.innerHTML = `<span class=\"small muted\" style=\"width:70px;\">${k}</span><div title=\"${v||''}\" style=\"width:${w*2}px;height:8px;background:#3b82f6;border-radius:4px;\"></div><span class=\"small muted\">${v||''}</span>`;
+            wrap.appendChild(row);
+          }
+          // Confidence bar
+          const conf = Number(st.aiConfidence||0);
+          const bar = document.createElement('div');
+          bar.style.display='flex'; bar.style.alignItems='center'; bar.style.gap='8px'; bar.style.margin='6px 0';
+          const width = Math.max(6, Math.min(100, conf));
+          let overlay = '';
+          if (thr!=null) overlay = `<div style=\"position:absolute;left:${thr*2}px;top:-2px;bottom:-2px;width:2px;background:#ef4444;opacity:0.6\" title=\"Target: ${thr}%\"></div>`;
+          bar.innerHTML = `<span class=\"small muted\" style=\"width:70px;\">Confidence</span><div style=\"position:relative;width:${200}px;height:8px;background:#0f1620;border-radius:4px;border:1px solid #1b2533;\"><div style=\"width:${width*2}px;height:8px;background:#22c55e;border-radius:4px;\"></div>${overlay}</div><span class=\"small muted\">${conf}%</span>`;
+          ex.appendChild(wrap); ex.appendChild(bar);
+          const p1 = document.getElementById('log-step1'); p1.parentNode.insertBefore(ex, p1.nextSibling);
+        } catch {}
         aiLogged = true;
         // If denied, stop the flow immediately
         if (!st.aiDecision) {
@@ -356,8 +390,10 @@ async function start() {
         { k: 'Groth16', ms: st.grothMs||0, c:'#5d3fd3' }
       ];
       const max = Math.max(...t.map(x=>x.ms), 1);
-      const bars = t.map(x=>`<div style=\"display:flex;align-items:center;gap:8px;margin:4px 0;\"><div style=\"width:${Math.max(6, (x.ms/max)*200)}px;height:8px;background:${x.c};border-radius:4px;\"></div><span class=\"small muted\">${x.k}: ${x.ms}ms</span></div>`).join('');
+      const bars = t.map(x=>`<div style=\"display:flex;align-items:center;gap:8px;margin:4px 0;\"><div style=\"width:${Math.max(6, (x.ms/max)*200)}px;height:8px;background:${x.c};border-radius:4px;\"></div><span class=\"small muted\">${x.k}: ${x.ms>0? x.ms+'ms':'<1ms'}</span></div>`).join('');
       document.getElementById('timeline').innerHTML = `<div class=\"small muted\">Performance</div>${bars}`;
+      const inline = document.getElementById('s2Info');
+      inline.innerHTML = `ONNX ${st.inferenceMs||'<1'}ms · Jolt ${st.joltMs||'<1'}ms · Groth ${st.grothMs||'<1'}ms`;
     } catch {}
     
     // Step 3: Request x402 attestation
@@ -374,7 +410,15 @@ async function start() {
     set('s3','s-ok','Attested');
     log('✅ AI decision bound to x402 payment');
     last.proof = proof;
-    log({ attestation_id: att.anchor?.attestationId?.slice(0,16), proofHash: att.proofHash?.slice(0,16)+'…', modelHash: (att.modelHash? att.modelHash.slice(0,16)+'…': null), policyHash: att.policyHash?.slice(0,16)+'…' });
+    log({ attestation_id: att.anchor?.attestationId?.slice(0,16), proofHash: att.proofHash?.slice(0,16)+'…', modelHash: (att.modelHash? att.modelHash.slice(0,16)+'…': null), policyHash: (att.policyHash? att.policyHash.slice(0,16)+'…' : null) });
+    try {
+      const s3i = document.getElementById('s3Info');
+      const chips = [];
+      if (att.proofHash) chips.push(`<span title=\"proofHash\" style=\"padding:2px 6px;border:1px solid #1c2836;border-radius:6px;\">proof ${att.proofHash.slice(0,10)}…</span>`);
+      if (att.modelHash) chips.push(`<span title=\"modelHash\" style=\"padding:2px 6px;border:1px solid #1c2836;border-radius:6px;\">model ${att.modelHash.slice(0,10)}…</span>`);
+      if (att.policyHash) chips.push(`<span title=\"policyHash\" style=\"padding:2px 6px;border:1px solid #1c2836;border-radius:6px;\">policy ${att.policyHash.slice(0,10)}…</span>`);
+      s3i.innerHTML = chips.join(' · ');
+    } catch {}
     last.token = att.token; last.intent = intent; last.cart = cart; last.anchor = att.anchor;
     
     // Step 4: On-chain verification
@@ -413,6 +457,7 @@ async function start() {
           } else {
             s4el.innerHTML = `<a href="${txLink}" target="_blank">Verified: ${shortTx}</a>`;
           }
+          try { const s4i = document.getElementById('s4Info'); const gas = anchor.result?.gasUsed || '—'; s4i.innerHTML = `Gas: ${gas}`; } catch {}
           log('✅ On-chain verification complete');
           log('   Transaction: ' + tx.slice(0,16) + '...');
           if (vAddr) log('   Verifier: ' + vAddr);
@@ -546,6 +591,27 @@ async function executePayment() {
       set('s5', 's-ok', `Completed: ${shortHash}`, explorer);
       log('✅ USDC Payment successful: ' + explorer);
       log({ usdc: { txHash: tx, explorer } });
+      try {
+        const s5i = document.getElementById('s5Info');
+        s5i.innerHTML = `USDC tx: ${shortHash} · <a href=\"#\" id=\"viewReceipt\">View receipt</a>`;
+        document.getElementById('viewReceipt').addEventListener('click', async (e)=>{
+          e.preventDefault();
+          try {
+            const rec = await (await fetchPG('/ui/wallet-receipt?tx='+tx)).json();
+            const det = document.createElement('div');
+            det.className = 'small';
+            const fmt = (v)=> (v==null? '—' : (Number(v)/1e6).toFixed(2)+' USDC');
+            const short = (a)=> a? (a.slice(0,6)+'…'+a.slice(-4)) : '—';
+            det.innerHTML = `
+              <div style="margin-top:6px;border-top:1px solid #1c2836;padding-top:6px;">
+                <div>From: ${short(rec.from)} · Pre: ${fmt(rec.balances?.fromPre)} → Post: ${fmt(rec.balances?.fromPost)}</div>
+                <div>To: &nbsp;&nbsp;${short(rec.to)} · Pre: ${fmt(rec.balances?.toPre)} → Post: ${fmt(rec.balances?.toPost)}</div>
+                <div>Amount: ${fmt(rec.value)} · Gas: ${rec.gasUsed || '—'}</div>
+              </div>`;
+            s5i.appendChild(det);
+          } catch(err){ log('receipt error: '+err.message); }
+        });
+      } catch {}
     } else {
       // Poll for late redemption
       for (let i=0;i<15;i++) {
@@ -728,6 +794,9 @@ $('btnRestart').addEventListener('click', async ()=>{
     setTimeout(()=>location.reload(), 1500);
   } catch (e) { log('restart error: ' + e.message); }
 });
+
+// Share latest session link
+
 
 // Copy helpers
 function copy(text){ navigator.clipboard.writeText(text); log('copied'); }
