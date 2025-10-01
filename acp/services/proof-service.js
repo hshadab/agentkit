@@ -12,6 +12,7 @@ const crypto = require('crypto');
 const fs = require('fs').promises;
 const path = require('path');
 const ort = require('onnxruntime-node');
+const snarkjs = require('snarkjs');
 
 const app = express();
 app.use(cors());
@@ -20,6 +21,10 @@ app.use(bodyParser.json());
 const PORT = process.env.PROOF_SERVICE_PORT || 9001;
 const JOLT_BINARY = process.env.JOLT_BINARY_PATH || path.join(__dirname, '../../jolt-atlas/target/debug/llm_prover');
 const MODEL_PATH = process.env.JOLT_MODEL_PATH || path.join(__dirname, '../models/authorization_model.onnx');
+
+// Groth16 circuit paths
+const CIRCUIT_WASM = path.join(__dirname, '../circuits/build/AgentAuthorizationSimple_js/AgentAuthorizationSimple.wasm');
+const CIRCUIT_ZKEY = path.join(__dirname, '../circuits/build/AgentAuthorization_final.zkey');
 
 // In-memory store for proof sessions
 const proofSessions = new Map();
@@ -136,7 +141,9 @@ class AuthorizationAgent {
 
 // Initialize agent
 const agent = new AuthorizationAgent(MODEL_PATH);
-agent.initialize();
+(async () => {
+  await agent.initialize();
+})();
 
 /**
  * Calculate category score (0-1) based on allowed categories
@@ -330,6 +337,63 @@ function hashToNumber(str) {
 }
 
 /**
+ * Generate real Groth16 proof using snarkjs
+ * Circuit: AgentAuthorizationSimple
+ * Public inputs: authorized, proofHash
+ * Private inputs: budgetRemaining, amount, timestamp
+ */
+async function generateGroth16Proof(authorized, budgetRemaining, amount, joltProofHash) {
+  try {
+    console.log(`🔐 Generating Groth16 proof...`);
+    console.log(`   Authorized: ${authorized}, Budget: ${budgetRemaining}, Amount: ${amount}`);
+
+    // Convert JOLT proof hash to number for circuit
+    const proofHashNum = BigInt('0x' + joltProofHash.substring(0, 16)) % BigInt(2**31);
+
+    // Circuit inputs
+    const input = {
+      authorized: authorized ? 1 : 0,
+      proofHash: proofHashNum.toString(),
+      budgetRemaining: Math.floor(budgetRemaining),
+      amount: Math.floor(amount),
+      timestamp: Math.floor(Date.now() / 1000)
+    };
+
+    console.log(`   Circuit inputs: ${JSON.stringify(input)}`);
+
+    // Generate witness and proof using snarkjs
+    const startTime = Date.now();
+    const { proof, publicSignals } = await snarkjs.groth16.fullProve(
+      input,
+      CIRCUIT_WASM,
+      CIRCUIT_ZKEY
+    );
+
+    const proofTime = Date.now() - startTime;
+    console.log(`✅ Groth16 proof generated in ${proofTime}ms`);
+    console.log(`   Public signals: [${publicSignals.join(', ')}]`);
+
+    return {
+      proof: {
+        pi_a: proof.pi_a.slice(0, 2),
+        pi_b: [
+          [proof.pi_b[0][1], proof.pi_b[0][0]], // Reverse for contract format
+          [proof.pi_b[1][1], proof.pi_b[1][0]]
+        ],
+        pi_c: proof.pi_c.slice(0, 2),
+        protocol: proof.protocol,
+        curve: proof.curve
+      },
+      publicSignals: publicSignals.map(s => s.toString()),
+      proofTime
+    };
+  } catch (error) {
+    console.error(`❌ Groth16 proof generation failed:`, error.message);
+    throw error;
+  }
+}
+
+/**
  * POST /prove-authorization
  * Generate zkML proof of agent authorization decision
  */
@@ -390,6 +454,21 @@ app.post('/prove-authorization', async (req, res) => {
       decision
     );
 
+    // Generate Groth16 proof for on-chain verification
+    let groth16Proof = null;
+    try {
+      groth16Proof = await generateGroth16Proof(
+        decision.authorized,
+        budget_remaining,
+        amount,
+        proofResult.proofHash
+      );
+      console.log(`✅ Groth16 proof ready for on-chain verification`);
+    } catch (error) {
+      console.warn(`⚠️  Groth16 proof generation failed: ${error.message}`);
+      // Continue without Groth16 proof - JOLT proof still valid
+    }
+
     const processingTime = Date.now() - startTime;
 
     // Create inputs hash for verification
@@ -401,17 +480,20 @@ app.post('/prove-authorization', async (req, res) => {
       success: true,
       decision: decision.authorized,
       confidence: decision.confidence,
-      proof: proofResult.proof,
+      proof: groth16Proof ? groth16Proof.proof : null,
+      publicSignals: groth16Proof ? groth16Proof.publicSignals : null,
+      jolt_proof: proofResult.proof,
       proof_hash: proofResult.proofHash,
       session_id: proofResult.sessionId,
       model_hash: agent.getModelHash(),
       inputs_hash: inputsHash,
       inputs: inputs,
       processing_time_ms: processingTime,
+      groth16_time_ms: groth16Proof ? groth16Proof.proofTime : null,
       timestamp: Date.now()
     });
 
-    console.log(`✅ Proof generated: ${decision.authorized ? 'AUTHORIZED' : 'DENIED'} (${decision.confidence}) in ${processingTime}ms`);
+    console.log(`✅ Complete proof generated: ${decision.authorized ? 'AUTHORIZED' : 'DENIED'} (${decision.confidence}) in ${processingTime}ms`);
 
   } catch (error) {
     console.error('Error generating proof:', error);
