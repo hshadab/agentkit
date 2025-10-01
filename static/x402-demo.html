@@ -96,6 +96,7 @@
         <img src="https://cdn.prod.website-files.com/65d52b07d5bc41614daa723f/665df12739c532f45b665fe7_logo-novanet.svg" alt="Novanet" class="logo" style="height: 32px;" />
       </div>
       <h1>Trustless Agentic Payments</h1>
+      <div id="onnxBanner" class="small muted"></div>
     </div>
   </header>
   <main>
@@ -231,6 +232,16 @@ function addLink(label, url) {
 let last = { sid:null, proof:null, token:null, intent:null, cart:null, anchor:null, accepts:null, anchorId:null };
 
 async function start() {
+  // ONNX health banner
+  (async ()=>{
+    try {
+      const r = await fetchPG('/ui/onnx/health');
+      const j = await r.json();
+      const el = $('onnxBanner');
+      if (j && (j.ok || j.status==='healthy')) { el.textContent = `ONNX: healthy (${j.model||'model'})`; el.className='small'; }
+      else { el.textContent = `ONNX: unavailable`; el.className='small s-err'; }
+    } catch { const el=$('onnxBanner'); if (el){ el.textContent='ONNX: unavailable'; el.className='small s-err'; } }
+  })();
   // Clear all logs
   $('log').textContent = '';
   $('log-step1').textContent = '';
@@ -285,11 +296,9 @@ async function start() {
     const sid = pj.sessionId;
     
     // Simulate AI inference time
-    await new Promise(r=>setTimeout(r, 300));
-    set('s1','s-ok','Authorized');
-    log('✅ AI Decision: EXECUTE PAYMENT');
-    log('   Confidence: 99%');
-    log('   Reasoning: All risk factors favorable');
+    await new Promise(r=>setTimeout(r, 200));
+    set('s1','s-warn','Evaluating…');
+    log('⏳ Waiting for AI inference (ONNX)…');
     
     // Step 2: Generate zkML Proof
     currentStep = 'step2';
@@ -299,12 +308,33 @@ async function start() {
     log(['zkml session', sid]);
     
     let proof = null;
+    let aiLogged = false;
     let lastErr = null;
     for (let i=0;i<240;i++) {
       const stResp = await zkmlFetch('/status/' + sid);
       const stTxt = await stResp.text();
       if (!stResp.ok) { throw new Error('zkML status failed: ' + stTxt.slice(0,200)); }
       let st; try { st = JSON.parse(stTxt); } catch(e) { throw new Error('zkML status parse error: ' + stTxt.slice(0,200)); }
+      if (!aiLogged && (typeof st.aiDecision !== 'undefined')) {
+        const d = st.aiDecision ? 'EXECUTE PAYMENT' : 'BLOCK PAYMENT';
+        const c = (st.aiConfidence != null) ? String(st.aiConfidence) : 'n/a';
+        const ms = (st.inferenceMs != null) ? `${st.inferenceMs}ms` : 'n/a';
+        log(`✅ AI Decision: ${d}`, 'step1');
+        log(`   Confidence: ${c}%`, 'step1');
+        log(`   Inference time: ${ms}`, 'step1');
+        set('s1', st.aiDecision ? 's-ok' : 's-err', st.aiDecision ? 'Authorized' : 'Denied');
+        aiLogged = true;
+        // If denied, stop the flow immediately
+        if (!st.aiDecision) {
+          set('s2','muted','Skipped');
+          set('s3','muted','Skipped');
+          set('s4','muted','Skipped');
+          set('s5','muted','Idle');
+          log('❌ Stopping: AI denied authorization. No further steps.');
+          return;
+        }
+      }
+      if (st.status === 'denied') { log('❌ Stopping: AI denied authorization.'); return; }
       if (st.status === 'completed') { proof = st.proof; break; }
       if (st.status === 'error' || st.status === 'failed') { lastErr = st.error || 'proof error'; break; }
       await new Promise(r=>setTimeout(r, 250));
@@ -346,6 +376,10 @@ async function start() {
       set('s4','s-warn','Verifying...');
       log('\n⛓ STEP 4: ON-CHAIN VERIFICATION');
       
+      // Fetch verifier info while we wait
+      let verifierInfo = null;
+      try { const rvi = await fetchPG('/verifier/info'); verifierInfo = await rvi.json(); } catch {}
+
       // Wait for verification to complete
       await waitForAnchor(anchorId);
       
@@ -353,12 +387,22 @@ async function start() {
       if (anchor && anchor.status === 'confirmed') {
         const tx = anchor.result?.transactionHash;
         if (tx) {
-          const link = `https://sepolia.basescan.org/tx/${tx}`;
-          s4.innerHTML = `<a href="${link}" target="_blank">verified</a>`;
-          const shortTx = 'Verified: 0x' + tx.slice(2,7) + '...';
-          set('s4', 's-ok', shortTx, link);
+          const chainId = verifierInfo?.chainId || 84532;
+          const explorer = (chainId === 84532) ? 'https://sepolia.basescan.org' : 'https://sepolia.basescan.org';
+          const txLink = `${explorer}/tx/${tx}`;
+          const vAddr = verifierInfo?.address;
+          const verLink = vAddr ? `${explorer}/address/${vAddr}` : null;
+          const s4el = document.getElementById('s4');
+          const shortTx = '0x' + tx.slice(2,7) + '…';
+          s4el.className = 's-ok'; s4el.dataset.state = 'verified';
+          if (verLink) {
+            s4el.innerHTML = `<a href="${txLink}" target="_blank">Verified: ${shortTx}</a> · <a href="${verLink}" target="_blank">Verifier</a>`;
+          } else {
+            s4el.innerHTML = `<a href="${txLink}" target="_blank">Verified: ${shortTx}</a>`;
+          }
           log('✅ On-chain verification complete');
           log('   Transaction: ' + tx.slice(0,16) + '...');
+          if (vAddr) log('   Verifier: ' + vAddr);
         } else {
           set('s4','s-ok','verified');
         }

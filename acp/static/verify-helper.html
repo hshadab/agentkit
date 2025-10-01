@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contract Verification Helper</title>
+    <style>
+        body { font-family: system-ui; padding: 40px; max-width: 1200px; margin: 0 auto; background: #1a1a2e; color: #eee; }
+        h1 { color: #28a745; }
+        .step { background: rgba(255,255,255,0.05); padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #28a745; }
+        .step h3 { margin-top: 0; }
+        textarea { width: 100%; height: 500px; font-family: monospace; font-size: 12px; padding: 15px; background: #0f0f23; color: #eee; border: 1px solid #333; border-radius: 6px; }
+        button { padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin: 10px 5px; }
+        button:hover { background: #218838; }
+        .info { background: rgba(40, 167, 69, 0.1); padding: 15px; border-radius: 6px; margin: 10px 0; }
+        .warning { background: rgba(255, 193, 7, 0.1); padding: 15px; border-radius: 6px; margin: 10px 0; border-left: 4px solid #ffc107; }
+        a { color: #28a745; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        code { background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>📝 Groth16 Verifier Contract - Verification Helper</h1>
+
+    <div class="info">
+        <strong>✅ Contract is deployed and working!</strong><br>
+        Address: <code>0x3c4323fdBd592aaCF37C33dbF90e492CEe249599</code><br>
+        Network: Base Sepolia (Chain ID: 84532)<br>
+        Status: Verified by direct call - now publishing source code to explorer
+    </div>
+
+    <div class="step">
+        <h3>Step 1: Open Basescan Verification Page</h3>
+        <p>Click this button to open the verification form (opens in new tab):</p>
+        <button onclick="window.open('https://sepolia.basescan.org/verifyContract?a=0x3c4323fdBd592aaCF37C33dbF90e492CEe249599', '_blank')">
+            🔗 Open Basescan Verification
+        </button>
+    </div>
+
+    <div class="step">
+        <h3>Step 2: Fill in the Form</h3>
+        <p>On the Basescan page, enter these details:</p>
+        <ul>
+            <li><strong>Contract Address:</strong> <code>0x3c4323fdBd592aaCF37C33dbF90e492CEe249599</code> (should be pre-filled)</li>
+            <li><strong>Compiler Type:</strong> Select "Solidity (Single file)"</li>
+            <li><strong>Compiler Version:</strong> Select <code>v0.8.30+commit.d5a61349</code> ✅ (detected from bytecode)</li>
+            <li><strong>Open Source License Type:</strong> Select "GNU General Public License v3.0 (GNU GPLv3)" or "No License (None)"</li>
+        </ul>
+        <p>Then click "Continue"</p>
+    </div>
+
+    <div class="step">
+        <h3>Step 3: Copy Contract Source Code</h3>
+        <p>Copy the contract source code below (click button to copy):</p>
+        <button onclick="copySource()">📋 Copy Source Code</button>
+        <button onclick="downloadSource()">💾 Download as .sol file</button>
+        <textarea id="sourceCode" readonly></textarea>
+    </div>
+
+    <div class="step">
+        <h3>Step 4: Paste and Submit</h3>
+        <p>On the Basescan page:</p>
+        <ol>
+            <li>Paste the source code into the "Enter the Solidity Contract Code below" field</li>
+            <li>Set <strong>Optimization:</strong> No</li>
+            <li>Leave other fields empty</li>
+            <li>Click "Verify and Publish"</li>
+        </ol>
+    </div>
+
+    <div class="info">
+        <strong>🎉 Success!</strong><br>
+        After verification, the contract source will be visible at:<br>
+        <a href="https://sepolia.basescan.org/address/0x3c4323fdBd592aaCF37C33dbF90e492CEe249599#code" target="_blank">
+            https://sepolia.basescan.org/address/0x3c4323fdBd592aaCF37C33dbF90e492CEe249599#code
+        </a>
+    </div>
+
+    <div class="info">
+        <strong>✅ Compiler Version Detected:</strong> Solidity 0.8.30<br>
+        Decoded from bytecode metadata: <code>0x081e</code> = version 0.8.30<br>
+        This is the exact version used to deploy the contract!
+    </div>
+
+    <div class="warning">
+        <strong>⚠️ If verification fails:</strong> Try these 0.8.30 commits in order:
+        <ul>
+            <li>v0.8.30+commit.d5a61349 (most likely)</li>
+            <li>v0.8.30+commit.849e2a31 (alternative)</li>
+            <li>v0.8.29+commit.e5e5eca7 (close version)</li>
+            <li>v0.8.28+commit.7893614a (close version)</li>
+        </ul>
+    </div>
+
+    <script>
+        // Load contract source code
+        fetch('/contracts/AgentAuthorizationSimpleVerifier.sol')
+            .then(r => r.text())
+            .then(source => {
+                document.getElementById('sourceCode').value = source;
+            })
+            .catch(err => {
+                // Fallback: try from parent directory
+                fetch('../contracts/AgentAuthorizationSimpleVerifier.sol')
+                    .then(r => r.text())
+                    .then(source => {
+                        document.getElementById('sourceCode').value = source;
+                    })
+                    .catch(err2 => {
+                        document.getElementById('sourceCode').value = 'Error loading contract source. Please check contracts/AgentAuthorizationSimpleVerifier.sol';
+                    });
+            });
+
+        function copySource() {
+            const textarea = document.getElementById('sourceCode');
+            textarea.select();
+            document.execCommand('copy');
+            alert('✅ Contract source code copied to clipboard!');
+        }
+
+        function downloadSource() {
+            const source = document.getElementById('sourceCode').value;
+            const blob = new Blob([source], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'AgentAuthorizationSimpleVerifier.sol';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

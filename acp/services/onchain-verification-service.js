@@ -22,22 +22,21 @@ const PORT = process.env.ONCHAIN_VERIFICATION_PORT || 9004;
 // Load deployment info
 const DEPLOYMENT_PATH = path.join(__dirname, '../contracts/deployments.json');
 let VERIFIER_ADDRESS = process.env.BASE_VERIFIER_ADDRESS;
-let provider, verifierContract;
+let REGISTRY_ADDRESS = process.env.BASE_REGISTRY_ADDRESS;
+let provider, verifierContract, registryContract, wallet;
 
 // Minimal Groth16 Verifier ABI (only verifyProof function)
+// Using human-readable format to match contract exactly
 const VERIFIER_ABI = [
-  {
-    "inputs": [
-      { "internalType": "uint256[2]", "name": "_pA", "type": "uint256[2]" },
-      { "internalType": "uint256[2][2]", "name": "_pB", "type": "uint256[2][2]" },
-      { "internalType": "uint256[2]", "name": "_pC", "type": "uint256[2]" },
-      { "internalType": "uint256[]", "name": "_pubSignals", "type": "uint256[]" }
-    ],
-    "name": "verifyProof",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
-  }
+  'function verifyProof(uint[2] memory a, uint[2][2] memory b, uint[2] memory c, uint[2] memory input) public view returns (bool)'
+];
+
+// VerificationRegistry ABI
+const REGISTRY_ABI = [
+  'function verifyAndStore(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[2] calldata _pubSignals) external returns (bytes32 verificationId)',
+  'function getVerificationCount() external view returns (uint256)',
+  'function getVerification(bytes32 verificationId) external view returns (bool verified, uint256 timestamp, uint256 authorized, uint256 proofHash, address submitter)',
+  'event ProofVerified(bytes32 indexed verificationId, address indexed submitter, bool verified, uint256 authorized, uint256 proofHash, uint256 timestamp)'
 ];
 
 // In-memory cache of verified proofs
@@ -64,18 +63,34 @@ async function initializeBlockchain() {
     }
 
     // Connect to Base Sepolia
-    const RPC_URL = process.env.BASE_RPC_URL || 'https://sepolia.base.org';
-    provider = new ethers.JsonRpcProvider(RPC_URL, {
-      chainId: 84532,
-      name: 'base-sepolia'
-    });
+    const RPC_URL = process.env.BASE_RPC_URL || 'https://base-sepolia-rpc.publicnode.com';
+    provider = new ethers.JsonRpcProvider(RPC_URL);
 
-    // Create contract instance
+    // Create wallet for sending transactions
+    const PRIVATE_KEY = process.env.BASE_PRIVATE_KEY;
+    if (PRIVATE_KEY) {
+      wallet = new ethers.Wallet(PRIVATE_KEY, provider);
+      console.log(`💰 Wallet: ${wallet.address}`);
+    }
+
+    // Create contract instances
     verifierContract = new ethers.Contract(
       VERIFIER_ADDRESS,
       VERIFIER_ABI,
       provider
     );
+
+    // Create registry contract if available
+    if (REGISTRY_ADDRESS && wallet) {
+      registryContract = new ethers.Contract(
+        REGISTRY_ADDRESS,
+        REGISTRY_ABI,
+        wallet // Use wallet for transactions
+      );
+      const verificationCount = await registryContract.getVerificationCount();
+      console.log(`📊 Registry contract: ${REGISTRY_ADDRESS}`);
+      console.log(`📈 Total verifications: ${verificationCount}`);
+    }
 
     // Test connection
     const network = await provider.getNetwork();
@@ -132,18 +147,74 @@ app.post('/verify-onchain', async (req, res) => {
     }
 
     console.log(`🔍 Verifying proof on-chain...`);
+    console.log(`📥 Received proof structure:`, JSON.stringify({
+      pi_a: proof.pi_a?.slice(0,2),
+      pi_b: proof.pi_b?.map(c => `[${c?.length} items]`),
+      pi_c: proof.pi_c?.slice(0,2),
+      publicSignals: publicSignals
+    }, null, 2));
+
     const startTime = Date.now();
 
-    // Format proof for contract
-    const formattedProof = formatProofForContract(proof, publicSignals);
+    let transactionHash = null;
+    let isValid = false;
+    let verificationId = null;
 
-    // Call verifyProof on-chain (view function, no gas cost)
-    const isValid = await verifierContract.verifyProof(
-      formattedProof.pA,
-      formattedProof.pB,
-      formattedProof.pC,
-      formattedProof.pubSignals
-    );
+    // Use registry contract if available (creates real TX)
+    if (registryContract) {
+      console.log(`📝 Submitting verification transaction to registry...`);
+
+      // Send transaction
+      const tx = await registryContract.verifyAndStore(
+        proof.pi_a,
+        proof.pi_b,
+        proof.pi_c,
+        publicSignals
+      );
+
+      console.log(`⏳ Transaction sent: ${tx.hash}`);
+      console.log(`⏳ Waiting for confirmation...`);
+
+      // Wait for confirmation
+      const receipt = await tx.wait();
+      transactionHash = receipt.hash;
+
+      // Parse event to get verification result
+      const event = receipt.logs.find(log => {
+        try {
+          const parsed = registryContract.interface.parseLog(log);
+          return parsed && parsed.name === 'ProofVerified';
+        } catch {
+          return false;
+        }
+      });
+
+      if (event) {
+        const parsed = registryContract.interface.parseLog(event);
+        isValid = parsed.args.verified;
+        verificationId = parsed.args.verificationId;
+        console.log(`✅ Verification ID: ${verificationId}`);
+      } else {
+        // Fallback: call view function to get result
+        isValid = await verifierContract.verifyProof(
+          proof.pi_a,
+          proof.pi_b,
+          proof.pi_c,
+          publicSignals
+        );
+      }
+
+      console.log(`✅ Transaction confirmed: ${transactionHash}`);
+    } else {
+      // Fallback to view function (free but no TX)
+      console.log(`📖 Using view function (no transaction created)`);
+      isValid = await verifierContract.verifyProof(
+        proof.pi_a,
+        proof.pi_b,
+        proof.pi_c,
+        publicSignals
+      );
+    }
 
     const verificationTime = Date.now() - startTime;
 
@@ -153,8 +224,11 @@ app.post('/verify-onchain', async (req, res) => {
       valid: isValid,
       publicSignals,
       verificationTime,
+      transactionHash,
+      verificationId,
       verifierAddress: VERIFIER_ADDRESS,
-      explorer: `https://sepolia.basescan.org/address/${VERIFIER_ADDRESS}`
+      registryAddress: REGISTRY_ADDRESS,
+      explorer: `https://sepolia.basescan.org/address/${REGISTRY_ADDRESS || VERIFIER_ADDRESS}`
     };
 
     verificationHistory.push(record);
@@ -167,15 +241,23 @@ app.post('/verify-onchain', async (req, res) => {
     res.json({
       success: true,
       valid: isValid,
+      verified: isValid,
       verification_time_ms: verificationTime,
       verifier_address: VERIFIER_ADDRESS,
+      registry_address: REGISTRY_ADDRESS,
+      transaction_hash: transactionHash,
+      verification_id: verificationId,
       network: 'base-sepolia',
       chain_id: 84532,
-      explorer: `https://sepolia.basescan.org/address/${VERIFIER_ADDRESS}`,
+      explorer: `https://sepolia.basescan.org/address/${REGISTRY_ADDRESS || VERIFIER_ADDRESS}`,
+      transaction_url: transactionHash ? `https://sepolia.basescan.org/tx/${transactionHash}` : null,
       timestamp: Date.now()
     });
 
     console.log(`${isValid ? '✅' : '❌'} On-chain verification: ${isValid ? 'VALID' : 'INVALID'} (${verificationTime}ms)`);
+    if (transactionHash) {
+      console.log(`🔗 TX: https://sepolia.basescan.org/tx/${transactionHash}`);
+    }
 
   } catch (error) {
     console.error('On-chain verification error:', error);

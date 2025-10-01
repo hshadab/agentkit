@@ -22,7 +22,7 @@ app.use(bodyParser.json());
 
 const PORT = process.env.ACP_OPENAI_PORT || 9006;
 const PROOF_SERVICE_URL = process.env.PROOF_SERVICE_URL || 'http://localhost:9001';
-const VERIFICATION_SERVICE_URL = process.env.VERIFICATION_SERVICE_URL || 'http://localhost:9003';
+const VERIFICATION_SERVICE_URL = process.env.VERIFICATION_SERVICE_URL || 'http://localhost:9004';
 const GPT5_PARSER_URL = 'http://localhost:9005';
 
 // In-memory session store (use Redis in production)
@@ -197,7 +197,9 @@ app.post('/checkout_sessions', async (req, res) => {
 
         if (proofResponse.data.success) {
           session.authorization_proof = {
+            success: proofResponse.data.success,
             proof: proofResponse.data.proof,
+            publicSignals: proofResponse.data.publicSignals,
             proof_hash: proofResponse.data.proof_hash,
             decision: proofResponse.data.decision,
             confidence: proofResponse.data.confidence,

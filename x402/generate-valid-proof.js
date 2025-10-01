@@ -1,23 +1,55 @@
 #!/usr/bin/env node
 
 // Generate a valid Groth16 proof for the JOLT decision circuit
+// Option B: Supports a third public signal carrying a commitment (proofHash)
 const snarkjs = require('snarkjs');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
-async function generateProof() {
+/**
+ * Generate Groth16 proof for the decision circuit.
+ * If `opts.proofHashF` is provided, it is passed as the `proofHash` input
+ * for circuits that expose a third public signal [decision, confidence, proofHash].
+ *
+ * Environment overrides for circuit assets:
+ * - X402_GROTH_WASM_PATH: absolute/relative path to circuit wasm
+ * - X402_GROTH_ZKEY_PATH: absolute/relative path to circuit zkey
+ */
+async function generateProof(opts = {}) {
   try {
     console.log('[proof-gen] Generating valid Groth16 proof for JOLT decision circuit...');
     
-    // Input for the circuit (decision and confidence)
+    // Input for the circuit (decision and confidence; optional proofHash)
     const input = {
-      decision: "1",      // Approved
-      confidence: "95"    // 95% confidence
+      decision: (opts && opts.decision != null) ? String(opts.decision) : "1",
+      confidence: (opts && opts.confidence != null) ? String(opts.confidence) : "95"
     };
+    let proofHashF = opts && opts.proofHashF;
+    if (!proofHashF) {
+      // Try environment-provided field or compute from JOLT_PROOF_PATH
+      const envF = process.env.X402_PROOFHASH_F;
+      if (envF) proofHashF = String(envF);
+      if (!proofHashF && process.env.JOLT_PROOF_PATH && fs.existsSync(process.env.JOLT_PROOF_PATH)) {
+        const bytes = fs.readFileSync(process.env.JOLT_PROOF_PATH);
+        const hex = '0x' + crypto.createHash('sha256').update(bytes).digest('hex');
+        // BN254 field mod
+        const r = BigInt('21888242871839275222246405745257275088548364400416034343698204186575808495617');
+        const f = (BigInt(hex) % r).toString();
+        proofHashF = f;
+      }
+    }
+    if (proofHashF) {
+      // Circuits using Option B expect `proofHash` as the 3rd public signal
+      input.proofHash = String(proofHashF);
+      console.log('[proof-gen] Using proofHash signal:', input.proofHash);
+    }
     
     // Paths to circuit files
-    const wasmPath = path.join(__dirname, '../circuits/jolt-verifier/jolt_decision_simple_js/jolt_decision_simple.wasm');
-    const zkeyPath = path.join(__dirname, '../circuits/jolt-verifier/jolt_decision_simple_final.zkey');
+    const wasmPath = process.env.X402_GROTH_WASM_PATH ||
+      path.join(__dirname, '../circuits/jolt-verifier/jolt_decision_simple_js/jolt_decision_simple.wasm');
+    const zkeyPath = process.env.X402_GROTH_ZKEY_PATH ||
+      path.join(__dirname, '../circuits/jolt-verifier/jolt_decision_simple_final.zkey');
     
     // Enforce REAL-only mode: require WASM + zkey assets
     if (!fs.existsSync(wasmPath)) {

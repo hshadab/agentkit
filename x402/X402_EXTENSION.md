@@ -26,3 +26,7 @@ Security notes:
 - Attestations are signed via HMAC (default) or EIP-712 (opt-in) and include TTL. Do not log raw proofs.
 - Use a nonce/TTL on quotes (`quoteId`, `expiresAt`) and a replay window for any HMAC headers.
 
+On-chain anchoring (Option B):
+- The Groth16 circuit exposes a third public signal `proofHash`.
+- The server computes `proofHash` as the BN254 field element of the SHA-256 of the Jolt proof artifact and passes it to the prover.
+- The on-chain verifier checks `[decision, confidence, proofHash]`, binding the attestation’s `proofHash` to the anchor.

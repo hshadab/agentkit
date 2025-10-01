@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ACP Test - No Cache</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a2e; color: #eee; max-width: 800px; margin: 0 auto; }
+        button { padding: 12px 24px; margin: 10px 0; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 6px; font-size: 16px; }
+        button:hover { background: #218838; }
+        button:disabled { background: #666; cursor: not-allowed; }
+        pre { background: #0f0f23; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 12px; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .step { margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px; }
+        .step h3 { margin: 0 0 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🧪 ACP Complete Flow Test</h1>
+    <p>Tests the complete workflow: Proof Generation → On-Chain Verification</p>
+
+    <button id="testBtn" onclick="runFullWorkflow()">▶ Run Complete Workflow</button>
+
+    <div id="output"></div>
+
+    <script>
+        const output = document.getElementById('output');
+
+        function log(step, title, data, isError = false) {
+            const div = document.createElement('div');
+            div.className = 'step';
+            div.innerHTML = `
+                <h3 ${isError ? 'class="error"' : 'class="success"'}>${step}. ${title}</h3>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+            output.appendChild(div);
+        }
+
+        async function runFullWorkflow() {
+            output.innerHTML = '';
+            document.getElementById('testBtn').disabled = true;
+
+            try {
+                // Step 1: Generate Proof
+                log('Step 1', '🔐 Calling Proof Service (port 9001)...', {
+                    endpoint: 'http://localhost:9001/prove-authorization',
+                    payload: {
+                        merchant_id: 'demo_merchant',
+                        amount: 2.5,
+                        budget: 500
+                    }
+                });
+
+                const proofResp = await fetch('http://localhost:9001/prove-authorization', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_rules: {
+                            daily_limit: 1000,
+                            per_transaction_max: 500,
+                            allowed_categories: ['groceries'],
+                            trusted_merchants: { demo_merchant: 0.5 },
+                            spent_today: 0,
+                            transactions_today: 0
+                        },
+                        transaction: {
+                            merchant_id: 'demo_merchant',
+                            amount: 2.5,
+                            category: 'groceries'
+                        }
+                    })
+                });
+
+                if (!proofResp.ok) {
+                    const errorText = await proofResp.text();
+                    throw new Error(`Proof service returned ${proofResp.status}: ${errorText}`);
+                }
+
+                const authProof = await proofResp.json();
+
+                log('Step 1', '✅ Proof Generated Successfully', {
+                    success: authProof.success,
+                    decision: authProof.decision ? 'AUTHORIZED' : 'DENIED',
+                    confidence: Math.round(authProof.confidence * 100) + '%',
+                    has_proof: !!authProof.proof,
+                    has_publicSignals: !!authProof.publicSignals,
+                    proof_structure: authProof.proof ? {
+                        pi_a: 'present (' + authProof.proof.pi_a.length + ' elements)',
+                        pi_b: 'present (' + authProof.proof.pi_b.length + ' elements)',
+                        pi_c: 'present (' + authProof.proof.pi_c.length + ' elements)'
+                    } : 'MISSING',
+                    publicSignals: authProof.publicSignals
+                });
+
+                // Verify proof data exists
+                if (!authProof.success || !authProof.proof || !authProof.publicSignals) {
+                    throw new Error('Proof generation failed: Missing proof or publicSignals');
+                }
+
+                // Step 2: Verify On-Chain
+                log('Step 2', '🔍 Calling Verification Service (port 9004)...', {
+                    endpoint: 'http://localhost:9004/verify-onchain',
+                    sending: {
+                        proof_keys: Object.keys(authProof.proof),
+                        publicSignals: authProof.publicSignals
+                    }
+                });
+
+                const verifyResp = await fetch('http://localhost:9004/verify-onchain', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        proof: authProof.proof,
+                        publicSignals: authProof.publicSignals
+                    })
+                });
+
+                if (!verifyResp.ok) {
+                    const errorText = await verifyResp.text();
+                    throw new Error(`Verification service returned ${verifyResp.status}: ${errorText}`);
+                }
+
+                const verifyData = await verifyResp.json();
+
+                if (verifyData.valid || verifyData.verified) {
+                    log('Step 2', '✅ On-Chain Verification PASSED!', {
+                        valid: verifyData.valid,
+                        verification_time_ms: verifyData.verification_time_ms,
+                        verifier_address: verifyData.verifier_address,
+                        network: verifyData.network,
+                        explorer: verifyData.explorer,
+                        timestamp: new Date(verifyData.timestamp).toISOString()
+                    });
+
+                    // SUCCESS!
+                    const successDiv = document.createElement('div');
+                    successDiv.style.cssText = 'margin: 30px 0; padding: 20px; background: rgba(40, 167, 69, 0.2); border: 2px solid #28a745; border-radius: 8px; text-align: center;';
+                    successDiv.innerHTML = `
+                        <h2 style="color: #28a745; margin: 0 0 10px 0;">🎉 SUCCESS!</h2>
+                        <p style="font-size: 16px;">Complete workflow working end-to-end:</p>
+                        <p style="font-size: 14px;">✅ Proof Generation (${authProof.processing_time_ms || 'N/A'}ms)<br>
+                        ✅ On-Chain Verification (${verifyData.verification_time_ms}ms)<br>
+                        ✅ Decision: ${authProof.decision ? 'AUTHORIZED' : 'DENIED'} (${Math.round(authProof.confidence * 100)}% confidence)</p>
+                        <a href="${verifyData.explorer}" target="_blank" style="color: #28a745;">View Verifier Contract →</a>
+                    `;
+                    output.appendChild(successDiv);
+
+                } else {
+                    throw new Error('Verification returned false: ' + JSON.stringify(verifyData));
+                }
+
+            } catch (error) {
+                log('ERROR', '❌ Workflow Failed', {
+                    message: error.message,
+                    stack: error.stack
+                }, true);
+            } finally {
+                document.getElementById('testBtn').disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

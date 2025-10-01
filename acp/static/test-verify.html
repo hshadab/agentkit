@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verification Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a2e; color: #eee; }
+        button { padding: 10px 20px; margin: 10px 0; cursor: pointer; }
+        pre { background: #0f0f23; padding: 15px; border-radius: 8px; overflow-x: auto; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Verification Test</h1>
+
+    <button onclick="testFlow()">Test Full Flow</button>
+    <button onclick="testVerifyOnly()">Test Verification Only</button>
+
+    <div id="output"></div>
+
+    <script>
+        const output = document.getElementById('output');
+
+        async function log(msg, data) {
+            const div = document.createElement('div');
+            div.innerHTML = `<h3>${msg}</h3><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            output.appendChild(div);
+        }
+
+        async function testFlow() {
+            output.innerHTML = '';
+
+            try {
+                // Step 1: Generate proof
+                log('📝 Calling proof service...', {
+                    url: 'http://localhost:9001/prove-authorization',
+                    payload: {
+                        user_rules: {
+                            daily_limit: 1000,
+                            spent_today: 0,
+                            trusted_merchants: { demo_merchant: 0.5 }
+                        },
+                        transaction: {
+                            merchant_id: 'demo_merchant',
+                            amount: 2.5,
+                            category: 'groceries'
+                        }
+                    }
+                });
+
+                const proofResp = await fetch('http://localhost:9001/prove-authorization', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_rules: {
+                            daily_limit: 1000,
+                            per_transaction_max: 500,
+                            allowed_categories: ['groceries'],
+                            trusted_merchants: { demo_merchant: 0.5 },
+                            spent_today: 0,
+                            transactions_today: 0
+                        },
+                        transaction: {
+                            merchant_id: 'demo_merchant',
+                            amount: 2.5,
+                            category: 'groceries'
+                        }
+                    })
+                });
+
+                const proofData = await proofResp.json();
+                log('✅ Proof generated', {
+                    success: proofData.success,
+                    decision: proofData.decision,
+                    confidence: proofData.confidence,
+                    has_proof: !!proofData.proof,
+                    proof_keys: proofData.proof ? Object.keys(proofData.proof) : [],
+                    publicSignals: proofData.publicSignals
+                });
+
+                // Step 2: Verify proof
+                log('🔍 Calling verification service...', {
+                    url: 'http://localhost:9004/verify-onchain',
+                    has_proof: !!proofData.proof,
+                    has_publicSignals: !!proofData.publicSignals
+                });
+
+                const verifyResp = await fetch('http://localhost:9004/verify-onchain', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        proof: proofData.proof,
+                        publicSignals: proofData.publicSignals
+                    })
+                });
+
+                const verifyData = await verifyResp.json();
+                log(verifyData.valid ? '✅ Verification PASSED' : '❌ Verification FAILED', verifyData);
+
+            } catch (error) {
+                log('❌ ERROR', { message: error.message, stack: error.stack });
+            }
+        }
+
+        async function testVerifyOnly() {
+            output.innerHTML = '';
+            log('🔍 Testing with known good proof...', {});
+
+            try {
+                const verifyResp = await fetch('http://localhost:9004/verify-onchain', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        proof: {
+                            pi_a: [0, 0],
+                            pi_b: [[0, 0], [0, 0]],
+                            pi_c: [0, 0]
+                        },
+                        publicSignals: [1, 100]
+                    })
+                });
+
+                const verifyData = await verifyResp.json();
+                log('Response:', verifyData);
+            } catch (error) {
+                log('❌ ERROR', { message: error.message });
+            }
+        }
+    </script>
+</body>
+</html>

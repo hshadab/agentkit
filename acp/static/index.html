@@ -1,8 +1,12 @@
 <!DOCTYPE html>
+<!-- Version: 2025-10-01-v10-FINAL - Real TX with specific verification link + verifier contract only -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Verified Agentic Commerce - Trustless Agents for ACP</title>
     <script src="https://js.stripe.com/v3/"></script>
     <style>
@@ -453,13 +457,7 @@
             <input type="hidden" id="merchantTrust" value="0.5">
             <input type="hidden" id="merchantId" value="demo_merchant">
             <input type="hidden" id="amount" value="2.50">
-            <textarea id="naturalLanguageRules" style="display:none;">Allow up to $500 per month on groceries from merchants with trust score above 0.8. Approve any single purchase under $250. No transaction velocity limits.</textarea>
-
-            <!-- Hidden Stripe Card Element -->
-            <div style="display: none;" id="stripeCardSection">
-                <div id="card-element"></div>
-                <div id="card-errors"></div>
-            </div>
+            <textarea id="naturalLanguageRules" style="display:none;"></textarea>
 
             <div class="button-container">
                 <button class="button" id="processBtn" onclick="processTransaction()">
@@ -616,42 +614,6 @@
         const STRIPE_PUBLISHABLE_KEY = 'pk_test_51SCt9gIkeqy3Kz9hcsMwGihQY5BeeaJlrPMPbcmhaCoNrZRYikZ70TN0nDJI7pOgGwObkFjYCsDmnGx4cFHmnxkQ00YJkO5zqO';
 
         let currentStep = 0;
-        let stripe, cardElement;
-
-        // Initialize Stripe Elements
-        function initStripe() {
-            stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
-            const elements = stripe.elements();
-            cardElement = elements.create('card', {
-                style: {
-                    base: {
-                        color: '#ffffff',
-                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                        fontSize: '16px',
-                        '::placeholder': {
-                            color: '#aab7c4'
-                        }
-                    },
-                    invalid: {
-                        color: '#ff4444',
-                        iconColor: '#ff4444'
-                    }
-                }
-            });
-            cardElement.mount('#card-element');
-
-            cardElement.on('change', (event) => {
-                const displayError = document.getElementById('card-errors');
-                if (event.error) {
-                    displayError.textContent = event.error.message;
-                } else {
-                    displayError.textContent = '';
-                }
-            });
-        }
-
-        // Initialize on page load
-        window.addEventListener('load', initStripe);
 
         async function processTransaction() {
             // Reset workflow
@@ -675,10 +637,24 @@
                 await updateStep(1, 'active', 'Collecting transaction data...');
                 const budgetRemaining = parseFloat(document.getElementById('budgetRemaining').value);
                 const merchantTrust = parseFloat(document.getElementById('merchantTrust').value);
-                const merchantId = document.getElementById('merchantId').value;
+                const merchantId = document.getElementById('merchantId').value.trim();
                 const amount = parseFloat(document.getElementById('amount').value);
                 const naturalLanguageRules = document.getElementById('naturalLanguageRules').value.trim();
                 const agentType = document.getElementById('agentType').value;
+
+                // Validate required fields
+                if (!merchantId || merchantId.length === 0) {
+                    throw new Error('Please fill in the Merchant ID field');
+                }
+                if (isNaN(amount) || amount <= 0) {
+                    throw new Error('Please fill in a valid Amount (must be greater than 0)');
+                }
+                if (isNaN(budgetRemaining) || budgetRemaining < 0) {
+                    throw new Error('Please enter a valid Budget Remaining');
+                }
+                if (isNaN(merchantTrust) || merchantTrust < 0 || merchantTrust > 1) {
+                    throw new Error('Please enter a valid Merchant Trust (0.0 to 1.0)');
+                }
 
                 const useNaturalLanguage = naturalLanguageRules.length > 0;
 
@@ -757,6 +733,21 @@
                 const decision = authProof.decision || false;
                 const confidence = authProof.confidence || 0;
 
+                console.log('🔍 DEBUG: Received authProof:', {
+                    full_object: authProof,
+                    success: authProof.success,
+                    has_proof: !!authProof.proof,
+                    has_publicSignals: !!authProof.publicSignals,
+                    decision,
+                    confidence,
+                    proof_keys: authProof.proof ? Object.keys(authProof.proof) : []
+                });
+
+                // Verify proof was generated successfully
+                if (!authProof.success || !authProof.proof || !authProof.publicSignals) {
+                    throw new Error('Proof generation failed: ' + (authProof.error || 'Missing proof data. Check that all fields are filled.'));
+                }
+
                 // Show Step 2 result: Agent Decision with 5-parameter evaluation
                 await updateStep(2, 'active', '🧠 Running agent inference...');
                 await sleep(500);
@@ -819,54 +810,73 @@
                 // Call on-chain verification service
                 let verificationSucceeded = false;
                 try {
-                    // Use the proof data from authProof
-                    const proofPayload = authProof.proof || {
-                        a: [0, 0],
-                        b: [[0, 0], [0, 0]],
-                        c: [0, 0],
-                        publicSignals: [decision ? 1 : 0, Math.floor(confidence * 100)]
-                    };
+                    // Double-check proof exists before verification
+                    if (!authProof.proof || !authProof.publicSignals) {
+                        throw new Error('Proof generation incomplete. Proof data missing. Please ensure merchant_id and amount fields are filled.');
+                    }
 
+                    console.log('🔍 DEBUG: Sending to verifier:', {
+                        has_proof: true,
+                        proof_keys: Object.keys(authProof.proof),
+                        publicSignals: authProof.publicSignals,
+                        proof_structure: {
+                            pi_a: authProof.proof.pi_a ? 'OK' : 'MISSING',
+                            pi_b: authProof.proof.pi_b ? 'OK' : 'MISSING',
+                            pi_c: authProof.proof.pi_c ? 'OK' : 'MISSING'
+                        }
+                    });
+
+                    // Use authProof.proof directly (it has pi_a, pi_b, pi_c already)
                     const verifyResponse = await fetch('http://localhost:9004/verify-onchain', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            proof: proofPayload,
-                            publicSignals: proofPayload.publicSignals || [decision ? 1 : 0, Math.floor(confidence * 100)]
+                            proof: authProof.proof,
+                            publicSignals: authProof.publicSignals
                         })
                     });
 
                     const verifyData = await verifyResponse.json();
+                    console.log('🔍 DEBUG: Verifier response:', verifyData);
 
                     if (verifyData.valid || verifyData.verified) {
                         verificationSucceeded = true;
+                        const verificationTime = verifyData.verification_time_ms || 0;
+                        const txHash = verifyData.transaction_hash;
+                        const txUrl = verifyData.transaction_url;
+
                         document.getElementById('result4').innerHTML = `
                             <div style="margin-bottom: 12px;">
                                 <div style="font-weight: 600; font-size: 1.1em; margin-bottom: 8px;">✅ Verified On-Chain</div>
-                                <div style="font-size: 0.85em; opacity: 0.8;">Network: Base Sepolia (L2)</div>
+                                <div style="font-size: 0.85em; opacity: 0.8;">Network: Base Sepolia (L2) • Verification time: ${verificationTime}ms</div>
                             </div>
 
                             <div style="background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 6px; font-size: 0.85em; margin-bottom: 12px;">
                                 <div><strong>Proof Type:</strong> Groth16 zkSNARK</div>
                                 <div style="margin-top: 4px;"><strong>Decision:</strong> ${decision ? 'AUTHORIZED' : 'DENIED'}</div>
                                 <div style="margin-top: 4px;"><strong>Confidence:</strong> ${Math.round(confidence * 100)}%</div>
+                                <div style="margin-top: 4px;"><strong>Verifier:</strong> ${VERIFIER_ADDRESS.substring(0, 10)}...${VERIFIER_ADDRESS.substring(VERIFIER_ADDRESS.length - 8)}</div>
+                                ${txHash ? `<div style="margin-top: 4px;"><strong>TX Hash:</strong> ${txHash.substring(0, 10)}...${txHash.substring(txHash.length - 8)}</div>` : ''}
+                                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.8em; opacity: 0.7;">
+                                    ${txHash ? '⛽ Real transaction - Gas cost: ~$0.01-0.05' : '⚡ View function (read-only) - no gas cost'}
+                                </div>
                             </div>
 
                             <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <a href="${VERIFIER_EXPLORER}/address/${VERIFIER_ADDRESS}"
+                                ${txHash ? `
+                                <a href="${txUrl}"
+                                   target="_blank"
+                                   class="step-link blockchain"
+                                   style="text-decoration: none; padding: 10px 14px; background: rgba(240, 147, 251, 0.15); border: 2px solid rgba(240, 147, 251, 0.5); border-radius: 8px; display: block; font-size: 0.9em; font-weight: 600;">
+                                    🔗 View This Verification Transaction →
+                                </a>
+                                ` : ''}
+                                <a href="${VERIFIER_EXPLORER}/address/${VERIFIER_ADDRESS}#code"
                                    target="_blank"
                                    class="step-link blockchain"
                                    style="text-decoration: none; padding: 8px 12px; background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 6px; display: block; font-size: 0.85em;">
                                     🔐 View Verifier Contract →
                                 </a>
-                                ${verifyData.transactionHash ? `
-                                <a href="${VERIFIER_EXPLORER}/tx/${verifyData.transactionHash}"
-                                   target="_blank"
-                                   class="step-link blockchain"
-                                   style="text-decoration: none; padding: 8px 12px; background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 6px; display: block; font-size: 0.85em;">
-                                    🔗 View Verification TX →
-                                </a>
-                                ` : ''}
                             </div>
                         `;
                         await updateStep(4, 'completed');
@@ -886,7 +896,7 @@
                             <div style="font-size: 0.8em; opacity: 0.9; word-break: break-word;">${error.message}</div>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 8px;">
-                            <a href="${VERIFIER_EXPLORER}/address/${VERIFIER_ADDRESS}"
+                            <a href="${VERIFIER_EXPLORER}/address/${VERIFIER_ADDRESS}#code"
                                target="_blank"
                                class="step-link blockchain"
                                style="text-decoration: none; padding: 8px 12px; background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 6px; display: block; font-size: 0.85em;">
@@ -1008,18 +1018,30 @@
                         `;
                     }
                 } else if (decision && !checkoutSession.id) {
-                    // Authorized but no session (manual mode - payment not supported)
+                    // Authorized but no ACP session (direct proof service mode)
                     document.getElementById('result5').innerHTML = `
-                        Status: ✅ Authorized<br>
-                        Confidence: ${(confidence * 100).toFixed(2)}%<br>
-                        Note: Payment requires natural language mode
+                        <div style="margin-bottom: 12px;">
+                            <div style="font-weight: 600; font-size: 1.1em; margin-bottom: 8px;">✅ Authorization Verified</div>
+                            <div style="font-size: 0.85em; opacity: 0.8;">Confidence: ${(confidence * 100).toFixed(0)}%</div>
+                        </div>
+
+                        <div style="background: rgba(40, 167, 69, 0.1); padding: 10px; border-radius: 6px; font-size: 0.85em;">
+                            <div style="font-weight: 600; margin-bottom: 4px;">✅ zkML Proof Verified</div>
+                            <div style="font-size: 0.8em; opacity: 0.9;">Transaction authorized with cryptographic proof</div>
+                        </div>
                     `;
                 } else {
                     // Denied
                     document.getElementById('result5').innerHTML = `
-                        Status: ❌ Denied<br>
-                        Reason: Transaction not authorized<br>
-                        Confidence: ${(confidence * 100).toFixed(2)}%
+                        <div style="margin-bottom: 12px;">
+                            <div style="font-weight: 600; font-size: 1.1em; margin-bottom: 8px; color: #ff4444;">❌ Transaction Denied</div>
+                            <div style="font-size: 0.85em; opacity: 0.8;">Confidence: ${(confidence * 100).toFixed(0)}%</div>
+                        </div>
+
+                        <div style="background: rgba(220, 53, 69, 0.1); padding: 10px; border-radius: 6px; font-size: 0.85em;">
+                            <div style="font-weight: 600; margin-bottom: 4px;">🚫 Payment Blocked</div>
+                            <div style="font-size: 0.8em; opacity: 0.9;">Agent authorization rules prevented this transaction</div>
+                        </div>
                     `;
                 }
 
@@ -1062,7 +1084,7 @@
                 // Approved scenario: $2.50 within $500 budget
                 document.getElementById('budgetRemaining').value = '500';
                 document.getElementById('amount').value = '2.50';
-                document.getElementById('naturalLanguageRules').value = 'Allow up to $500 per month on groceries from merchants with trust score above 0.8. Approve any single purchase under $250. No transaction velocity limits.';
+                document.getElementById('naturalLanguageRules').value = 'Allow up to $500 per month on groceries from merchants with trust score above 0.3. Maximum $250 per transaction.';
 
                 // Highlight pass button, dim fail button
                 passBtn.style.opacity = '1';
@@ -1078,7 +1100,7 @@
                 // Denied scenario: $300 exceeds $50 budget
                 document.getElementById('budgetRemaining').value = '50';
                 document.getElementById('amount').value = '300';
-                document.getElementById('naturalLanguageRules').value = 'Allow up to $50 per month total. No single transaction above $25.';
+                document.getElementById('naturalLanguageRules').value = 'Allow up to $50 per month total. No single transaction over $25.';
 
                 // Highlight fail button, dim pass button
                 failBtn.style.opacity = '1';
@@ -1113,21 +1135,20 @@
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
-        // Check service health on load and initialize default scenario
+        // Initialize default scenario on load
         window.addEventListener('load', async () => {
-            try {
-                const response = await fetch(`${ACP_SERVICE}/health`);
-                if (response.ok) {
-                    console.log('✅ Services are running');
-                } else {
-                    throw new Error('Services not responding');
-                }
-            } catch (error) {
-                alert('⚠️ Backend services not running.\n\nPlease start them with:\n./start-all-services.sh');
-            }
-
             // Initialize with "pass" scenario selected by default
             loadScenario('pass');
+
+            // Check service health silently
+            try {
+                const response = await fetch(`${ACP_SERVICE}/health`, { method: 'GET' });
+                if (response.ok) {
+                    console.log('✅ ACP service is running on port 9006');
+                }
+            } catch (error) {
+                console.warn('⚠️ ACP service not responding. Full payment flow requires: node services/acp-openai-server.js');
+            }
         });
     </script>
 </body>

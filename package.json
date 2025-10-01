@@ -10,6 +10,7 @@
     "http-proxy-middleware": "^3.0.5",
     "minimist": "^1.2.8",
     "node-fetch": "^3.3.2",
+    "onnxruntime-node": "^1.18.0",
     "snarkjs": "^0.7.5",
     "solc": "^0.8.30",
     "viem": "^2.37.8",

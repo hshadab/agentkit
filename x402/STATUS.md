@@ -35,6 +35,8 @@ This repository contains a credible reference demo aligned with the Coinbase x40
   - `GET /attest/anchor/:id` → Anchor status for on-chain verification
   - `GET /ui/last-redemption` → Last payment status
   - `GET /health` → Service health check
+  - `GET /verifier/info` → Verifier address/ABI/bytecode presence on Base Sepolia
+  - `GET /ui/onnx/health` → ONNX health proxy for UI
 
 ### 3. zkML Backend (`api/zkml-llm-decision-backend.js`)
 - **Port**: 8002
@@ -94,6 +96,13 @@ X402_ETH_VERIFY_MODE=backend
 X402_ATTEST_EIP712=true
 ZKML_VERIFIER_ADDRESS=0x6121Fd93594C316B78e74B91B89A06d3Bb682a8F
 LLM_PROVER_BIN=/home/hshadab/agentkit/jolt-atlas/target/release/llm_prover
+
+# Option B (3-signal Groth16)
+# Require proofHash as a third public signal and verify it matches the Jolt artifact
+X402_REQUIRE_PROOFHASH_SIGNAL=true
+# Override circuit asset paths if using a new 3-signal circuit
+X402_GROTH_WASM_PATH=/abs/path/to/decision_with_commitment_js/decision_with_commitment.wasm
+X402_GROTH_ZKEY_PATH=/abs/path/to/decision_with_commitment_final.zkey
 ```
 
 ## Recent Updates (2025-09-26)
@@ -117,12 +126,19 @@ LLM_PROVER_BIN=/home/hshadab/agentkit/jolt-atlas/target/release/llm_prover
    - Security considerations and troubleshooting
 
 ### Known Working Features
-- ✅ zkML proof generation (~500ms)
+- ✅ Real ONNX inference called from proof-gate (no fallback)
+- ✅ zkML proof generation (~500ms) with 3rd signal commitment
 - ✅ Attestation with on-chain anchoring
 - ✅ x402 preflight (returns Accepts)
 - ✅ MetaMask EIP-712 signing
 - ✅ USDC payment execution (0.01 USDC)
 - ✅ Server auto‑pay after anchor confirm (X402_AUTOPAY=anchor_confirmed)
+
+### Deep Integration Highlights
+- ONNX decision is consumed before proving; if `X402_ENFORCE_AI=true` and AI denies, no proof/attestation/anchor/payment occurs.
+- Jolt‑Atlas commitment is carried through to a 3‑signal Groth16 circuit and enforced on-chain.
+- Attestation binds proof → intent → server policy via `proofHash`/`intentHash`/`acceptsHash`.
+- Session‑bound anchor uses in‑memory SNARK proof + signals, eliminating races.
 
 ### Current Verifier (Base Sepolia)
 - Storage verifier: `0x2fD8885cC60B742ceBf5F9305f80BD0CCF3d14E8`
@@ -193,6 +209,8 @@ curl http://localhost:8002/zkml/status/<session_id>
 - [ ] Implement payment receipt storage
 - [ ] Add webhook support for payment notifications
 - [ ] UI banner for on‑chain anchor status and auto‑payment result
+ - [x] Build 3-signal circuit and artifacts (Option B)
+ - [ ] Deploy Option B verifier and update env vars
 
 ### Future Enhancements
 - [ ] Multi-token support beyond USDC

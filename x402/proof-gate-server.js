@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const { issueAttestation, verifyAttestation } = require('./attestation');
 const fs = require('fs');
 const { generateProof } = require('./generate-valid-proof');
-const { verifyServerRequest } = require('./x402-fallback');
+// Strict mode: legacy HMAC helpers removed
 const { createDemoPaymentHeader, processX402Payment } = require('./production-payment-handler');
 const { verifyOnChain, checkVerificationStatus } = require('./groth16-verifier-service');
 const path = require('path');
@@ -66,7 +66,7 @@ const VERIFY_ON_CHAIN = env('VERIFY_ON_CHAIN', '') === 'true';
 const ETH_VERIFY_MODE = env('X402_ETH_VERIFY_MODE', 'backend'); // 'backend' | 'cli' | 'unified'
 const X402_RESOURCE_PATH = '/x402/pay';
 
-// Base Sepolia USDC (as used by x402-express demo Accepts)
+// Base Sepolia USDC
 const DEFAULT_USDC_BASE_SEPOLIA = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
 
 const DECISION_THRESHOLD = parseInt(env('X402_ZKML_DECISION_THRESHOLD', '80'), 10);
@@ -75,16 +75,28 @@ const DECISION_THRESHOLD = parseInt(env('X402_ZKML_DECISION_THRESHOLD', '80'), 1
 const AUTOPAY_MODE = (env('X402_AUTOPAY', '').toLowerCase());
 const SELF_PORT = Number(env('X402_ZKML_PORT', '8610'));
 const autopayProcessed = new Set();
-// Ephemeral quote store for fallback flow: quoteId -> { expiresAt, accepts }
+// Ephemeral quote store for Accepts TTL: quoteId -> { expiresAt, accepts }
 const QUOTES = new Map();
 
 function sha256Hex(input) {
   return crypto.createHash('sha256').update(input).digest('hex');
 }
 
+// SNARK field for BN254
+const SNARK_FIELD = BigInt('21888242871839275222246405745257275088548364400416034343698204186575808495617');
+function hexToField(hex) {
+  try {
+    const clean = String(hex || '0x').replace(/^0x/i, '');
+    if (!clean) return '0';
+    const n = BigInt('0x' + clean);
+    const r = n % SNARK_FIELD;
+    return r.toString();
+  } catch (e) { return '0'; }
+}
+
 app.get('/health', (req, res) => {
   const onChain = env('X402_ZKML_VERIFY_ETH', '') === 'true' || VERIFY_ON_CHAIN;
-  res.json({ ok: true, unifiedBackend: UNIFIED_BACKEND, onChain: !!onChain, ethVerifyMode: ETH_VERIFY_MODE });
+  res.json({ ok: true, unifiedBackend: UNIFIED_BACKEND, onChain: !!onChain, ethVerifyMode: ETH_VERIFY_MODE, onnx: { url: env('X402_ONNX_URL','http://127.0.0.1:8009'), require: env('X402_REQUIRE_ONNX','true') } });
 });
 
 // In-memory anchor store for non-blocking on-chain verification
@@ -109,6 +121,10 @@ app.post('/attest', async (req, res) => {
 
     // Derive decision/confidence from provided proof shape (best-effort)
     const { decision, confidence } = extractDecisionConfidence(proof, publicInputs);
+    // Enforce: do not issue attestation if AI denied
+    if ((env('X402_ENFORCE_AI','true').toLowerCase() === 'true') && decision !== 1) {
+      return res.status(402).json({ error: 'ai_denied', details: { decision, confidence } });
+    }
 
     // Canonical commerce bindings
     const canonCart = cart && typeof cart === 'object' ? cart : defaultCart();
@@ -137,29 +153,69 @@ app.post('/attest', async (req, res) => {
     let onChain = env('X402_ZKML_VERIFY_ETH', '') === 'true' || VERIFY_ON_CHAIN;
     let eth = null;
     let attestationId = sha256Hex(`${proofHash}:${Date.now()}`);
+    // Try to bind to originating zkML session for strong consistency
+    let sessionId = extra?.sessionId || null;
+    if (!sessionId && proofHash) {
+      try {
+        for (const [sid, sess] of ZKML_SESSIONS.entries()) {
+          if (sess && String(sess.joltProofHash).toLowerCase() === String(proofHash).toLowerCase()) { sessionId = sid; break; }
+        }
+      } catch {}
+    }
     if (env('X402_ZKML_VERIFY_ETH','') === 'true' || VERIFY_ON_CHAIN) {
-  anchors.set(attestationId, { status: 'pending', startedAt: Date.now() });
+  anchors.set(attestationId, { status: 'pending', sessionId, startedAt: Date.now() });
   METRICS.anchorSubmitted++;
   queueImmediate(async () => {
         try {
           console.log('[anchor] Starting REAL on-chain verification...');
           
           // Use REAL on-chain verification with deployed Groth16 verifier
-          // Load the proof generated in Step 2 (required; no fallback)
+          // Prefer session-bound proof to avoid race conditions; if missing, read latest file
           let validProof;
           let verifySignals;
+          const sessId = anchors.get(attestationId)?.sessionId;
+          let usedSource = 'session';
           try {
-            const proofData = require('./generated-proof.json');
-            if (!proofData || !proofData.proof || !Array.isArray(proofData.publicSignals)) {
-              throw new Error('generated-proof.json invalid');
+            if (sessId) {
+              const sess = ZKML_SESSIONS.get(sessId);
+              if (sess && Array.isArray(sess.publicSignals) && sess.publicSignals.length >= 2 && sess.snarkProof) {
+                verifySignals = sess.publicSignals.map(String);
+                validProof = sess.snarkProof;
+                console.log('[anchor] Using session publicSignals + in-memory proof');
+              } else if (sess && Array.isArray(sess.publicSignals) && sess.publicSignals.length >= 2) {
+                verifySignals = sess.publicSignals.map(String);
+                const proofData = require('./generated-proof.json');
+                if (!proofData || !proofData.proof) throw new Error('generated-proof.json invalid');
+                validProof = proofData.proof;
+                console.log('[anchor] Using session publicSignals with latest proof file');
+              } else {
+                usedSource = 'file';
+                throw new Error('session_missing_or_incomplete');
+              }
+            } else {
+              usedSource = 'file';
+              throw new Error('no_session');
             }
-            validProof = proofData.proof;
-            verifySignals = proofData.publicSignals.map(String);
-            console.log('[anchor] Using generated proof from generated-proof.json');
-          } catch (e) {
-            throw new Error('generated-proof.json missing or invalid. Run `npm run generate:proof` after placing real circuit assets.');
+          } catch (_e) {
+            // Fallback to file-only
+            try {
+              const proofData = require('./generated-proof.json');
+              if (!proofData || !proofData.proof || !Array.isArray(proofData.publicSignals)) {
+                throw new Error('generated-proof.json invalid');
+              }
+              validProof = proofData.proof;
+              verifySignals = proofData.publicSignals.map(String);
+              console.log('[anchor] Using generated proof from generated-proof.json');
+            } catch (e2) {
+              throw new Error('generated-proof.json missing or invalid. Run `npm run generate:proof` after placing real circuit assets.');
+            }
           }
-          
+
+          // Option B strict mode: require third public signal
+          if ((env('X402_REQUIRE_PROOFHASH_SIGNAL','').toLowerCase() === 'true') && (!Array.isArray(verifySignals) || verifySignals.length < 3)) {
+            throw new Error('proofHash public signal required but missing');
+          }
+
           const formattedProof = {
             pi_a: validProof.pi_a.slice(0, 2), // Remove the "1" at the end if present
             pi_b: [validProof.pi_b[0], validProof.pi_b[1]], // Use only first two elements
@@ -167,6 +223,26 @@ app.post('/attest', async (req, res) => {
           };
           
           // Public signals derived from generated-proof.json
+          // Option B: Enforce 3rd signal matches attestation proofHash commitment
+          try {
+            if (Array.isArray(verifySignals) && verifySignals.length >= 3) {
+              const expected = hexToField(proofHash);
+              if (String(verifySignals[2]) !== String(expected)) {
+                throw new Error(`proofhash_signal_mismatch: expected ${expected}, got ${verifySignals[2]}`);
+              }
+            }
+          } catch (mismatch) {
+            anchors.set(attestationId, {
+              status: 'error',
+              error: String(mismatch?.message || mismatch),
+              startedAt: anchors.get(attestationId)?.startedAt,
+              finishedAt: Date.now(),
+              details: { source: usedSource || 'unknown', verifySignals }
+            });
+            METRICS.anchorError++;
+            logEvent('anchor_error', { attestationId, error: 'proofhash_signal_mismatch', source: usedSource || 'unknown' });
+            return;
+          }
           
           // Execute REAL on-chain verification
           const result = await verifyOnChain(formattedProof, verifySignals);
@@ -291,44 +367,8 @@ function requireAttestation(req, res, next) {
   next();
 }
 
-// Try to mount real x402-express middleware (optional)
-let HAS_X402_MIDDLEWARE = false;
-try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { paymentMiddleware } = require('x402-express');
-  const routesConfig = {
-    // Protect this path with a small USDC fee on Base Sepolia
-    '/x402/pay': { price: env('X402_PRICE', '$0.01'), network: env('X402_NETWORK', 'base-sepolia'), config: { description: 'Demo protected action' } },
-  };
-  const facilitator = { url: env('X402_FACILITATOR_URL', 'https://x402.org/facilitator') };
-  const middleware = paymentMiddleware(env('X402_PAYTO', '0x1111111111111111111111111111111111111111'), routesConfig, facilitator);
-
-  app.post('/x402/pay', requireAttestation, middleware, async (req, res) => {
-    // Verify intent binding
-    const computedIntentHash = sha256Hex([req.method.toUpperCase(), req.path, sha256Hex(JSON.stringify(req.body || {}))].join('\n'));
-    if (req.zkmlAttestation.intentHash && req.zkmlAttestation.intentHash !== computedIntentHash) {
-      return res.status(402).json({ error: 'intent_mismatch' });
-    }
-    // Verify accepts binding matches server config
-    const acceptsBinding = { resource: req.path, network: env('X402_NETWORK','base-sepolia'), payTo: env('X402_PAYTO','0x1111111111111111111111111111111111111111'), asset: env('X402_ASSET', DEFAULT_USDC_BASE_SEPOLIA), price: env('X402_PRICE','$0.01') };
-    const computedAcceptsHash = sha256Hex(JSON.stringify(acceptsBinding));
-    if (req.zkmlAttestation.acceptsHash && req.zkmlAttestation.acceptsHash !== computedAcceptsHash) {
-      return res.status(402).json({ error: 'accepts_mismatch' });
-    }
-    // Basic client/merchant binding checks can be added here
-    // Let x402-express handle validation and execution; do not re-execute here
-    if (res.headersSent) return; // middleware likely already responded
-    return res.json({ ok: true, message: 'x402 payment + zkML attestation accepted', attested: req.zkmlAttestation });
-  });
-
-  HAS_X402_MIDDLEWARE = true;
-  console.log('[proof-gate] x402-express middleware mounted at POST /x402/pay');
-} catch (e) {
-  console.log('[proof-gate] x402-express not installed; using fallback /x402/protected');
-}
-
-// Fallback preflight for /x402/pay when x402-express is not installed
-if (!HAS_X402_MIDDLEWARE) {
+// Primary x402 /x402/pay route (strict, no middleware)
+{
   app.post('/x402/pay', requireAttestation, async (req, res) => {
     // Verify intent binding
     const computedIntentHash = sha256Hex([req.method.toUpperCase(), req.path, sha256Hex(JSON.stringify(req.body || {}))].join('\n'));
@@ -342,7 +382,7 @@ if (!HAS_X402_MIDDLEWARE) {
     if (attn.acceptsHash && attn.acceptsHash !== computedAcceptsHash) {
       return res.status(402).json({ error: 'accepts_mismatch' });
     }
-    // If client provided an X-PAYMENT header, process it directly (fallback path)
+    // If client provided an X-PAYMENT header, process it directly
     const paymentHeader = req.header('X-PAYMENT');
     const expected = {
       network: env('X402_NETWORK','base-sepolia'),
@@ -418,83 +458,20 @@ if (!HAS_X402_MIDDLEWARE) {
 }
 
 // Step 2: x402-protected action; require a valid attestation header
-app.post('/x402/protected', async (req, res) => {
-  // In a real x402 integration, verify x402 headers using @x402/server.
-  // For now, we strictly verify both x402 headers (fallback HMAC) and the attestation token.
-  const attn = req.header('X-ZKML-Attestation');
-  if (!attn) {
-    return res.status(402).json({ error: 'attestation_required' });
-  }
-  const result = verifyAttestation(attn);
-  if (!result.ok) {
-    return res.status(402).json({ error: 'invalid_attestation', details: result.error });
-  }
-  const v = verifyServerRequest(req);
-  if (!v.ok) {
-    return res.status(402).json({ error: 'x402_verification_failed', details: v.error });
-  }
-  // Verify intent binding
-  const computedIntentHash = sha256Hex([req.method.toUpperCase(), req.path, sha256Hex(JSON.stringify(req.body || {}))].join('\n'));
-  if (result.payload.intentHash && result.payload.intentHash !== computedIntentHash) {
-    return res.status(402).json({ error: 'intent_mismatch' });
-  }
-  // Verify accepts binding
-  const acceptsBinding = {
-    resource: req.path,
-    network: env('X402_NETWORK','base-sepolia'),
-    payTo: env('X402_PAYTO','0x1111111111111111111111111111111111111111'),
-    asset: env('X402_ASSET', DEFAULT_USDC_BASE_SEPOLIA),
-    price: env('X402_PRICE','$0.01')
-  };
-  const computedAcceptsHash = sha256Hex(JSON.stringify(acceptsBinding));
-  if (result.payload.acceptsHash && result.payload.acceptsHash !== computedAcceptsHash) {
-    return res.status(402).json({ error: 'accepts_mismatch' });
-  }
-  // Client binding
-  if (result.payload.clientId && v.clientId && result.payload.clientId !== v.clientId) {
-    return res.status(402).json({ error: 'client_mismatch' });
-  }
-  const { payload } = result;
-  // Optionally re-check policy or re-verify with unified backend if high assurance is needed
-  return res.json({
-    ok: true,
-    message: 'x402-protected action authorized by zkML attestation',
-    attested: {
-      agentId: payload.agentId,
-      modelId: payload.modelId,
-      proofHash: payload.proofHash,
-      intentHash: payload.intentHash,
-      acceptsHash: payload.acceptsHash,
-      merchantId: payload.merchantId,
-      clientId: payload.clientId,
-      expiresAt: payload.expiresAt,
-    },
-  });
-});
+// Removed legacy /x402/protected route (HMAC)
 
 // UI helper: run x402 payment automatically using production-compliant flow
 app.post('/ui/pay-auto', async (req, res) => {
   try {
     const { token, body, anchorId } = req.body || {};
     if (!token) return res.status(400).json({ error: 'token_required' });
-    
-    // REQUIRE on-chain verification before payment
-    if (anchorId) {
-      const anchor = anchors.get(anchorId);
-      if (!anchor) {
-        return res.status(402).json({ error: 'verification_not_found', message: 'On-chain verification not found' });
-      }
-      if (anchor.status === 'pending') {
-        return res.status(402).json({ error: 'verification_pending', message: 'Waiting for on-chain verification to complete' });
-      }
-      if (anchor.status === 'error') {
-        return res.status(402).json({ error: 'verification_failed', message: 'On-chain verification failed', details: anchor.error });
-      }
-      if (anchor.status !== 'confirmed') {
-        return res.status(402).json({ error: 'verification_invalid', message: 'On-chain verification not confirmed' });
-      }
-      console.log('[payment] On-chain verification confirmed, proceeding with payment');
-    }
+    if (!anchorId) return res.status(400).json({ error: 'anchor_required' });
+    const anchor = anchors.get(anchorId);
+    if (!anchor) return res.status(402).json({ error: 'verification_not_found' });
+    if (anchor.status === 'pending') return res.status(402).json({ error: 'verification_pending' });
+    if (anchor.status === 'error') return res.status(402).json({ error: 'verification_failed', details: anchor.error });
+    if (anchor.status !== 'confirmed') return res.status(402).json({ error: 'verification_invalid' });
+    console.log('[payment] On-chain verification confirmed, proceeding with payment');
     
     const bodyJson = body || { intent: 'demo', cart: { items: [{ sku: 'api-pro-month', qty: 1 }] } };
     
@@ -516,7 +493,7 @@ app.post('/ui/pay-auto', async (req, res) => {
     const executorPk = env('PRIVATE_KEY', env('BASE_PRIVATE_KEY'));
     const agentPk = env('X402_AGENT_PRIVATE_KEY', '');
     if (!executorPk) return res.status(500).json({ error: 'server_missing_private_key' });
-    // Prefer agent key if provided; fallback to executor (demo)
+    // Prefer agent key if provided; otherwise use executor (demo)
     const signingPk = agentPk || executorPk;
 
     const header = await createDemoPaymentHeader({
@@ -641,35 +618,7 @@ app.post('/ui/payment/prepare', async (req, res) => {
       return res.json({ ok: true, selected, typedData, paymentData });
     } catch (prepareError) {
       console.error('preparePaymentHeader error:', prepareError);
-      // Fallback: create typed data manually if x402 library fails
-      const manualTypedData = {
-        domain: {
-          name: 'USDC',
-          version: '2',
-          chainId: Number(env('CHAIN_ID', 84532)),
-          verifyingContract: selected.asset || env('X402_ASSET', DEFAULT_USDC_BASE_SEPOLIA)
-        },
-        types: {
-          TransferWithAuthorization: [
-            { name: 'from', type: 'address' },
-            { name: 'to', type: 'address' },
-            { name: 'value', type: 'uint256' },
-            { name: 'validAfter', type: 'uint256' },
-            { name: 'validBefore', type: 'uint256' },
-            { name: 'nonce', type: 'bytes32' }
-          ]
-        },
-        primaryType: 'TransferWithAuthorization',
-        message: {
-          from: address,
-          to: selected.payTo || env('X402_PAYTO', '0x2e408ad62e30146404F4ED8A61253212f3f9A490'),
-          value: selected.maxAmountRequired || '10000',
-          validAfter: Math.floor(Date.now() / 1000),
-          validBefore: Math.floor(Date.now() / 1000) + 3600,
-          nonce: '0x' + crypto.randomBytes(32).toString('hex')
-        }
-      };
-      return res.json({ ok: true, selected, typedData: manualTypedData });
+      return res.status(500).json({ error: 'prepare_failed' });
     }
   } catch (e) { 
     console.error('ui/payment/prepare error:', e);
@@ -768,6 +717,46 @@ app.post('/ui/zkml/prove', async (req, res) => {
     ZKML_SESSIONS.set(sessionId, { status: 'generating', startTime: Date.now() });
     queueImmediate(async () => {
       try {
+        // Step 1: REAL AI inference via ONNX (strict if required)
+        let aiDecision = null; let aiConfidence = null; let inferenceMs = null;
+        try {
+          const REQUIRE_ONNX = (env('X402_REQUIRE_ONNX','true').toLowerCase() === 'true');
+          const ONNX_URL = env('X402_ONNX_URL', 'http://127.0.0.1:8009');
+          const input = (req.body && req.body.input) || {};
+          const tx = {
+            dailyBudgetRemaining: Number(input.budget_remaining ?? 9543),
+            dailyBudgetLimit: Number(input.daily_limit ?? 10000),
+            merchantRiskScore: Number(input.merchant_risk ?? 12) / 100,
+            transactionAmount: Number(input.amount ?? 100),
+            merchantCategory: String(input.category || 'api'),
+            recentTransactionCount: Number(input.velocity_count ?? 2),
+            hourlyLimit: Number(input.hourly_limit ?? 10)
+          };
+          const t0 = Date.now();
+          const r = await fetch(`${ONNX_URL}/zkml/onnx/authorize`, { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ transaction: tx })});
+          if (!r.ok) throw new Error(`onnx_http_${r.status}`);
+          const j = await r.json();
+          const auth = j && j.authorization ? j.authorization : null;
+          if (!auth || (auth.decision === undefined) || (auth.confidence === undefined)) throw new Error('onnx_invalid_payload');
+          aiDecision = auth.decision ? 1 : 0;
+          aiConfidence = Number(auth.confidence);
+          if (!Number.isFinite(aiConfidence)) throw new Error('onnx_confidence_invalid');
+          inferenceMs = Number(j && j.performance && j.performance.inferenceTimeMs ? j.performance.inferenceTimeMs : (Date.now() - t0));
+          // Surface AI result early for UI
+          const cur = ZKML_SESSIONS.get(sessionId) || {};
+          ZKML_SESSIONS.set(sessionId, { ...cur, status: 'ai_ready', aiDecision, aiConfidence, inferenceMs });
+          // Enforce: if AI denies, stop here and do not proceed to zk proof
+          const ENFORCE_AI = (env('X402_ENFORCE_AI','true').toLowerCase() === 'true');
+          if (ENFORCE_AI && aiDecision !== 1) {
+            ZKML_SESSIONS.set(sessionId, { status: 'denied', aiDecision, aiConfidence, inferenceMs, startTime: ZKML_SESSIONS.get(sessionId)?.startTime });
+            return; // abort further steps
+          }
+        } catch (e) {
+          if ((env('X402_REQUIRE_ONNX','true').toLowerCase() === 'true')) {
+            ZKML_SESSIONS.set(sessionId, { status: 'failed', error: 'ONNX inference unavailable: ' + String(e?.message || e), startTime: ZKML_SESSIONS.get(sessionId)?.startTime });
+            return;
+          }
+        }
         // Run Jolt-Atlas prover first to obtain a canonical artifact and hash
         let joltProofHash = null;
         try {
@@ -777,11 +766,14 @@ app.post('/ui/zkml/prove', async (req, res) => {
           ZKML_SESSIONS.set(sessionId, { status: 'failed', error: 'Jolt-Atlas not configured: ' + String(e?.message || e), startTime: ZKML_SESSIONS.get(sessionId)?.startTime });
           return;
         }
-        const result = await generateProof();
-        // Normalize to the shape the UI and attestation expect
-        const publicSignals = Array.isArray(result?.publicSignals) ? result.publicSignals : (result?.proof?.publicSignals || []);
+        // Convert to field element for Groth16 circuit public signal
+        const proofHashF = joltProofHash ? hexToField(joltProofHash) : null;
+        const gen = await generateProof({ proofHashF, decision: (aiDecision!=null ? aiDecision : undefined), confidence: (aiConfidence!=null ? aiConfidence : undefined) });
+        // Normalize to the shape the UI and attestation expect; do not expose the SNARK proof to the UI/session payload
+        const publicSignals = Array.isArray(gen?.publicSignals) ? gen.publicSignals : (gen?.proof?.publicSignals || []);
         const proof = { public_signals: publicSignals };
-        ZKML_SESSIONS.set(sessionId, { status: 'completed', proof, publicSignals, joltProofHash, startTime: ZKML_SESSIONS.get(sessionId)?.startTime });
+        // Keep the SNARK proof in-memory for the anchor job to consume (avoid file races)
+        ZKML_SESSIONS.set(sessionId, { status: 'completed', proof, publicSignals, snarkProof: gen.proof, joltProofHash, proofHashF, aiDecision, aiConfidence, inferenceMs, startTime: ZKML_SESSIONS.get(sessionId)?.startTime });
       } catch (err) {
         ZKML_SESSIONS.set(sessionId, { status: 'failed', error: String(err?.message || err), startTime: ZKML_SESSIONS.get(sessionId)?.startTime });
       }
@@ -998,8 +990,8 @@ app.post('/admin/restart', async (req, res) => {
 // Assets check for zkML (real-only)
 app.get('/ui/zkml/assets-check', (req, res) => {
   try {
-    const wasmPath = path.join(__dirname, '..', 'circuits', 'jolt-verifier', 'jolt_decision_simple_js', 'jolt_decision_simple.wasm');
-    const zkeyPath = path.join(__dirname, '..', 'circuits', 'jolt-verifier', 'jolt_decision_simple_final.zkey');
+    const wasmPath = process.env.X402_GROTH_WASM_PATH || path.join(__dirname, '..', 'circuits', 'jolt-verifier', 'jolt_decision_simple_js', 'jolt_decision_simple.wasm');
+    const zkeyPath = process.env.X402_GROTH_ZKEY_PATH || path.join(__dirname, '..', 'circuits', 'jolt-verifier', 'jolt_decision_simple_final.zkey');
     const existsWasm = fs.existsSync(wasmPath);
     const existsZkey = fs.existsSync(zkeyPath);
     const sizeWasm = existsWasm ? fs.statSync(wasmPath).size : 0;
@@ -1014,7 +1006,10 @@ app.get('/ui/zkml/assets-check', (req, res) => {
 app.get('/verifier/info', async (req, res) => {
   try {
     const { VERIFIER_ADDRESS, provider } = require('./groth16-verifier-service');
-    const deploymentPath = process.env.ZKML_VERIFIER_DEPLOYMENT || path.join(__dirname, '../deployments/jolt-storage-verifier-base-sepolia.json');
+    let deploymentPath = process.env.ZKML_VERIFIER_DEPLOYMENT || path.join(__dirname, '../deployments/option-b-verifier-base-sepolia.json');
+    if (!fs.existsSync(deploymentPath)) {
+      deploymentPath = process.env.ZKML_VERIFIER_DEPLOYMENT || path.join(__dirname, '../deployments/jolt-storage-verifier-base-sepolia.json');
+    }
     let abi = null; let hasVerifyAndStore = false; let abiCount = 0; let abiLoaded = false;
     try {
       const j = JSON.parse(fs.readFileSync(deploymentPath, 'utf8'));
@@ -1030,4 +1025,14 @@ app.get('/verifier/info', async (req, res) => {
   } catch (e) {
     res.status(500).json({ ok: false, error: String(e?.message || e) });
   }
+});
+// ONNX health proxy for UI
+app.get('/ui/onnx/health', async (req, res) => {
+  try {
+    const url = env('X402_ONNX_URL','http://127.0.0.1:8009');
+    const r = await fetch(`${url}/health`).catch(()=>null);
+    if (!r) return res.status(503).json({ ok:false, error:'onnx_unreachable', url });
+    const j = await r.json().catch(()=>({ ok:false, error:'invalid_json' }));
+    return res.json({ ok: !!j.ok || j.status==='healthy', url, ...j });
+  } catch (e) { return res.status(500).json({ ok:false, error:String(e?.message || e) }); }
 });

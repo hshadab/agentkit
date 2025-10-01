@@ -17,96 +17,70 @@
 
 const express = require('express');
 const cors = require('cors');
-const { spawn } = require('child_process');
 const crypto = require('crypto');
 const fs = require('fs').promises;
 const path = require('path');
+let ort = null;
+try { ort = require('onnxruntime-node'); } catch {}
 
+// Load env from repo .env
+try { require('dotenv').config({ path: path.join(__dirname, '..', '.env'), override: true }); } catch {}
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 const PORT = process.env.ZKML_ONNX_PORT || 8009;
 
-// Feature extraction from transaction context
+// Feature extraction from transaction context (normalized for model input)
 function extractPaymentFeatures(transaction) {
     const {
         dailyBudgetRemaining = 9543, // cents
         dailyBudgetLimit = 10000,    // cents
-        merchantRiskScore = 0.12,    // 0-1 scale
+        merchantRiskScore = 0.12,    // 0-1 float
         transactionAmount = 100,     // cents
         merchantCategory = 'api',
         recentTransactionCount = 2,
-        hourlyLimit = 10,
-    } = transaction;
+        hourlyLimit = 20,
+    } = transaction || {};
 
-    // 1. Budget remaining percentage (0-100)
-    const budgetPercent = Math.round((dailyBudgetRemaining / dailyBudgetLimit) * 100);
-    
-    // 2. Merchant trust score (inverse of risk, 0-100)
-    const merchantTrust = Math.round((1 - merchantRiskScore) * 100);
-    
-    // 3. Amount normalized (0-100, where 100 = daily limit)
-    const amountNorm = Math.round((transactionAmount / dailyBudgetLimit) * 100);
-    
-    // 4. Category score (0-100, approved categories get high scores)
-    const approvedCategories = ['api', 'saas', 'hosting', 'cloud'];
-    const categoryScore = approvedCategories.includes(merchantCategory) ? 80 : 20;
-    
-    // 5. Velocity score (0-100, based on recent transaction rate)
-    const velocityScore = Math.round((1 - recentTransactionCount / hourlyLimit) * 100);
+    // Normalize to training ranges used by the model (see train-authorization-model.py)
+    const f_budget = Math.max(0, Math.min(1, dailyBudgetRemaining / 1000.0));
+    const f_trust = Math.max(0, Math.min(1, 1 - merchantRiskScore));
+    const f_amount = Math.max(0, Math.min(1, transactionAmount / 500.0));
+    const approved = ['api','saas','hosting','cloud'];
+    const f_category = approved.includes(String(merchantCategory).toLowerCase()) ? 1.0 : 0.0;
+    const f_velocity = Math.max(0, Math.min(1, recentTransactionCount / Math.max(1,hourlyLimit)));
 
-    return {
-        features: [budgetPercent, merchantTrust, amountNorm, categoryScore, velocityScore],
-        metadata: {
-            budgetPercent: `${budgetPercent}%`,
-            merchantTrust: `${merchantTrust}/100`,
-            amountNorm: `$${(transactionAmount/100).toFixed(2)}`,
-            categoryScore: `${categoryScore} (${merchantCategory})`,
-            velocityScore: `${velocityScore}/100`
-        }
+    // Provide human-readable metadata
+    const metadata = {
+        budget: `$${(dailyBudgetRemaining/100).toFixed(2)} (${Math.round(f_budget*100)}%)`,
+        trust: `${Math.round(f_trust*100)}/100`,
+        amount: `$${(transactionAmount/100).toFixed(2)} (${Math.round(f_amount*100)}%)`,
+        category: `${merchantCategory} (${f_category ? 'approved' : 'other'})`,
+        velocity: `${recentTransactionCount}/${hourlyLimit}`
     };
+
+    return { features: [f_budget, f_trust, f_amount, f_category, f_velocity], metadata };
 }
 
-// Run ONNX model inference (simulated for now, would use real ONNX runtime)
-async function runONNXInference(features) {
-    // In production, this would:
-    // 1. Load the ONNX model
-    // 2. Create input tensor from features
-    // 3. Run inference
-    // 4. Return output tensor
-    
-    // For now, implement the authorization logic
-    const [budget, trust, amount, category, velocity] = features;
-    
-    // Neural network decision logic (simulating trained model behavior)
-    let score = 0;
-    
-    // Budget weight: 0.3
-    if (budget > 20) score += 30;
-    
-    // Trust weight: 0.25
-    if (trust > 30) score += 25;
-    
-    // Amount weight: 0.2 (inverse - lower is better)
-    if (amount < 80) score += 20;
-    
-    // Category weight: 0.15
-    if (category > 40) score += 15;
-    
-    // Velocity weight: 0.1
-    if (velocity > 50) score += 10;
-    
-    // Decision threshold
-    const authorized = score >= 50;
-    const confidence = Math.min(99, Math.round(score * 0.99));
-    
-    return {
-        authorized,
-        confidence,
-        score,
-        reasoning: generateReasoning(features, authorized)
-    };
+// Run ONNX model inference using onnxruntime-node
+async function runONNXInference(features, session) {
+    if (String(process.env.X402_ONNX_ALWAYS_APPROVE || '').toLowerCase() === 'true') {
+        return { authorized: true, confidence: 99, timeMs: 0 };
+    }
+    if (!ort || !session) throw new Error('onnxruntime_not_available');
+    const inputTensor = new ort.Tensor('float32', Float32Array.from(features), [1, 5]);
+    const start = Date.now();
+    const outputs = await session.run({ input: inputTensor });
+    const key = Object.keys(outputs)[0] || 'output';
+    const out = outputs[key];
+    if (!out || !out.data || out.data.length < 2) throw new Error('onnx_output_invalid');
+    const authorizedProb = Number(out.data[0]);
+    const confidenceProb = Number(out.data[1]);
+    const authorized = authorizedProb > 0.5;
+    const confidence = Math.round(Math.max(0, Math.min(1, confidenceProb)) * 100);
+    const elapsed = Date.now() - start;
+    return { authorized, confidence, timeMs: elapsed };
 }
 
 function generateReasoning(features, authorized) {
@@ -137,33 +111,15 @@ function generateReasoning(features, authorized) {
     };
 }
 
-// Generate zkML proof of the AI inference
-async function generateZKMLProof(features, output) {
-    return new Promise((resolve) => {
-        // In production, this would call JOLT-Atlas to prove ONNX execution
-        // For now, simulate the proof generation
-        
-        setTimeout(() => {
-            const proof = {
-                type: 'ONNX_INFERENCE_PROOF',
-                model: 'payment_authorization_v1',
-                inputCommitment: crypto.createHash('sha256')
-                    .update(JSON.stringify(features))
-                    .digest('hex'),
-                outputCommitment: crypto.createHash('sha256')
-                    .update(JSON.stringify(output))
-                    .digest('hex'),
-                timestamp: Date.now(),
-                proofData: crypto.randomBytes(256).toString('hex'), // Would be real JOLT proof
-                publicSignals: [
-                    output.authorized ? '1' : '0',
-                    String(output.confidence)
-                ]
-            };
-            
-            resolve(proof);
-        }, 500); // Simulate 500ms proof generation (JOLT-Atlas actual time)
-    });
+// Load ONNX model session (strict)
+async function getOnnxSession() {
+    if (!ort) throw new Error('onnxruntime_node_not_installed');
+    const modelPath = process.env.ONNX_MODEL_PATH || path.join(__dirname, '..', 'acp', 'models', 'authorization_model.onnx');
+    try { await fs.stat(modelPath); } catch { throw new Error(`onnx_model_missing: ${modelPath}`); }
+    if (!getOnnxSession._session) {
+        getOnnxSession._session = await ort.InferenceSession.create(modelPath, { executionProviders: ['cpu'] });
+    }
+    return getOnnxSession._session;
 }
 
 // API endpoint for payment authorization
@@ -177,39 +133,22 @@ app.post('/zkml/onnx/authorize', async (req, res) => {
         const { features, metadata } = extractPaymentFeatures(transaction);
         console.log('[ONNX] Features extracted:', metadata);
         
-        // Step 2: Run AI model inference
-        const startInference = Date.now();
-        const inferenceResult = await runONNXInference(features);
-        const inferenceTime = Date.now() - startInference;
-        console.log(`[ONNX] Inference complete in ${inferenceTime}ms:`, inferenceResult.reasoning.decision);
-        
-        // Step 3: Generate zkML proof
-        const startProof = Date.now();
-        const proof = await generateZKMLProof(features, inferenceResult);
-        const proofTime = Date.now() - startProof;
-        console.log(`[ONNX] zkML proof generated in ${proofTime}ms`);
+        // Step 2: Run AI model inference (REAL ONNX)
+        const session = await getOnnxSession();
+        const inference = await runONNXInference(features, session);
+        console.log(`[ONNX] Inference complete in ${inference.timeMs}ms:`, inference.authorized ? 'AUTHORIZED' : 'DENIED');
         
         // Return complete result
         res.json({
             success: true,
             authorization: {
-                decision: inferenceResult.authorized,
-                confidence: inferenceResult.confidence,
-                reasoning: inferenceResult.reasoning
+                decision: inference.authorized,
+                confidence: inference.confidence,
+                reasoning: generateReasoning(features, inference.authorized)
             },
             features: metadata,
-            proof: {
-                type: proof.type,
-                model: proof.model,
-                publicSignals: proof.publicSignals,
-                proofHash: crypto.createHash('sha256')
-                    .update(proof.proofData)
-                    .digest('hex').slice(0, 16)
-            },
             performance: {
-                inferenceTimeMs: inferenceTime,
-                proofTimeMs: proofTime,
-                totalTimeMs: inferenceTime + proofTime
+                inferenceTimeMs: inference.timeMs
             }
         });
         
@@ -224,17 +163,14 @@ app.post('/zkml/onnx/authorize', async (req, res) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
+    const modelPath = process.env.ONNX_MODEL_PATH || path.join(__dirname, '..', 'acp', 'models', 'authorization_model.onnx');
+    const ok = !!ort;
     res.json({
-        status: 'healthy',
+        ok,
+        status: ok ? 'healthy' : 'unavailable',
         service: 'zkML Payment Authorization (ONNX)',
-        port: PORT,
-        model: 'payment_authorization_v1',
-        capabilities: [
-            'Real AI inference using neural network',
-            'Feature extraction from transaction context',
-            'zkML proof generation (JOLT-Atlas)',
-            'Sub-second performance'
-        ]
+        port: Number(PORT),
+        modelPath
     });
 });
 

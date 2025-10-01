@@ -11,16 +11,21 @@ const crypto = require('crypto');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env'), override: true });
 
 // Configuration
-const VERIFIER_ADDRESS = process.env.ZKML_VERIFIER_ADDRESS || '0x6121Fd93594C316B78e74B91B89A06d3Bb682a8F';
-const DEPLOYMENT_PATH = process.env.ZKML_VERIFIER_DEPLOYMENT || 
-  path.join(__dirname, '../deployments/jolt-storage-verifier-base-sepolia.json');
+let DEPLOYMENT_PATH = process.env.ZKML_VERIFIER_DEPLOYMENT || 
+  path.join(__dirname, '../deployments/option-b-verifier-base-sepolia.json');
+if (!fs.existsSync(DEPLOYMENT_PATH)) {
+  DEPLOYMENT_PATH = process.env.ZKML_VERIFIER_DEPLOYMENT || 
+    path.join(__dirname, '../deployments/jolt-storage-verifier-base-sepolia.json');
+}
+let deployment = {};
+try { deployment = JSON.parse(fs.readFileSync(DEPLOYMENT_PATH, 'utf8')); } catch {}
+const VERIFIER_ADDRESS = process.env.ZKML_VERIFIER_ADDRESS || deployment.address || '0x6121Fd93594C316B78e74B91B89A06d3Bb682a8F';
 // Use working RPC endpoint
 const RPC_URL = process.env.BASE_RPC_URL || 'https://base-sepolia-rpc.publicnode.com';
 const CHAIN_ID = parseInt(process.env.CHAIN_ID || '84532');
 
-// Load deployment artifact
-const deployment = JSON.parse(fs.readFileSync(DEPLOYMENT_PATH, 'utf8'));
-const ABI = deployment.abi;
+// Load ABI (if available)
+const ABI = deployment.abi || (() => { throw new Error('Verifier ABI not found; set ZKML_VERIFIER_DEPLOYMENT'); })();
 
 // Initialize provider
 const provider = new ethers.JsonRpcProvider(RPC_URL, {

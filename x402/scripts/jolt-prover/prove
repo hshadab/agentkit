@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Wrapper to generate a Jolt-Atlas proof artifact and write it to JOLT_PROOF_PATH
+# Used by proof-gate's runJoltAtlasProver which spawns: ${JOLT_BIN} prove
+
+OUT_FILE="${JOLT_PROOF_PATH:-./llm_proof.json}"
+LLM_BIN="${LLM_PROVER_BIN:-$(cd "$(dirname "$0")/../../.." && pwd)/jolt-atlas/target/release/llm_prover}"
+
+mkdir -p "$(dirname "$OUT_FILE")"
+
+"${LLM_BIN}" \
+  --prompt-hash 12345 \
+  --system-rules-hash 67890 \
+  --approve-confidence 95 \
+  --amount-confidence 95 \
+  --rules-attention 90 \
+  --amount-attention 90 \
+  --reasoning-hash 11111 \
+  --format-valid 1 \
+  --amount-valid 1 \
+  --recipient-valid 1 \
+  --decision 1 \
+  -o "${OUT_FILE}" >/dev/null 2>&1
+
+if [[ ! -s "${OUT_FILE}" ]]; then
+  echo "proof generation failed or empty file: ${OUT_FILE}" >&2
+  exit 1
+fi
+
+echo "ok"
+

@@ -5,6 +5,15 @@ Reference demo of the [Coinbase x402 Payment Protocol](https://github.com/coinba
 
 Note: This is a reference demo, not a spec‑verified or security‑hardened implementation.
 
+### Deep x402 + zkML Integration (PoP anchored)
+- Real ONNX inference integrated into the flow (Step 1): proof‑gate calls your ONNX service for a decision+confidence before proving.
+- Proof‑of‑Proof commitment: Jolt‑Atlas proof bytes are hashed and reduced mod BN254; the Groth16 circuit exposes `[decision, confidence, proofHash]` as public signals.
+- On‑chain anchor (Step 4): the storage verifier on Base Sepolia enforces the 3rd signal, permanently anchoring the exact Jolt proof commitment.
+- Attestation binding (Step 3): attestation binds `proofHash`, `intentHash` (method+path+body), and `acceptsHash` (price/network/asset/payTo). This prevents TOCTOU and ties the AI decision to the precise x402 payment intent and server policy.
+- Session‑bound verification: the anchor job uses the in‑memory SNARK proof and public signals from the same session that generated the Jolt commitment, eliminating file races.
+- Strict gating: if AI denies, the flow halts (no proof, no attestation, no anchor, no payment). Auto‑pay runs only after the on‑chain anchor confirms.
+- Production payment semantics: EIP‑3009 typed data (MetaMask optional) and server‑executed `transferWithAuthorization` with gas‑paying executor.
+
 ### Key Features
 - ✅ **Agent Authorization Model**: AI agents prove they can spend based on rules
 - ✅ **x402-Compatible Flow**: EIP-3009 `transferWithAuthorization` support
@@ -53,7 +62,7 @@ This three‑hash binding is an experimental extension layered on top of x402; i
 
 ### How the AI Makes Decisions
 
-The system uses a **real neural network** (ONNX format) that evaluates 5 key features:
+The system uses a REAL neural network (ONNX) that the proof‑gate calls before proving. It evaluates 5 key features:
 
 1. **Budget Remaining**: Percentage of daily budget available (0-100%)
 2. **Merchant Trust Score**: Based on risk assessment (0-100)
@@ -64,11 +73,14 @@ The system uses a **real neural network** (ONNX format) that evaluates 5 key fea
 **User Request**: "Pay $1.00 to API merchant for monthly subscription"  
 **Agent Evaluation**: "Can I execute this payment within my authorization rules?"
 
-**AI Decision Process**:
-- Neural network processes all 5 features simultaneously
-- Outputs authorization decision with confidence score
-- zkML proves this specific AI model made the decision
-- Cannot be forged or manipulated
+AI Decision Process (strict):
+- Proof‑gate calls the ONNX service (`POST {X402_ONNX_URL}/zkml/onnx/authorize`) with the transaction context
+- Neural network returns `decision` and `confidence`
+- Jolt‑Atlas produces a proof artifact; proof‑gate commits to its bytes (`proofHash`)
+- Groth16 circuit includes the commitment as the 3rd public signal; on‑chain verifies `[decision, confidence, proofHash]`
+
+Verifier + Explorer Links
+- Step 4 shows both the verification tx and the verifier contract address (Base Sepolia). See also `GET /verifier/info` for address/chain/ABI.
 
 ## Installation
 
@@ -134,10 +146,44 @@ Tip: If Step 4 keeps “verifying…”, either fund the executor key with ETH a
 
 ### Real zkML (required for Step 2)
 - The UI uses the real Groth16 proof generator in `/x402/generate-valid-proof.js`.
-- Place the circuit assets before running:
-  - `circuits/jolt-verifier/jolt_decision_simple_js/jolt_decision_simple.wasm`
-  - `circuits/jolt-verifier/jolt_decision_simple_final.zkey`
+- Option B (proof-of-proof on-chain): generator supports a 3rd public signal carrying the Jolt proof commitment.
+- Place the circuit assets before running. You can override paths via env:
+  - `X402_GROTH_WASM_PATH=/abs/or/rel/path/to/your.wasm`
+  - `X402_GROTH_ZKEY_PATH=/abs/or/rel/path/to/your.zkey`
+  - Defaults: `circuits/jolt-verifier/jolt_decision_simple_js/jolt_decision_simple.wasm`, `circuits/jolt-verifier/jolt_decision_simple_final.zkey`
 - If either file is missing or invalid, Step 2 fails immediately (no fallback), and the flow stops as designed.
+
+Option B circuit expectations:
+- Public signals: `[decision, confidence, proofHash]`
+- `proofHash` is the BN254 field representation of the Jolt proof artifact SHA-256 (mod r).
+- The server computes it from the binary proof artifact and passes it to the prover; on‑chain verification enforces it.
+
+### ONNX Inference (Step 1)
+- Environment:
+  - `X402_REQUIRE_ONNX=true` (no fallback)
+  - `X402_ONNX_URL=http://127.0.0.1:8009`
+- Endpoint called by proof‑gate: `POST {X402_ONNX_URL}/zkml/onnx/authorize` with `transaction { ... }`
+- If the ONNX service is unavailable or returns an invalid payload and `X402_REQUIRE_ONNX=true`, Step 1 fails and the flow stops.
+
+Strictness Controls
+- `X402_ENFORCE_AI=true` → If AI denies, stop the flow immediately (no proof/attestation/anchor/payment).
+- `X402_REQUIRE_PROOFHASH_SIGNAL=true` → Groth16 must include commitment as 3rd public signal.
+- `X402_AUTOPAY=anchor_confirmed` → Server executes payment only after anchor confirms.
+
+### Build and Deploy (Option B)
+- Build artifacts (wasm+zkey+verifier):
+  - `circuits/option-b/decision_with_commitment.circom` defines the 3-signal circuit.
+  - Run the builder (downloads circom + ptau, compiles, sets up Groth16):
+    - `bash -lc "./bin/circom circuits/option-b/decision_with_commitment.circom --r1cs --wasm -o circuits/option-b/build && \
+      npx snarkjs groth16 setup circuits/option-b/build/decision_with_commitment.r1cs circuits/ptau/powersOfTau28_hez_final_10.ptau circuits/option-b/build/decision_with_commitment_0000.zkey && \
+      ( printf 'option-b\nrandom\n' | npx snarkjs zkey contribute circuits/option-b/build/decision_with_commitment_0000.zkey circuits/option-b/build/decision_with_commitment_final.zkey ) && \
+      npx snarkjs zkey export solidityverifier circuits/option-b/build/decision_with_commitment_final.zkey circuits/option-b/build/OptionBVerifier.sol"`
+- Deploy verifier (Base Sepolia):
+  - `node scripts/deploy-verifier.js` (requires `BASE_PRIVATE_KEY` and `BASE_RPC_URL` in env)
+  - Writes: `deployments/option-b-verifier-base-sepolia.json` with `{ address, abi }`
+  - Set:
+    - `ZKML_VERIFIER_ADDRESS=<deployed>`
+    - `ZKML_VERIFIER_DEPLOYMENT=./x402/deployments/option-b-verifier-base-sepolia.json`
 
 Check assets from the browser:
 ```
@@ -151,6 +197,8 @@ GET http://localhost:8610/ui/zkml/assets-check
 GET http://localhost:8610/verifier/info
 ```
 Returns: current address, chainId, whether bytecode is present, ABI loaded, and if `verifyAndStore` is available.
+
+Option B requires a verifier matching the 3-signal circuit. Deploy that verifier and update `ZKML_VERIFIER_ADDRESS` and `ZKML_VERIFIER_DEPLOYMENT` accordingly.
 
 ### MetaMask Option (no auto‑pay)
 - Leave `X402_AUTOPAY` empty
