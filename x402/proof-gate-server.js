@@ -9,7 +9,6 @@ const { verifyServerRequest } = require('./x402-fallback');
 const { createDemoPaymentHeader, processX402Payment } = require('./production-payment-handler');
 const { verifyOnChain, checkVerificationStatus } = require('./groth16-verifier-service');
 const path = require('path');
-const fs = require('fs');
 const { spawn } = require('child_process');
 // Ensure local .env is loaded even when started via `node x402/proof-gate-server.js`
 let dotenvParsed = {};
@@ -760,13 +759,17 @@ app.post('/ui/zkml/prove', async (req, res) => {
       riskScore: typeof input.merchant_risk === 'number' ? (input.merchant_risk / 100) : 0.12
     };
     const r = await fetch(`${UNIFIED_BACKEND}/zkml/prove`, { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body) });
-    const j = await r.json(); res.status(r.status).json(j);
+    const text = await r.text();
+    if (!r.ok) return res.status(502).send(text || 'zkml_prove_failed');
+    return res.status(200).send(text);
   } catch (e) { res.status(502).json({ error: 'proxy_failed', message: e.message }); }
 });
 app.get('/ui/zkml/status/:id', async (req, res) => {
   try {
     const r = await fetch(`${UNIFIED_BACKEND}/zkml/status/${req.params.id}`);
-    const j = await r.json(); res.status(r.status).json(j);
+    const text = await r.text();
+    if (!r.ok) return res.status(502).send(text || 'zkml_status_failed');
+    return res.status(200).send(text);
   } catch (e) { res.status(502).json({ error: 'proxy_failed', message: e.message }); }
 });
 app.post('/ui/zkml/verify', async (req, res) => {

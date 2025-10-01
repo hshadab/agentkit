@@ -265,7 +265,9 @@ async function start() {
     
     const prove = await zkmlFetch('/prove', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ input: authRequest }) });
     const ptxt = await prove.text();
-    let pj; try { pj = JSON.parse(ptxt); } catch(e) { throw new Error('zkML backend not reachable: ' + ptxt.slice(0,200)); }
+    if (!prove.ok) { throw new Error('zkML prove failed: ' + ptxt.slice(0,200)); }
+    let pj; try { pj = JSON.parse(ptxt); } catch(e) { throw new Error('zkML prove parse error: ' + ptxt.slice(0,200)); }
+    if (!pj.sessionId) { throw new Error('zkML prove missing sessionId'); }
     const sid = pj.sessionId;
     
     // Simulate AI inference time
@@ -287,7 +289,8 @@ async function start() {
     for (let i=0;i<240;i++) {
       const stResp = await zkmlFetch('/status/' + sid);
       const stTxt = await stResp.text();
-      let st; try { st = JSON.parse(stTxt); } catch(e) { throw new Error('status error: ' + stTxt.slice(0,200)); }
+      if (!stResp.ok) { throw new Error('zkML status failed: ' + stTxt.slice(0,200)); }
+      let st; try { st = JSON.parse(stTxt); } catch(e) { throw new Error('zkML status parse error: ' + stTxt.slice(0,200)); }
       if (st.status === 'completed') { proof = st.proof; break; }
       if (st.status === 'error') { lastErr = st.error || 'proof error'; break; }
       await new Promise(r=>setTimeout(r, 250));
