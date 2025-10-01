@@ -286,22 +286,46 @@ The demo showcases scenarios that **cannot** be solved with simple if/then rules
 
 ```
 acp/
-├── contracts/
+├── README.md                     # This file
+├── VERIFICATION.md               # Independent verification guide
+├── package.json                  # Dependencies
+├── docker-compose.yml            # Docker setup
+├── start-all-services.sh         # Service launcher
+├── stop-all-services.sh          # Service stopper
+│
+├── docs/                         # Documentation
+│   ├── architecture/             # System design docs
+│   ├── integration/              # Integration guides
+│   ├── deployment/               # Deployment docs
+│   ├── api/                      # API reference
+│   ├── guides/                   # Usage guides
+│   └── archive/                  # Historical docs
+│
+├── scripts/                      # Utilities
+│   ├── deployment/               # Contract deployment
+│   ├── testing/                  # Test scripts
+│   └── utils/                    # Helper scripts
+│
+├── services/                     # Backend services
+│   ├── proof-service.js          # Port 9001 - JOLT-Atlas
+│   ├── acp-openai-server.js      # Port 9006 - ACP + Stripe
+│   ├── gpt5-rule-parser.js       # Port 9005 - Rule parser
+│   └── onchain-verification-service.js  # Port 9004 - Blockchain
+│
+├── contracts/                    # Smart contracts
 │   ├── Groth16Verifier.sol       # Deployed verifier
 │   ├── VerificationRegistry.sol  # Deployed registry
 │   └── deployments.json          # Contract addresses
-├── models/
-│   └── authorization_model.onnx  # Neural network
-├── services/
-│   ├── proof-service.js          # Port 9001
-│   ├── acp-service.js            # Port 9002
-│   ├── verification-service.js   # Port 9003
-│   ├── onchain-verification-service.js  # Port 9004
-│   ├── gpt5-rule-parser.js       # Port 9005
-│   └── acp-openai-server.js      # Port 9006
-├── static/
-│   └── index.html                # Demo UI
-└── README.md                     # This file
+│
+├── models/                       # ML models
+│   └── authorization_model.onnx  # Neural network (1.8KB)
+│
+├── static/                       # Frontend
+│   └── index.html                # Demo UI (http://localhost:9000)
+│
+├── circuits/                     # Circom circuits
+├── tests/                        # Test suites
+└── logs/                         # Runtime logs (gitignored)
 ```
 
 ## Environment Variables
@@ -355,15 +379,33 @@ OPENAI_API_KEY=sk-proj-...
 
 ## Additional Documentation
 
-- [HOW_IT_WORKS.md](HOW_IT_WORKS.md) - Detailed workflow explanation
-- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture
-- [API.md](API.md) - API reference
+### Core Documentation
+- [VERIFICATION.md](VERIFICATION.md) - Independent verification guide (no marketing, just commands)
+
+### Architecture & Design
+- [docs/architecture/HOW_IT_WORKS.md](docs/architecture/HOW_IT_WORKS.md) - Detailed workflow explanation
+- [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md) - System architecture
+- [docs/architecture/AGENT_AGNOSTIC.md](docs/architecture/AGENT_AGNOSTIC.md) - Agent marketplace concept
+
+### Integration & Deployment
+- [docs/integration/](docs/integration/) - Integration guides and status
+- [docs/deployment/DOCKER.md](docs/deployment/DOCKER.md) - Docker deployment
+- [docs/deployment/QUICKSTART.md](docs/deployment/QUICKSTART.md) - Quick start guide
+
+### API & Guides
+- [docs/api/ACP_ENDPOINTS.md](docs/api/ACP_ENDPOINTS.md) - Complete API reference
+- [docs/guides/USAGE_GUIDE.md](docs/guides/USAGE_GUIDE.md) - Usage examples
+
+### Scripts
+- [scripts/deployment/](scripts/deployment/) - Contract deployment scripts
+- [scripts/testing/](scripts/testing/) - Test and verification scripts
+- [scripts/utils/](scripts/utils/) - Utility scripts
 
 ## Support
 
 - GitHub: https://github.com/hshadab/agentkit
 - Issues: Check browser console first
-- Logs: Check service logs in root directory
+- Logs: Check `logs/` directory for service logs
 
 ---
 

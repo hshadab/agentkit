@@ -13,6 +13,7 @@ logs/*.log
 # Process IDs
 .pids/
 *.pid
+.pid-*
 
 # Generated files
 models/*.pth
