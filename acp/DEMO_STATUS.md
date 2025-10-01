@@ -140,14 +140,19 @@ JOLT_MODEL_PATH=/home/hshadab/agentkit/acp/models/authorization_model.onnx
 |-----------|--------|-------|
 | ONNX Model | ✅ 100% REAL | PyTorch neural network, 1.8KB file |
 | JOLT Proofs | ✅ 100% REAL | Rust binary, 524-byte proofs, ~550ms |
+| Groth16 Proofs | ✅ 100% REAL | snarkjs.groth16.fullProve, ~1-2s generation |
 | Verifier Contract | ✅ 100% REAL | Deployed to Base Sepolia, verifiable |
-| On-Chain Verify | ✅ 100% REAL | Calls deployed contract (view function) |
+| On-Chain Verify | ✅ 100% REAL | Calls deployed contract with real proofs |
 | Stripe Payments | ✅ 100% REAL | Real API, test mode, real cards |
 | Wallet/Gas | ✅ 100% REAL | 0.041 ETH balance, real transactions |
 | GPT-5 Parser | ⚠️ Regex Fallback | Works but uses pattern matching (OpenAI API key inactive) |
 
 ### Recent Improvements
 
+- **2025-10-01**: Integrated real Groth16 proof generation with snarkjs@0.7.4
+- **2025-10-01**: Proof service generates cryptographic proofs using AgentAuthorizationSimple circuit
+- **2025-10-01**: Proof generation time: ~1-2 seconds with snarkjs.groth16.fullProve()
+- **2025-10-01**: Fixed verification errors and blocked payment on failure
 - **2025-10-01**: Deployed real AgentAuthorizationVerifier to Base Sepolia: `0x1d8163dDD56087A5de100C93b047E29806303646`
 - **2025-10-01**: Enabled actual on-chain verification (replaced demo mode)
 - **2025-10-01**: Generated verifier from AgentAuthorizationSimple circuit with 2 public signals
