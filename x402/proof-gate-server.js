@@ -40,6 +40,28 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 
 const UNIFIED_BACKEND = env('UNIFIED_BACKEND', 'http://127.0.0.1:8002');
+async function runJoltAtlasProver() {
+  const JOLT_BIN = env('JOLT_BIN', '');
+  const JOLT_PROOF_PATH = env('JOLT_PROOF_PATH', '');
+  const JOLT_CWD = env('JOLT_CWD', '');
+  if (!JOLT_BIN) throw new Error('JOLT_BIN not configured');
+  if (!JOLT_PROOF_PATH) throw new Error('JOLT_PROOF_PATH not configured');
+  await new Promise((resolve, reject) => {
+    const child = spawn(JOLT_BIN, ['prove'], { cwd: JOLT_CWD || undefined });
+    let out = '', err = '';
+    child.stdout.on('data', d => out += d.toString());
+    child.stderr.on('data', d => err += d.toString());
+    child.on('error', (e) => reject(e));
+    child.on('close', (code) => {
+      if (code !== 0) return reject(new Error(`Jolt prover exited with code ${code}: ${err || out}`));
+      resolve(null);
+    });
+  });
+  let proofBytes;
+  try { proofBytes = fs.readFileSync(JOLT_PROOF_PATH); } catch (e) { throw new Error(`Jolt proof file read failed: ${e.message}`); }
+  const joltProofHash = '0x' + crypto.createHash('sha256').update(proofBytes).digest('hex');
+  return { joltProofHash };
+}
 const VERIFY_ON_CHAIN = env('VERIFY_ON_CHAIN', '') === 'true';
 const ETH_VERIFY_MODE = env('X402_ETH_VERIFY_MODE', 'backend'); // 'backend' | 'cli' | 'unified'
 const X402_RESOURCE_PATH = '/x402/pay';
@@ -77,8 +99,13 @@ app.post('/attest', async (req, res) => {
       return res.status(400).json({ error: 'agentId, modelId, and proof required' });
     }
 
-    // Compute stable proof hash for binding
-    const proofHash = sha256Hex(JSON.stringify({ proof, publicInputs }));
+    // Compute proof hash for binding; prefer Jolt-Atlas hash if provided by UI
+    let proofHash = undefined;
+    if (extra && extra.joltProofHash) {
+      proofHash = String(extra.joltProofHash);
+    } else {
+      proofHash = sha256Hex(JSON.stringify({ proof, publicInputs }));
+    }
 
     // Derive decision/confidence from provided proof shape (best-effort)
     const { decision, confidence } = extractDecisionConfidence(proof, publicInputs);
@@ -741,11 +768,20 @@ app.post('/ui/zkml/prove', async (req, res) => {
     ZKML_SESSIONS.set(sessionId, { status: 'generating', startTime: Date.now() });
     queueImmediate(async () => {
       try {
+        // Run Jolt-Atlas prover first to obtain a canonical artifact and hash
+        let joltProofHash = null;
+        try {
+          const j = await runJoltAtlasProver();
+          joltProofHash = j.joltProofHash;
+        } catch (e) {
+          ZKML_SESSIONS.set(sessionId, { status: 'failed', error: 'Jolt-Atlas not configured: ' + String(e?.message || e), startTime: ZKML_SESSIONS.get(sessionId)?.startTime });
+          return;
+        }
         const result = await generateProof();
         // Normalize to the shape the UI and attestation expect
         const publicSignals = Array.isArray(result?.publicSignals) ? result.publicSignals : (result?.proof?.publicSignals || []);
         const proof = { public_signals: publicSignals };
-        ZKML_SESSIONS.set(sessionId, { status: 'completed', proof, publicSignals, startTime: ZKML_SESSIONS.get(sessionId)?.startTime });
+        ZKML_SESSIONS.set(sessionId, { status: 'completed', proof, publicSignals, joltProofHash, startTime: ZKML_SESSIONS.get(sessionId)?.startTime });
       } catch (err) {
         ZKML_SESSIONS.set(sessionId, { status: 'failed', error: String(err?.message || err), startTime: ZKML_SESSIONS.get(sessionId)?.startTime });
       }

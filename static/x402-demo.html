@@ -323,7 +323,7 @@ async function start() {
     log('\n🔗 STEP 3: x402 ATTESTATION');
     const cart = { items:[{ sku:'api-pro-month', qty:1, priceCents:1 }], region:'US-NY', taxRulesVersion:'v1', totalCents:1 };
     const intent = { method:'POST', path:'/x402/pay', body:{ intent:'demo', cart:{ items:[{ sku:'api-pro-month', qty:1 }] } } };
-    const attBody = { agentId:'agent-demo-1', clientId:'demo-client', merchantId:'acme-merchant', cart, intent, modelId:'risk_analysis_v1', proof, publicInputs:[3,10,1,9] };
+    const attBody = { agentId:'agent-demo-1', clientId:'demo-client', merchantId:'acme-merchant', cart, intent, modelId:'risk_analysis_v1', proof, publicInputs:[3,10,1,9], extra: { joltProofHash: (await (async()=>{ const s = await zkmlFetch('/status/' + sid); if (s.ok) { try { const j = await s.json(); return j.joltProofHash || null; } catch {} } return null;})()) } };
     const attRes = await fetchPG('/attest', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(attBody) });
     const attTxt = await attRes.text();
     let att; try { att = JSON.parse(attTxt); } catch (e) { throw new Error('attest error: ' + attTxt.slice(0,300)); }
