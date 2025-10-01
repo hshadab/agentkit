@@ -817,19 +817,29 @@
                 await sleep(800);
 
                 // Call on-chain verification service
+                let verificationSucceeded = false;
                 try {
+                    // Use the proof data from authProof
+                    const proofPayload = authProof.proof || {
+                        a: [0, 0],
+                        b: [[0, 0], [0, 0]],
+                        c: [0, 0],
+                        publicSignals: [decision ? 1 : 0, Math.floor(confidence * 100)]
+                    };
+
                     const verifyResponse = await fetch('http://localhost:9004/verify-onchain', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            proof: proofData.proof,
-                            publicSignals: proofData.publicSignals || [proofData.decision ? 1 : 0, Math.floor(proofData.confidence * 100)]
+                            proof: proofPayload,
+                            publicSignals: proofPayload.publicSignals || [decision ? 1 : 0, Math.floor(confidence * 100)]
                         })
                     });
 
                     const verifyData = await verifyResponse.json();
 
-                    if (verifyData.verified) {
+                    if (verifyData.valid || verifyData.verified) {
+                        verificationSucceeded = true;
                         document.getElementById('result4').innerHTML = `
                             <div style="margin-bottom: 12px;">
                                 <div style="font-weight: 600; font-size: 1.1em; margin-bottom: 8px;">✅ Verified On-Chain</div>
@@ -859,15 +869,21 @@
                                 ` : ''}
                             </div>
                         `;
+                        await updateStep(4, 'completed');
+                        updateProgress(70);
                     } else {
-                        throw new Error('Verification failed');
+                        throw new Error('Verification failed: ' + (verifyData.error || 'Invalid proof'));
                     }
                 } catch (error) {
                     console.error('On-chain verification error:', error);
                     document.getElementById('result4').innerHTML = `
                         <div style="margin-bottom: 12px;">
-                            <div style="font-weight: 600; font-size: 1.1em; margin-bottom: 8px; color: #ffa500;">⚠️ Verification Pending</div>
-                            <div style="font-size: 0.85em; opacity: 0.8;">Proof generated, on-chain verification in progress</div>
+                            <div style="font-weight: 600; font-size: 1.1em; margin-bottom: 8px; color: #ff4444;">❌ Verification Failed</div>
+                            <div style="font-size: 0.85em; opacity: 0.8; color: #ff8888;">Unable to verify proof on-chain. Payment blocked.</div>
+                        </div>
+                        <div style="background: rgba(255, 68, 68, 0.1); padding: 10px; border-radius: 6px; font-size: 0.85em; margin-bottom: 12px;">
+                            <div style="font-weight: 600; margin-bottom: 4px;">⚠️ Error Details</div>
+                            <div style="font-size: 0.8em; opacity: 0.9; word-break: break-word;">${error.message}</div>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 8px;">
                             <a href="${VERIFIER_EXPLORER}/address/${VERIFIER_ADDRESS}"
@@ -878,10 +894,18 @@
                             </a>
                         </div>
                     `;
-                }
+                    await updateStep(4, 'failed');
 
-                await updateStep(4, 'completed');
-                updateProgress(70);
+                    // STOP workflow - don't proceed to payment
+                    document.getElementById('result5').innerHTML = `
+                        <div style="padding: 20px; text-align: center; opacity: 0.5;">
+                            <div style="font-size: 1.2em; margin-bottom: 8px;">🚫 Payment Blocked</div>
+                            <div style="font-size: 0.9em;">On-chain verification must succeed before payment</div>
+                        </div>
+                    `;
+                    updateProgress(100);
+                    return; // Exit workflow
+                }
 
                 // Step 5: ACP Payment (only if authorized)
                 await updateStep(5, 'active', decision ? 'Ready for payment...' : 'Skipping payment...');
