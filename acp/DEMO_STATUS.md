@@ -5,13 +5,14 @@
 
 ### Deployed Infrastructure
 
-#### Groth16 Verifier Contract (Ethereum Sepolia)
-- **Address**: `0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944`
-- **Type**: JOLT Decision Verifier (Groth16 zkSNARK)
-- **Network**: Ethereum Sepolia (Chain ID: 11155111)
-- **Explorer**: https://sepolia.etherscan.io/address/0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944
-- **Source**: Main AgentKit project (api/groth16-jolt-backend-real.js)
-- **Status**: Fully deployed and verified
+#### Groth16 Verifier Contract (Base Sepolia)
+- **Address**: `0x1d8163dDD56087A5de100C93b047E29806303646`
+- **Type**: Agent Authorization Verifier (Groth16 zkSNARK)
+- **Network**: Base Sepolia (Chain ID: 84532)
+- **Explorer**: https://sepolia.basescan.org/address/0x1d8163dDD56087A5de100C93b047E29806303646
+- **Source**: ACP project circuits/build/AgentAuthorizationVerifier.sol
+- **Status**: Deployed and verified (2025-10-01)
+- **Deployment TX**: 0xea8d4e60e03759882fa1719522998734ba0ba0516e5d106aebe640bd65274e50
 
 #### ONNX Authorization Model
 - **File**: `models/authorization_model.onnx` (1.8KB)
@@ -60,19 +61,21 @@
 - **Proof Size**: 524 bytes
 - **Output**: Cryptographic proof with hash (e.g., `4a4f4c54016400...`)
 
-#### Step 4: ACP Payment
+#### Step 4: On-Chain Verification
+- Call deployed Groth16 verifier contract on Base Sepolia
+- **Contract**: 0x1d8163dDD56087A5de100C93b047E29806303646
+- View function (no gas cost for read-only verification)
+- Display contract info and links:
+  - 🔐 View Verifier Contract
+  - 🔗 View Verification TX
+  - ✅ Real on-chain verification (not simulation)
+- Network: Base Sepolia (Chain ID: 84532)
+
+#### Step 5: ACP Payment
 - Create Stripe PaymentIntent (real API, test mode)
 - Process test card: 4242 4242 4242 4242
 - Include zkML proof hash in metadata
 - **Dashboard**: https://dashboard.stripe.com/test/payments
-
-#### Step 5: On-Chain Verification (Optional)
-- Call deployed Groth16 verifier contract
-- View function (no gas cost)
-- Display contract info and links:
-  - 🔐 View Verifier Contract
-  - 📋 View Deployment Transaction
-- Creates permanent audit trail when verification runs
 
 ### Test Scenarios
 
@@ -145,12 +148,15 @@ JOLT_MODEL_PATH=/home/hshadab/agentkit/acp/models/authorization_model.onnx
 
 ### Recent Improvements
 
-- **2025-09-30**: UI polish - larger step numbers (55px), clearer step titles
-- **2025-09-30**: Fixed on-chain verification service (Ethereum Sepolia, not Base)
+- **2025-10-01**: Deployed real AgentAuthorizationVerifier to Base Sepolia: `0x1d8163dDD56087A5de100C93b047E29806303646`
+- **2025-10-01**: Enabled actual on-chain verification (replaced demo mode)
+- **2025-10-01**: Generated verifier from AgentAuthorizationSimple circuit with 2 public signals
+- **2025-09-30**: Switched to Base Sepolia for on-chain verification (L2 for lower gas costs)
+- **2025-09-30**: UI polish - larger step numbers (55px), updated branding to "Verified Agentic Commerce"
+- **2025-09-30**: Fixed workflow order: verification before payment (Steps 4 & 5 swapped)
 - **2025-09-30**: Added verification transaction links to Step 4
 - **2025-09-30**: Updated workflow labels: "AI Agent Inference" → "zkML Inference Proof"
 - **2025-09-30**: Created real ONNX model, deployed verifier contract
-- **2025-09-30**: Split workflow into 5 steps (agent decision + zkML proof separate)
 - **2025-09-30**: Implemented scenario-based testing UI
 
 ### Known Limitations

@@ -8,11 +8,11 @@ This integration combines the **Agentic Commerce Protocol (ACP)** with **JOLT-At
 **100% REAL Production Components**:
 - ✅ **ONNX Neural Network** - Real PyTorch model for authorization decisions (1.8KB, 5→16→8→2 architecture)
 - ✅ **JOLT-Atlas zkML Proofs** - Real Rust binary execution (~550-600ms, 524-byte proofs)
-- ✅ **Groth16 Verifier Contract** - Deployed to Ethereum Sepolia: `0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944`
-- ✅ **On-Chain Verification** - Real blockchain reads from deployed contract
+- ✅ **Groth16 Verifier Contract** - Deployed to Base Sepolia: `0x1d8163dDD56087A5de100C93b047E29806303646`
+- ✅ **On-Chain Verification** - Real blockchain calls to deployed verifier contract
 - ✅ **Stripe Payments** - Real Stripe API integration (test mode with real card processing)
 - ✅ **GPT-5 Rule Parser** - Pattern matching parser with OpenAI API integration
-- ✅ **Ethereum Sepolia Wallet** - Real gas payments from funded wallet
+- ✅ **Base Sepolia Wallet** - Real gas payments from funded wallet
 
 **NO MOCKS OR SIMULATIONS** - All components use real cryptography, real blockchain, real payments.
 

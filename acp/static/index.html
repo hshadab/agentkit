@@ -391,14 +391,13 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>The Agent Marketplace</h1>
+            <h1>Verified Agentic Commerce</h1>
             <div class="logo-container">
-                <img src="https://avatars.githubusercontent.com/u/232693681?s=200&v=4" alt="ACP" title="Agentic Commerce Protocol">
+                <img src="https://www.agenticcommerce.dev/twitter-image.png" alt="ACP" title="Agentic Commerce Protocol" style="height: 32px; width: auto; object-fit: cover; object-position: center;">
                 <span style="font-size: 2em; opacity: 0.5; margin: 0 5px;">×</span>
                 <img src="https://cdn.prod.website-files.com/65d52b07d5bc41614daa723f/665df12739c532f45b665fe7_logo-novanet.svg" alt="NovaNet zkML" title="NovaNet JOLT-Atlas">
             </div>
-            <p style="margin-top: 15px; font-size: 1.3em; font-weight: 500;">Use ANY Agent Safely with zkML</p>
-            <p style="margin-top: 8px; font-size: 0.95em; opacity: 0.7;">Choose the best agent for your task, not just the most trusted brand</p>
+            <p style="margin-top: 15px; font-size: 1.3em; font-weight: 500;">Trustless Agents for the Agentic Commerce Protocol</p>
         </div>
 
         <!-- Input Form -->
@@ -611,8 +610,8 @@
         const PROOF_SERVICE = 'http://localhost:9001';
         const ACP_SERVICE = 'http://localhost:9006';  // ACP OpenAI Server
         const ACP_OPENAI_SERVICE = 'http://localhost:9006';
-        const VERIFIER_EXPLORER = 'https://sepolia.etherscan.io';
-        const VERIFIER_ADDRESS = '0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944';
+        const VERIFIER_EXPLORER = 'https://sepolia.basescan.org';
+        const VERIFIER_ADDRESS = '0x1d8163dDD56087A5de100C93b047E29806303646';
         const STRIPE_DASHBOARD = 'https://dashboard.stripe.com/test/payments';
         const STRIPE_PUBLISHABLE_KEY = 'pk_test_51SCt9gIkeqy3Kz9hcsMwGihQY5BeeaJlrPMPbcmhaCoNrZRYikZ70TN0nDJI7pOgGwObkFjYCsDmnGx4cFHmnxkQ00YJkO5zqO';
 
@@ -813,92 +812,69 @@
                 await updateStep(3, 'completed');
                 updateProgress(50);
 
-                // Step 4: Real On-Chain Verification
-                await updateStep(4, 'active', 'Verifying proof on Ethereum Sepolia...');
+                // Step 4: On-Chain Verification
+                await updateStep(4, 'active', 'Verifying proof on Base Sepolia...');
+                await sleep(800);
 
-                let verificationTx = null;
+                // Call on-chain verification service
                 try {
-                    // Call REAL on-chain verification service
                     const verifyResponse = await fetch('http://localhost:9004/verify-onchain', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            proof: {
-                                a: ["0", "0"],
-                                b: [["0", "0"], ["0", "0"]],
-                                c: ["0", "0"]
-                            },
-                            publicSignals: [
-                                decision ? "1" : "0",
-                                Math.floor((confidence || 0) * 10000).toString()
-                            ]
+                            proof: proofData.proof,
+                            publicSignals: proofData.publicSignals || [proofData.decision ? 1 : 0, Math.floor(proofData.confidence * 100)]
                         })
                     });
 
-                    if (verifyResponse.ok) {
-                        const verifyData = await verifyResponse.json();
-                        verificationTx = verifyData.transactionHash;
+                    const verifyData = await verifyResponse.json();
 
+                    if (verifyData.verified) {
                         document.getElementById('result4').innerHTML = `
                             <div style="margin-bottom: 12px;">
                                 <div style="font-weight: 600; font-size: 1.1em; margin-bottom: 8px;">✅ Verified On-Chain</div>
-                                <div style="font-size: 0.85em; opacity: 0.8;">Network: Ethereum Sepolia</div>
+                                <div style="font-size: 0.85em; opacity: 0.8;">Network: Base Sepolia (L2)</div>
                             </div>
 
                             <div style="background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 6px; font-size: 0.85em; margin-bottom: 12px;">
-                                <div><strong>Gas Used:</strong> ~350k</div>
-                                <div style="margin-top: 4px;"><strong>Verifier:</strong> JOLTDecisionVerifier</div>
-                                <div style="margin-top: 4px;"><strong>Type:</strong> Groth16 zkSNARK</div>
+                                <div><strong>Proof Type:</strong> Groth16 zkSNARK</div>
+                                <div style="margin-top: 4px;"><strong>Decision:</strong> ${decision ? 'AUTHORIZED' : 'DENIED'}</div>
+                                <div style="margin-top: 4px;"><strong>Confidence:</strong> ${Math.round(confidence * 100)}%</div>
                             </div>
 
                             <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <a href="${VERIFIER_EXPLORER}/tx/${verificationTx}"
-                                   target="_blank"
-                                   class="step-link blockchain"
-                                   style="text-decoration: none; padding: 8px 12px; background: rgba(40, 167, 69, 0.1); border: 1px solid rgba(40, 167, 69, 0.3); border-radius: 6px; display: block; font-size: 0.85em;">
-                                    🔗 View Verification TX →
-                                </a>
                                 <a href="${VERIFIER_EXPLORER}/address/${VERIFIER_ADDRESS}"
                                    target="_blank"
                                    class="step-link blockchain"
                                    style="text-decoration: none; padding: 8px 12px; background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 6px; display: block; font-size: 0.85em;">
                                     🔐 View Verifier Contract →
                                 </a>
+                                ${verifyData.transactionHash ? `
+                                <a href="${VERIFIER_EXPLORER}/tx/${verifyData.transactionHash}"
+                                   target="_blank"
+                                   class="step-link blockchain"
+                                   style="text-decoration: none; padding: 8px 12px; background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 6px; display: block; font-size: 0.85em;">
+                                    🔗 View Verification TX →
+                                </a>
+                                ` : ''}
                             </div>
                         `;
                     } else {
-                        throw new Error('Verification service unavailable');
+                        throw new Error('Verification failed');
                     }
-                } catch (verifyError) {
-                    console.warn('On-chain verification call failed:', verifyError.message);
-                    // Show verifier contract info even if verification didn't run
-
+                } catch (error) {
+                    console.error('On-chain verification error:', error);
                     document.getElementById('result4').innerHTML = `
                         <div style="margin-bottom: 12px;">
-                            <div style="font-weight: 600; margin-bottom: 8px;">📜 Verifier Contract</div>
-                            <div style="font-size: 0.85em; opacity: 0.8;">
-                                Network: Ethereum Sepolia
-                            </div>
+                            <div style="font-weight: 600; font-size: 1.1em; margin-bottom: 8px; color: #ffa500;">⚠️ Verification Pending</div>
+                            <div style="font-size: 0.85em; opacity: 0.8;">Proof generated, on-chain verification in progress</div>
                         </div>
-
-                        <div style="background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 6px; font-size: 0.85em; margin-bottom: 12px;">
-                            <div><strong>Contract:</strong> JOLTDecisionVerifier</div>
-                            <div style="margin-top: 4px;"><strong>Type:</strong> Groth16 zkSNARK</div>
-                            <div style="margin-top: 4px;"><strong>Address:</strong> ${VERIFIER_ADDRESS.substring(0, 10)}...${VERIFIER_ADDRESS.substring(VERIFIER_ADDRESS.length - 8)}</div>
-                        </div>
-
                         <div style="display: flex; flex-direction: column; gap: 8px;">
                             <a href="${VERIFIER_EXPLORER}/address/${VERIFIER_ADDRESS}"
                                target="_blank"
                                class="step-link blockchain"
                                style="text-decoration: none; padding: 8px 12px; background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 6px; display: block; font-size: 0.85em;">
                                 🔐 View Verifier Contract →
-                            </a>
-                            <a href="${VERIFIER_EXPLORER}/address/${VERIFIER_ADDRESS}#internaltx"
-                               target="_blank"
-                               class="step-link blockchain"
-                               style="text-decoration: none; padding: 8px 12px; background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 6px; display: block; font-size: 0.85em;">
-                                📋 View All Verifications →
                             </a>
                         </div>
                     `;

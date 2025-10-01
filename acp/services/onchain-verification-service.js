@@ -44,15 +44,15 @@ const VERIFIER_ABI = [
 const verificationHistory = [];
 
 /**
- * Initialize connection to Ethereum Sepolia
+ * Initialize connection to Base Sepolia
  */
 async function initializeBlockchain() {
   try {
     // Load deployment info if address not in env
     if (!VERIFIER_ADDRESS && fs.existsSync(DEPLOYMENT_PATH)) {
       const deployments = JSON.parse(fs.readFileSync(DEPLOYMENT_PATH, 'utf8'));
-      if (deployments['ethereum-sepolia']) {
-        VERIFIER_ADDRESS = deployments['ethereum-sepolia'].address;
+      if (deployments['base-sepolia']) {
+        VERIFIER_ADDRESS = deployments['base-sepolia'].address;
         console.log(`📄 Loaded verifier address from deployments: ${VERIFIER_ADDRESS}`);
       }
     }
@@ -63,11 +63,11 @@ async function initializeBlockchain() {
       return false;
     }
 
-    // Connect to Ethereum Sepolia
-    const RPC_URL = process.env.ETHEREUM_SEPOLIA_RPC || 'https://eth-sepolia.public.blastapi.io';
+    // Connect to Base Sepolia
+    const RPC_URL = process.env.BASE_RPC_URL || 'https://sepolia.base.org';
     provider = new ethers.JsonRpcProvider(RPC_URL, {
-      chainId: 11155111,
-      name: 'ethereum-sepolia'
+      chainId: 84532,
+      name: 'base-sepolia'
     });
 
     // Create contract instance
@@ -79,9 +79,9 @@ async function initializeBlockchain() {
 
     // Test connection
     const network = await provider.getNetwork();
-    console.log(`✅ Connected to Ethereum Sepolia (chainId: ${network.chainId})`);
+    console.log(`✅ Connected to Base Sepolia (chainId: ${network.chainId})`);
     console.log(`📜 Verifier contract: ${VERIFIER_ADDRESS}`);
-    console.log(`🔗 Explorer: https://sepolia.etherscan.io/address/${VERIFIER_ADDRESS}`);
+    console.log(`🔗 Explorer: https://sepolia.basescan.org/address/${VERIFIER_ADDRESS}`);
 
     return true;
   } catch (error) {
@@ -154,7 +154,7 @@ app.post('/verify-onchain', async (req, res) => {
       publicSignals,
       verificationTime,
       verifierAddress: VERIFIER_ADDRESS,
-      explorer: `https://sepolia.etherscan.io/address/${VERIFIER_ADDRESS}`
+      explorer: `https://sepolia.basescan.org/address/${VERIFIER_ADDRESS}`
     };
 
     verificationHistory.push(record);
@@ -169,9 +169,9 @@ app.post('/verify-onchain', async (req, res) => {
       valid: isValid,
       verification_time_ms: verificationTime,
       verifier_address: VERIFIER_ADDRESS,
-      network: 'ethereum-sepolia',
-      chain_id: 11155111,
-      explorer: `https://sepolia.etherscan.io/address/${VERIFIER_ADDRESS}`,
+      network: 'base-sepolia',
+      chain_id: 84532,
+      explorer: `https://sepolia.basescan.org/address/${VERIFIER_ADDRESS}`,
       timestamp: Date.now()
     });
 
@@ -248,8 +248,8 @@ app.post('/verify-and-store', async (req, res) => {
       valid: true,
       verification_time_ms: verificationTime,
       verifier_address: VERIFIER_ADDRESS,
-      network: 'ethereum-sepolia',
-      chain_id: 11155111,
+      network: 'base-sepolia',
+      chain_id: 84532,
       note: 'Proof verified on-chain. Storage contract not yet deployed.',
       todo: 'Deploy ProofStorage contract for permanent on-chain records'
     });
@@ -302,8 +302,8 @@ app.get('/stats', (req, res) => {
       ? (verificationHistory.reduce((sum, v) => sum + v.verificationTime, 0) / verificationHistory.length).toFixed(2)
       : 0,
     verifier_address: VERIFIER_ADDRESS,
-    network: 'ethereum-sepolia',
-    explorer: VERIFIER_ADDRESS ? `https://sepolia.etherscan.io/address/${VERIFIER_ADDRESS}` : null
+    network: 'base-sepolia',
+    explorer: VERIFIER_ADDRESS ? `https://sepolia.basescan.org/address/${VERIFIER_ADDRESS}` : null
   };
 
   res.json({
@@ -334,8 +334,8 @@ app.get('/health', async (req, res) => {
   res.json({
     status: verifierContract ? 'healthy' : 'degraded',
     service: 'onchain-verification-service',
-    network: 'ethereum-sepolia',
-    chain_id: 11155111,
+    network: 'base-sepolia',
+    chain_id: 84532,
     verifier_address: VERIFIER_ADDRESS || null,
     contract_deployed: contractExists,
     current_block: blockNumber,
@@ -348,7 +348,7 @@ app.get('/health', async (req, res) => {
 initializeBlockchain().then(success => {
   app.listen(PORT, () => {
     console.log(`\n🔐 On-Chain Verification Service running on port ${PORT}`);
-    console.log(`🌐 Network: Ethereum Sepolia (chainId: 11155111)`);
+    console.log(`🌐 Network: Base Sepolia (chainId: 84532)`);
     if (success) {
       console.log(`📜 Verifier: ${VERIFIER_ADDRESS}`);
     } else {
