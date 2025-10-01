@@ -5,6 +5,7 @@ const cors = require('cors');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const crypto = require('crypto');
 const { issueAttestation, verifyAttestation } = require('./attestation');
+const { generateProof } = require('./generate-valid-proof');
 const { verifyServerRequest } = require('./x402-fallback');
 const { createDemoPaymentHeader, processX402Payment } = require('./production-payment-handler');
 const { verifyOnChain, checkVerificationStatus } = require('./groth16-verifier-service');
@@ -746,31 +747,30 @@ const BIND_HOST = env('X402_BIND_HOST', '0.0.0.0');
 try { app.use('/static', express.static(path.join(__dirname, '..', 'static'))); } catch {}
 
 // Simple proxies to Rust zkML backend to avoid cross-origin in browser UI
+// Local zkML sessions using the x402 proof generator (snarkjs)
+const ZKML_SESSIONS = new Map(); // id -> { status, proof?, publicSignals?, startTime, error? }
 app.post('/ui/zkml/prove', async (req, res) => {
   try {
-    // Map UI input shape to unified-backend expected body
-    const ui = req.body || {};
-    const input = ui.input || {};
-    const body = {
-      agentId: String(input.agent_id || 'agent-demo-1'),
-      agentType: 'financial',
-      amount: typeof input.amount === 'number' ? (input.amount / 100) : 0.01,
-      operation: 'gateway-transfer',
-      riskScore: typeof input.merchant_risk === 'number' ? (input.merchant_risk / 100) : 0.12
-    };
-    const r = await fetch(`${UNIFIED_BACKEND}/zkml/prove`, { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body) });
-    const text = await r.text();
-    if (!r.ok) return res.status(502).send(text || 'zkml_prove_failed');
-    return res.status(200).send(text);
-  } catch (e) { res.status(502).json({ error: 'proxy_failed', message: e.message }); }
+    const sessionId = crypto.randomBytes(16).toString('hex');
+    ZKML_SESSIONS.set(sessionId, { status: 'generating', startTime: Date.now() });
+    queueImmediate(async () => {
+      try {
+        const result = await generateProof();
+        // Normalize to the shape the UI and attestation expect
+        const publicSignals = Array.isArray(result?.publicSignals) ? result.publicSignals : (result?.proof?.publicSignals || []);
+        const proof = { public_signals: publicSignals };
+        ZKML_SESSIONS.set(sessionId, { status: 'completed', proof, publicSignals, startTime: ZKML_SESSIONS.get(sessionId)?.startTime });
+      } catch (err) {
+        ZKML_SESSIONS.set(sessionId, { status: 'failed', error: String(err?.message || err), startTime: ZKML_SESSIONS.get(sessionId)?.startTime });
+      }
+    });
+    return res.json({ sessionId, status: 'generating', message: 'zkML proof generation started' });
+  } catch (e) { return res.status(500).json({ error: 'server_error', message: String(e?.message || e) }); }
 });
-app.get('/ui/zkml/status/:id', async (req, res) => {
-  try {
-    const r = await fetch(`${UNIFIED_BACKEND}/zkml/status/${req.params.id}`);
-    const text = await r.text();
-    if (!r.ok) return res.status(502).send(text || 'zkml_status_failed');
-    return res.status(200).send(text);
-  } catch (e) { res.status(502).json({ error: 'proxy_failed', message: e.message }); }
+app.get('/ui/zkml/status/:id', (req, res) => {
+  const sess = ZKML_SESSIONS.get(req.params.id);
+  if (!sess) return res.status(404).json({ error: 'session_not_found' });
+  return res.json(sess);
 });
 app.post('/ui/zkml/verify', async (req, res) => {
   try {

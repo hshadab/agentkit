@@ -292,7 +292,7 @@ async function start() {
       if (!stResp.ok) { throw new Error('zkML status failed: ' + stTxt.slice(0,200)); }
       let st; try { st = JSON.parse(stTxt); } catch(e) { throw new Error('zkML status parse error: ' + stTxt.slice(0,200)); }
       if (st.status === 'completed') { proof = st.proof; break; }
-      if (st.status === 'error') { lastErr = st.error || 'proof error'; break; }
+      if (st.status === 'error' || st.status === 'failed') { lastErr = st.error || 'proof error'; break; }
       await new Promise(r=>setTimeout(r, 250));
     }
     
