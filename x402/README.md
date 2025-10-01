@@ -139,6 +139,19 @@ Tip: If Step 4 keeps “verifying…”, either fund the executor key with ETH a
   - `circuits/jolt-verifier/jolt_decision_simple_final.zkey`
 - If either file is missing or invalid, Step 2 fails immediately (no fallback), and the flow stops as designed.
 
+Check assets from the browser:
+```
+GET http://localhost:8610/ui/zkml/assets-check
+```
+
+### Verifier Info (Base Sepolia)
+- Configure `ZKML_VERIFIER_ADDRESS` (and optionally `ZKML_VERIFIER_DEPLOYMENT` for ABI) in `x402/.env`.
+- Inspect the deployed contract and ABI linkage:
+```
+GET http://localhost:8610/verifier/info
+```
+Returns: current address, chainId, whether bytecode is present, ABI loaded, and if `verifyAndStore` is available.
+
 ### MetaMask Option (no auto‑pay)
 - Leave `X402_AUTOPAY` empty
 - Use the “Pay with MetaMask” flow in the UI (EIP‑712 typed‑data signing) to produce a gasless EIP‑3009 authorization that the server executes.
