@@ -19,23 +19,12 @@ async function generateProof() {
     const wasmPath = path.join(__dirname, '../circuits/jolt-verifier/jolt_decision_simple_js/jolt_decision_simple.wasm');
     const zkeyPath = path.join(__dirname, '../circuits/jolt-verifier/jolt_decision_simple_final.zkey');
     
-    // Check if files exist
+    // Enforce REAL-only mode: require WASM + zkey assets
     if (!fs.existsSync(wasmPath)) {
-      console.error('[proof-gen] WASM file not found:', wasmPath);
-      console.log('[proof-gen] Using pre-generated proof instead');
-      return {
-        proof: JSON.parse(fs.readFileSync(path.join(__dirname, '../circuits/jolt-verifier/proof.json'), 'utf8')),
-        publicSignals: ["1", "95"]
-      };
+      throw new Error(`WASM file not found: ${wasmPath}. Place the real circuit assets to proceed.`);
     }
-    
     if (!fs.existsSync(zkeyPath)) {
-      console.error('[proof-gen] zkey file not found:', zkeyPath);
-      console.log('[proof-gen] Using pre-generated proof instead');
-      return {
-        proof: JSON.parse(fs.readFileSync(path.join(__dirname, '../circuits/jolt-verifier/proof.json'), 'utf8')),
-        publicSignals: ["1", "95"]
-      };
+      throw new Error(`zkey file not found: ${zkeyPath}. Place the real circuit assets to proceed.`);
     }
     
     // Generate the proof
@@ -59,14 +48,7 @@ async function generateProof() {
     
   } catch (error) {
     console.error('[proof-gen] Error generating proof:', error.message);
-    
-    // Fallback to pre-generated proof
-    console.log('[proof-gen] Using pre-generated proof as fallback');
-    const proof = JSON.parse(fs.readFileSync(path.join(__dirname, '../circuits/jolt-verifier/proof.json'), 'utf8'));
-    return {
-      proof,
-      publicSignals: ["1", "95"]
-    };
+    throw error;
   }
 }
 

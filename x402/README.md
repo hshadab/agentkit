@@ -132,6 +132,13 @@ npm run demo:down
 
 Tip: If Step 4 keeps “verifying…”, either fund the executor key with ETH and keep `X402_ZKML_VERIFY_ETH=true`, or set `X402_AUTOPAY=attest` to allow payment without on‑chain anchor.
 
+### Real zkML (required for Step 2)
+- The UI uses the real Groth16 proof generator in `/x402/generate-valid-proof.js`.
+- Place the circuit assets before running:
+  - `circuits/jolt-verifier/jolt_decision_simple_js/jolt_decision_simple.wasm`
+  - `circuits/jolt-verifier/jolt_decision_simple_final.zkey`
+- If either file is missing or invalid, Step 2 fails immediately (no fallback), and the flow stops as designed.
+
 ### MetaMask Option (no auto‑pay)
 - Leave `X402_AUTOPAY` empty
 - Use the “Pay with MetaMask” flow in the UI (EIP‑712 typed‑data signing) to produce a gasless EIP‑3009 authorization that the server executes.
