@@ -117,32 +117,19 @@ app.post('/attest', async (req, res) => {
           console.log('[anchor] Starting REAL on-chain verification...');
           
           // Use REAL on-chain verification with deployed Groth16 verifier
-          // Load the valid proof we generated for the JOLT decision circuit
+          // Load the proof generated in Step 2 (required; no fallback)
           let validProof;
+          let verifySignals;
           try {
             const proofData = require('./generated-proof.json');
+            if (!proofData || !proofData.proof || !Array.isArray(proofData.publicSignals)) {
+              throw new Error('generated-proof.json invalid');
+            }
             validProof = proofData.proof;
-            console.log('[anchor] Using generated valid proof');
+            verifySignals = proofData.publicSignals.map(String);
+            console.log('[anchor] Using generated proof from generated-proof.json');
           } catch (e) {
-            // Fallback to hardcoded valid proof
-            validProof = {
-              pi_a: [
-                "18793088590296066895797520261395227368784575191134067399438203878436559916361",
-                "8992357307217273423874347346140016137286668805249806164816657010767257795252"
-              ],
-              pi_b: [[
-                "13498637849849957370563712346935794652889799252262093260901148197875772690408",
-                "1381495751401917508281043932535593798243307960226469237702657434681208205351"
-              ], [
-                "8620111710927537708088191982166814428148501782640049590620627538496507482314",
-                "15277924905530043740345961755758289850165904475706250380992749479853309900634"
-              ]],
-              pi_c: [
-                "19236892115367331867803423872536792607312405949303880673644807090334349567570",
-                "13274071049570525205001082569265143873284613393122931776004879186283825174471"
-              ]
-            };
-            console.log('[anchor] Using fallback valid proof');
+            throw new Error('generated-proof.json missing or invalid. Run `npm run generate:proof` after placing real circuit assets.');
           }
           
           const formattedProof = {
@@ -151,9 +138,7 @@ app.post('/attest', async (req, res) => {
             pi_c: validProof.pi_c.slice(0, 2) // Remove the "1" at the end if present
           };
           
-          // Use the matching public signals for this proof
-          // These must match what the proof was generated with
-          const verifySignals = ["1", "95"];
+          // Public signals derived from generated-proof.json
           
           // Execute REAL on-chain verification
           const result = await verifyOnChain(formattedProof, verifySignals);
