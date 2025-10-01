@@ -1,5 +1,5 @@
 {
-  "address": "0x1136b4bD3790D7808e92e0197CdE7f623A0420bc",
+  "address": "0xf87BdA136D3b4C49B36C036B9C0774635Ad9A658",
   "abi": [
     {
       "inputs": [
@@ -34,17 +34,17 @@
     {
       "inputs": [
         {
-          "internalType": "address",
+          "internalType": "bytes32",
           "name": "",
-          "type": "address"
+          "type": "bytes32"
         }
       ],
-      "name": "verificationCount",
+      "name": "stored",
       "outputs": [
         {
-          "internalType": "uint256",
+          "internalType": "bool",
           "name": "",
-          "type": "uint256"
+          "type": "bool"
         }
       ],
       "stateMutability": "view",
@@ -55,7 +55,7 @@
       "name": "verifier",
       "outputs": [
         {
-          "internalType": "contract IOptionBGroth16Verifier",
+          "internalType": "contract IOptionB5Groth16Verifier",
           "name": "",
           "type": "address"
         }
@@ -81,9 +81,9 @@
           "type": "uint256[2]"
         },
         {
-          "internalType": "uint256[3]",
+          "internalType": "uint256[5]",
           "name": "_pubSignals",
-          "type": "uint256[3]"
+          "type": "uint256[5]"
         }
       ],
       "name": "verifyAndStore",

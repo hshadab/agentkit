@@ -104,7 +104,7 @@
       <button id="btnStart">Start Demo</button>
     </div>
 
-    <div class="panel steps">
+  <div class="panel steps">
       <div class="step">
         <div class="label">1. Payment Agent Inference</div>
         <div class="desc">🧠 Neural network (5 layers)<br/>User: "Pay $0.01 to API merchant"<br/>Agent evaluates authorization</div>
@@ -132,7 +132,7 @@
       </div>
     </div>
 
-    <div id="out" class="panel">
+  <div id="out" class="panel">
       <div class="tab-container">
         <div class="tab-buttons">
           <button class="tab-btn active" data-tab="all">Output</button>
@@ -151,6 +151,7 @@
           </div>
           <div class="tab-pane" id="tab-step2">
             <pre id="log-step2"></pre>
+            <div id="timeline" style="margin-top:8px;"></div>
           </div>
           <div class="tab-pane" id="tab-step3">
             <pre id="log-step3"></pre>
@@ -346,6 +347,18 @@ async function start() {
     set('s2','s-ok','Proof ready');
     log('✅ zkML Proof Generated (JOLT-Atlas)');
     log({ proof_hash: proof.public_signals?.slice(0,2) || ['hash1', 'hash2'] });
+    // Render mini timeline from session metrics
+    try {
+      const st = await (await fetchPG('/ui/zkml/status/' + sid)).json();
+      const t = [
+        { k: 'ONNX', ms: st.inferenceMs||0, c:'#22c55e' },
+        { k: 'Jolt', ms: st.joltMs||0, c:'#9b5cff' },
+        { k: 'Groth16', ms: st.grothMs||0, c:'#5d3fd3' }
+      ];
+      const max = Math.max(...t.map(x=>x.ms), 1);
+      const bars = t.map(x=>`<div style=\"display:flex;align-items:center;gap:8px;margin:4px 0;\"><div style=\"width:${Math.max(6, (x.ms/max)*200)}px;height:8px;background:${x.c};border-radius:4px;\"></div><span class=\"small muted\">${x.k}: ${x.ms}ms</span></div>`).join('');
+      document.getElementById('timeline').innerHTML = `<div class=\"small muted\">Performance</div>${bars}`;
+    } catch {}
     
     // Step 3: Request x402 attestation
     currentStep = 'step3';
@@ -361,7 +374,7 @@ async function start() {
     set('s3','s-ok','Attested');
     log('✅ AI decision bound to x402 payment');
     last.proof = proof;
-    log({ attestation_id: att.anchor?.attestationId?.slice(0,16) });
+    log({ attestation_id: att.anchor?.attestationId?.slice(0,16), proofHash: att.proofHash?.slice(0,16)+'…', modelHash: (att.modelHash? att.modelHash.slice(0,16)+'…': null), policyHash: att.policyHash?.slice(0,16)+'…' });
     last.token = att.token; last.intent = intent; last.cart = cart; last.anchor = att.anchor;
     
     // Step 4: On-chain verification

@@ -17,11 +17,13 @@ async function main() {
   const provider = new ethers.JsonRpcProvider(rpcUrl, { chainId, name: 'base-sepolia' });
   const wallet = new ethers.Wallet(pk, provider);
 
-  const buildDir = path.join(__dirname, '..', 'circuits', 'option-b', 'build');
-  const solPath = path.join(buildDir, 'OptionBVerifier.sol');
-  const storagePath = path.join(buildDir, 'OptionBStorageVerifier.sol');
-  if (!fs.existsSync(solPath)) throw new Error('OptionBVerifier.sol not found. Run the build script first.');
-  if (!fs.existsSync(storagePath)) throw new Error('OptionBStorageVerifier.sol not found.');
+  // Prefer v2 (5-signal) if present, else fallback to v1 (3-signal)
+  const buildDirV2 = path.join(__dirname, '..', 'circuits', 'option-b-v2', 'build');
+  const buildDirV1 = path.join(__dirname, '..', 'circuits', 'option-b', 'build');
+  const solPath = fs.existsSync(path.join(buildDirV2, 'OptionB5Verifier.sol')) ? path.join(buildDirV2, 'OptionB5Verifier.sol') : path.join(buildDirV1, 'OptionBVerifier.sol');
+  const storagePath = fs.existsSync(path.join(buildDirV2, 'OptionB5StorageVerifier.sol')) ? path.join(buildDirV2, 'OptionB5StorageVerifier.sol') : path.join(buildDirV1, 'OptionBStorageVerifier.sol');
+  if (!fs.existsSync(solPath)) throw new Error('Verifier .sol not found. Run the build script first.');
+  if (!fs.existsSync(storagePath)) throw new Error('StorageVerifier .sol not found.');
   const source = fs.readFileSync(solPath, 'utf8');
   const storageSource = fs.readFileSync(storagePath, 'utf8');
 
@@ -77,7 +79,7 @@ async function main() {
   const storageAddress = await sDeployed.getAddress();
   console.log('[deploy] StorageVerifier at:', storageAddress);
 
-  const outPath = process.env.ZKML_VERIFIER_DEPLOYMENT || path.join(__dirname, '..', 'deployments', 'option-b-verifier-base-sepolia.json');
+  const outPath = process.env.ZKML_VERIFIER_DEPLOYMENT || path.join(__dirname, '..', 'deployments', (solPath.includes('option-b-v2') ? 'option-b5-verifier-base-sepolia.json' : 'option-b-verifier-base-sepolia.json'));
   fs.writeFileSync(outPath, JSON.stringify({ address: storageAddress, abi: storageAbi }, null, 2));
   console.log('[deploy] Wrote deployment artifact:', outPath);
   console.log('\nSet env:');

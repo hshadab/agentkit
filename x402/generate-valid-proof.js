@@ -20,7 +20,7 @@ async function generateProof(opts = {}) {
   try {
     console.log('[proof-gen] Generating valid Groth16 proof for JOLT decision circuit...');
     
-    // Input for the circuit (decision and confidence; optional proofHash)
+    // Input for the circuit (decision and confidence; optional proofHash/modelHash/policyHash)
     const input = {
       decision: (opts && opts.decision != null) ? String(opts.decision) : "1",
       confidence: (opts && opts.confidence != null) ? String(opts.confidence) : "95"
@@ -43,6 +43,14 @@ async function generateProof(opts = {}) {
       // Circuits using Option B expect `proofHash` as the 3rd public signal
       input.proofHash = String(proofHashF);
       console.log('[proof-gen] Using proofHash signal:', input.proofHash);
+    }
+    if (opts && opts.modelHashF) {
+      input.modelHash = String(opts.modelHashF);
+      console.log('[proof-gen] Using modelHash signal:', input.modelHash);
+    }
+    if (opts && opts.policyHashF) {
+      input.policyHash = String(opts.policyHashF);
+      console.log('[proof-gen] Using policyHash signal:', input.policyHash);
     }
     
     // Paths to circuit files

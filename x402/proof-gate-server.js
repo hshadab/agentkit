@@ -29,7 +29,13 @@ const { ethers } = require('ethers');
 
 const app = express();
 let LAST_REDEMPTION = null; // { redeemed, usdcTxHash, explorer, blockNumber, at }
-const METRICS = { attestIssued: 0, preflight402: 0, paidAccepted: 0, anchorSubmitted: 0, anchorConfirmed: 0, anchorError: 0, autopayRuns: 0 };
+const METRICS = { 
+  attestIssued: 0, preflight402: 0, paidAccepted: 0, anchorSubmitted: 0, anchorConfirmed: 0, anchorError: 0, autopayRuns: 0,
+  onnxCalls: 0, onnxMs: 0,
+  joltMs: 0, grothMs: 0,
+  anchorMs: 0,
+  payments: 0, paymentMs: 0
+};
 const logEvent = (event, extra={}) => { try { console.log(JSON.stringify({ ts: new Date().toISOString(), event, ...extra })); } catch {} };
 app.use(cors({
   origin: (origin, cb) => cb(null, true),
@@ -146,7 +152,11 @@ app.post('/attest', async (req, res) => {
       asset: env('X402_ASSET', DEFAULT_USDC_BASE_SEPOLIA),
       price: env('X402_PRICE', '$0.01'),
     };
-    const acceptsHash = sha256Hex(JSON.stringify(acceptsBinding));
+  const acceptsHash = sha256Hex(JSON.stringify(acceptsBinding));
+  // Stronger bindings
+  const onnxModelPath = env('ONNX_MODEL_PATH', path.join(__dirname, '..', 'acp', 'models', 'authorization_model.onnx'));
+  const modelHashHex = fileSha256Hex(onnxModelPath);
+  const policyHashHex = acceptsHash;
 
     // Perform zkML verification; prefer Ethereum CLI path if enabled
     // Non-blocking on-chain verification: queue background anchor job, return immediately
@@ -223,12 +233,18 @@ app.post('/attest', async (req, res) => {
           };
           
           // Public signals derived from generated-proof.json
-          // Option B: Enforce 3rd signal matches attestation proofHash commitment
+          // Option B: Enforce 3rd signal matches attestation proofHash commitment; if v2 (5 signals) also enforce model/policy
           try {
             if (Array.isArray(verifySignals) && verifySignals.length >= 3) {
               const expected = hexToField(proofHash);
               if (String(verifySignals[2]) !== String(expected)) {
                 throw new Error(`proofhash_signal_mismatch: expected ${expected}, got ${verifySignals[2]}`);
+              }
+              if (verifySignals.length >= 5) {
+                const modelF = hexToField('0x' + (modelHashHex || ''));
+                const policyF = hexToField(policyHashHex);
+                if (String(verifySignals[3]) !== String(modelF)) throw new Error('modelhash_signal_mismatch');
+                if (String(verifySignals[4]) !== String(policyF)) throw new Error('policyhash_signal_mismatch');
               }
             }
           } catch (mismatch) {
@@ -263,6 +279,8 @@ app.post('/attest', async (req, res) => {
               transactionHash: result.transactionHash
             });
             METRICS.anchorConfirmed++;
+            const a = anchors.get(attestationId);
+            if (a?.startedAt && a?.finishedAt) METRICS.anchorMs += (a.finishedAt - a.startedAt);
             logEvent('anchor_confirmed', { attestationId, txHash: result.transactionHash, blockNumber: result.blockNumber });
           } else {
             throw new Error(result.error || 'Verification failed');
@@ -295,6 +313,8 @@ app.post('/attest', async (req, res) => {
       modelId,
       modelCheckpoint: proof?.modelCheckpoint || 'unknown',
       proofHash,
+      modelHash: modelHashHex || null,
+      policyHash: policyHashHex,
       authorized: decision === 1,
       decision,
       confidence,
@@ -508,6 +528,7 @@ app.post('/ui/pay-auto', async (req, res) => {
     });
     
     // Final paid call with X-PAYMENT header
+    const tP0 = Date.now();
     const paid = await fetch(`http://127.0.0.1:${PORT}/x402/pay`, {
       method: 'POST',
       headers: { 
@@ -518,6 +539,9 @@ app.post('/ui/pay-auto', async (req, res) => {
       body: JSON.stringify(bodyJson),
     });
     const paidJson = await paid.json();
+    const tP1 = Date.now();
+    METRICS.payments++;
+    METRICS.paymentMs += (tP1 - tP0);
 
     // Attempt to discover the USDC tx emitted by middleware by parsing header and scanning recent logs
     let redemption = null;
@@ -742,6 +766,8 @@ app.post('/ui/zkml/prove', async (req, res) => {
           aiConfidence = Number(auth.confidence);
           if (!Number.isFinite(aiConfidence)) throw new Error('onnx_confidence_invalid');
           inferenceMs = Number(j && j.performance && j.performance.inferenceTimeMs ? j.performance.inferenceTimeMs : (Date.now() - t0));
+          METRICS.onnxCalls++;
+          METRICS.onnxMs += inferenceMs;
           // Surface AI result early for UI
           const cur = ZKML_SESSIONS.get(sessionId) || {};
           ZKML_SESSIONS.set(sessionId, { ...cur, status: 'ai_ready', aiDecision, aiConfidence, inferenceMs });
@@ -758,22 +784,34 @@ app.post('/ui/zkml/prove', async (req, res) => {
           }
         }
         // Run Jolt-Atlas prover first to obtain a canonical artifact and hash
-        let joltProofHash = null;
+        let joltProofHash = null; let joltMs = null;
         try {
+          const tJ0 = Date.now();
           const j = await runJoltAtlasProver();
           joltProofHash = j.joltProofHash;
+          joltMs = Date.now() - tJ0;
         } catch (e) {
           ZKML_SESSIONS.set(sessionId, { status: 'failed', error: 'Jolt-Atlas not configured: ' + String(e?.message || e), startTime: ZKML_SESSIONS.get(sessionId)?.startTime });
           return;
         }
         // Convert to field element for Groth16 circuit public signal
         const proofHashF = joltProofHash ? hexToField(joltProofHash) : null;
-        const gen = await generateProof({ proofHashF, decision: (aiDecision!=null ? aiDecision : undefined), confidence: (aiConfidence!=null ? aiConfidence : undefined) });
+        // Stronger bindings for v2 circuit
+        const onnxModelPath = env('ONNX_MODEL_PATH', path.join(__dirname, '..', 'acp', 'models', 'authorization_model.onnx'));
+        const modelHashHex = fileSha256Hex(onnxModelPath);
+        const modelHashF = modelHashHex ? hexToField('0x' + modelHashHex) : null;
+        const policyHashHex = sha256Hex(JSON.stringify({ resource: X402_RESOURCE_PATH, network: env('X402_NETWORK','base-sepolia'), payTo: env('X402_PAYTO','0x1111111111111111111111111111111111111111'), asset: env('X402_ASSET', DEFAULT_USDC_BASE_SEPOLIA), price: env('X402_PRICE','$0.01') }));
+        const policyHashF = hexToField(policyHashHex);
+        const tG0 = Date.now();
+        const gen = await generateProof({ proofHashF, modelHashF, policyHashF, decision: (aiDecision!=null ? aiDecision : undefined), confidence: (aiConfidence!=null ? aiConfidence : undefined) });
+        const grothMs = Date.now() - tG0;
         // Normalize to the shape the UI and attestation expect; do not expose the SNARK proof to the UI/session payload
         const publicSignals = Array.isArray(gen?.publicSignals) ? gen.publicSignals : (gen?.proof?.publicSignals || []);
         const proof = { public_signals: publicSignals };
         // Keep the SNARK proof in-memory for the anchor job to consume (avoid file races)
-        ZKML_SESSIONS.set(sessionId, { status: 'completed', proof, publicSignals, snarkProof: gen.proof, joltProofHash, proofHashF, aiDecision, aiConfidence, inferenceMs, startTime: ZKML_SESSIONS.get(sessionId)?.startTime });
+        METRICS.joltMs += (joltMs || 0);
+        METRICS.grothMs += (grothMs || 0);
+        ZKML_SESSIONS.set(sessionId, { status: 'completed', proof, publicSignals, snarkProof: gen.proof, joltProofHash, proofHashF, modelHashF, policyHashF, aiDecision, aiConfidence, inferenceMs, joltMs, grothMs, startTime: ZKML_SESSIONS.get(sessionId)?.startTime });
       } catch (err) {
         ZKML_SESSIONS.set(sessionId, { status: 'failed', error: String(err?.message || err), startTime: ZKML_SESSIONS.get(sessionId)?.startTime });
       }
