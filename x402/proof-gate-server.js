@@ -5,6 +5,7 @@ const cors = require('cors');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const crypto = require('crypto');
 const { issueAttestation, verifyAttestation } = require('./attestation');
+const fs = require('fs');
 const { generateProof } = require('./generate-valid-proof');
 const { verifyServerRequest } = require('./x402-fallback');
 const { createDemoPaymentHeader, processX402Payment } = require('./production-payment-handler');
@@ -954,5 +955,42 @@ app.post('/admin/restart', async (req, res) => {
     return res.json({ ok: true, restartedUnified: true, stoppedUnified: stopped, pid: child.pid });
   } catch (e) {
     return res.status(500).json({ ok: false, error: String(e?.message || e) });
+  }
+});
+
+// Assets check for zkML (real-only)
+app.get('/ui/zkml/assets-check', (req, res) => {
+  try {
+    const wasmPath = path.join(__dirname, '..', 'circuits', 'jolt-verifier', 'jolt_decision_simple_js', 'jolt_decision_simple.wasm');
+    const zkeyPath = path.join(__dirname, '..', 'circuits', 'jolt-verifier', 'jolt_decision_simple_final.zkey');
+    const existsWasm = fs.existsSync(wasmPath);
+    const existsZkey = fs.existsSync(zkeyPath);
+    const sizeWasm = existsWasm ? fs.statSync(wasmPath).size : 0;
+    const sizeZkey = existsZkey ? fs.statSync(zkeyPath).size : 0;
+    res.json({ ok: existsWasm && existsZkey, wasmPath, zkeyPath, existsWasm, existsZkey, sizeWasm, sizeZkey });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: String(e?.message || e) });
+  }
+});
+
+// Verifier info (contract/ABI/code presence)
+app.get('/verifier/info', async (req, res) => {
+  try {
+    const { VERIFIER_ADDRESS, provider } = require('./groth16-verifier-service');
+    const deploymentPath = process.env.ZKML_VERIFIER_DEPLOYMENT || path.join(__dirname, '../deployments/jolt-storage-verifier-base-sepolia.json');
+    let abi = null; let hasVerifyAndStore = false; let abiCount = 0; let abiLoaded = false;
+    try {
+      const j = JSON.parse(fs.readFileSync(deploymentPath, 'utf8'));
+      abi = j.abi;
+      abiCount = Array.isArray(abi) ? abi.length : 0;
+      abiLoaded = abiCount > 0;
+      const c = new ethers.Contract(VERIFIER_ADDRESS, abi, provider);
+      try { c.interface.getFunction('verifyAndStore'); hasVerifyAndStore = true; } catch {}
+    } catch {}
+    const code = await provider.getCode(VERIFIER_ADDRESS).catch(()=> '0x');
+    let chainId = null; try { const n = await provider.getNetwork(); chainId = Number(n.chainId); } catch {}
+    res.json({ ok: code && code !== '0x' && hasVerifyAndStore, address: VERIFIER_ADDRESS, chainId, codePresent: code && code !== '0x', abiLoaded, hasVerifyAndStore, deploymentPath });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: String(e?.message || e) });
   }
 });
