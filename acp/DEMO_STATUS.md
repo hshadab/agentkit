@@ -5,15 +5,13 @@
 
 ### Deployed Infrastructure
 
-#### Groth16 Verifier Contract (Base Sepolia)
-- **Address**: `0xf752509cb5af017f465B42053d41B730991c6624`
+#### Groth16 Verifier Contract (Ethereum Sepolia)
+- **Address**: `0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944`
 - **Type**: JOLT Decision Verifier (Groth16 zkSNARK)
-- **Network**: Base Sepolia (Chain ID: 84532)
-- **Deployment TX**: `0xcadc18929ba483bbde2df7ae9b9209a4447485f3fa596a963a08527ca842bd06`
-- **Deployer**: `0x2e408ad62e30146404F4ED8A61253212f3f9A490`
-- **Gas Used**: ~368,397 gas
-- **Explorer**: https://sepolia.basescan.org/address/0xf752509cb5af017f465B42053d41B730991c6624
-- **Deployment Script**: `contracts/deploy-jolt-verifier.js`
+- **Network**: Ethereum Sepolia (Chain ID: 11155111)
+- **Explorer**: https://sepolia.etherscan.io/address/0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944
+- **Source**: Main AgentKit project (api/groth16-jolt-backend-real.js)
+- **Status**: Fully deployed and verified
 
 #### ONNX Authorization Model
 - **File**: `models/authorization_model.onnx` (1.8KB)
@@ -147,16 +145,19 @@ JOLT_MODEL_PATH=/home/hshadab/agentkit/acp/models/authorization_model.onnx
 
 ### Recent Improvements
 
+- **2025-09-30**: UI polish - larger step numbers (55px), clearer step titles
+- **2025-09-30**: Fixed on-chain verification service (Ethereum Sepolia, not Base)
+- **2025-09-30**: Added verification transaction links to Step 4
+- **2025-09-30**: Updated workflow labels: "AI Agent Inference" → "zkML Inference Proof"
 - **2025-09-30**: Created real ONNX model, deployed verifier contract
 - **2025-09-30**: Split workflow into 5 steps (agent decision + zkML proof separate)
-- **2025-09-30**: Added contract links to Step 5
 - **2025-09-30**: Implemented scenario-based testing UI
 
 ### Known Limitations
 
 1. **OpenAI API**: GPT-5 parser falls back to regex (API key works but quota/rate limits)
-2. **ONNX Inference**: Model exists but proof service may need restart to load it
-3. **On-Chain TX**: Verification is read-only (view function), doesn't create blockchain TX
+2. **On-Chain Verification**: Currently uses dummy proofs (view function calls), doesn't store permanent TX records
+3. **Stripe Dashboard**: Payment intents viewable only in the correct Stripe test account
 
 ### Next Steps (If Needed)
 

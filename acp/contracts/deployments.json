@@ -1,16 +1,15 @@
 {
-  "base-sepolia": {
-    "network": "base-sepolia",
-    "chainId": 84532,
+  "ethereum-sepolia": {
+    "network": "ethereum-sepolia",
+    "chainId": 11155111,
     "contractName": "JOLTDecisionVerifier",
-    "address": "0xf752509cb5af017f465B42053d41B730991c6624",
-    "deployer": "0x2e408ad62e30146404F4ED8A61253212f3f9A490",
-    "deploymentTx": "0xcadc18929ba483bbde2df7ae9b9209a4447485f3fa596a963a08527ca842bd06",
-    "timestamp": "2025-09-30T20:35:36.392Z",
-    "rpcUrl": "https://base-sepolia-rpc.publicnode.com",
-    "explorer": "https://sepolia.basescan.org/address/0xf752509cb5af017f465B42053d41B730991c6624",
+    "address": "0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944",
+    "rpcUrl": "https://eth-sepolia.public.blastapi.io",
+    "explorer": "https://sepolia.etherscan.io/address/0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944",
     "verifierType": "Groth16",
     "publicSignals": 2,
-    "description": "JOLT zkML Decision Verifier (2 params: decision, confidence)"
+    "description": "JOLT zkML Decision Verifier (2 params: decision, confidence)",
+    "source": "Main AgentKit project - api/groth16-jolt-backend-real.js",
+    "status": "Deployed and verified"
   }
 }
