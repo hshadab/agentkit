@@ -9,6 +9,7 @@ const { verifyServerRequest } = require('./x402-fallback');
 const { createDemoPaymentHeader, processX402Payment } = require('./production-payment-handler');
 const { verifyOnChain, checkVerificationStatus } = require('./groth16-verifier-service');
 const path = require('path');
+const fs = require('fs');
 const { spawn } = require('child_process');
 // Ensure local .env is loaded even when started via `node x402/proof-gate-server.js`
 let dotenvParsed = {};
@@ -741,6 +742,7 @@ app.post('/ui/pay-metamask', async (req, res) => {
 });
 
 const PORT = Number(env('X402_ZKML_PORT', '8610'));
+const BIND_HOST = env('X402_BIND_HOST', '0.0.0.0');
 // Serve static demo under same origin to avoid CORS issues
 try { app.use('/static', express.static(path.join(__dirname, '..', 'static'))); } catch {}
 
@@ -773,9 +775,9 @@ app.post('/ui/zkml/verify', async (req, res) => {
     const j = await r.json(); res.status(r.status).json(j);
   } catch (e) { res.status(502).json({ error: 'proxy_failed', message: e.message }); }
 });
-app.listen(PORT, () => {
+app.listen(PORT, BIND_HOST, () => {
   const onChain = env('X402_ZKML_VERIFY_ETH','') === 'true' || VERIFY_ON_CHAIN;
-  console.log(`\n[proof-gate] listening on :${PORT}\n- unified-backend: ${UNIFIED_BACKEND}\n- verify on-chain (effective): ${onChain}\n`);
+  console.log(`\n[proof-gate] listening on ${BIND_HOST}:${PORT}\n- unified-backend: ${UNIFIED_BACKEND}\n- verify on-chain (effective): ${onChain}\n`);
 });
 
 // --- Helpers ---
@@ -934,4 +936,35 @@ async function runAutopay({ attestationId, token, bodyJson, anchorId }) {
 // Metrics endpoint
 app.get('/metrics', (req, res) => {
   res.json({ ok: true, ...METRICS });
+});
+
+// --- Admin endpoints (local convenience) ---
+app.post('/admin/restart', async (req, res) => {
+  try {
+    const root = path.join(__dirname, '.');
+    const pidUnifiedPath = path.join(__dirname, '.pid-unified');
+    let stopped = false;
+    try {
+      if (fs.existsSync(pidUnifiedPath)) {
+        const pid = Number(fs.readFileSync(pidUnifiedPath, 'utf8').trim());
+        if (pid) {
+          try { process.kill(pid, 'SIGTERM'); stopped = true; } catch {}
+          try { fs.unlinkSync(pidUnifiedPath); } catch {}
+        }
+      }
+    } catch {}
+
+    // Start unified-backend again
+    const child = spawn(process.execPath, [path.join(__dirname, '..', 'api', 'unified-backend.js')], {
+      cwd: path.join(__dirname, '..'),
+      detached: true,
+      stdio: 'ignore'
+    });
+    child.unref();
+    try { fs.writeFileSync(pidUnifiedPath, String(child.pid)); } catch {}
+
+    return res.json({ ok: true, restartedUnified: true, stoppedUnified: stopped, pid: child.pid });
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: String(e?.message || e) });
+  }
 });

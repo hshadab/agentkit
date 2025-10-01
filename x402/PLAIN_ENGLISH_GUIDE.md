@@ -657,7 +657,7 @@ Welcome to the age of trustless autonomous commerce. Welcome to x402.
 
 *For technical documentation, see [IMPLEMENTATION_GUIDE.md](./IMPLEMENTATION_GUIDE.md)*
 *For quick start, see [README.md](./README.md)*
-*For the live demo, visit http://localhost:8000/static/x402-demo.html*
+*For the live demo, visit http://localhost:8610/static/x402-demo.html*
 ### Operational Guidance
 - Keys: Agent (payer) needs Base Sepolia USDC; Executor (merchant) needs Base Sepolia ETH for gas. Keep keys in env/KMS; don’t hardcode.
 - Rate limiting & logging: Apply rate limits to `/attest` and `/x402/pay`; collect structured logs and metrics for anchors and payments.

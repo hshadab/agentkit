@@ -109,7 +109,7 @@ cargo run   # starts on :8001
 # From x402/
 npm run demo:up    # starts unified-backend (:8002) + proof-gate (:8610)
 # Visit the 1→5 UI in your browser:
-# http://127.0.0.1:8610/static/x402-demo.html
+# http://localhost:8610/static/x402-demo.html
 # Stop services:
 npm run demo:down
 ```
@@ -122,7 +122,7 @@ npm run demo:down
   - Optional anchor: `X402_ZKML_VERIFY_ETH=true` (requires gas); set `X402_AUTOPAY=anchor_confirmed` to pay after confirmation
   - Or skip anchor with `X402_AUTOPAY=attest` for quick local testing
 - Start services: `npm run demo:up`
-- Open the UI: `http://127.0.0.1:8610/static/x402-demo.html`
+- Open the UI: `http://localhost:8610/static/x402-demo.html`
 - Click “Start Demo”. The UI drives:
   - Step 1: AI inference (calls `/ui/zkml/prove`)
   - Step 2: zkML proof (polls `/ui/zkml/status/:id`)
@@ -137,7 +137,7 @@ Tip: If Step 4 keeps “verifying…”, either fund the executor key with ETH a
 - Use the “Pay with MetaMask” flow in the UI (EIP‑712 typed‑data signing) to produce a gasless EIP‑3009 authorization that the server executes.
 
 ### Browser UI (5‑Step)
-- Open `http://127.0.0.1:8001/static/x402-demo.html` (served by the Rust backend).
+- Open `http://localhost:8610/static/x402-demo.html` (served by proof‑gate)
 - The UI runs Steps 1–5 and talks to proof‑gate on :8610 via the Rust proxy routes.
 - On-chain anchoring (Step 4) is optional and controlled by env.
 

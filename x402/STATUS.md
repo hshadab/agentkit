@@ -132,12 +132,11 @@ LLM_PROVER_BIN=/home/hshadab/agentkit/jolt-atlas/target/release/llm_prover
 ## Testing Checklist
 
 ### Service Health
-- [ ] zkML Backend: `curl http://127.0.0.1:8002/health`
-- [ ] Proof-Gate: `curl http://127.0.0.1:8610/health`
-- [ ] Main Backend: `curl http://127.0.0.1:8001/test`
+- [ ] zkML Backend: `curl http://localhost:8002/health`
+- [ ] Proof-Gate: `curl http://localhost:8610/health`
 
 ### Demo Flow
-- [ ] Open: http://127.0.0.1:8001/static/x402-demo.html
+- [ ] Open: http://localhost:8610/static/x402-demo.html
 - [ ] Click "Start Demo"
 - [ ] Step 1: zkML proof completes
 - [ ] Step 2: Attestation issued
@@ -167,8 +166,8 @@ tail -f logs-proof-gate-8602.log
 tail -f logs-backend-8001.log
 
 # Test endpoints manually
-curl http://127.0.0.1:8610/health
-curl http://127.0.0.1:8002/zkml/status/<session_id>
+curl http://localhost:8610/health
+curl http://localhost:8002/zkml/status/<session_id>
 ```
 
 ## Security Considerations

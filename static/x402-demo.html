@@ -173,7 +173,7 @@
 <script>
 const gate = location.origin;
 // Proof-gate candidates (try 8610 first, then 8602)
-const PG_BASES = ['http://127.0.0.1:8610','http://127.0.0.1:8602'];
+const PG_BASES = ['http://localhost:8610','http://127.0.0.1:8610','http://127.0.0.1:8602'];
 async function fetchPG(path, init) {
   let lastErr = null;
   for (const base of PG_BASES) {

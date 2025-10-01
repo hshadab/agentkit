@@ -330,12 +330,13 @@ app.post('/api/zkml/generate', (req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 8002;
-app.listen(PORT, () => {
+const HOST = process.env.UNIFIED_BIND_HOST || '0.0.0.0';
+app.listen(PORT, HOST, () => {
     console.log(`
 ╔════════════════════════════════════════════╗
 ║        UNIFIED BACKEND SERVICE             ║
 ╠════════════════════════════════════════════╣
-║  Port: ${PORT}                              ║
+║  Addr: ${HOST}:${PORT}                      ║
 ║  Services:                                 ║
 ║    • zkEngine proofs                       ║
 ║    • zkML (JOLT-Atlas)                     ║
