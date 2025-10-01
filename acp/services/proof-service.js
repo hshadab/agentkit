@@ -24,7 +24,7 @@ const MODEL_PATH = process.env.JOLT_MODEL_PATH || path.join(__dirname, '../model
 
 // Groth16 circuit paths
 const CIRCUIT_WASM = path.join(__dirname, '../circuits/build/AgentAuthorizationSimple_js/AgentAuthorizationSimple.wasm');
-const CIRCUIT_ZKEY = path.join(__dirname, '../circuits/build/AgentAuthorization_final.zkey');
+const CIRCUIT_ZKEY = path.join(__dirname, '../circuits/build/AgentAuthorizationSimple_final.zkey');
 
 // In-memory store for proof sessions
 const proofSessions = new Map();
