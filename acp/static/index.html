@@ -955,6 +955,51 @@
                 await updateStep(5, 'completed');
                 updateProgress(100);
 
+                // Add Performance Metrics Card (after successful completion)
+                if (decision && verificationSucceeded) {
+                    const metricsHtml = `
+                        <div style="margin-top: 20px; padding: 16px; background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 12px;">
+                            <h3 style="margin-bottom: 12px; font-size: 1.1em;">📊 Performance Metrics</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.9em;">
+                                <div>⚡ Proof Generation: ~600ms</div>
+                                <div>⛓️ On-Chain Verify: ~350k gas</div>
+                                <div>💰 Total Cost: ~$0.01-0.05</div>
+                                <div>🔐 Proof Size: 524 bytes</div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Add Tweet Button
+                    const agentNames = {
+                        travel: 'TravelDealHunter',
+                        grocery: 'GroceryOptimizer',
+                        research: 'ResearchAgent Pro',
+                        custom: 'Custom Agent',
+                        gpt: 'ChatGPT',
+                        claude: 'Claude'
+                    };
+                    const agentName = agentNames[agentType] || agentType;
+                    const shortProof = proofHash ? proofHash.substring(0, 16) + '...' : 'generated';
+
+                    const tweetText = encodeURIComponent(`Just ran a trustless agent transaction with @stripe @OpenAI ACP + @novanet zkML!\n\n✅ Agent: ${agentName}\n💰 Amount: $${amount.toFixed(2)}\n🔐 zkML Proof: ${shortProof}\n⛓️ Verified on Base Sepolia\n\nTry it: https://github.com/hshadab/agentkit/tree/main/acp`);
+
+                    const tweetButton = `
+                        <a href="https://twitter.com/intent/tweet?text=${tweetText}"
+                           target="_blank"
+                           style="display: block; margin-top: 16px; padding: 12px; background: #1DA1F2; color: white; text-align: center; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                           📢 Tweet This Result
+                        </a>
+                    `;
+
+                    // Append to container
+                    const container = document.querySelector('.container');
+                    const metricsDiv = document.createElement('div');
+                    metricsDiv.innerHTML = metricsHtml + tweetButton;
+                    metricsDiv.style.maxWidth = '1560px';
+                    metricsDiv.style.margin = '0 auto';
+                    container.appendChild(metricsDiv);
+                }
+
             } catch (error) {
                 console.error('Error:', error);
                 alert('❌ Error: ' + error.message);
@@ -1045,6 +1090,13 @@
             // Reset progress
             updateProgress(0);
             currentStep = 0;
+
+            // Remove metrics card and tweet button if they exist
+            const container = document.querySelector('.container');
+            const lastChild = container.lastElementChild;
+            if (lastChild && lastChild.innerHTML && lastChild.innerHTML.includes('Performance Metrics')) {
+                container.removeChild(lastChild);
+            }
 
             // Hide reset button
             document.getElementById('resetBtn').style.display = 'none';
