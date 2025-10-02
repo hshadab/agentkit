@@ -9,6 +9,7 @@ Note: This is a reference demo, not a spec‑verified or security‑hardened imp
 - Real ONNX inference integrated into the flow (Step 1): proof‑gate calls your ONNX service for a decision+confidence before proving.
 - Proof‑of‑Proof commitment: Jolt‑Atlas proof bytes are hashed and reduced mod BN254; the Groth16 circuit exposes `[decision, confidence, proofHash]` as public signals.
 - On‑chain anchor (Step 4): the storage verifier on Base Sepolia enforces the 3rd signal, permanently anchoring the exact Jolt proof commitment.
+- v2 circuit (5 signals): optionally includes `modelHash` (ONNX bytes) and `policyHash` (Accepts hash) as public signals alongside `[decision, confidence, proofHash]` for stronger binding on‑chain.
 - Attestation binding (Step 3): attestation binds `proofHash`, `intentHash` (method+path+body), and `acceptsHash` (price/network/asset/payTo). This prevents TOCTOU and ties the AI decision to the precise x402 payment intent and server policy.
 - Session‑bound verification: the anchor job uses the in‑memory SNARK proof and public signals from the same session that generated the Jolt commitment, eliminating file races.
 - Strict gating: if AI denies, the flow halts (no proof, no attestation, no anchor, no payment). Auto‑pay runs only after the on‑chain anchor confirms.
@@ -81,6 +82,14 @@ AI Decision Process (strict):
 
 Verifier + Explorer Links
 - Step 4 shows both the verification tx and the verifier contract address (Base Sepolia). See also `GET /verifier/info` for address/chain/ABI.
+
+### UI Highlights (Demo‑friendly)
+- Step cards glow while in progress; completed steps appear lighter and clearly “done”.
+- Step 1 shows Decision, Confidence, and Inference time inline; a compact “Decision Explainer” renders normalized feature bars.
+- Step 2 renders a mini timeline (ONNX/Jolt/Groth16) with sub‑ms handling; an inline summary appears under the card.
+- Step 3 surfaces binding chips for `proofHash`/`modelHash`/`policyHash` (short hashes, copyable from logs).
+- Step 4 shows “Verified: 0x…” plus a “Verifier” contract link and gas used below the card.
+- Step 5 embeds a “View receipt” link that renders From/To balances, amount, and gas inline.
 
 ## Installation
 

@@ -26,7 +26,12 @@
       background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
       border:1px solid transparent; border-radius:12px; padding:12px; box-shadow: var(--shadow); min-height:115px;
       min-width:140px;
+      transition: box-shadow 180ms ease, filter 180ms ease, border-color 180ms ease;
     }
+    .step.in-progress { box-shadow: 0 0 0 1px rgba(155,92,255,0.35), 0 0 28px rgba(155,92,255,0.35), var(--shadow); border-color: rgba(155,92,255,0.6); animation: cardGlow 1.4s ease-in-out infinite; }
+    .step.completed   { filter: brightness(1.28) saturate(1.18); border-color: rgba(34,197,94,0.6); box-shadow: 0 0 0 1px rgba(34,197,94,0.28), 0 0 18px rgba(34,197,94,0.18), var(--shadow); }
+    .step.error       { box-shadow: 0 0 0 1px rgba(239,68,68,0.25), 0 0 24px rgba(239,68,68,0.25), var(--shadow); border-color: rgba(239,68,68,0.45); }
+    @keyframes cardGlow { 0%{ box-shadow: 0 0 0 1px rgba(155,92,255,0.15), 0 0 14px rgba(155,92,255,0.15), var(--shadow);} 50%{ box-shadow: 0 0 0 1px rgba(155,92,255,0.35), 0 0 28px rgba(155,92,255,0.35), var(--shadow);} 100%{ box-shadow: 0 0 0 1px rgba(155,92,255,0.15), 0 0 14px rgba(155,92,255,0.15), var(--shadow);} }
     .step::before { content:""; position:absolute; inset:0; pointer-events:none; border-radius:12px; padding:1px;
       background: linear-gradient(135deg, var(--border-grad-start), transparent 40%, var(--border-grad-end));
       -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
@@ -230,6 +235,23 @@ const set = (id, cls, text, link)=>{
     el.textContent = text;
   }
   el.dataset.state = (text || '').toLowerCase().split(' ')[0];
+  // Update parent step card visual state
+  try {
+    const card = el.closest('.step');
+    if (card) {
+      card.classList.remove('in-progress','completed','error');
+      const t = String(text||'').toLowerCase();
+      if (cls === 's-ok' || /attested|verified|completed|ready|paid/.test(t)) {
+        card.classList.add('completed');
+      } else if (cls === 's-err' || /failed|error/.test(t)) {
+        card.classList.add('error');
+      } else if (cls === 's-warn' || /running|verifying|executing/.test(t)) {
+        card.classList.add('in-progress');
+      } else if (cls === 'muted' && /running/.test(t)) {
+        card.classList.add('in-progress');
+      }
+    }
+  } catch {}
 };
 
 function addLink(label, url) {
@@ -449,13 +471,12 @@ async function start() {
           const txLink = `${explorer}/tx/${tx}`;
           const vAddr = verifierInfo?.address;
           const verLink = vAddr ? `${explorer}/address/${vAddr}` : null;
-          const s4el = document.getElementById('s4');
           const shortTx = '0x' + tx.slice(2,7) + '…';
-          s4el.className = 's-ok'; s4el.dataset.state = 'verified';
+          // Use helper so card state updates (removes in-progress glow)
+          set('s4','s-ok', `Verified: ${shortTx}`, txLink);
           if (verLink) {
-            s4el.innerHTML = `<a href="${txLink}" target="_blank">Verified: ${shortTx}</a> · <a href="${verLink}" target="_blank">Verifier</a>`;
-          } else {
-            s4el.innerHTML = `<a href="${txLink}" target="_blank">Verified: ${shortTx}</a>`;
+            const s4el = document.getElementById('s4');
+            s4el.innerHTML = `<a href=\"${txLink}\" target=\"_blank\">Verified: ${shortTx}</a> · <a href=\"${verLink}\" target=\"_blank\">Verifier</a>`;
           }
           try { const s4i = document.getElementById('s4Info'); const gas = anchor.result?.gasUsed || '—'; s4i.innerHTML = `Gas: ${gas}`; } catch {}
           log('✅ On-chain verification complete');
@@ -493,10 +514,31 @@ async function start() {
         s5.innerHTML = `<a href="${tokenPage}" target="_blank">ready</a>`;
       }
     } catch {}
-    log('\n✅ All steps complete! Executing USDC payment automatically...');
-    
-    // Automatically execute payment
-    setTimeout(() => executePayment(), 1000);
+    // Auto or server-side payment depending on server config
+    try {
+      const h = await (await fetchPG('/health')).json();
+      const mode = (h && h.autopayMode) ? String(h.autopayMode) : '';
+      if (mode === 'anchor_confirmed') {
+        log('Server auto‑pay is enabled; waiting for payment...');
+        // Poll for a short while to surface the payment link if the server redeems
+        for (let i=0;i<30;i++) {
+          await new Promise(r=>setTimeout(r, 1000));
+          const last = await getLastRedemption();
+          if (last && last.redeemed && last.usdcTxHash) {
+            const shortHash = last.usdcTxHash.slice(0, 7) + '…';
+            set('s5', 's-ok', `Completed: ${shortHash}`, last.explorer);
+            log('✅ USDC Payment successful: ' + last.explorer);
+            break;
+          }
+        }
+      } else {
+        log('\n✅ All steps complete! Executing USDC payment automatically...');
+        setTimeout(() => executePayment(), 1000);
+      }
+    } catch {
+      log('\n✅ All steps complete! Executing USDC payment automatically...');
+      setTimeout(() => executePayment(), 1000);
+    }
   } catch (e) {
     log('Error: ' + e.message);
     if ($('s1').textContent==='running') set('s1','s-err','error');

@@ -140,6 +140,14 @@ X402_GROTH_ZKEY_PATH=/abs/path/to/decision_with_commitment_final.zkey
 - Attestation binds proof → intent → server policy via `proofHash`/`intentHash`/`acceptsHash`.
 - Session‑bound anchor uses in‑memory SNARK proof + signals, eliminating races.
 
+### UI Polish (Demo)
+- In‑progress steps glow; completed steps appear lighter/“done”.
+- Inline Decision/Confidence/Inference under Step 1.
+- Mini timeline for ONNX/Jolt/Groth under Step 2.
+- Binding chips (`proofHash`/`modelHash`/`policyHash`) under Step 3.
+- Verifier and gas shown under Step 4.
+- “View receipt” under Step 5 shows From/To balances, amount, gas inline.
+
 ### Current Verifier (Base Sepolia)
 - Storage verifier: `0x2fD8885cC60B742ceBf5F9305f80BD0CCF3d14E8`
 - Typical anchor gas: ~340k–360k

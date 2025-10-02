@@ -100,9 +100,19 @@ function hexToField(hex) {
   } catch (e) { return '0'; }
 }
 
+// Compute sha256 hex of a file; returns null on failure
+function fileSha256Hex(p) {
+  try {
+    const b = fs.readFileSync(p);
+    return crypto.createHash('sha256').update(b).digest('hex');
+  } catch {
+    return null;
+  }
+}
+
 app.get('/health', (req, res) => {
   const onChain = env('X402_ZKML_VERIFY_ETH', '') === 'true' || VERIFY_ON_CHAIN;
-  res.json({ ok: true, unifiedBackend: UNIFIED_BACKEND, onChain: !!onChain, ethVerifyMode: ETH_VERIFY_MODE, onnx: { url: env('X402_ONNX_URL','http://127.0.0.1:8009'), require: env('X402_REQUIRE_ONNX','true') }, aiMinConfidence: Number(env('X402_AI_MIN_CONFIDENCE','0')) });
+  res.json({ ok: true, unifiedBackend: UNIFIED_BACKEND, onChain: !!onChain, ethVerifyMode: ETH_VERIFY_MODE, autopayMode: AUTOPAY_MODE, onnx: { url: env('X402_ONNX_URL','http://127.0.0.1:8009'), require: env('X402_REQUIRE_ONNX','true') }, aiMinConfidence: Number(env('X402_AI_MIN_CONFIDENCE','0')) });
 });
 
 // In-memory anchor store for non-blocking on-chain verification
