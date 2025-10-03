@@ -22,19 +22,42 @@
       /* Hero */
       .hero {
         background: linear-gradient(135deg, #1a1f2e 0%, #0a0e1a 100%);
-        padding: 40px 20px 30px;
+        padding: 30px 20px 20px;
         text-align: center;
         border-bottom: 1px solid var(--border);
       }
+      .hero-logos {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 30px;
+        margin-bottom: 20px;
+      }
+      .hero-logos img {
+        height: 40px;
+        object-fit: contain;
+      }
+      .hero-logos img:first-child {
+        height: 48px;
+      }
       .hero h1 {
-        font-size: 28px;
+        font-size: 36px;
         font-weight: 700;
         background: linear-gradient(135deg, var(--primary), var(--accent));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         margin-bottom: 8px;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
       }
-      .hero p { color: var(--muted); font-size: 14px; }
+      .hero p {
+        color: var(--muted);
+        font-size: 19px;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+      }
 
       /* Container */
       .container { max-width: 1600px; margin: 0 auto; padding: 40px 20px; }
@@ -47,6 +70,32 @@
         padding: 40px 20px;
         margin-bottom: 40px;
         overflow-x: auto;
+        position: relative;
+      }
+      .flow-diagram-run-btn {
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-655px);
+        z-index: 10;
+        padding: 12px 24px;
+        background: rgba(91, 140, 255, 0.5);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(91, 140, 255, 0.3);
+        opacity: 1;
+        transition: background 0.2s ease;
+      }
+      .flow-diagram-run-btn:hover {
+        background: rgba(91, 140, 255, 0.6);
+      }
+      .flow-diagram-run-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
       }
       .flow-main {
         display: flex;
@@ -54,6 +103,13 @@
         justify-content: center;
         min-width: 1450px;
         gap: 12px;
+      }
+      .arrow-column {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 20px;
+        flex: 0 0 30px;
       }
 
       /* Flow Box - Standard */
@@ -92,12 +148,23 @@
       }
       .flow-box-secure.active {
         box-shadow: 0 0 25px rgba(77, 226, 207, 0.3);
+        animation: borderPulse 1.5s ease-in-out infinite;
+      }
+      @keyframes borderPulse {
+        0%, 100% {
+          border-color: var(--accent);
+          box-shadow: 0 0 25px rgba(77, 226, 207, 0.3);
+        }
+        50% {
+          border-color: var(--primary);
+          box-shadow: 0 0 35px rgba(91, 140, 255, 0.5);
+        }
       }
       .flow-box-secure.success {
         background: rgba(77, 226, 207, 0.05);
       }
       .secure-tool-header {
-        font-size: 15px;
+        font-size: 35px;
         font-weight: 700;
         color: var(--accent);
         margin-bottom: 16px;
@@ -126,24 +193,28 @@
         border-color: var(--success);
         background: rgba(16, 185, 129, 0.1);
       }
+      .secure-tool-item.purple {
+        border-color: #a78bfa;
+        background: rgba(167, 139, 250, 0.1);
+      }
       .secure-tool-item.success.purple {
         border-color: #a78bfa;
         background: rgba(167, 139, 250, 0.1);
       }
       .secure-tool-item-number {
-        font-size: 11px;
+        font-size: 13px;
         font-weight: 700;
         color: var(--accent);
         margin-bottom: 4px;
       }
       .secure-tool-item-title {
-        font-size: 13px;
+        font-size: 15px;
         font-weight: 600;
         color: var(--fg);
         margin-bottom: 2px;
       }
       .secure-tool-item-desc {
-        font-size: 10px;
+        font-size: 12px;
         color: var(--muted);
         line-height: 1.3;
       }
@@ -164,13 +235,13 @@
         background: rgba(16, 185, 129, 0.15);
       }
       .flow-box-title {
-        font-size: 13px;
+        font-size: 15px;
         font-weight: 600;
         margin-bottom: 4px;
         color: var(--fg);
       }
       .flow-box-desc {
-        font-size: 10px;
+        font-size: 12px;
         color: var(--muted);
         line-height: 1.3;
       }
@@ -199,16 +270,18 @@
 
       /* Arrows */
       .flow-arrow {
-        flex: 0 0 30px;
+        flex: 0 0 20px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 24px;
+        font-size: 107px;
+        font-weight: bold;
         color: var(--border);
         transition: all 0.3s ease;
       }
       .flow-arrow.active {
         color: var(--primary);
+        font-weight: bold;
       }
 
       /* Interactive Section */
@@ -366,8 +439,12 @@
   <body>
     <!-- Hero -->
     <div class="hero">
-      <h1>Circle OOAK + zkML Agent Marketplace</h1>
-      <p>Cryptographic proof-of-authorization for autonomous AI agents</p>
+      <div class="hero-logos">
+        <img src="https://cdn.brandfetch.io/iduqAVaA_O/theme/light/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" alt="Circle Logo">
+        <img src="https://cdn.prod.website-files.com/65d52b07d5bc41614daa723f/665df12739c532f45b665fe7_logo-novanet.svg" alt="NovaNet Logo">
+      </div>
+      <h1>Trustless USDC Agents</h1>
+      <p>Extending Object Oriented Agent Kit with zkML</p>
     </div>
 
     <!-- Main Container -->
@@ -375,6 +452,7 @@
 
       <!-- Flow Diagram -->
       <div class="flow-diagram">
+        <button type="button" class="flow-diagram-run-btn" id="flow-run-btn">▶ Initiate User Request</button>
         <div class="flow-main">
 
           <!-- 1. User Request -->
@@ -403,7 +481,7 @@
                 <div class="secure-tool-item-title">Authorization Check</div>
                 <div class="secure-tool-item-desc">ONNX neural network evaluates risk and approves/denies</div>
               </div>
-              <div class="secure-tool-item" id="secure-item-2">
+              <div class="secure-tool-item purple" id="secure-item-2">
                 <div class="secure-tool-item-number">before_invoke_tool() 2/2</div>
                 <div class="secure-tool-item-title">zkML Proof and On-Chain Verification</div>
                 <div class="secure-tool-item-desc" id="zkml-verify-desc">Cryptographic proof of correct inference verified on Ethereum</div>
@@ -420,13 +498,13 @@
               </div>
             </div>
           </div>
-          <div class="flow-arrow" id="arrow-4">→</div>
+          <div class="flow-arrow" id="arrow-4">↔</div>
 
           <!-- 4. Workflow Manager -->
           <div class="flow-box" id="flow-5">
             <div class="flow-box-icon">⚖️</div>
             <div class="flow-box-title">Workflow Manager</div>
-            <div class="flow-box-desc">Approves or denies</div>
+            <div class="flow-box-desc" id="flow-5-desc">Evaluating...</div>
           </div>
 
         </div>
@@ -479,7 +557,7 @@
           </div>
 
           <!-- Result: On-Chain Verification -->
-          <div class="result-card hidden" id="result-groth16">
+          <div class="result-card" id="result-groth16">
             <div class="result-header">
               <span style="font-weight:600; font-size:13px;">On-Chain Verification</span>
               <span class="result-badge success">SUCCESS</span>
@@ -581,8 +659,18 @@
 
       let approvalData = null;
 
+      // Connect flow diagram run button to form submission
+      $('#flow-run-btn').addEventListener('click', () => {
+        const submitEvent = new Event('submit', { cancelable: true });
+        $('#request-form').dispatchEvent(submitEvent);
+      });
+
       $('#request-form').addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        // Disable run button during workflow
+        $('#flow-run-btn').disabled = true;
+        $('#flow-run-btn').textContent = 'Running...';
 
         // Reset
         for (let i = 1; i <= 5; i++) updateFlowBox(i, '');
@@ -613,10 +701,6 @@
           // Step 3: ONNX Inference
           updateFlowBox(3, 'active');
           await new Promise(r => setTimeout(r, 400));
-
-          // Apply purple color to item 2 at start
-          const item2 = $('#secure-item-2');
-          item2.classList.add('purple');
 
           const resp = await fetch('http://localhost:8616/api/approve', {
             method: 'POST',
@@ -698,28 +782,88 @@
           await new Promise(r => setTimeout(r, 400));
           updateFlowBox(5, 'success');
           updateArrow(5, true);
+
+          // Update Workflow Manager description
+          const flow5Desc = $('#flow-5-desc');
+          if (flow5Desc) {
+            flow5Desc.textContent = data.decision === 1 ? '✓ Approved' : '✗ Denied';
+          }
+
           showResult('manager', {
             decision: data.decision === 1 ? '✓ APPROVED' : '✗ DENIED',
             proofsVerified: data.onchain_verified || false,
             readyForPayment: data.decision === 1 && data.groth16 && data.groth16.proof
           });
 
-          // Items 3 & 4: Awaiting payment execution
-          updateSecureItem(3, 'active');
-          updateSecureItem(4, 'active');
-
-          // Ready for Payment
+          // Auto-execute USDC payment if approved
           if (data.decision === 1 && data.groth16 && data.groth16.proof) {
-            $('#send-btn').disabled = false;
-            $('#send-btn').textContent = 'Send USDC (Approved ✓)';
-            $('#send-btn').className = 'btn btn-primary';
+            await new Promise(r => setTimeout(r, 500));
+
+            // Step 3: send_usdc execution
+            updateSecureItem(3, 'active');
+            await new Promise(r => setTimeout(r, 300));
+
+            const resp = await fetch('http://localhost:8616/api/send-usdc', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                to: $('#to').value,
+                amount: $('#send-amount').value
+              })
+            });
+
+            const usdcData = await resp.json();
+            if (usdcData.error) throw new Error(usdcData.error);
+
+            // Update USDC transaction description with link
+            console.log('[USDC] Response data:', usdcData);
+            if (usdcData.explorer) {
+              console.log('[USDC] Updating link with explorer:', usdcData.explorer);
+              const descElem = $('#send-usdc-desc');
+              if (descElem) {
+                descElem.innerHTML = `USDC transferred on Base Sepolia (<a href="${usdcData.explorer}" target="_blank" style="color: var(--accent); text-decoration: underline;">view tx</a>)`;
+                console.log('[USDC] Updated send-usdc-desc innerHTML');
+              } else {
+                console.error('[USDC] Element #send-usdc-desc not found!');
+              }
+            } else {
+              console.warn('[USDC] No explorer field in response');
+            }
+
+            updateSecureItem(3, 'success');
+            await new Promise(r => setTimeout(r, 200));
+
+            // Step 4: after_invoke_tool validation
+            updateSecureItem(4, 'active');
+            await new Promise(r => setTimeout(r, 300));
+            updateSecureItem(4, 'success');
+
+            showResult('payment', {
+              method: usdcData.method,
+              txHash: usdcData.hash,
+              explorer: usdcData.explorer,
+              amount: `${usdcData.amount} USDC`,
+              from: usdcData.from,
+              to: usdcData.to
+            });
+
+            $('#send-btn').disabled = true;
+            $('#send-btn').textContent = 'Payment Complete ✓';
+            $('#send-btn').className = 'btn btn-success';
           } else {
+            // Items 3 & 4: Payment not approved
+            updateSecureItem(3, 'active');
+            updateSecureItem(4, 'active');
             $('#send-btn').textContent = 'Send USDC (Not Approved)';
           }
 
         } catch (err) {
           console.error(err);
           alert('Error: ' + String(err));
+        } finally {
+          // Re-enable run button
+          $('#flow-run-btn').disabled = false;
+          $('#flow-run-btn').textContent = '▶ Initiate User Request';
         }
       });
 
@@ -749,8 +893,18 @@
           if (data.error) throw new Error(data.error);
 
           // Update USDC transaction description with link
+          console.log('[USDC] Response data:', data);
           if (data.explorer) {
-            $('#send-usdc-desc').innerHTML = `USDC transferred on Base Sepolia (<a href="${data.explorer}" target="_blank" style="color: var(--accent); text-decoration: underline;">view tx</a>)`;
+            console.log('[USDC] Updating link with explorer:', data.explorer);
+            const descElem = $('#send-usdc-desc');
+            if (descElem) {
+              descElem.innerHTML = `USDC transferred on Base Sepolia (<a href="${data.explorer}" target="_blank" style="color: var(--accent); text-decoration: underline;">view tx</a>)`;
+              console.log('[USDC] Updated send-usdc-desc innerHTML');
+            } else {
+              console.error('[USDC] Element #send-usdc-desc not found!');
+            }
+          } else {
+            console.warn('[USDC] No explorer field in response');
           }
 
           updateSecureItem(3, 'success');

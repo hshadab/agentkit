@@ -10,11 +10,15 @@ const { ethers } = require('ethers');
 
 const app = express();
 app.use(express.json());
-// CORS for standalone HTML usage
+// CORS for standalone HTML usage + cache busting
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  // Disable caching for all responses
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });

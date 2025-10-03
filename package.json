@@ -21,7 +21,8 @@
   "type": "commonjs",
   "scripts": {
     "demo:x402:server": "node x402/proof-gate-server.js",
-    "demo:x402:client": "node x402/client-demo.js"
+    "demo:x402:client": "node x402/client-demo.js",
+    "demo:ooak:ui": "node Circle-OOAK/node-ui/server.js"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^4.0.1",

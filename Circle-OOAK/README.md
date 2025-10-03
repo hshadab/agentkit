@@ -1,11 +1,21 @@
-Circle OOAK + zkML (JOLT) Integration
+Trustless USDC Agents: Extending Object Oriented Agent Kit with zkML
 
-Overview
-- Real ONNX inference using `onnxruntime`.
-- zkML proof binding using existing JOLT-Atlas binaries where available.
-- Real Groth16 proof generation (decision + confidence) from circuit assets in `circuits/jolt-verifier`.
-- Real on-chain verification via a deployed verifier contract (read-only `verifyProof`).
-- OOAK-style approval gate that requires valid proofs before executing secure actions.
+## Overview
+
+This integration extends Circle's **Object Oriented Agent Kit (OOAK)** with **zkML cryptographic proofs** to enable **trustless autonomous agents** for USDC payments.
+
+**The Trust Model Distinction:**
+- **Circle OOAK alone**: Provides secure hooks and structured payment workflows, but requires trusting the agent runtime and OpenAI SDK
+- **Circle OOAK + zkML**: Removes trust requirements entirely through cryptographic proofs—agents from untrusted marketplaces can be used safely with mathematical guarantees
+
+This positioning makes OOAK + zkML a **general-purpose trustless agent framework** that can be applied to any agent SDK (not just OpenAI), enabling Circle's core goal: secure, verifiable USDC transfers via autonomous agents.
+
+**What's Proven:**
+- Real ONNX inference using `onnxruntime`
+- zkML proof binding using existing JOLT-Atlas binaries where available
+- Real Groth16 proof generation (decision + confidence) from circuit assets in `circuits/jolt-verifier`
+- Real on-chain verification via a deployed verifier contract (read-only `verifyProof`)
+- OOAK-style approval gate that requires valid proofs before executing secure actions
 
 What’s Included
 - `ml/onnx_infer.py`: Loads a pinned ONNX model and runs inference. If the demo model is missing, it auto-generates a tiny classifier via `jolt-atlas/models/create_agent_classifier.py`.
