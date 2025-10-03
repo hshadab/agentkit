@@ -51,3 +51,5 @@ wasi-sdk*/
 test.txt
 
 jolt-atlas/
+Circle-OOAK/.venv/
+.venv/

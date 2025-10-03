@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OOAK zkML Approval Demo (Single File)</title>
+    <style>
+      :root { --bg:#0b1220; --fg:#e7ecf7; --muted:#98a2b3; --primary:#5b8cff; --accent:#4de2cf; --card:#0f172a; --chip:#1e293b; }
+      *{box-sizing:border-box} html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,Segoe UI,Roboto,Arial}
+      .hero{position:relative;height:260px;display:grid;place-items:center;overflow:hidden}
+      .hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(2px) brightness(.6)}
+      .hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,18,32,.4),rgba(11,18,32,.9))}
+      .hero-content{position:relative;text-align:center;z-index:1}
+      .hero h1{margin:0 0 8px;font-size:28px} .hero p{margin:0;color:var(--muted)}
+      .container{max-width:960px;margin:-36px auto 60px;padding:0 20px}
+      .card{background:var(--card);border:1px solid #111827;border-radius:16px;padding:18px;margin-bottom:20px;box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 20px 80px rgba(0,0,0,.35)}
+      .card h2{margin:0 0 12px;font-size:20px}
+      .form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:end}
+      .form-grid label{display:grid;gap:6px;font-size:12px;color:var(--muted)}
+      input{outline:none;border:1px solid #1f2937;border-radius:10px;background:#0b1220;color:var(--fg);padding:10px 12px;font-size:14px}
+      .btn{padding:10px 14px;border-radius:10px;background:#16223a;color:var(--fg);border:1px solid #1f2937;cursor:pointer}
+      .btn.primary{background:linear-gradient(90deg,var(--primary),var(--accent));border:none;color:#0b1220;font-weight:600}
+      .result.hidden{display:none} .result pre{background:#0b1220;border:1px solid #1f2937;padding:12px;border-radius:10px;overflow:auto}
+      .diagram-wrap{display:grid;place-items:center;margin-top:8px} .diagram{width:100%;border-radius:12px;border:1px solid #1f2937}
+      .footer{text-align:center;color:var(--muted);padding:24px 0 36px}
+      @media (max-width:860px){.form-grid{grid-template-columns:1fr 1fr}}
+    </style>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <h1>Secure AI Tools for Blockchain</h1>
+        <p>JOLT zkML → Groth16 proof‑of‑proof → On‑chain verify</p>
+      </div>
+    </header>
+    <main class="container">
+      <section class="card">
+        <h2>Backend</h2>
+        <div class="form-grid">
+          <label>API Base URL<input type="text" id="base" value="http://localhost:8616" /></label>
+          <button class="btn" id="health">Check Health</button>
+        </div>
+        <div id="health-result" class="result hidden"></div>
+      </section>
+
+      <section class="card">
+        <h2>Run Approval</h2>
+        <form id="approve-form" class="form-grid">
+          <label>Amount<input type="number" id="amount" step="0.01" value="25.0" /></label>
+          <label>Risk (0–1)<input type="number" id="risk" step="0.01" min="0" max="1" value="0.05" /></label>
+          <button class="btn primary">Generate & Verify</button>
+        </form>
+        <div id="result" class="result hidden"></div>
+      </section>
+
+      <section class="card">
+        <h2>How This Demo Works</h2>
+        <p>
+          This single‑file UI calls a local API to run a proof‑gated approval flow. It can generate an off‑chain zkML proof (JOLT‑Atlas)
+          and an on‑chain‑verifiable Groth16 “proof‑of‑proof” that binds the model’s decision.
+        </p>
+        <ul>
+          <li><b>Inputs</b>: Provide <i>amount</i> and <i>risk</i>. The server derives a <i>decision</i> and <i>confidence</i>.</li>
+          <li><b>zkML (JOLT‑Atlas)</b>: If available, the server runs the real prover and returns a commitment <code>proofHash</code> to the zkML proof bytes.</li>
+          <li><b>Groth16 proof‑of‑proof</b>: Proves <code>[decision, confidence]</code> (and optionally <code>proofHash</code>) so a verifier contract can check them.</li>
+          <li><b>On‑chain verify</b>: Read‑only contract call returns true/false for the Groth16 proof.</li>
+          <li><b>Approval</b>: The JSON you see is the “approval envelope” you would pass to a secure action.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Relation to Circle OOAK</h2>
+        <p>
+          Circle’s OOAK uses <code>@secure_tool</code> and a <code>WorkflowManager</code> to approve intents before tools execute. Here,
+          we make approval <b>cryptographic</b>:
+        </p>
+        <ul>
+          <li><b>Gate</b>: A secure tool executes only with a valid approval envelope.</li>
+          <li><b>Verify</b>: Manager verifies zkML (off‑chain) and Groth16 (on‑chain) before issuing a workflow id.</li>
+          <li><b>Pin</b>: Enforce specific model versions and input commitments for auditability and privacy.</li>
+          <li><b>Audit</b>: On‑chain verification and proof hashes create a portable, tamper‑evident record.</li>
+        </ul>
+      </section>
+    </main>
+    <footer class="footer">Circle OOAK • zkML Approval Demo</footer>
+    <script>
+      const $ = (s) => document.querySelector(s);
+      const show = (el, data) => { el.classList.remove('hidden'); el.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>` };
+      const base = () => $('#base').value.replace(/\/$/, '');
+      $('#health').addEventListener('click', async () => {
+        try {
+          const r = await fetch(base() + '/api/health');
+          show($('#health-result'), await r.json());
+        } catch (e) { show($('#health-result'), { error: String(e) }); }
+      });
+      $('#approve-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = { amount: parseFloat($('#amount').value), risk: parseFloat($('#risk').value) };
+        try {
+          const resp = await fetch(base() + '/api/approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+          show($('#result'), await resp.json());
+        } catch (e) { show($('#result'), { error: String(e) }); }
+      });
+    </script>
+  </body>
+  </html>

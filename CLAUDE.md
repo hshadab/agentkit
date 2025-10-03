@@ -3,7 +3,7 @@
 ## Project Overview
 AgentKit is a **100% REAL production framework** for building verifiable AI agents with cryptographic proofs across multiple blockchains. The v3.0 release features **OpenAI's Agentic Commerce Protocol (ACP)** deeply integrated with JOLT-Atlas zkML proofs, enabling the world's first trustless autonomous agent marketplace.
 
-**Latest Update**: 2025-10-01 - Deep ACP × zkML integration complete. Solved the Agent Marketplace Problem: how to safely use unverified third-party agents with cryptographic guarantees. ZERO mocks, ZERO simulations, every agent decision cryptographically proven before payment execution.
+**Latest Update**: 2025-10-03 - Circle OOAK integration complete with real on-chain storage. Verifiable AI payment agents with USDC transfers on Base Sepolia, cryptographic proofs stored permanently on-chain. Full workflow: ONNX → JOLT → Groth16 → Base Storage → USDC Transfer.
 
 ## ⚠️ Implementation Policy: Show, Don't Tell
 **Verification Over Marketing**: Every claim is independently reproducible.
@@ -389,6 +389,17 @@ node tests/integration/test-iotex-proximity.js
 - Keep SES-safe (no dynamic code generation)
 
 ## 📝 Recent Updates
+
+### 2025-10-03 - Circle OOAK: Real On-Chain Storage + USDC Payments
+- ✅ **Deployed ProofStorage contract** - `0x5572b2762ca2e975A6A96b416cc0D9f3bCe1d507` on Base Sepolia
+- ✅ **Real on-chain storage** - Permanent proof verification records on Base blockchain
+- ✅ **USDC payment integration** - Direct ERC20 transfers on Base Sepolia (9.98 USDC balance)
+- ✅ **Full workflow implementation** - ONNX → JOLT (~600ms) → Groth16 → Storage → USDC
+- ✅ **Transaction links in UI** - Both verification and payment TXs shown with Base explorer links
+- ✅ **Purple UI indication** - Visual feedback for verification flow status
+- 📁 **Location**: `Circle-OOAK/node-ui/` directory
+- 🔗 **Server**: http://localhost:8616
+- 📊 **Performance**: ~4-7s total workflow, ~$0.002 per transaction
 
 ### 2025-09-30 - Agent Marketplace with Real ONNX + Deployed Verifier
 - ✅ **Created real ONNX authorization model** - PyTorch neural network (5→16→8→2)
