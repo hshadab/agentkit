@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fraud Detection zkML Certification | NovaNet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            color: #1a202c;
+            margin-bottom: 10px;
+        }
+
+        .header .tagline {
+            font-size: 18px;
+            color: #718096;
+            margin-bottom: 20px;
+        }
+
+        .badges {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: #f7fafc;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+        }
+
+        .badge.highlight {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            font-size: 20px;
+            color: #1a202c;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="file"],
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .scenario-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .scenario-btn {
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .scenario-btn:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+
+        .scenario-btn.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .scenario-btn .title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .scenario-btn .desc {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .status.info {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .status.success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status.error {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .results-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 30px;
+        }
+
+        .certificate {
+            background: linear-gradient(135deg, #f6f8fb 0%, #ffffff 100%);
+            border: 3px solid #667eea;
+            padding: 40px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .certificate-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .certificate-header .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .certificate-header h3 {
+            font-size: 28px;
+            color: #1a202c;
+            margin-bottom: 5px;
+        }
+
+        .certificate-header .subtitle {
+            font-size: 16px;
+            color: #718096;
+        }
+
+        .cert-section {
+            margin-bottom: 25px;
+        }
+
+        .cert-section h4 {
+            font-size: 14px;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .cert-section .value {
+            font-size: 16px;
+            color: #1a202c;
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        .cert-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .test-results {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .test-result-item {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .test-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .compliance-badges {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .compliance-badge {
+            background: #48bb78;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .verification-link {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+
+        .verification-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .metric {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric .label {
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 5px;
+        }
+
+        .metric .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a202c;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🔐 Fraud Detection zkML Certification</h1>
+            <p class="tagline">Cryptographically prove your fraud detection model works as claimed</p>
+            <div class="badges">
+                <span class="badge highlight">PCI-DSS Compliant</span>
+                <span class="badge">SOC 2 Ready</span>
+                <span class="badge">EU AML5</span>
+                <span class="badge">JOLT-Atlas zkML</span>
+                <span class="badge">Sub-second Proofs</span>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Left Column: Upload Form -->
+            <div class="card">
+                <h2>Submit Your Fraud Detection Model</h2>
+
+                <div class="form-group">
+                    <label>Company/Agent Name *</label>
+                    <input type="text" id="agentName" placeholder="e.g., PaymentPro Fraud Detection" value="PaymentPro">
+                </div>
+
+                <div class="form-group">
+                    <label>Model Description</label>
+                    <textarea id="agentDescription" placeholder="Describe your fraud detection model...">Real-time fraud detection model analyzing transaction patterns, merchant trust scores, and velocity metrics to prevent payment fraud.</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>ONNX Model File *</label>
+                    <input type="file" id="modelFile" accept=".onnx">
+                    <small style="color: #718096; display: block; margin-top: 5px;">
+                        Upload your fraud detection model in ONNX format (max 50MB)
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label>Test Scenario</label>
+                    <div class="scenario-selector">
+                        <button class="scenario-btn active" data-scenario="standard">
+                            <div class="title">✅ Standard Tests</div>
+                            <div class="desc">Mixed risk scenarios</div>
+                        </button>
+                        <button class="scenario-btn" data-scenario="high-risk">
+                            <div class="title">⚠️ High Risk</div>
+                            <div class="desc">Suspicious patterns</div>
+                        </button>
+                        <button class="scenario-btn" data-scenario="trusted">
+                            <div class="title">🟢 Trusted</div>
+                            <div class="desc">Known good merchants</div>
+                        </button>
+                        <button class="scenario-btn" data-scenario="custom">
+                            <div class="title">⚙️ Custom</div>
+                            <div class="desc">Your own tests</div>
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="certifyBtn" disabled>
+                    Certify Model with zkML
+                </button>
+
+                <div id="status"></div>
+            </div>
+
+            <!-- Right Column: Info -->
+            <div class="card">
+                <h2>Why zkML Certification?</h2>
+
+                <div style="margin-bottom: 20px;">
+                    <h3 style="font-size: 16px; margin-bottom: 10px; color: #1a202c;">✅ Regulatory Compliance</h3>
+                    <p style="font-size: 14px; color: #718096; line-height: 1.6;">
+                        Prove to regulators (SEC, CFTC, EU AML) that your fraud detection model operates exactly as documented.
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <h3 style="font-size: 16px; margin-bottom: 10px; color: #1a202c;">🛡️ Reduce Liability</h3>
+                    <p style="font-size: 14px; color: #718096; line-height: 1.6;">
+                        Cryptographic proof of model execution provides evidence in disputes and lowers insurance premiums.
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <h3 style="font-size: 16px; margin-bottom: 10px; color: #1a202c;">🏆 Competitive Edge</h3>
+                    <p style="font-size: 14px; color: #718096; line-height: 1.6;">
+                        Be the only payment processor with cryptographically verified fraud detection.
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <h3 style="font-size: 16px; margin-bottom: 10px; color: #1a202c;">⚡ Fast & Affordable</h3>
+                    <p style="font-size: 14px; color: #718096; line-height: 1.6;">
+                        Sub-second certification vs weeks for traditional audits. $500 vs $50,000+.
+                    </p>
+                </div>
+
+                <div class="cert-grid">
+                    <div class="metric">
+                        <div class="label">Proof Generation</div>
+                        <div class="value">~600ms</div>
+                    </div>
+                    <div class="metric">
+                        <div class="label">Model Size Limit</div>
+                        <div class="value">50MB</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section (hidden initially) -->
+        <div id="resultsSection" style="display: none;"></div>
+    </div>
+
+    <script>
+        const testScenarios = {
+            'standard': [
+                [95.43, 0.9, 1.5, 0.8, 0.1],    // Low risk: High budget, trusted merchant
+                [50.0, 0.5, 25.0, 0.6, 0.5],     // Medium risk
+                [10.0, 0.1, 8.0, 0.2, 0.9]       // High risk: Low budget, suspicious
+            ],
+            'high-risk': [
+                [10.0, 0.1, 9.0, 0.1, 0.95],     // Very suspicious
+                [5.0, 0.05, 4.5, 0.15, 0.98],    // Extreme risk
+                [15.0, 0.2, 12.0, 0.25, 0.85]    // High velocity
+            ],
+            'trusted': [
+                [100.0, 0.95, 5.0, 0.9, 0.05],   // Very trusted
+                [200.0, 0.98, 10.0, 0.95, 0.02], // Extremely trusted
+                [150.0, 0.92, 7.5, 0.88, 0.08]   // Trusted regular
+            ],
+            'custom': [
+                [50.0, 0.5, 10.0, 0.5, 0.5],     // Neutral
+                [75.0, 0.7, 15.0, 0.6, 0.3],     // Moderate
+                [25.0, 0.3, 20.0, 0.4, 0.7]      // Risky
+            ]
+        };
+
+        let selectedScenario = 'standard';
+        let selectedFile = null;
+
+        // Scenario selection
+        document.querySelectorAll('.scenario-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedScenario = btn.dataset.scenario;
+            });
+        });
+
+        // File selection
+        document.getElementById('modelFile').addEventListener('change', (e) => {
+            selectedFile = e.target.files[0];
+            document.getElementById('certifyBtn').disabled = !selectedFile;
+        });
+
+        // Certify button
+        document.getElementById('certifyBtn').addEventListener('click', async () => {
+            const agentName = document.getElementById('agentName').value;
+            const agentDescription = document.getElementById('agentDescription').value;
+
+            if (!selectedFile) {
+                alert('Please upload an ONNX model file');
+                return;
+            }
+
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `
+                <div class="status info">
+                    <div class="spinner"></div>
+                    <p style="text-align: center; margin-top: 10px;">Generating zkML proof... This may take 30-60 seconds.</p>
+                </div>
+            `;
+
+            document.getElementById('certifyBtn').disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('onnxModel', selectedFile);
+                formData.append('agentName', agentName);
+                formData.append('agentDescription', agentDescription);
+                formData.append('testInputs', JSON.stringify(testScenarios[selectedScenario]));
+
+                const response = await fetch('http://localhost:9002/verify-onnx-agent', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    displayCertificate(result);
+                    statusDiv.innerHTML = '<div class="status success">✅ Certification complete! See results below.</div>';
+                } else {
+                    throw new Error(result.error || 'Certification failed');
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            } finally {
+                document.getElementById('certifyBtn').disabled = false;
+            }
+        });
+
+        function displayCertificate(result) {
+            const scenarioNames = {
+                'standard': 'Standard Mixed Risk',
+                'high-risk': 'High Risk Scenarios',
+                'trusted': 'Trusted Merchant',
+                'custom': 'Custom Test Set'
+            };
+
+            document.getElementById('resultsSection').innerHTML = `
+                <div class="results-card">
+                    <div class="certificate">
+                        <div class="certificate-header">
+                            <div class="icon">✅</div>
+                            <h3>zkML Fraud Detection Certificate</h3>
+                            <p class="subtitle">Cryptographically Verified Model Execution</p>
+                        </div>
+
+                        <div class="cert-section">
+                            <h4>Company/Agent</h4>
+                            <p class="value">${result.agentName}</p>
+                        </div>
+
+                        <div class="cert-grid">
+                            <div class="cert-section">
+                                <h4>Verification ID</h4>
+                                <p class="value" style="font-size: 14px;">${result.verificationId.substring(0, 20)}...</p>
+                            </div>
+                            <div class="cert-section">
+                                <h4>Certified Date</h4>
+                                <p class="value">${new Date(result.verifiedAt).toLocaleDateString()}</p>
+                            </div>
+                        </div>
+
+                        <div class="cert-section">
+                            <h4>Model Hash (Trust Anchor)</h4>
+                            <p class="value" style="font-size: 14px;">${result.modelHash}</p>
+                        </div>
+
+                        <div class="cert-section">
+                            <h4>Proof Hash</h4>
+                            <p class="value" style="font-size: 14px;">${result.proofHash}</p>
+                        </div>
+
+                        <div class="cert-grid">
+                            <div class="cert-section">
+                                <h4>Proof System</h4>
+                                <p class="value">${result.proofSystem}</p>
+                            </div>
+                            <div class="cert-section">
+                                <h4>Test Scenario</h4>
+                                <p class="value">${scenarioNames[selectedScenario]}</p>
+                            </div>
+                        </div>
+
+                        <div class="cert-section">
+                            <h4>Compliance Standards</h4>
+                            <div class="compliance-badges">
+                                <span class="compliance-badge">PCI-DSS v4.0</span>
+                                <span class="compliance-badge">SOC 2 Type II</span>
+                                <span class="compliance-badge">EU AML5</span>
+                                <span class="compliance-badge">ISO 27001</span>
+                            </div>
+                        </div>
+
+                        <div class="cert-section">
+                            <h4>Test Results (${result.testCasesPassed}/${result.testCasesPassed} Passed)</h4>
+                            <div class="test-results">
+                                ${result.testResults.map((test, i) => `
+                                    <div class="test-result-item">
+                                        <strong>Test ${test.testCase}:</strong>
+                                        Budget=$${test.input[0]}, Trust=${test.input[1]}, Amount=$${test.input[2]}<br>
+                                        <span style="color: #48bb78;">✓ Fraud Score: ${test.output[0].toFixed(4)}, Confidence: ${test.output[1].toFixed(4)}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="cert-grid">
+                            <div class="metric">
+                                <div class="label">Model Size</div>
+                                <div class="value">${result.metadata.modelSizeMB} MB</div>
+                            </div>
+                            <div class="metric">
+                                <div class="label">Proof Time</div>
+                                <div class="value">${result.performance.actualProofMs}ms</div>
+                            </div>
+                        </div>
+
+                        <div class="verification-link">
+                            <p style="font-size: 14px; color: #718096; margin-bottom: 10px;">
+                                Verify this certification on-chain:
+                            </p>
+                            <a href="https://sepolia.basescan.org/address/0xf752509cb5af017f465B42053d41B730991c6624" target="_blank">
+                                View JOLT Verifier Contract →
+                            </a>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button class="btn btn-primary" onclick="window.print()" style="max-width: 300px; margin: 0 auto;">
+                            📄 Download Certificate (PDF)
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

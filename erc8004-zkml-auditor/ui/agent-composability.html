@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERC-8004 Agent Composability | zkML Verification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Agent Cards Row */
+        .agents-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .agent-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .agent-card.active {
+            border: 3px solid #667eea;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3); }
+            50% { box-shadow: 0 10px 40px rgba(102, 126, 234, 0.6); }
+        }
+
+        .agent-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-center;
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .agent-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .agent-subtitle {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-bottom: 15px;
+        }
+
+        .cert-badge {
+            display: inline-block;
+            background: #48bb78;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .cert-badge.invalid {
+            background: #f56565;
+        }
+
+        .cert-details {
+            font-size: 0.85rem;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .cert-details strong {
+            color: #2d3748;
+        }
+
+        .hash {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            background: #f7fafc;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 4px;
+        }
+
+        /* Arrow Connectors */
+        .arrow {
+            position: absolute;
+            top: 50%;
+            right: -20px;
+            font-size: 2rem;
+            color: #667eea;
+            z-index: 10;
+            animation: slideRight 1.5s infinite;
+        }
+
+        @keyframes slideRight {
+            0%, 100% { transform: translateX(0); opacity: 0.5; }
+            50% { transform: translateX(5px); opacity: 1; }
+        }
+
+        /* Execution Log */
+        .execution-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .execution-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .execution-header h2 {
+            font-size: 1.5rem;
+            color: #2d3748;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #cbd5e0;
+        }
+
+        .status-dot.running {
+            background: #667eea;
+            animation: blink 1s infinite;
+        }
+
+        .status-dot.success {
+            background: #48bb78;
+        }
+
+        .status-dot.error {
+            background: #f56565;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .log-container {
+            background: #1a202c;
+            border-radius: 8px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .log-entry {
+            color: #e2e8f0;
+            margin-bottom: 8px;
+            padding: 8px;
+            border-left: 3px solid transparent;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .log-entry.info {
+            border-left-color: #667eea;
+        }
+
+        .log-entry.success {
+            border-left-color: #48bb78;
+            color: #9ae6b4;
+        }
+
+        .log-entry.error {
+            border-left-color: #f56565;
+            color: #fc8181;
+        }
+
+        .log-entry .timestamp {
+            color: #718096;
+            margin-right: 10px;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .control-header {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 20px;
+        }
+
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .scenario-btn {
+            padding: 15px 20px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .scenario-btn:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+            transform: translateY(-2px);
+        }
+
+        .scenario-btn .title {
+            color: #2d3748;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .scenario-btn .desc {
+            color: #718096;
+            font-size: 0.85rem;
+            font-weight: 400;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #e53e3e;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤝 ERC-8004 Agent Composability</h1>
+        <p>Trustless Multi-Agent Systems with zkML Verification</p>
+    </div>
+
+    <div class="container">
+        <!-- Agent Cards -->
+        <div class="agents-row">
+            <!-- Agent A -->
+            <div class="agent-card" id="agentA">
+                <div class="agent-icon">📈</div>
+                <div class="agent-title">Agent A</div>
+                <div class="agent-subtitle">Trading Strategy Optimizer</div>
+                <span class="cert-badge" id="badgeA">✅ zkML Certified</span>
+                <div class="cert-details">
+                    <strong>Model Hash:</strong><br>
+                    <span class="hash" id="hashA">0x7a3f9c2e...</span><br>
+                    <strong>Proof:</strong> <span id="proofA">JOLT-Atlas</span><br>
+                    <strong>Tests:</strong> <span id="testsA">15/15</span>
+                </div>
+                <div class="arrow">→</div>
+            </div>
+
+            <!-- Agent B -->
+            <div class="agent-card" id="agentB">
+                <div class="agent-icon">⚖️</div>
+                <div class="agent-title">Agent B</div>
+                <div class="agent-subtitle">Risk Assessor</div>
+                <span class="cert-badge" id="badgeB">✅ zkML Certified</span>
+                <div class="cert-details">
+                    <strong>Model Hash:</strong><br>
+                    <span class="hash" id="hashB">0x3f8b2a1d...</span><br>
+                    <strong>Proof:</strong> <span id="proofB">JOLT-Atlas</span><br>
+                    <strong>Tests:</strong> <span id="testsB">12/12</span>
+                </div>
+                <div class="arrow">→</div>
+            </div>
+
+            <!-- Agent C -->
+            <div class="agent-card" id="agentC">
+                <div class="agent-icon">🛡️</div>
+                <div class="agent-title">Agent C</div>
+                <div class="agent-subtitle">Fraud Detector</div>
+                <span class="cert-badge" id="badgeC">✅ zkML Certified</span>
+                <div class="cert-details">
+                    <strong>Model Hash:</strong><br>
+                    <span class="hash" id="hashC">0x9b4e7c3a...</span><br>
+                    <strong>Proof:</strong> <span id="proofC">JOLT-Atlas</span><br>
+                    <strong>Tests:</strong> <span id="testsC">20/20</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Execution Log -->
+        <div class="execution-panel">
+            <div class="execution-header">
+                <h2>Real-Time Execution Log</h2>
+                <div class="status-indicator">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="statusText">Ready</span>
+                </div>
+            </div>
+            <div class="log-container" id="logContainer">
+                <div class="log-entry info">
+                    <span class="timestamp">[00:00]</span>
+                    System ready. Select a scenario to begin...
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <div class="control-header">Demo Scenarios</div>
+            <div class="scenario-grid">
+                <button class="scenario-btn" onclick="runScenario('happy')">
+                    <span class="title">✅ Happy Path</span>
+                    <span class="desc">All agents verified, trade executes</span>
+                </button>
+                <button class="scenario-btn" onclick="runScenario('scam')">
+                    <span class="title">❌ Scam Detection</span>
+                    <span class="desc">Agent B swapped model, caught!</span>
+                </button>
+                <button class="scenario-btn" onclick="runScenario('unverified')">
+                    <span class="title">⚠️ Unverified Agent</span>
+                    <span class="desc">Agent C has no certificate</span>
+                </button>
+                <button class="scenario-btn" onclick="runScenario('complex')">
+                    <span class="title">🔗 Complex Chain</span>
+                    <span class="desc">5-agent composition (coming soon)</span>
+                </button>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="runBtn" onclick="runCurrentScenario()">
+                    <span id="btnText">Run Demo</span>
+                </button>
+                <button class="btn btn-secondary" onclick="clearLog()">
+                    Clear Log
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentScenario = 'happy';
+        let isRunning = false;
+        let logIndex = 0;
+
+        // Scenario definitions
+        const scenarios = {
+            happy: {
+                name: 'Happy Path - All Verified',
+                steps: [
+                    { type: 'info', agent: 'A', message: 'Agent A receives: "Trade AAPL 100 shares @$150"' },
+                    { type: 'info', agent: 'A', message: 'Agent A → Querying Agent B certificate on-chain...' },
+                    { type: 'success', agent: 'A', message: '✅ Verified: Agent B hash matches 0x3f8b2a1d...' },
+                    { type: 'info', agent: 'A', message: 'Agent A → Calling AgentB.assessRisk()' },
+                    { type: 'info', agent: 'B', message: 'Agent B → Querying Agent C certificate on-chain...' },
+                    { type: 'success', agent: 'B', message: '✅ Verified: Agent C hash matches 0x9b4e7c3a...' },
+                    { type: 'info', agent: 'B', message: 'Agent B → Calling AgentC.checkFraud()' },
+                    { type: 'success', agent: 'C', message: 'Agent C → Fraud score: 0.05 (SAFE)' },
+                    { type: 'success', agent: 'B', message: 'Agent B → Risk score: 0.32 (MEDIUM RISK)' },
+                    { type: 'success', agent: 'A', message: 'Agent A → Decision: EXECUTE TRADE ✅' },
+                    { type: 'success', agent: null, message: '🎉 Trustless composition complete! Trade executed safely.' }
+                ]
+            },
+            scam: {
+                name: 'Scam Detection - Model Swap Attack',
+                steps: [
+                    { type: 'info', agent: 'A', message: 'Agent A receives: "Trade TSLA 50 shares @$200"' },
+                    { type: 'info', agent: 'A', message: 'Agent A → Querying Agent B certificate on-chain...' },
+                    { type: 'info', agent: 'A', message: 'Certificate model hash: 0x3f8b2a1d...' },
+                    { type: 'info', agent: 'A', message: 'Downloaded model hash: 0x8c2f1a3b... (DIFFERENT!)' },
+                    { type: 'error', agent: 'A', message: '❌ SCAM DETECTED: Agent B model hash mismatch!' },
+                    { type: 'error', agent: 'A', message: 'Agent A → Refusing to trust Agent B output' },
+                    { type: 'error', agent: 'A', message: 'Agent A → Halting execution' },
+                    { type: 'error', agent: null, message: '⚠️ Agent B reported to marketplace for model swapping' },
+                    { type: 'info', agent: null, message: '🛡️ Scam prevented! Your funds are safe.' }
+                ]
+            },
+            unverified: {
+                name: 'Unverified Agent Rejection',
+                steps: [
+                    { type: 'info', agent: 'A', message: 'Agent A receives: "Trade GOOGL 25 shares @$140"' },
+                    { type: 'info', agent: 'A', message: 'Agent A → Querying Agent B certificate on-chain...' },
+                    { type: 'success', agent: 'A', message: '✅ Verified: Agent B hash matches 0x3f8b2a1d...' },
+                    { type: 'info', agent: 'A', message: 'Agent A → Calling AgentB.assessRisk()' },
+                    { type: 'info', agent: 'B', message: 'Agent B → Querying Agent C certificate on-chain...' },
+                    { type: 'error', agent: 'B', message: '❌ No certificate found for Agent C!' },
+                    { type: 'error', agent: 'B', message: 'Agent B → Cannot trust unverified agent' },
+                    { type: 'error', agent: 'B', message: 'Agent B → Halting risk assessment' },
+                    { type: 'error', agent: 'A', message: 'Agent A → Cannot execute without risk assessment' },
+                    { type: 'info', agent: null, message: '⚠️ Trade blocked: Agent C needs zkML certification' }
+                ]
+            }
+        };
+
+        function runScenario(name) {
+            currentScenario = name;
+            addLog('info', null, `Scenario selected: ${scenarios[name].name}`);
+
+            // Reset agent states
+            resetAgentStates();
+        }
+
+        function resetAgentStates() {
+            // Reset all badges to certified
+            document.getElementById('badgeA').textContent = '✅ zkML Certified';
+            document.getElementById('badgeA').classList.remove('invalid');
+            document.getElementById('badgeB').textContent = '✅ zkML Certified';
+            document.getElementById('badgeB').classList.remove('invalid');
+            document.getElementById('badgeC').textContent = '✅ zkML Certified';
+            document.getElementById('badgeC').classList.remove('invalid');
+
+            // Remove active states
+            document.querySelectorAll('.agent-card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            // Update for specific scenarios
+            if (currentScenario === 'scam') {
+                document.getElementById('hashB').textContent = '0x8c2f1a3b...';
+                document.getElementById('badgeB').textContent = '❌ Invalid Hash';
+                document.getElementById('badgeB').classList.add('invalid');
+            } else {
+                document.getElementById('hashB').textContent = '0x3f8b2a1d...';
+            }
+
+            if (currentScenario === 'unverified') {
+                document.getElementById('badgeC').textContent = '⚠️ Not Certified';
+                document.getElementById('badgeC').classList.add('invalid');
+            }
+        }
+
+        async function runCurrentScenario() {
+            if (isRunning) return;
+
+            isRunning = true;
+            updateStatus('running', 'Executing...');
+            document.getElementById('runBtn').disabled = true;
+            document.getElementById('btnText').innerHTML = '<span class="spinner"></span>Running...';
+
+            const scenario = scenarios[currentScenario];
+
+            for (let i = 0; i < scenario.steps.length; i++) {
+                const step = scenario.steps[i];
+
+                // Highlight active agent
+                if (step.agent) {
+                    highlightAgent(step.agent);
+                }
+
+                // Add log entry
+                addLog(step.type, step.agent, step.message);
+
+                // Wait between steps
+                await sleep(1500);
+            }
+
+            // Clear active agents
+            document.querySelectorAll('.agent-card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            const finalStatus = currentScenario === 'happy' ? 'success' : 'error';
+            updateStatus(finalStatus, 'Complete');
+
+            isRunning = false;
+            document.getElementById('runBtn').disabled = false;
+            document.getElementById('btnText').textContent = 'Run Demo';
+        }
+
+        function highlightAgent(agent) {
+            document.querySelectorAll('.agent-card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            const agentMap = { 'A': 'agentA', 'B': 'agentB', 'C': 'agentC' };
+            if (agentMap[agent]) {
+                document.getElementById(agentMap[agent]).classList.add('active');
+            }
+        }
+
+        function addLog(type, agent, message) {
+            const logContainer = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+
+            const timestamp = new Date().toLocaleTimeString('en-US', {
+                hour12: false,
+                minute: '2-digit',
+                second: '2-digit'
+            });
+
+            const agentLabel = agent ? `[Agent ${agent}]` : '[System]';
+            entry.innerHTML = `<span class="timestamp">[${timestamp}]</span>${agentLabel} ${message}`;
+
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+
+            logIndex++;
+        }
+
+        function updateStatus(status, text) {
+            const dot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+
+            dot.className = `status-dot ${status}`;
+            statusText.textContent = text;
+        }
+
+        function clearLog() {
+            const logContainer = document.getElementById('logContainer');
+            logContainer.innerHTML = '<div class="log-entry info"><span class="timestamp">[00:00]</span>System ready. Select a scenario to begin...</div>';
+            updateStatus('', 'Ready');
+            resetAgentStates();
+            logIndex = 0;
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Initialize
+        resetAgentStates();
+    </script>
+</body>
+</html>

@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Agent - zkML Marketplace</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .back-button {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .back-button:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .submit-card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #1a1a2e;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-upload-area {
+            border: 3px dashed #e0e0e0;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f7f9fc;
+        }
+
+        .file-upload-area:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #667eea;
+            background: #e8efff;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .file-info {
+            background: #f7f9fc;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        .file-size {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .remove-file {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .test-cases {
+            background: #f7f9fc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .test-case {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .test-case-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .test-case-number {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .remove-test {
+            background: none;
+            border: none;
+            color: #dc2626;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .add-test-button {
+            background: white;
+            border: 2px dashed #667eea;
+            color: #667eea;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .add-test-button:hover {
+            background: #f0f4ff;
+        }
+
+        .submit-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        .submit-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress-container {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .progress-step {
+            background: #f7f9fc;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .progress-step.active {
+            background: #e8efff;
+            border: 2px solid #667eea;
+        }
+
+        .progress-step.complete {
+            background: #d1fae5;
+            border: 2px solid #10b981;
+        }
+
+        .progress-icon {
+            font-size: 24px;
+        }
+
+        .progress-text {
+            flex: 1;
+        }
+
+        .progress-title {
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 4px;
+        }
+
+        .progress-subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success-container {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .success-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 10px;
+        }
+
+        .success-message {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .success-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            border: 2px solid #dc2626;
+            color: #991b1b;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .error-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .helper-text {
+            color: #666;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="back-button" onclick="window.location.href='/marketplace.html'">
+            ← Back to Marketplace
+        </button>
+
+        <div class="submit-card">
+            <h1>🚀 Submit Your Agent</h1>
+            <p class="subtitle">
+                Upload your ONNX model to get cryptographic verification with JOLT-Atlas zkML proofs.
+                Your agent will be publicly listed in the marketplace after successful verification.
+            </p>
+
+            <div id="errorContainer"></div>
+
+            <form id="submitForm">
+                <!-- File Upload -->
+                <div class="form-section">
+                    <div class="section-title">📦 ONNX Model File</div>
+                    <div id="fileUploadArea" class="file-upload-area">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">Drop your ONNX model here, or click to browse</div>
+                        <div class="upload-hint">Maximum size: 50MB | Supported format: .onnx</div>
+                        <input type="file" id="fileInput" accept=".onnx" style="display: none;">
+                    </div>
+                    <div id="fileInfo" style="display: none;"></div>
+                </div>
+
+                <!-- Agent Metadata -->
+                <div class="form-section">
+                    <div class="section-title">ℹ️ Agent Information</div>
+                    <div class="form-group">
+                        <label for="agentName">Agent Name *</label>
+                        <input type="text" id="agentName" required placeholder="e.g., FraudDetector Pro">
+                        <div class="helper-text">A clear, descriptive name for your agent</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="agentDescription">Description</label>
+                        <textarea id="agentDescription" placeholder="Describe what your agent does and its use cases..."></textarea>
+                        <div class="helper-text">Help users understand what your agent does (optional)</div>
+                    </div>
+                </div>
+
+                <!-- Test Cases -->
+                <div class="form-section">
+                    <div class="section-title">🧪 Test Cases</div>
+                    <div class="test-cases" id="testCasesContainer">
+                        <!-- Test cases will be added here -->
+                    </div>
+                    <button type="button" class="add-test-button" onclick="addTestCase()">
+                        + Add Test Case
+                    </button>
+                    <div class="helper-text" style="margin-top: 10px;">
+                        Add at least one test case. Format: comma-separated numbers (e.g., 1,2,3,4,5)
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-button" id="submitButton">
+                    Submit for Verification
+                </button>
+            </form>
+
+            <!-- Progress Indicator -->
+            <div id="progressContainer" class="progress-container">
+                <div id="step1" class="progress-step">
+                    <div class="progress-icon">📦</div>
+                    <div class="progress-text">
+                        <div class="progress-title">Validating Model</div>
+                        <div class="progress-subtitle">Checking file structure and compatibility...</div>
+                    </div>
+                    <div id="spinner1" style="display: none;" class="spinner"></div>
+                </div>
+                <div id="step2" class="progress-step">
+                    <div class="progress-icon">🧪</div>
+                    <div class="progress-text">
+                        <div class="progress-title">Running Test Cases</div>
+                        <div class="progress-subtitle">Executing inference tests...</div>
+                    </div>
+                    <div id="spinner2" style="display: none;" class="spinner"></div>
+                </div>
+                <div id="step3" class="progress-step">
+                    <div class="progress-icon">🔐</div>
+                    <div class="progress-text">
+                        <div class="progress-title">Generating zkML Proof</div>
+                        <div class="progress-subtitle">Creating cryptographic proof with JOLT-Atlas...</div>
+                    </div>
+                    <div id="spinner3" style="display: none;" class="spinner"></div>
+                </div>
+                <div id="step4" class="progress-step">
+                    <div class="progress-icon">📝</div>
+                    <div class="progress-text">
+                        <div class="progress-title">Registering to Marketplace</div>
+                        <div class="progress-subtitle">Adding to public agent registry...</div>
+                    </div>
+                    <div id="spinner4" style="display: none;" class="spinner"></div>
+                </div>
+            </div>
+
+            <!-- Success State -->
+            <div id="successContainer" class="success-container">
+                <div class="success-icon">🎉</div>
+                <div class="success-title">Agent Verified Successfully!</div>
+                <div class="success-message">
+                    Your agent has been cryptographically verified and added to the marketplace.
+                </div>
+                <div class="success-actions">
+                    <button class="btn btn-primary" id="viewAgentButton">
+                        View Agent Details
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.location.href='/marketplace.html'">
+                        Browse Marketplace
+                    </button>
+                    <button class="btn btn-secondary" onclick="location.reload()">
+                        Submit Another
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:9002';
+        let selectedFile = null;
+        let testCaseCount = 0;
+        let verificationId = null;
+        let modelHash = null;
+
+        // File upload handling
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        fileUploadArea.addEventListener('click', () => fileInput.click());
+
+        fileUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.add('dragover');
+        });
+
+        fileUploadArea.addEventListener('dragleave', () => {
+            fileUploadArea.classList.remove('dragover');
+        });
+
+        fileUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            if (!file.name.endsWith('.onnx')) {
+                showError('Invalid File', 'Please select an ONNX model file (.onnx)');
+                return;
+            }
+
+            if (file.size > 50 * 1024 * 1024) {
+                showError('File Too Large', 'Maximum file size is 50MB');
+                return;
+            }
+
+            selectedFile = file;
+
+            const fileInfo = document.getElementById('fileInfo');
+            fileInfo.innerHTML = `
+                <div class="file-info">
+                    <div>
+                        <div class="file-name">📄 ${file.name}</div>
+                        <div class="file-size">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                    </div>
+                    <button type="button" class="remove-file" onclick="removeFile()">Remove</button>
+                </div>
+            `;
+            fileInfo.style.display = 'block';
+            fileUploadArea.style.display = 'none';
+
+            clearError();
+        }
+
+        function removeFile() {
+            selectedFile = null;
+            fileInput.value = '';
+            document.getElementById('fileInfo').style.display = 'none';
+            fileUploadArea.style.display = 'block';
+        }
+
+        // Test case management
+        function addTestCase() {
+            testCaseCount++;
+            const container = document.getElementById('testCasesContainer');
+
+            const testCase = document.createElement('div');
+            testCase.className = 'test-case';
+            testCase.id = `testCase${testCaseCount}`;
+            testCase.innerHTML = `
+                <div class="test-case-header">
+                    <div class="test-case-number">Test Case ${testCaseCount}</div>
+                    <button type="button" class="remove-test" onclick="removeTestCase(${testCaseCount})">Remove</button>
+                </div>
+                <input type="text" placeholder="e.g., 1,2,3,4,5" id="testInput${testCaseCount}"
+                       style="width: 100%; padding: 8px; border: 2px solid #e0e0e0; border-radius: 6px;">
+            `;
+            container.appendChild(testCase);
+        }
+
+        function removeTestCase(id) {
+            document.getElementById(`testCase${id}`).remove();
+        }
+
+        // Initialize with one test case
+        addTestCase();
+
+        // Form submission
+        document.getElementById('submitForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!selectedFile) {
+                showError('No File Selected', 'Please upload an ONNX model file');
+                return;
+            }
+
+            const agentName = document.getElementById('agentName').value.trim();
+            if (!agentName) {
+                showError('Missing Information', 'Please provide an agent name');
+                return;
+            }
+
+            // Collect test inputs
+            const testInputs = [];
+            for (let i = 1; i <= testCaseCount; i++) {
+                const input = document.getElementById(`testInput${i}`);
+                if (input && input.value.trim()) {
+                    try {
+                        const values = input.value.split(',').map(v => parseFloat(v.trim()));
+                        if (values.some(isNaN)) {
+                            showError('Invalid Test Case', `Test case ${i} contains non-numeric values`);
+                            return;
+                        }
+                        testInputs.push(values);
+                    } catch (error) {
+                        showError('Invalid Test Case', `Test case ${i} format is incorrect`);
+                        return;
+                    }
+                }
+            }
+
+            if (testInputs.length === 0) {
+                showError('No Test Cases', 'Please add at least one test case');
+                return;
+            }
+
+            const agentDescription = document.getElementById('agentDescription').value.trim();
+
+            // Hide form and show progress
+            document.getElementById('submitForm').style.display = 'none';
+            document.getElementById('progressContainer').style.display = 'block';
+
+            try {
+                // Step 1: Validate and verify
+                showProgress(1, 'active');
+
+                const formData = new FormData();
+                formData.append('onnxModel', selectedFile);
+                formData.append('agentName', agentName);
+                formData.append('agentDescription', agentDescription);
+                formData.append('testInputs', JSON.stringify(testInputs));
+
+                const verifyResponse = await fetch(`${API_URL}/verify-onnx-agent`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const verifyData = await verifyResponse.json();
+
+                if (!verifyData.success) {
+                    throw new Error(verifyData.error || 'Verification failed');
+                }
+
+                verificationId = verifyData.verificationId;
+                modelHash = verifyData.modelHash;
+
+                showProgress(1, 'complete');
+                showProgress(2, 'complete');
+                showProgress(3, 'complete');
+
+                // Step 4: Register to marketplace
+                showProgress(4, 'active');
+
+                const registerResponse = await fetch(`${API_URL}/agents/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        verificationId: verificationId,
+                        makePublic: true
+                    })
+                });
+
+                const registerData = await registerResponse.json();
+
+                if (!registerData.success) {
+                    throw new Error(registerData.error || 'Registration failed');
+                }
+
+                showProgress(4, 'complete');
+
+                // Show success
+                document.getElementById('progressContainer').style.display = 'none';
+                document.getElementById('successContainer').style.display = 'block';
+
+                document.getElementById('viewAgentButton').onclick = () => {
+                    window.location.href = `/agent.html?hash=${modelHash}`;
+                };
+
+            } catch (error) {
+                console.error('Submission error:', error);
+                showError('Submission Failed', error.message);
+                document.getElementById('submitForm').style.display = 'block';
+                document.getElementById('progressContainer').style.display = 'none';
+            }
+        });
+
+        function showProgress(step, state) {
+            const stepEl = document.getElementById(`step${step}`);
+            const spinner = document.getElementById(`spinner${step}`);
+
+            stepEl.classList.remove('active', 'complete');
+
+            if (state === 'active') {
+                stepEl.classList.add('active');
+                spinner.style.display = 'block';
+            } else if (state === 'complete') {
+                stepEl.classList.add('complete');
+                spinner.style.display = 'none';
+                stepEl.querySelector('.progress-icon').textContent = '✓';
+            }
+        }
+
+        function showError(title, message) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = `
+                <div class="error-message">
+                    <div class="error-title">${title}</div>
+                    <div>${message}</div>
+                </div>
+            `;
+        }
+
+        function clearError() {
+            document.getElementById('errorContainer').innerHTML = '';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>zkML Agent Marketplace - ERC-8004 Verified Agents</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a1f 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(255, 121, 198, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid #5b8cff;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+                        0 0 40px rgba(91, 140, 255, 0.2);
+        }
+
+        h1 {
+            color: #ffffff;
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(120, 119, 198, 0.5);
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 2px solid #4de2cf;
+            padding: 15px 20px;
+            border-radius: 6px;
+            flex: 1;
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: #4de2cf;
+            box-shadow: 0 0 20px rgba(77, 226, 207, 0.3);
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 600;
+            margin-top: 5px;
+            text-shadow: 0 0 20px rgba(120, 119, 198, 0.4);
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid #1a1f2e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #1a1f2e;
+            border-radius: 6px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            transition: all 0.3s;
+        }
+
+        .search-box input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #5b8cff;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 20px rgba(91, 140, 255, 0.3);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        select {
+            padding: 12px 16px;
+            border: 2px solid #1a1f2e;
+            border-radius: 6px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        select option {
+            background: #1a1a2e;
+            color: #ffffff;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #5b8cff;
+            box-shadow: 0 0 20px rgba(91, 140, 255, 0.3);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, rgba(120, 119, 198, 0.8), rgba(255, 121, 198, 0.6));
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, rgba(120, 119, 198, 1), rgba(255, 121, 198, 0.8));
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(120, 119, 198, 0.4),
+                        0 0 40px rgba(255, 121, 198, 0.3);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .agent-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid #5b8cff;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .agent-card:hover::before {
+            left: 100%;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4),
+                        0 0 60px rgba(91, 140, 255, 0.5);
+            border-color: #5b8cff;
+        }
+
+        .agent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .agent-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .verified-badge {
+            background: linear-gradient(135deg, rgba(120, 119, 198, 0.6), rgba(255, 121, 198, 0.5));
+            color: white;
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid #4de2cf;
+            box-shadow: 0 4px 12px rgba(77, 226, 207, 0.3);
+        }
+
+        .verified-badge::before {
+            content: "✓";
+            font-size: 14px;
+        }
+
+        .agent-description {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .agent-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .meta-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .meta-value {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        .model-hash {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: rgba(120, 119, 198, 0.9);
+            text-shadow: 0 0 10px rgba(120, 119, 198, 0.3);
+        }
+
+        .empty-state {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid #1a1f2e;
+            border-radius: 12px;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .empty-state h3 {
+            color: #ffffff;
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(120, 119, 198, 0.4);
+        }
+
+        .empty-state p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
+            text-shadow: 0 0 20px rgba(120, 119, 198, 0.5);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .pagination button {
+            padding: 10px 20px;
+            border: 1px solid #1a1f2e;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: rgba(91, 140, 255, 0.3);
+            border-color: #5b8cff;
+            box-shadow: 0 4px 16px rgba(91, 140, 255, 0.4);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .pagination .current-page {
+            padding: 10px 20px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid #1a1f2e;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #4de2cf;
+            box-shadow: 0 4px 16px rgba(77, 226, 207, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔒 zkML Agent Marketplace</h1>
+            <p class="subtitle">Discover cryptographically verified AI agents with ERC-8004 compliance</p>
+
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-label">Total Agents</div>
+                    <div class="stat-value" id="totalAgents">-</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">zkML Proofs</div>
+                    <div class="stat-value">JOLT-Atlas</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Verification Time</div>
+                    <div class="stat-value">~0.7s</div>
+                </div>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn btn-primary" onclick="window.location.href='/submit.html'">
+                    + Submit Your Agent
+                </button>
+                <button class="btn btn-secondary" onclick="window.location.href='/docs.html'">
+                    📖 API Documentation
+                </button>
+            </div>
+        </header>
+
+        <div class="controls">
+            <div class="search-box">
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search agents by name or description..."
+                    onkeyup="handleSearch()"
+                >
+            </div>
+
+            <div class="filter-group">
+                <select id="sortBy" onchange="handleSort()">
+                    <option value="verifiedAt">Sort by: Recent</option>
+                    <option value="agentName">Sort by: Name</option>
+                    <option value="usageCount">Sort by: Most Used</option>
+                </select>
+
+                <select id="orderBy" onchange="handleSort()">
+                    <option value="desc">Descending</option>
+                    <option value="asc">Ascending</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="loadingState" class="loading">
+            Loading verified agents...
+        </div>
+
+        <div id="agentsGrid" class="agents-grid" style="display: none;"></div>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <h3>No Agents Found</h3>
+            <p>Be the first to submit a verified agent to the marketplace!</p>
+            <button class="btn btn-primary" onclick="window.location.href='/submit.html'" style="margin-top: 20px;">
+                Submit Agent
+            </button>
+        </div>
+
+        <div id="pagination" class="pagination" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:9002';
+        let currentPage = 0;
+        const ITEMS_PER_PAGE = 12;
+        let allAgents = [];
+        let filteredAgents = [];
+
+        async function loadAgents() {
+            try {
+                const response = await fetch(`${API_URL}/agents?limit=100`);
+                const data = await response.json();
+
+                if (data.success) {
+                    allAgents = data.agents;
+                    filteredAgents = allAgents;
+
+                    document.getElementById('totalAgents').textContent = allAgents.length;
+
+                    if (allAgents.length === 0) {
+                        showEmptyState();
+                    } else {
+                        renderAgents();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading agents:', error);
+                showEmptyState();
+            } finally {
+                document.getElementById('loadingState').style.display = 'none';
+            }
+        }
+
+        function renderAgents() {
+            const grid = document.getElementById('agentsGrid');
+            const start = currentPage * ITEMS_PER_PAGE;
+            const end = start + ITEMS_PER_PAGE;
+            const pageAgents = filteredAgents.slice(start, end);
+
+            grid.innerHTML = pageAgents.map(agent => `
+                <div class="agent-card" onclick="viewAgent('${agent.modelHash}')">
+                    <div class="agent-header">
+                        <div>
+                            <div class="agent-name">${escapeHtml(agent.agentName)}</div>
+                            <span class="verified-badge">zkML Verified</span>
+                        </div>
+                    </div>
+
+                    <p class="agent-description">
+                        ${escapeHtml(agent.agentDescription || 'No description provided')}
+                    </p>
+
+                    <div class="agent-meta">
+                        <div class="meta-item">
+                            <div class="meta-label">Model Hash</div>
+                            <div class="meta-value model-hash">${agent.modelHash.substring(0, 16)}...</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Proof System</div>
+                            <div class="meta-value">${agent.proofSystem}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Tests Passed</div>
+                            <div class="meta-value">${agent.testCasesPassed} ✓</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Verified</div>
+                            <div class="meta-value">${formatDate(agent.verifiedAt)}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            grid.style.display = 'grid';
+            renderPagination();
+        }
+
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            const totalPages = Math.ceil(filteredAgents.length / ITEMS_PER_PAGE);
+
+            if (totalPages <= 1) {
+                pagination.style.display = 'none';
+                return;
+            }
+
+            pagination.innerHTML = `
+                <button ${currentPage === 0 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">
+                    ← Previous
+                </button>
+                <div class="current-page">
+                    Page ${currentPage + 1} of ${totalPages}
+                </div>
+                <button ${currentPage >= totalPages - 1 ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">
+                    Next →
+                </button>
+            `;
+
+            pagination.style.display = 'flex';
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderAgents();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+
+            if (!query) {
+                filteredAgents = allAgents;
+            } else {
+                filteredAgents = allAgents.filter(agent =>
+                    agent.agentName.toLowerCase().includes(query) ||
+                    (agent.agentDescription && agent.agentDescription.toLowerCase().includes(query))
+                );
+            }
+
+            currentPage = 0;
+            renderAgents();
+        }
+
+        function handleSort() {
+            const sortBy = document.getElementById('sortBy').value;
+            const order = document.getElementById('orderBy').value;
+
+            filteredAgents.sort((a, b) => {
+                let aVal = a[sortBy];
+                let bVal = b[sortBy];
+
+                // Handle dates
+                if (sortBy === 'verifiedAt') {
+                    aVal = new Date(aVal);
+                    bVal = new Date(bVal);
+                }
+
+                if (order === 'desc') {
+                    return bVal > aVal ? 1 : -1;
+                } else {
+                    return aVal > bVal ? 1 : -1;
+                }
+            });
+
+            currentPage = 0;
+            renderAgents();
+        }
+
+        function viewAgent(modelHash) {
+            window.location.href = `/agent.html?hash=${modelHash}`;
+        }
+
+        function showEmptyState() {
+            document.getElementById('emptyState').style.display = 'block';
+            document.getElementById('agentsGrid').style.display = 'none';
+            document.getElementById('pagination').style.display = 'none';
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) return 'Today';
+            if (diffDays === 1) return 'Yesterday';
+            if (diffDays < 7) return `${diffDays} days ago`;
+            if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+            return date.toLocaleDateString();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Load agents on page load
+        loadAgents();
+
+        // Refresh every 30 seconds
+        setInterval(loadAgents, 30000);
+    </script>
+</body>
+</html>

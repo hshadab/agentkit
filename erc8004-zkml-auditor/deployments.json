@@ -1,0 +1,18 @@
+{
+  "network": "baseSepolia",
+  "chainId": 84532,
+  "timestamp": "2025-10-03T21:40:46.195Z",
+  "contracts": {
+    "ZkMLValidationRegistry": "0xF86630d38fd30dE173A7548806e1f12522dC5E27",
+    "USDC": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    "Groth16Verifier": "0xf752509cb5af017f465B42053d41B730991c6624"
+  },
+  "config": {
+    "treasury": "0x14a4054f75455c03839da6a7084b5e6e334e8e24",
+    "validationFee": "2000000",
+    "authorizedValidators": [
+      "0x2e408ad62e30146404F4ED8A61253212f3f9A490"
+    ]
+  },
+  "explorer": "https://sepolia.basescan.org/address/0xF86630d38fd30dE173A7548806e1f12522dC5E27"
+}

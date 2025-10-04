@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Details - zkML Marketplace</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a1f 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(255, 121, 198, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .back-button {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid #1a1f2e;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #5b8cff;
+            box-shadow: 0 4px 16px rgba(91, 140, 255, 0.3);
+        }
+
+        .agent-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid #5b8cff;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+                        0 0 40px rgba(91, 140, 255, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .agent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .agent-title {
+            flex: 1;
+        }
+
+        .agent-name {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(120, 119, 198, 0.4);
+        }
+
+        .agent-description {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .verified-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .verified-badge::before {
+            content: "✓";
+            font-size: 20px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item {
+            background: #f7f9fc;
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: #1a1a2e;
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .model-hash {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #667eea;
+        }
+
+        .certificate-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .certificate-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .certificate-content {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .certificate-field {
+            margin-bottom: 15px;
+        }
+
+        .certificate-field:last-child {
+            margin-bottom: 0;
+        }
+
+        .certificate-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .certificate-value {
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+        }
+
+        .test-results {
+            background: #f7f9fc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .test-item {
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .test-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .test-number {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .test-detail {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .test-detail strong {
+            color: #1a1a2e;
+        }
+
+        .embed-code {
+            background: #1a1a2e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .copy-button:hover {
+            background: #5568d3;
+        }
+
+        .copy-button.copied {
+            background: #10b981;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: white;
+            font-size: 18px;
+        }
+
+        .error {
+            background: white;
+            border-radius: 12px;
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        .error h2 {
+            color: #dc2626;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .error p {
+            color: #666;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="back-button" onclick="window.location.href='/marketplace.html'">
+            ← Back to Marketplace
+        </button>
+
+        <div id="loading" class="loading">
+            Loading agent details...
+        </div>
+
+        <div id="error" class="error" style="display: none;">
+            <h2>Agent Not Found</h2>
+            <p>This agent doesn't exist or hasn't been verified yet.</p>
+            <button class="back-button" onclick="window.location.href='/marketplace.html'" style="margin-top: 20px;">
+                Go to Marketplace
+            </button>
+        </div>
+
+        <div id="agentDetails" style="display: none;">
+            <!-- Agent details will be populated here -->
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:9002';
+
+        async function loadAgent() {
+            const params = new URLSearchParams(window.location.search);
+            const modelHash = params.get('hash');
+
+            if (!modelHash) {
+                showError();
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/agents/${modelHash}`);
+                const data = await response.json();
+
+                if (data.success && data.agent) {
+                    renderAgent(data.agent);
+                } else {
+                    showError();
+                }
+            } catch (error) {
+                console.error('Error loading agent:', error);
+                showError();
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function renderAgent(agent) {
+            const container = document.getElementById('agentDetails');
+
+            container.innerHTML = `
+                <div class="certificate-box">
+                    <div class="certificate-title">🏆 zkML Verification Certificate</div>
+                    <div class="certificate-content">
+                        <div class="certificate-field">
+                            <div class="certificate-label">Model Hash</div>
+                            <div class="certificate-value">${agent.modelHash}</div>
+                        </div>
+                        <div class="certificate-field">
+                            <div class="certificate-label">Proof Hash</div>
+                            <div class="certificate-value">${agent.proofHash}</div>
+                        </div>
+                        <div class="certificate-field">
+                            <div class="certificate-label">Proof System</div>
+                            <div class="certificate-value">${agent.proofSystem} - ${agent.proofType || 'zkML ONNX Inference'}</div>
+                        </div>
+                        <div class="certificate-field">
+                            <div class="certificate-label">Verified At</div>
+                            <div class="certificate-value">${new Date(agent.verifiedAt).toLocaleString()}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="agent-card">
+                    <div class="agent-header">
+                        <div class="agent-title">
+                            <div class="agent-name">${escapeHtml(agent.agentName)}</div>
+                            <p class="agent-description">${escapeHtml(agent.agentDescription || 'No description provided')}</p>
+                        </div>
+                        <div class="verified-badge">Verified</div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">📊 Model Information</div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Model Size</div>
+                                <div class="info-value">${agent.metadata?.modelSizeMB || 'N/A'} MB</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Parameters</div>
+                                <div class="info-value">${formatNumber(agent.metadata?.estimatedParams) || 'N/A'}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Inputs</div>
+                                <div class="info-value">${agent.metadata?.inputs?.join(', ') || 'N/A'}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Outputs</div>
+                                <div class="info-value">${agent.metadata?.outputs?.join(', ') || 'N/A'}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">⚡ Performance</div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Inference Time</div>
+                                <div class="info-value">${agent.performance?.localInferenceMs || 'N/A'} ms</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Proof Generation</div>
+                                <div class="info-value">${agent.performance?.actualProofMs || agent.performance?.estimatedProofSec * 1000 || 'N/A'} ms</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Test Cases Passed</div>
+                                <div class="info-value">${agent.testCasesPassed} ✓</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Proof Type</div>
+                                <div class="info-value">${agent.simulated ? 'Simulated' : 'Real zkML'}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${renderTestResults(agent.testResults)}
+
+                    <div class="section">
+                        <div class="section-title">🔗 Verification API</div>
+                        <div class="embed-code">
+                            <button class="copy-button" onclick="copyCode()">Copy</button>
+// Verify this agent's certificate before using it
+const response = await fetch('${API_URL}/agents/${agent.modelHash}/verify');
+const { verified, proofHash } = await response.json();
+
+if (verified && proofHash === '${agent.proofHash}') {
+    // Safe to use - zkML proof guarantees behavior
+    console.log('✓ Agent verified with zkML proof');
+} else {
+    throw new Error('Agent verification failed');
+}
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">📋 Usage Stats</div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Times Used</div>
+                                <div class="info-value">${agent.usageCount || 0}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Verification Count</div>
+                                <div class="info-value">${agent.verificationCount || 1}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Last Used</div>
+                                <div class="info-value">${agent.lastUsed ? formatDate(agent.lastUsed) : 'Never'}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Created</div>
+                                <div class="info-value">${formatDate(agent.createdAt || agent.verifiedAt)}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.style.display = 'block';
+        }
+
+        function renderTestResults(testResults) {
+            if (!testResults || testResults.length === 0) {
+                return '';
+            }
+
+            return `
+                <div class="section">
+                    <div class="section-title">🧪 Test Results</div>
+                    <div class="test-results">
+                        ${testResults.map(test => `
+                            <div class="test-item">
+                                <div class="test-number">Test Case ${test.testCase}</div>
+                                <div class="test-detail"><strong>Input:</strong> [${test.input.join(', ')}]</div>
+                                <div class="test-detail"><strong>Output:</strong> [${test.output.map(v => typeof v === 'number' ? v.toFixed(4) : v).join(', ')}]</div>
+                                <div class="test-detail"><strong>Inference Time:</strong> ${test.inferenceTimeMs}ms</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function copyCode() {
+            const code = document.querySelector('.embed-code').textContent.trim();
+            const btn = document.querySelector('.copy-button');
+
+            // Remove "Copy" button text from code
+            const actualCode = code.replace(/^Copy\s*/, '');
+
+            navigator.clipboard.writeText(actualCode).then(() => {
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function showError() {
+            document.getElementById('error').style.display = 'block';
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString();
+        }
+
+        function formatNumber(num) {
+            if (!num) return num;
+            return num.toLocaleString();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Load agent on page load
+        loadAgent();
+    </script>
+</body>
+</html>

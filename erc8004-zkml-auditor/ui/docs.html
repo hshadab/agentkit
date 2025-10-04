@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation - zkML Agent Marketplace</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a1f 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+            color: #ffffff;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(255, 121, 198, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .back-button {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid #1a1f2e;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #5b8cff;
+            box-shadow: 0 4px 16px rgba(91, 140, 255, 0.3);
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 2px solid #5b8cff;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+                        0 0 40px rgba(91, 140, 255, 0.2);
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(120, 119, 198, 0.5);
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid #1a1f2e;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #ffffff;
+            border-bottom: 2px solid #5b8cff;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #4de2cf;
+        }
+
+        .endpoint {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 4px solid #5b8cff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .method {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 12px;
+            margin-right: 10px;
+            text-transform: uppercase;
+        }
+
+        .method.post {
+            background: linear-gradient(135deg, rgba(120, 119, 198, 0.8), rgba(255, 121, 198, 0.6));
+            color: white;
+        }
+
+        .method.get {
+            background: linear-gradient(135deg, rgba(77, 226, 207, 0.8), rgba(120, 119, 198, 0.6));
+            color: white;
+        }
+
+        .endpoint-path {
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .endpoint-description {
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+
+        .code-block {
+            background: #1a1a2e;
+            border: 1px solid #2a2a3e;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 15px 0;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-block code {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #00ff00;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #5b8cff;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .copy-button:hover {
+            background: #4d7ce6;
+        }
+
+        .copy-button.copied {
+            background: #10b981;
+        }
+
+        .params-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .params-table th {
+            background: rgba(91, 140, 255, 0.2);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #5b8cff;
+        }
+
+        .params-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .params-table code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #4de2cf;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge.required {
+            background: rgba(255, 121, 198, 0.3);
+            color: #ff79c6;
+        }
+
+        .badge.optional {
+            background: rgba(77, 226, 207, 0.3);
+            color: #4de2cf;
+        }
+
+        .toc {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+        }
+
+        .toc h3 {
+            margin-top: 0;
+        }
+
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .toc li {
+            margin: 8px 0;
+        }
+
+        .toc a {
+            color: #4de2cf;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .toc a:hover {
+            color: #5b8cff;
+        }
+
+        .info-box {
+            background: rgba(77, 226, 207, 0.1);
+            border-left: 4px solid #4de2cf;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .info-box p {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="back-button" onclick="window.location.href='/marketplace.html'">
+            ← Back to Marketplace
+        </button>
+
+        <header>
+            <h1>📖 API Documentation</h1>
+            <p class="subtitle">Complete reference for the zkML Agent Marketplace API</p>
+        </header>
+
+        <div class="section toc">
+            <h3>Table of Contents</h3>
+            <ul>
+                <li><a href="#getting-started">Getting Started</a></li>
+                <li><a href="#verification">Verification API</a></li>
+                <li><a href="#marketplace">Marketplace API</a></li>
+                <li><a href="#examples">Code Examples</a></li>
+                <li><a href="#errors">Error Handling</a></li>
+            </ul>
+        </div>
+
+        <div class="section" id="getting-started">
+            <h2>Getting Started</h2>
+            <p class="endpoint-description">
+                The zkML Agent Marketplace API provides endpoints for verifying ONNX models with JOLT-Atlas zkML proofs
+                and managing a public marketplace of verified AI agents.
+            </p>
+
+            <div class="info-box">
+                <p><strong>Base URL:</strong> <code>http://localhost:9002</code></p>
+                <p><strong>Content-Type:</strong> <code>application/json</code> or <code>multipart/form-data</code></p>
+                <p><strong>Authentication:</strong> Not required for MVP (planned for future releases)</p>
+            </div>
+        </div>
+
+        <div class="section" id="verification">
+            <h2>Verification API</h2>
+            <p class="endpoint-description">
+                Verify ONNX models with cryptographic zkML proofs using JOLT-Atlas proof system.
+            </p>
+
+            <div class="endpoint">
+                <div>
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/verify-onnx-agent</span>
+                </div>
+                <p class="endpoint-description">
+                    Upload an ONNX model and generate a zkML verification certificate with JOLT-Atlas proofs.
+                </p>
+
+                <h3>Request Parameters</h3>
+                <table class="params-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Type</th>
+                            <th>Required</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>onnxModel</code></td>
+                            <td>File</td>
+                            <td><span class="badge required">Required</span></td>
+                            <td>ONNX model file (.onnx format, max 50MB)</td>
+                        </tr>
+                        <tr>
+                            <td><code>agentName</code></td>
+                            <td>String</td>
+                            <td><span class="badge required">Required</span></td>
+                            <td>Display name for the agent</td>
+                        </tr>
+                        <tr>
+                            <td><code>agentDescription</code></td>
+                            <td>String</td>
+                            <td><span class="badge optional">Optional</span></td>
+                            <td>Description of the agent's functionality</td>
+                        </tr>
+                        <tr>
+                            <td><code>testInputs</code></td>
+                            <td>JSON Array</td>
+                            <td><span class="badge required">Required</span></td>
+                            <td>Array of test input arrays: [[1,2,3], [4,5,6]]</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Response</h3>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <code>{
+  "success": true,
+  "verificationId": "0xabc123...",
+  "modelHash": "0xdef456...",
+  "proofHash": "0x789abc...",
+  "proofSystem": "JOLT-Atlas",
+  "testCasesPassed": 2,
+  "testResults": [
+    {
+      "testCase": 1,
+      "input": [1, 2, 3],
+      "output": [0.234, 0.766],
+      "inferenceTimeMs": 12
+    }
+  ],
+  "metadata": {
+    "modelSizeMB": 1.8,
+    "estimatedParams": 256
+  },
+  "performance": {
+    "localInferenceMs": 12,
+    "estimatedProofSec": 0.6
+  },
+  "simulated": false,
+  "verifiedAt": "2025-10-04T12:00:00Z"
+}</code>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div>
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/verification/:verificationId</span>
+                </div>
+                <p class="endpoint-description">
+                    Retrieve a verification credential by ID.
+                </p>
+
+                <h3>Response</h3>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <code>{
+  "success": true,
+  "verification": {
+    "verificationId": "0xabc123...",
+    "modelHash": "0xdef456...",
+    "agentName": "FraudDetector Pro",
+    "proofSystem": "JOLT-Atlas",
+    "verifiedAt": "2025-10-04T12:00:00Z"
+  }
+}</code>
+                </div>
+            </div>
+        </div>
+
+        <div class="section" id="marketplace">
+            <h2>Marketplace API</h2>
+            <p class="endpoint-description">
+                Browse, search, and manage verified agents in the public marketplace.
+            </p>
+
+            <div class="endpoint">
+                <div>
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/agents/register</span>
+                </div>
+                <p class="endpoint-description">
+                    Register a verified agent to the public marketplace.
+                </p>
+
+                <h3>Request Body</h3>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <code>{
+  "verificationId": "0xabc123...",
+  "makePublic": true
+}</code>
+                </div>
+
+                <h3>Response</h3>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <code>{
+  "success": true,
+  "message": "Agent registered to marketplace",
+  "modelHash": "0xdef456...",
+  "marketplaceUrl": "http://localhost:9003/agent.html?hash=0xdef456..."
+}</code>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div>
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/agents</span>
+                </div>
+                <p class="endpoint-description">
+                    List all verified agents with pagination, search, and sorting.
+                </p>
+
+                <h3>Query Parameters</h3>
+                <table class="params-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>limit</code></td>
+                            <td>Number</td>
+                            <td>10</td>
+                            <td>Number of results to return</td>
+                        </tr>
+                        <tr>
+                            <td><code>offset</code></td>
+                            <td>Number</td>
+                            <td>0</td>
+                            <td>Pagination offset</td>
+                        </tr>
+                        <tr>
+                            <td><code>search</code></td>
+                            <td>String</td>
+                            <td>-</td>
+                            <td>Search by name or description</td>
+                        </tr>
+                        <tr>
+                            <td><code>sortBy</code></td>
+                            <td>String</td>
+                            <td>verifiedAt</td>
+                            <td>Sort field: verifiedAt, agentName, usageCount</td>
+                        </tr>
+                        <tr>
+                            <td><code>order</code></td>
+                            <td>String</td>
+                            <td>desc</td>
+                            <td>Sort order: asc or desc</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Response</h3>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <code>{
+  "success": true,
+  "agents": [
+    {
+      "modelHash": "0xdef456...",
+      "agentName": "FraudDetector Pro",
+      "agentDescription": "AI fraud detection agent",
+      "proofSystem": "JOLT-Atlas",
+      "testCasesPassed": 10,
+      "verifiedAt": "2025-10-04T12:00:00Z",
+      "usageCount": 42
+    }
+  ],
+  "total": 1,
+  "hasMore": false
+}</code>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div>
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/agents/:modelHash</span>
+                </div>
+                <p class="endpoint-description">
+                    Get detailed information about a specific agent including full verification certificate.
+                </p>
+
+                <h3>Response</h3>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <code>{
+  "success": true,
+  "agent": {
+    "modelHash": "0xdef456...",
+    "agentName": "FraudDetector Pro",
+    "agentDescription": "AI fraud detection agent",
+    "proofHash": "0x789abc...",
+    "proofSystem": "JOLT-Atlas",
+    "testCasesPassed": 10,
+    "testResults": [...],
+    "metadata": {...},
+    "performance": {...},
+    "verifiedAt": "2025-10-04T12:00:00Z",
+    "usageCount": 42
+  }
+}</code>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div>
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/agents/:modelHash/verify</span>
+                </div>
+                <p class="endpoint-description">
+                    Verify an agent's certificate (for agent-to-agent composition). Returns verification status without modifying any state.
+                </p>
+
+                <h3>Response</h3>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <code>{
+  "success": true,
+  "verified": true,
+  "modelHash": "0xdef456...",
+  "proofHash": "0x789abc...",
+  "proofSystem": "JOLT-Atlas",
+  "verifiedAt": "2025-10-04T12:00:00Z"
+}</code>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div>
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/marketplace/stats</span>
+                </div>
+                <p class="endpoint-description">
+                    Get marketplace statistics.
+                </p>
+
+                <h3>Response</h3>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                    <code>{
+  "success": true,
+  "stats": {
+    "totalAgents": 15,
+    "totalVerifications": 150,
+    "totalUsage": 1250
+  }
+}</code>
+                </div>
+            </div>
+        </div>
+
+        <div class="section" id="examples">
+            <h2>Code Examples</h2>
+
+            <h3>cURL - Verify an ONNX Agent</h3>
+            <div class="code-block">
+                <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                <code>curl -X POST http://localhost:9002/verify-onnx-agent \
+  -F "onnxModel=@model.onnx" \
+  -F "agentName=FraudDetector Pro" \
+  -F "agentDescription=AI fraud detection agent" \
+  -F 'testInputs=[[1,2,3],[4,5,6]]'</code>
+            </div>
+
+            <h3>JavaScript - Register Agent to Marketplace</h3>
+            <div class="code-block">
+                <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                <code>const response = await fetch('http://localhost:9002/agents/register', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    verificationId: '0xabc123...',
+    makePublic: true
+  })
+});
+
+const result = await response.json();
+console.log('Agent registered:', result.marketplaceUrl);</code>
+            </div>
+
+            <h3>JavaScript - Agent-to-Agent Verification</h3>
+            <div class="code-block">
+                <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                <code>// Agent A wants to use Agent B - verify B's certificate first
+const response = await fetch(`http://localhost:9002/agents/${agentBHash}/verify`);
+const { verified, proofHash, modelHash } = await response.json();
+
+if (verified) {
+  // Safe to call Agent B - zkML proof guarantees behavior
+  const result = await callAgentB(input);
+} else {
+  throw new Error('Agent B not verified - cannot trust');
+}</code>
+            </div>
+
+            <h3>Python - List Marketplace Agents</h3>
+            <div class="code-block">
+                <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                <code>import requests
+
+response = requests.get(
+    'http://localhost:9002/agents',
+    params={
+        'limit': 10,
+        'search': 'fraud',
+        'sortBy': 'usageCount',
+        'order': 'desc'
+    }
+)
+
+data = response.json()
+for agent in data['agents']:
+    print(f"{agent['agentName']}: {agent['usageCount']} uses")</code>
+            </div>
+        </div>
+
+        <div class="section" id="errors">
+            <h2>Error Handling</h2>
+            <p class="endpoint-description">
+                All errors follow a consistent format with HTTP status codes and descriptive messages.
+            </p>
+
+            <h3>Error Response Format</h3>
+            <div class="code-block">
+                <button class="copy-button" onclick="copyCode(this)">Copy</button>
+                <code>{
+  "success": false,
+  "error": "Error message description",
+  "code": "ERROR_CODE"
+}</code>
+            </div>
+
+            <h3>Common Error Codes</h3>
+            <table class="params-table">
+                <thead>
+                    <tr>
+                        <th>Status Code</th>
+                        <th>Error</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>400</code></td>
+                        <td>Bad Request</td>
+                        <td>Missing or invalid parameters</td>
+                    </tr>
+                    <tr>
+                        <td><code>404</code></td>
+                        <td>Not Found</td>
+                        <td>Agent or verification not found</td>
+                    </tr>
+                    <tr>
+                        <td><code>413</code></td>
+                        <td>Payload Too Large</td>
+                        <td>ONNX model exceeds 50MB limit</td>
+                    </tr>
+                    <tr>
+                        <td><code>500</code></td>
+                        <td>Internal Server Error</td>
+                        <td>Proof generation or verification failed</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="info-box" style="margin-top: 30px;">
+                <p><strong>Need Help?</strong> Submit issues or feature requests on GitHub. For production deployment guidance, check the deployment documentation.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyCode(button) {
+            const codeBlock = button.parentElement;
+            const code = codeBlock.querySelector('code').textContent;
+
+            navigator.clipboard.writeText(code).then(() => {
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>zkML Agent Auditor - Verifiable AI Agent Registry</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">🔒</div>
+                <div class="logo-text">
+                    <h1>zkML Agent Auditor</h1>
+                    <p>Cryptographically Verified AI Agents</p>
+                </div>
+            </div>
+            <div class="wallet-section">
+                <div class="network-badge">Base Sepolia • FREE Validation</div>
+            </div>
+        </header>
+
+        <!-- Stats Dashboard -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-icon">✓</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="totalValidations">0</div>
+                    <div class="stat-label">Total Validations</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎉</div>
+                <div class="stat-content">
+                    <div class="stat-value">FREE</div>
+                    <div class="stat-label">No Payment Required</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-content">
+                    <div class="stat-value">~600ms</div>
+                    <div class="stat-label">Proof Generation</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔐</div>
+                <div class="stat-content">
+                    <div class="stat-value">JOLT-Atlas</div>
+                    <div class="stat-label">zkML System</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Submission Form -->
+            <div class="card" id="submissionCard">
+                <h2>Submit Agent for Validation</h2>
+                <p class="card-subtitle">Register your AI agent with cryptographic proof of behavior</p>
+
+                <form id="agentForm" class="agent-form">
+                    <div class="form-group">
+                        <label for="agentName">Agent Name</label>
+                        <input type="text" id="agentName" placeholder="e.g., TravelDealHunter" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="agentDescription">Description</label>
+                        <textarea id="agentDescription" rows="3" placeholder="Describe your agent's capabilities..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modelHash">Model Hash (bytes32)</label>
+                        <input type="text" id="modelHash" placeholder="0x..." pattern="^0x[a-fA-F0-9]{64}$" required>
+                        <small>SHA256 hash of your model weights</small>
+                    </div>
+
+                    <button type="submit" class="btn-primary btn-large" id="submitButton">
+                        Submit Agent for Validation
+                    </button>
+                </form>
+            </div>
+
+            <!-- Workflow Progress -->
+            <div class="card hidden" id="workflowCard">
+                <h2>Validation Workflow</h2>
+                <div class="workflow-steps">
+                    <div class="workflow-step" id="step1" data-step="1">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>Submit Agent Info</h3>
+                            <p class="step-status">Pending</p>
+                        </div>
+                    </div>
+
+                    <div class="workflow-step" id="step2" data-step="2">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>Approve USDC</h3>
+                            <p class="step-status">Waiting for approval...</p>
+                        </div>
+                    </div>
+
+                    <div class="workflow-step" id="step3" data-step="3">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>Pay Validation Fee</h3>
+                            <p class="step-status">$2.00 USDC</p>
+                        </div>
+                    </div>
+
+                    <div class="workflow-step" id="step4" data-step="4">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h3>Generate zkML Proof</h3>
+                            <p class="step-status">JOLT-Atlas proof generation</p>
+                        </div>
+                    </div>
+
+                    <div class="workflow-step" id="step5" data-step="5">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <h3>Finalize Validation</h3>
+                            <p class="step-status">On-chain verification</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="workflow-actions">
+                    <button class="btn-primary" id="workflowActionButton">Start Workflow</button>
+                </div>
+            </div>
+
+            <!-- Validation Certificate -->
+            <div class="card hidden" id="certificateCard">
+                <h2>Validation Certificate</h2>
+                <div class="certificate">
+                    <div class="certificate-header">
+                        <div class="certificate-badge">✓ VERIFIED</div>
+                        <h3 id="certAgentName"></h3>
+                    </div>
+
+                    <div class="certificate-details">
+                        <div class="cert-row">
+                            <span class="cert-label">Validation Score:</span>
+                            <span class="cert-value" id="certScore"></span>
+                        </div>
+                        <div class="cert-row">
+                            <span class="cert-label">Model Hash:</span>
+                            <span class="cert-value cert-hash" id="certModelHash"></span>
+                        </div>
+                        <div class="cert-row">
+                            <span class="cert-label">Transaction:</span>
+                            <span class="cert-value">
+                                <a id="certTxLink" href="#" target="_blank" class="cert-link"></a>
+                            </span>
+                        </div>
+                        <div class="cert-row">
+                            <span class="cert-label">Validated:</span>
+                            <span class="cert-value" id="certTimestamp"></span>
+                        </div>
+                    </div>
+
+                    <button class="btn-secondary" id="newValidationButton">
+                        Submit Another Agent
+                    </button>
+                </div>
+            </div>
+
+            <!-- Validation History -->
+            <div class="card">
+                <h2>Validation History</h2>
+                <div class="history-list" id="historyList">
+                    <div class="empty-state">
+                        <p>No validations yet. Submit your first agent above!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Contract Addresses</h3>
+                    <div class="contract-links">
+                        <a href="https://sepolia.basescan.org/address/0xF86630d38fd30dE173A7548806e1f12522dC5E27" target="_blank">
+                            Registry: 0xF866...5E27
+                        </a>
+                        <a href="https://sepolia.basescan.org/address/0xf752509cb5af017f465B42053d41B730991c6624" target="_blank">
+                            Verifier: 0xf752...6624
+                        </a>
+                        <a href="https://sepolia.basescan.org/address/0x036CbD53842c5426634e7929541eC2318f3dCF7e" target="_blank">
+                            USDC: 0x036C...CF7e
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>Technology</h3>
+                    <p>JOLT-Atlas zkML • Groth16 SNARKs • ERC-8004</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay hidden" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p id="loadingText">Processing...</p>
+    </div>
+
+    <!-- Load simplified app (no ethers dependency) -->
+    <script src="js/app-simple.js"></script>
+</body>
+</html>
