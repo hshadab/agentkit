@@ -441,6 +441,26 @@
                 <div id="resultsContent"></div>
             </div>
         </div>
+
+        <div class="card" style="margin-top: 30px;">
+            <h2>🔍 Verify Proof File (Local)</h2>
+            <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">
+                Upload a proof file to verify it cryptographically without blockchain.
+                Instant verification, zero cost, completely private.
+            </p>
+
+            <div class="form-group">
+                <label for="proofFile">Upload Proof File (JSON)</label>
+                <input type="file" id="proofFile" accept=".json">
+                <div class="file-info" id="proofFileInfo">No file selected</div>
+            </div>
+
+            <button class="btn-primary" id="verifyProofBtn" onclick="verifyProofFile()">
+                Verify Proof Locally
+            </button>
+
+            <div id="proofVerificationResult"></div>
+        </div>
     </div>
 
     <script>
@@ -731,9 +751,119 @@
                         </div>
                     `).join('')}
                 </div>
+
+                <div style="margin-top: 30px; padding: 20px; background: rgba(99, 102, 241, 0.1); border-radius: 4px; border: 1px solid rgba(99, 102, 241, 0.3);">
+                    <div style="font-weight: 600; color: #e2e8f0; margin-bottom: 10px;">
+                        📥 Download Cryptographic Proof
+                    </div>
+                    <div style="font-size: 13px; color: #cbd5e1; margin-bottom: 15px;">
+                        Download the full Groth16 proof file for local verification or sharing with auditors.
+                        This proof can be verified offline without any blockchain interaction.
+                    </div>
+                    <button class="btn-primary" onclick="downloadProof('${result.verificationId}')" style="width: auto; padding: 10px 20px;">
+                        Download Proof File
+                    </button>
+                </div>
             `;
 
             document.getElementById('resultsContent').innerHTML = html;
+        }
+
+        // Download proof file
+        async function downloadProof(verificationId) {
+            try {
+                const response = await fetch(`http://localhost:9100/download-proof/${verificationId}`);
+                const proofData = await response.json();
+
+                // Create download link
+                const blob = new Blob([JSON.stringify(proofData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `proof_${verificationId.substring(0, 16)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                alert('Error downloading proof: ' + error.message);
+            }
+        }
+
+        // Handle proof file selection
+        document.getElementById('proofFile')?.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('proofFileInfo').textContent =
+                    `${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+                document.getElementById('proofFileInfo').style.color = '#94a3b8';
+            } else {
+                document.getElementById('proofFileInfo').textContent = 'No file selected';
+            }
+        });
+
+        // Verify proof file locally
+        async function verifyProofFile() {
+            const fileInput = document.getElementById('proofFile');
+            const resultDiv = document.getElementById('proofVerificationResult');
+            const verifyBtn = document.getElementById('verifyProofBtn');
+
+            resultDiv.innerHTML = '';
+
+            if (!fileInput.files[0]) {
+                resultDiv.innerHTML = '<div class="error">Please select a proof file to verify</div>';
+                return;
+            }
+
+            try {
+                // Read proof file
+                const file = fileInput.files[0];
+                const text = await file.text();
+                const proof = JSON.parse(text);
+
+                // Show loading
+                verifyBtn.disabled = true;
+                verifyBtn.textContent = 'Verifying...';
+                resultDiv.innerHTML = '<div class="loading"><div class="spinner"></div>Verifying cryptographic proof...</div>';
+
+                // Call verification endpoint
+                const response = await fetch('http://localhost:9100/verify-proof', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ proof })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.verified) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ Proof Verified Successfully!
+                            <div style="margin-top: 15px; font-size: 13px;">
+                                <strong>Verification ID:</strong> ${result.verificationId}<br>
+                                <strong>Model Hash:</strong> ${result.modelHash}<br>
+                                <strong>Timestamp:</strong> ${new Date(result.timestamp).toLocaleString()}<br>
+                                <strong>Verification Time:</strong> ${result.verificationTimeMs}ms<br><br>
+                                ${result.message}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            ❌ Proof Verification Failed
+                            <div style="margin-top: 10px; font-size: 13px;">
+                                ${result.message || result.error}
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Error verifying proof: ${error.message}</div>`;
+            } finally {
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = 'Verify Proof Locally';
+            }
         }
 
         // Load default scenario on page load
