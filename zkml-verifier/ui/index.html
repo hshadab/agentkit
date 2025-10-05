@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>zkML ONNX Verifier | Fraud Detection & Compliance</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            color: #f1f5f9;
+            margin-bottom: 10px;
+        }
+
+        .header .tagline {
+            font-size: 18px;
+            color: #cbd5e1;
+            margin-bottom: 20px;
+        }
+
+        .badges {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .badge.highlight {
+            background: rgba(99, 102, 241, 0.3);
+            color: #a5b4fc;
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 6px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .card h2 {
+            font-size: 20px;
+            color: #f1f5f9;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+        }
+
+        .form-group input[type="file"],
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+            font-size: 14px;
+            color: #e2e8f0;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: monospace;
+        }
+
+        .scenario-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .scenario-btn {
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .scenario-btn:hover {
+            border-color: rgba(99, 102, 241, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .scenario-btn.active {
+            border-color: rgba(99, 102, 241, 0.8);
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        .scenario-btn .title {
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 5px;
+        }
+
+        .scenario-btn .desc {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .btn-primary {
+            background: rgba(99, 102, 241, 0.8);
+            color: white;
+            padding: 14px 28px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: rgba(99, 102, 241, 1);
+            border-color: rgba(99, 102, 241, 0.6);
+        }
+
+        .btn-primary:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.05);
+            color: #64748b;
+            cursor: not-allowed;
+        }
+
+        .results {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 6px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .results h2 {
+            font-size: 20px;
+            color: #f1f5f9;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 4px;
+            border-left: 4px solid rgba(99, 102, 241, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 4px solid rgba(99, 102, 241, 0.8);
+        }
+
+        .result-item .label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .result-item .value {
+            font-size: 14px;
+            color: #e2e8f0;
+            word-break: break-all;
+        }
+
+        .test-results {
+            margin-top: 20px;
+        }
+
+        .test-case {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .test-case-header {
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 10px;
+        }
+
+        .test-io {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .test-io div {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 8px;
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .test-io .label {
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        .test-io .data {
+            font-family: monospace;
+            color: #cbd5e1;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid rgba(99, 102, 241, 0.8);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(220, 38, 38, 0.15);
+            color: #fca5a5;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            border-left: 4px solid rgba(220, 38, 38, 0.8);
+        }
+
+        .success {
+            background: rgba(34, 197, 94, 0.15);
+            color: #86efac;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-left: 4px solid rgba(34, 197, 94, 0.8);
+        }
+
+        .file-info {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>zkML ONNX Verifier</h1>
+            <div class="tagline">Cryptographic proof that your fraud detection models work as documented</div>
+            <div class="badges">
+                <span class="badge highlight">JOLT-Atlas</span>
+                <span class="badge">Fraud Detection</span>
+                <span class="badge">Risk Scoring</span>
+                <span class="badge">AML/KYC</span>
+                <span class="badge">Compliance</span>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="card">
+                <h2>Select or Upload ONNX Model</h2>
+
+                <div class="form-group">
+                    <label>Example Models</label>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px;">
+                        <button class="scenario-btn" onclick="loadExampleModel('authorization', event)">
+                            <div class="title">🔒 Authorization Model</div>
+                            <div class="desc">Payment fraud detection (1.8KB)</div>
+                        </button>
+                        <button class="scenario-btn" onclick="loadExampleModel('mnist', event)">
+                            <div class="title">🔢 MNIST Model</div>
+                            <div class="desc">Digit recognition (26KB)</div>
+                        </button>
+                        <button class="scenario-btn" onclick="loadExampleModel('mobilenetv2', event)">
+                            <div class="title">📱 MobileNetV2</div>
+                            <div class="desc">Industry-standard (Google, 13.3MB)</div>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="text-align: center; color: #94a3b8; font-size: 13px; margin: 15px 0;">
+                    — OR —
+                </div>
+
+                <div class="form-group">
+                    <label for="modelFile">Upload Custom ONNX Model (max 50MB)</label>
+                    <input type="file" id="modelFile" accept=".onnx">
+                    <div class="file-info" id="modelFileInfo">No file selected</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="testInputs">Test Inputs (JSON array of arrays)</label>
+                    <textarea id="testInputs" placeholder='[[50.0, 0.2, 500.0, 3.0, 14.0], [450.0, 0.8, 5.0, 45.0, 3.0]]'></textarea>
+                </div>
+
+                <button class="btn-primary" id="verifyBtn" onclick="verifyModel()">
+                    Generate zkML Proof
+                </button>
+
+                <div id="errorMessage"></div>
+            </div>
+
+            <div class="card">
+                <h2>Pre-Built Scenarios</h2>
+                <div class="scenario-selector">
+                    <button class="scenario-btn" onclick="loadScenario('legit', event)">
+                        <div class="title">✅ Legitimate Transaction</div>
+                        <div class="desc">$50, trusted merchant, established account</div>
+                    </button>
+                    <button class="scenario-btn" onclick="loadScenario('fraud', event)">
+                        <div class="title">❌ Fraudulent Transaction</div>
+                        <div class="desc">$450, risky merchant, new account</div>
+                    </button>
+                    <button class="scenario-btn" onclick="loadScenario('mixed', event)">
+                        <div class="title">📊 Mixed Test Set</div>
+                        <div class="desc">5 test cases with varied risk profiles</div>
+                    </button>
+                    <button class="scenario-btn" onclick="loadScenario('edge', event)">
+                        <div class="title">⚠️ Edge Cases</div>
+                        <div class="desc">Boundary conditions and corner cases</div>
+                    </button>
+                </div>
+
+                <div style="margin-top: 20px; padding: 15px; background: rgba(255, 255, 255, 0.03); border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                    <div style="font-weight: 600; color: #e2e8f0; margin-bottom: 10px;">
+                        Expected Input Format:
+                    </div>
+                    <div style="font-size: 13px; color: #94a3b8;">
+                        For fraud detection models:<br>
+                        <code style="background: rgba(255, 255, 255, 0.05); padding: 2px 6px; border-radius: 3px; color: #cbd5e1;">
+                            [amount, merchant_risk, account_age, txn_per_day, hour]
+                        </code>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; padding: 15px; background: rgba(99, 102, 241, 0.1); border-radius: 4px; border: 1px solid rgba(99, 102, 241, 0.3); border-left: 4px solid rgba(99, 102, 241, 0.8);">
+                    <div style="font-weight: 600; color: #e2e8f0; margin-bottom: 10px;">
+                        What You Get:
+                    </div>
+                    <ul style="font-size: 13px; color: #cbd5e1; margin-left: 20px; line-height: 1.6;">
+                        <li>Cryptographic proof (JOLT-Atlas)</li>
+                        <li>Model hash for tamper detection</li>
+                        <li>Test case results with outputs</li>
+                        <li>Performance metrics</li>
+                        <li>Shareable verification ID</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="resultsContainer" style="display: none;">
+            <div class="results">
+                <h2>Verification Results</h2>
+                <div id="resultsContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentModelType = 'authorization'; // Track which model type is selected
+        let selectedExampleModel = null; // Store the example model blob
+
+        const scenarios = {
+            authorization: {
+                legit: {
+                    inputs: [[50.0, 0.2, 500.0, 3.0, 14.0]],
+                    description: 'Single legitimate transaction test'
+                },
+                fraud: {
+                    inputs: [[450.0, 0.8, 5.0, 45.0, 3.0]],
+                    description: 'Single fraudulent transaction test'
+                },
+                mixed: {
+                    inputs: [
+                        [25.0, 0.1, 800.0, 1.0, 10.0],   // Very legit
+                        [50.0, 0.2, 500.0, 3.0, 14.0],   // Legit
+                        [150.0, 0.5, 100.0, 10.0, 2.0],  // Suspicious
+                        [300.0, 0.7, 30.0, 25.0, 4.0],   // High risk
+                        [450.0, 0.8, 5.0, 45.0, 3.0]     // Fraud
+                    ],
+                    description: 'Mixed risk profile test set'
+                },
+                edge: {
+                    inputs: [
+                        [0.01, 0.0, 1.0, 0.0, 0.0],      // Minimum values
+                        [1000.0, 1.0, 10000.0, 100.0, 23.0],  // Maximum values
+                        [250.0, 0.5, 250.0, 12.0, 12.0]  // Mid-range
+                    ],
+                    description: 'Edge case and boundary condition tests'
+                }
+            },
+            mnist: {
+                legit: {
+                    inputs: Array(784).fill(0.0).map((_, i) => i % 28 < 14 ? 1.0 : 0.0), // Half-filled digit
+                    description: 'Sample MNIST input (784 pixels)'
+                },
+                fraud: {
+                    inputs: Array(784).fill(0.5), // All gray
+                    description: 'Gray digit input'
+                },
+                mixed: {
+                    inputs: [
+                        Array(784).fill(0.0).map((_, i) => Math.random() > 0.5 ? 1.0 : 0.0),
+                        Array(784).fill(0.0).map((_, i) => i % 28 < 14 ? 1.0 : 0.0),
+                        Array(784).fill(0.5)
+                    ],
+                    description: 'Multiple MNIST test inputs'
+                },
+                edge: {
+                    inputs: [
+                        Array(784).fill(0.0),  // All black
+                        Array(784).fill(1.0),  // All white
+                        Array(784).fill(0.5)   // All gray
+                    ],
+                    description: 'Edge case MNIST inputs'
+                }
+            },
+            mobilenetv2: {
+                legit: {
+                    inputs: Array(224*224*3).fill(0.5), // Gray 224x224x3 image
+                    description: 'Sample ImageNet input (224x224x3 RGB)'
+                },
+                fraud: {
+                    inputs: Array(224*224*3).fill(0.0).map((_, i) => Math.random()), // Random noise
+                    description: 'Random noise input'
+                },
+                mixed: {
+                    inputs: [
+                        Array(224*224*3).fill(0.5),
+                        Array(224*224*3).fill(0.0).map((_, i) => Math.random()),
+                        Array(224*224*3).fill(0.3)
+                    ],
+                    description: 'Multiple ImageNet test inputs'
+                },
+                edge: {
+                    inputs: [
+                        Array(224*224*3).fill(0.0),  // All black
+                        Array(224*224*3).fill(1.0),  // All white
+                        Array(224*224*3).fill(0.5)   // All gray
+                    ],
+                    description: 'Edge case ImageNet inputs'
+                }
+            }
+        };
+
+        async function loadExampleModel(modelType, event) {
+            currentModelType = modelType;
+
+            try {
+                // Map model types to actual filenames
+                const fileMap = {
+                    'authorization': 'authorization_model.onnx',
+                    'mnist': 'mnist-12.onnx',
+                    'mobilenetv2': 'mobilenetv2-12.onnx'
+                };
+
+                // Fetch the model from the server
+                const response = await fetch(`/models/${fileMap[modelType]}`);
+                if (!response.ok) {
+                    throw new Error('Failed to load example model');
+                }
+
+                const blob = await response.blob();
+                selectedExampleModel = new File([blob], fileMap[modelType], { type: 'application/octet-stream' });
+
+                // Update UI
+                document.getElementById('modelFileInfo').textContent =
+                    `Example: ${selectedExampleModel.name} (${(selectedExampleModel.size / 1024).toFixed(2)} KB)`;
+                document.getElementById('modelFileInfo').style.color = '#a5b4fc';
+
+                // Clear custom file input
+                document.getElementById('modelFile').value = '';
+
+                // Load first scenario for this model type
+                loadScenario('legit', null);
+
+                // Visual feedback for model selection
+                document.querySelectorAll('.card:first-child .scenario-btn').forEach(btn => btn.classList.remove('active'));
+                if (event && event.target) {
+                    event.target.closest('.scenario-btn').classList.add('active');
+                }
+
+            } catch (error) {
+                document.getElementById('modelFileInfo').textContent = 'Error loading example model: ' + error.message;
+                document.getElementById('modelFileInfo').style.color = '#fca5a5';
+            }
+        }
+
+        function loadScenario(type, event) {
+            const scenario = scenarios[currentModelType][type];
+            const inputs = Array.isArray(scenario.inputs[0]) ? scenario.inputs : [scenario.inputs];
+            document.getElementById('testInputs').value = JSON.stringify(inputs, null, 2);
+
+            // Visual feedback (only for scenario buttons on right side)
+            const scenarioButtons = document.querySelectorAll('.card:nth-child(2) .scenario-btn');
+            scenarioButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            if (event && event.target) {
+                event.target.closest('.scenario-btn').classList.add('active');
+            }
+        }
+
+        document.getElementById('modelFile').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                document.getElementById('modelFileInfo').textContent =
+                    `${file.name} (${sizeMB} MB)`;
+                document.getElementById('modelFileInfo').style.color = '#94a3b8';
+                selectedExampleModel = null; // Clear example model when custom file selected
+            } else {
+                document.getElementById('modelFileInfo').textContent = 'No file selected';
+            }
+        });
+
+        async function verifyModel() {
+            // Use example model if selected, otherwise use uploaded file
+            const modelFile = selectedExampleModel || document.getElementById('modelFile').files[0];
+            const testInputsText = document.getElementById('testInputs').value;
+            const errorDiv = document.getElementById('errorMessage');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const resultsContent = document.getElementById('resultsContent');
+            const verifyBtn = document.getElementById('verifyBtn');
+
+            // Clear previous results/errors
+            errorDiv.innerHTML = '';
+            resultsContainer.style.display = 'none';
+
+            // Validation
+            if (!modelFile) {
+                errorDiv.innerHTML = '<div class="error">Please select an example model or upload an ONNX model file</div>';
+                return;
+            }
+
+            let testInputs;
+            try {
+                testInputs = JSON.parse(testInputsText);
+                if (!Array.isArray(testInputs) || testInputs.length === 0) {
+                    throw new Error('Must be a non-empty array');
+                }
+            } catch (e) {
+                errorDiv.innerHTML = '<div class="error">Invalid test inputs JSON: ' + e.message + '</div>';
+                return;
+            }
+
+            // Show loading
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = 'Generating Proof...';
+            resultsContainer.style.display = 'block';
+            resultsContent.innerHTML = '<div class="loading"><div class="spinner"></div>Running ONNX inference and generating JOLT-Atlas proof...<br><small>This may take a few seconds</small></div>';
+
+            try {
+                // Prepare form data
+                const formData = new FormData();
+                formData.append('model', modelFile);
+                formData.append('testInputs', JSON.stringify(testInputs));
+
+                // Call API
+                const response = await fetch('http://localhost:9100/verify', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    displayResults(result);
+                    errorDiv.innerHTML = '<div class="success">✓ Verification successful! Cryptographic proof generated.</div>';
+                } else {
+                    errorDiv.innerHTML = '<div class="error">Verification failed: ' + result.error + '</div>';
+                    resultsContainer.style.display = 'none';
+                }
+            } catch (error) {
+                errorDiv.innerHTML = '<div class="error">Error: ' + error.message + '</div>';
+                resultsContainer.style.display = 'none';
+            } finally {
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = 'Generate zkML Proof';
+            }
+        }
+
+        function displayResults(result) {
+            const html = `
+                <div class="result-item">
+                    <div class="label">Verification ID</div>
+                    <div class="value">${result.verificationId}</div>
+                </div>
+
+                <div class="result-item">
+                    <div class="label">Model Hash (SHA-256)</div>
+                    <div class="value">${result.modelHash}</div>
+                </div>
+
+                <div class="result-item">
+                    <div class="label">Proof Hash</div>
+                    <div class="value">${result.proofHash}</div>
+                </div>
+
+                <div class="result-item">
+                    <div class="label">Proof System</div>
+                    <div class="value">${result.proofSystem}</div>
+                </div>
+
+                <div class="result-item">
+                    <div class="label">Test Cases Passed</div>
+                    <div class="value">${result.testCasesPassed}</div>
+                </div>
+
+                <div class="result-item">
+                    <div class="label">Model Size</div>
+                    <div class="value">${result.modelSizeMB} MB</div>
+                </div>
+
+                <div class="result-item">
+                    <div class="label">Performance</div>
+                    <div class="value">
+                        Avg Inference: ${result.performance.inferenceTimeMs}ms<br>
+                        Proof Generation: ${result.performance.proofGenerationMs}ms<br>
+                        Total: ${result.performance.totalTimeMs}ms
+                    </div>
+                </div>
+
+                <div class="result-item">
+                    <div class="label">Verified At</div>
+                    <div class="value">${new Date(result.verifiedAt).toLocaleString()}</div>
+                </div>
+
+                <div class="test-results">
+                    <h3 style="margin-bottom: 15px; color: #e2e8f0;">Test Case Results:</h3>
+                    ${result.testResults.map(test => `
+                        <div class="test-case">
+                            <div class="test-case-header">Test Case #${test.testCase} (${test.inferenceTimeMs}ms)</div>
+                            <div class="test-io">
+                                <div>
+                                    <div class="label">Input:</div>
+                                    <div class="data">[${test.input.join(', ')}]</div>
+                                </div>
+                                <div>
+                                    <div class="label">Output:</div>
+                                    <div class="data">[${test.output.map(v => v.toFixed(3)).join(', ')}]</div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            document.getElementById('resultsContent').innerHTML = html;
+        }
+
+        // Load default scenario on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadScenario('legit');
+        });
+    </script>
+</body>
+</html>

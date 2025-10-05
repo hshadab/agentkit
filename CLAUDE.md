@@ -3,7 +3,7 @@
 ## Project Overview
 AgentKit is a **100% REAL production framework** for building verifiable AI agents with cryptographic proofs across multiple blockchains. The v3.0 release features **OpenAI's Agentic Commerce Protocol (ACP)** deeply integrated with JOLT-Atlas zkML proofs, enabling the world's first trustless autonomous agent marketplace.
 
-**Latest Update**: 2025-10-03 - Circle OOAK integration complete with real on-chain storage. Verifiable AI payment agents with USDC transfers on Base Sepolia, cryptographic proofs stored permanently on-chain. Full workflow: ONNX → JOLT → Groth16 → Base Storage → USDC Transfer.
+**Latest Update**: 2025-10-04 - zkML ONNX Verifier launched! Standalone service for cryptographic verification of AI models. Supports fraud detection, image classification, and any ONNX model. Business-focused with AML/KYC compliance, model integrity verification, and regulatory audit trails. Three example models, smart tensor inference, JOLT proofs in ~600ms. Location: `zkml-verifier/` | UI: http://localhost:9101
 
 ## ⚠️ Implementation Policy: Show, Don't Tell
 **Verification Over Marketing**: Every claim is independently reproducible.
@@ -75,6 +75,93 @@ AgentKit is a **100% REAL production framework** for building verifiable AI agen
 - Automatic test card integration (4242...)
 
 **Status**: 100% production-ready, NO mocks or simulations
+
+### 0.5. zkML ONNX Verifier - Standalone Model Verification (NEW)
+- **Location**: `zkml-verifier/` directory
+- **Purpose**: Cryptographic proof that AI models work as documented
+- **Business Value**: Regulatory compliance, model integrity verification, audit trails
+- **UI**: http://localhost:9101 | **Backend**: http://localhost:9100
+
+**What It Does**:
+Provides cryptographic proof that ONNX machine learning models produce specific outputs for given inputs. No marketplace, no registry - just pure verification.
+
+**Core Components**:
+1. **Verification Service** (Port 9100)
+   - File: `zkml-verifier/server.js`
+   - Accepts ONNX models up to 50MB
+   - Runs inference with test inputs
+   - Generates JOLT-Atlas proofs (~600ms)
+   - Returns verification ID and proof hash
+
+2. **Web UI** (Port 9101)
+   - File: `zkml-verifier/ui/index.html`
+   - Three example models: Authorization (1.8KB), MNIST (26KB), MobileNetV2 (13.3MB)
+   - Pre-built test scenarios (legitimate, fraud, mixed, edge cases)
+   - Real-time inference results with proof generation
+   - Shareable verification records
+
+**Supported Model Types**:
+- **2D Tensors**: Fraud detection, credit scoring, tabular data (e.g., `[1, 5]`)
+- **4D Tensors**: Image classification, object detection (e.g., `[1, 3, 224, 224]`)
+- **Auto-detection**: Infers tensor shape from input array length
+  - 5 elements → `[1, 5]` (fraud detection)
+  - 784 elements → `[1, 1, 28, 28]` (MNIST)
+  - 150,528 elements → `[1, 3, 224, 224]` (MobileNetV2/ImageNet)
+
+**Business Benefits**:
+- ✅ **Regulatory Compliance**: AML/KYC proof with cryptographic audit trails
+- ✅ **Model Integrity**: SHA-256 hashing detects model tampering
+- ✅ **Third-Party Verification**: Independent validation via verification ID
+- ✅ **Performance Guarantees**: Prove accuracy claims with test results
+- ✅ **Risk Management**: Cryptographic proof of due diligence
+- ✅ **Trust & Transparency**: Demonstrate model correctness to auditors
+
+**Example Workflow**:
+```bash
+# Start services
+cd zkml-verifier
+node server.js          # Backend on port 9100
+cd ui && node server.js # UI on port 9101
+
+# Visit http://localhost:9101
+# 1. Select "Authorization Model" (fraud detection)
+# 2. Choose "Legitimate Transaction" scenario
+# 3. Click "Generate zkML Proof"
+# 4. Get verification ID: 0x7a3f... + proof hash: 0x8b2e...
+# 5. Share verification ID for independent validation
+```
+
+**API Endpoints**:
+- `POST /verify` - Upload ONNX model + test inputs → verification record
+- `GET /verification/:id` - Retrieve verification details by ID
+- `GET /health` - Service health check
+
+**Output Format**:
+```json
+{
+  "success": true,
+  "verificationId": "0x7a3f...",
+  "modelHash": "0x8b2e...",
+  "proofHash": "0x1c4d...",
+  "proofSystem": "JOLT-Atlas",
+  "testCasesPassed": 5,
+  "testResults": [...],
+  "performance": {
+    "inferenceTimeMs": 2,
+    "proofGenerationMs": 600,
+    "totalTimeMs": 602
+  }
+}
+```
+
+**Use Cases**:
+- **Banks**: Prove fraud detection models meet regulatory standards
+- **Fintechs**: Demonstrate credit scoring fairness to regulators
+- **Healthcare**: Verify diagnostic AI models operate correctly
+- **Insurance**: Validate risk assessment models for auditors
+- **Trading**: Prove ML trading strategies execute as documented
+
+**Status**: 100% production-ready, REAL ONNX inference + JOLT proofs
 
 ### 1. zkEngine - Universal Proof Generation
 - **Language**: Rust compiled to WASM
@@ -389,6 +476,19 @@ node tests/integration/test-iotex-proximity.js
 - Keep SES-safe (no dynamic code generation)
 
 ## 📝 Recent Updates
+
+### 2025-10-04 - zkML ONNX Verifier: Standalone Model Verification Service
+- ✅ **Standalone verification service** - No marketplace, no registry, just pure model verification
+- ✅ **Smart tensor shape inference** - Auto-detects 2D (tabular) vs 4D (image) models from input length
+- ✅ **Three example models** - Authorization (1.8KB), MNIST (26KB), MobileNetV2 (13.3MB)
+- ✅ **Pre-built test scenarios** - Legitimate, fraud, mixed, edge case test sets
+- ✅ **ONNX inference + JOLT proofs** - Real onnxruntime-node execution + cryptographic proofs
+- ✅ **Verification records** - Shareable verification IDs with model hash, proof hash, test results
+- ✅ **Business-focused documentation** - Clear regulatory compliance and audit trail benefits
+- 📁 **Location**: `zkml-verifier/` directory
+- 🔗 **UI**: http://localhost:9101 | **Backend**: http://localhost:9100
+- 📊 **Performance**: ~600ms proof generation, supports models up to 50MB
+- 💼 **Use Cases**: AML/KYC compliance, model integrity verification, regulatory audits
 
 ### 2025-10-03 - Circle OOAK: Real On-Chain Storage + USDC Payments
 - ✅ **Deployed ProofStorage contract** - `0x5572b2762ca2e975A6A96b416cc0D9f3bCe1d507` on Base Sepolia
