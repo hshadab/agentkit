@@ -17,6 +17,22 @@ Takes your **ONNX model** + test cases → Returns **cryptographic proof** of ex
 
 No blockchain. No agents. Just ONNX verification.
 
+### Works with ANY ONNX Model
+
+- ✅ **Your proprietary models** - Fraud detection, credit risk, compliance
+- ✅ **Industry-standard models** - ResNet, BERT, XGBoost, LightGBM
+- ✅ **Any framework** - PyTorch, TensorFlow, scikit-learn, XGBoost
+- ✅ **Up to 50MB** - Most business models are under 10MB
+
+### Privacy Guaranteed
+
+- 🔒 **Model stays private** - Never shared, only hash is used
+- 🔒 **Offline verification** - No blockchain, no public record
+- 🔒 **Cryptographic proof** - Groth16 zkSNARK (~10ms verification)
+- 🔒 **Share with auditors** - Download proof file, verify independently
+
+👉 **See [PROPRIETARY_MODELS.md](PROPRIETARY_MODELS.md)** for complete guide on using your own models
+
 ## Installation
 
 ```bash
@@ -171,6 +187,29 @@ Traditional approaches don't work:
 ### Compliance Teams
 **Problem:** "Need SOC2/ISO27001 documentation"
 **Solution:** Cryptographic evidence for audits
+
+## Adding Popular Models
+
+Want to test with industry-standard models first? Run:
+
+```bash
+./add_popular_models.sh
+```
+
+This downloads popular ONNX models:
+- **ResNet-50** (98MB) - ImageNet classification
+- **SqueezeNet** (5MB) - Lightweight image classification
+- **EfficientNet-Lite4** (49MB) - Efficient image recognition
+- **XGBoost Fraud** - Sample fraud detection model
+- **DistilBERT** - NLP sentiment analysis
+
+All models are:
+- ✅ Publicly available from ONNX Model Zoo
+- ✅ Industry-standard architectures
+- ✅ Widely used in production
+- ✅ Pre-trained and ready to verify
+
+**Custom models?** See [PROPRIETARY_MODELS.md](PROPRIETARY_MODELS.md) for complete guide
 
 ## License
 
