@@ -21,9 +21,9 @@ No blockchain. No agents. No simulations. Just ONNX verification with real zero-
 ### Works with ANY ONNX Model
 
 - ✅ **Your proprietary models** - Fraud detection, credit risk, compliance
-- ✅ **Industry-standard models** - ResNet, BERT, XGBoost, LightGBM
+- ✅ **Industry-standard models** - ResNet, BERT, XGBoost, LightGBM, VGG
 - ✅ **Any framework** - PyTorch, TensorFlow, scikit-learn, XGBoost
-- ✅ **Up to 50MB** - Most business models are under 10MB
+- ✅ **Up to 500MB** - Supports even the largest vision models (VGG-16, ResNet-50)
 
 ### Privacy Guaranteed
 
@@ -39,11 +39,12 @@ No blockchain. No agents. No simulations. Just ONNX verification with real zero-
 
 **Client-side cryptographic verification** runs automatically after proof generation:
 
-- 🌐 **Browser-based** - 108KB WASM module (built with wasm-pack)
+- 🌐 **Browser-based** - 108KB WASM module (built with wasm-pack, patched for compatibility)
 - 🔐 **Cryptographic checks** - Model binding, I/O integrity, proof validity, timestamp
 - ⚡ **Sub-millisecond** - Instant verification without backend (<1ms)
 - 🎯 **Automatic** - Runs immediately after proof generation
 - 📦 **Claims Manifest** - JOLT-compatible `{ model_hash, input_hash, output_hash, panic }`
+- ✅ **Firefox compatible** - Patched externref table initialization for broad browser support
 
 **What it verifies:**
 1. **Model Binding** - Proof matches specific ONNX model hash (SHA3-256)
@@ -69,8 +70,14 @@ See [LIMITATIONS.md](LIMITATIONS.md) for details on WASM vs full JOLT verificati
 ## Installation
 
 ```bash
+# 1. Install dependencies
 npm install
+
+# 2. Generate example ONNX models (takes ~10 seconds)
+python3 create_vision_models.py
 ```
+
+**Note**: The example vision models are generated locally (not included in git) to keep the repo lightweight. The script creates SimpleCNN, TinyMobileNet, and TinyResNet models in ~10 seconds.
 
 ## Usage
 
@@ -79,6 +86,8 @@ npm start
 ```
 
 Service runs on port **9100**
+
+**UI**: http://localhost:9101/
 
 ## API
 
@@ -89,7 +98,7 @@ POST http://localhost:9100/verify
 ```
 
 **Request** (multipart/form-data):
-- `model`: ONNX file (max 50MB)
+- `model`: ONNX file (max 500MB)
 - `testInputs`: JSON array of test input arrays
 
 **Example**:
@@ -171,9 +180,9 @@ GET http://localhost:9100/health
 - ONNX models only (export from PyTorch, scikit-learn, TensorFlow, XGBoost)
 
 **Size limits:**
-- Max 50MB ONNX file
-- Max 10M parameters
-- Inference < 100ms
+- Max 500MB ONNX file
+- Supports models with 100M+ parameters (VGG-16, ResNet-50)
+- Inference time varies by model size
 
 **Typical fraud models:**
 - ✅ Random Forest (scikit-learn) - Most common
@@ -254,28 +263,37 @@ Traditional approaches don't work:
 
 **Note**: For production use cases requiring third-party verification (regulatory compliance, external audits, etc.), consider production zkML systems like EZKL, Modulus Labs, or Giza that support proof portability.
 
-## Adding Popular Models
+## Built-in Example Models
 
-Want to test with industry-standard models first? Run:
+The demo includes 6 pre-built ONNX models for testing:
 
-```bash
-./add_popular_models.sh
-```
+**Fraud Detection:**
+- **Authorization Model** (1.8KB) - Neural network for payment fraud detection
 
-This downloads popular ONNX models:
-- **ResNet-50** (98MB) - ImageNet classification
-- **SqueezeNet** (5MB) - Lightweight image classification
-- **EfficientNet-Lite4** (49MB) - Efficient image recognition
-- **XGBoost Fraud** - Sample fraud detection model
-- **DistilBERT** - NLP sentiment analysis
+**Vision Models (PyTorch-generated, opset 12):**
+- **MNIST** (26KB) - Handwritten digit recognition
+- **TinyMobileNet** (555KB) - Efficient mobile vision architecture
+- **SimpleCNN** (811KB) - Lightweight grayscale image classifier
+- **TinyResNet** (5.6MB) - ResNet-style deep residual network
+- **MobileNetV2** (14MB) - Production mobile-optimized vision model
 
 All models are:
-- ✅ Publicly available from ONNX Model Zoo
-- ✅ Industry-standard architectures
-- ✅ Widely used in production
-- ✅ Pre-trained and ready to verify
+- ✅ Compatible with ONNX Runtime (no parsing issues)
+- ✅ Based on industry-standard architectures
+- ✅ Guaranteed to work (locally generated, not downloaded)
+- ✅ Ready to verify with zkML proofs
 
-**Custom models?** See [PROPRIETARY_MODELS.md](PROPRIETARY_MODELS.md) for complete guide
+### Creating Custom Vision Models
+
+Want to generate your own compatible models? Use the included script:
+
+```bash
+python3 create_vision_models.py
+```
+
+This creates SimpleCNN, TinyResNet, and TinyMobileNet from scratch using PyTorch.
+
+**Custom proprietary models?** See [PROPRIETARY_MODELS.md](PROPRIETARY_MODELS.md) for complete guide
 
 ## License
 

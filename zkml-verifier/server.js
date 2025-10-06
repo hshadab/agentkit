@@ -17,14 +17,31 @@ const snarkjs = require('snarkjs');
 const app = express();
 const PORT = 9100;
 
-// Configure file upload
+// Configure file upload (increased for large models like VGG-16, ResNet-50)
 const upload = multer({
     dest: 'uploads/',
-    limits: { fileSize: 50 * 1024 * 1024 } // 50MB max
+    limits: { fileSize: 500 * 1024 * 1024 } // 500MB max
 });
 
 app.use(cors());
 app.use(express.json());
+
+// Error handler for multer file size errors
+app.use((err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(413).json({
+                success: false,
+                error: `File too large. Maximum size is 500MB.`
+            });
+        }
+        return res.status(400).json({
+            success: false,
+            error: `Upload error: ${err.message}`
+        });
+    }
+    next(err);
+});
 
 // In-memory verification cache
 const verifications = new Map();
@@ -524,7 +541,7 @@ app.listen(PORT, () => {
 ├─────────────────────────────────────────────────────────┤
 │  Port:         ${PORT}                                        │
 │  Proof System: JOLT-Atlas                               │
-│  Max Size:     50MB                                     │
+│  Max Size:     500MB                                    │
 ├─────────────────────────────────────────────────────────┤
 │  Endpoints:                                             │
 │    POST   http://localhost:${PORT}/verify                    │

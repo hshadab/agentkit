@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>zkML ONNX Verifier | Fraud Detection & Compliance</title>
+    <title>ONNX Verifier | Cryptographic Client-Side Verification</title>
     <style>
         * {
             margin: 0;
@@ -42,7 +42,14 @@
         .header .tagline {
             font-size: 18px;
             color: #cbd5e1;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            color: #94a3b8;
             margin-bottom: 20px;
+            line-height: 1.6;
         }
 
         .badges {
@@ -332,14 +339,19 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>zkML ONNX Verifier</h1>
-            <div class="tagline">Cryptographic proof that your fraud detection models work as documented</div>
+            <h1>🔒 ONNX Verifier</h1>
+            <div class="tagline">Cryptographic, client-side verification for ONNX models</div>
+            <div class="subtitle">
+                Upload an ONNX model, generate a cryptographic proof, and let anyone verify your model's predictions in the browser—no re-execution, no TEE, no trusted setup.
+                <br><br>
+                <strong>Why ONNX?</strong> Industry-standard format • Cross-platform • One-command export with <a href="https://huggingface.co/docs/optimum/exporters/onnx/usage_guides/export_a_model" style="color: #a5b4fc;" target="_blank">Hugging Face Optimum</a> • Active ecosystem on <a href="https://huggingface.co/onnx-community" style="color: #a5b4fc;" target="_blank">HF ONNX Community</a>
+            </div>
             <div class="badges">
-                <span class="badge highlight">JOLT-Atlas</span>
-                <span class="badge">Fraud Detection</span>
-                <span class="badge">Risk Scoring</span>
-                <span class="badge">AML/KYC</span>
-                <span class="badge">Compliance</span>
+                <span class="badge highlight">JOLT-Atlas zkML</span>
+                <span class="badge">No Trusted Setup</span>
+                <span class="badge">Browser Verification</span>
+                <span class="badge">108KB WASM</span>
+                <span class="badge">HuggingFace Ready</span>
             </div>
         </div>
 
@@ -349,18 +361,30 @@
 
                 <div class="form-group">
                     <label>Example Models</label>
-                    <div style="display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
                         <button class="scenario-btn" onclick="loadExampleModel('authorization', event)">
-                            <div class="title">🔒 Authorization Model</div>
-                            <div class="desc">Payment fraud detection (1.8KB)</div>
+                            <div class="title">🔒 Authorization</div>
+                            <div class="desc">Fraud detection (1.8KB)</div>
                         </button>
                         <button class="scenario-btn" onclick="loadExampleModel('mnist', event)">
-                            <div class="title">🔢 MNIST Model</div>
+                            <div class="title">🔢 MNIST</div>
                             <div class="desc">Digit recognition (26KB)</div>
                         </button>
+                        <button class="scenario-btn" onclick="loadExampleModel('tinymobilenet', event)">
+                            <div class="title">📱 TinyMobileNet</div>
+                            <div class="desc">Efficient vision (555KB)</div>
+                        </button>
+                        <button class="scenario-btn" onclick="loadExampleModel('simplecnn', event)">
+                            <div class="title">🔬 SimpleCNN</div>
+                            <div class="desc">Lightweight grayscale (811KB)</div>
+                        </button>
+                        <button class="scenario-btn" onclick="loadExampleModel('tinyresnet', event)">
+                            <div class="title">🏆 TinyResNet</div>
+                            <div class="desc">ResNet-style (5.6MB)</div>
+                        </button>
                         <button class="scenario-btn" onclick="loadExampleModel('mobilenetv2', event)">
-                            <div class="title">📱 MobileNetV2</div>
-                            <div class="desc">Industry-standard (Google, 13.3MB)</div>
+                            <div class="title">🚀 MobileNetV2</div>
+                            <div class="desc">Mobile-optimized (14MB)</div>
                         </button>
                     </div>
                 </div>
@@ -417,6 +441,25 @@
                         <code style="background: rgba(255, 255, 255, 0.05); padding: 2px 6px; border-radius: 3px; color: #cbd5e1;">
                             [amount, merchant_risk, account_age, txn_per_day, hour]
                         </code>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; padding: 15px; background: rgba(99, 102, 241, 0.1); border-radius: 4px; border: 1px solid rgba(99, 102, 241, 0.3);">
+                    <div style="font-weight: 600; color: #e2e8f0; margin-bottom: 10px;">
+                        📤 Export to ONNX (One Command)
+                    </div>
+                    <div style="font-size: 13px; color: #cbd5e1; line-height: 1.6;">
+                        <strong>Hugging Face Optimum:</strong><br>
+                        <code style="background: rgba(0, 0, 0, 0.3); padding: 4px 8px; border-radius: 3px; color: #a5b4fc; display: inline-block; margin-top: 5px;">
+                            optimum-cli export onnx --model bert-base-uncased onnx/
+                        </code>
+                        <br><br>
+                        <strong>PyTorch:</strong><br>
+                        <code style="background: rgba(0, 0, 0, 0.3); padding: 4px 8px; border-radius: 3px; color: #a5b4fc; display: inline-block; margin-top: 5px;">
+                            torch.onnx.export(model, dummy_input, "model.onnx")
+                        </code>
+                        <br><br>
+                        <a href="https://huggingface.co/docs/optimum/exporters/onnx/usage_guides/export_a_model" target="_blank" style="color: #a5b4fc; text-decoration: underline;">→ Full export guide</a>
                     </div>
                 </div>
 
@@ -564,12 +607,12 @@
             },
             mobilenetv2: {
                 legit: {
-                    inputs: Array(224*224*3).fill(0.5), // Gray 224x224x3 image
-                    description: 'Sample ImageNet input (224x224x3 RGB)'
+                    inputs: Array(224*224*3).fill(0.5),
+                    description: 'Prove: Mobile vision inference (edge deployment use case)'
                 },
                 fraud: {
-                    inputs: Array(224*224*3).fill(0.0).map((_, i) => Math.random()), // Random noise
-                    description: 'Random noise input'
+                    inputs: Array(224*224*3).fill(0.0).map((_, i) => Math.random()),
+                    description: 'Prove: Adversarial input detected (security use case)'
                 },
                 mixed: {
                     inputs: [
@@ -577,15 +620,145 @@
                         Array(224*224*3).fill(0.0).map((_, i) => Math.random()),
                         Array(224*224*3).fill(0.3)
                     ],
-                    description: 'Multiple ImageNet test inputs'
+                    description: 'Prove: Batch processing results (audit trail use case)'
                 },
                 edge: {
                     inputs: [
-                        Array(224*224*3).fill(0.0),  // All black
-                        Array(224*224*3).fill(1.0),  // All white
-                        Array(224*224*3).fill(0.5)   // All gray
+                        Array(224*224*3).fill(0.0),
+                        Array(224*224*3).fill(1.0),
+                        Array(224*224*3).fill(0.5)
                     ],
-                    description: 'Edge case ImageNet inputs'
+                    description: 'Prove: Boundary condition handling (robustness use case)'
+                }
+            },
+            squeezenet: {
+                legit: {
+                    inputs: Array(224*224*3).fill(0.5),
+                    description: 'Prove: Image classification on normalized input (content moderation use case)'
+                },
+                fraud: {
+                    inputs: Array(224*224*3).fill(0.0).map((_, i) => Math.random()),
+                    description: 'Prove: Random noise classified (adversarial detection use case)'
+                },
+                mixed: {
+                    inputs: [
+                        Array(224*224*3).fill(0.5),
+                        Array(224*224*3).fill(0.0).map((_, i) => Math.random()),
+                        Array(224*224*3).fill(0.3)
+                    ],
+                    description: 'Prove: Batch classification (audit trail use case)'
+                },
+                edge: {
+                    inputs: [
+                        Array(224*224*3).fill(0.0),
+                        Array(224*224*3).fill(1.0),
+                        Array(224*224*3).fill(0.5)
+                    ],
+                    description: 'Prove: Edge cases handled (robustness testing use case)'
+                }
+            },
+            googlenet: {
+                legit: {
+                    inputs: Array(224*224*3).fill(0.5),
+                    description: 'Prove: Deep neural network inference (production deployment use case)'
+                },
+                fraud: {
+                    inputs: Array(224*224*3).fill(0.0).map((_, i) => Math.random()),
+                    description: 'Prove: Noise resilience tested (robustness use case)'
+                },
+                mixed: {
+                    inputs: [
+                        Array(224*224*3).fill(0.5),
+                        Array(224*224*3).fill(0.0).map((_, i) => Math.random()),
+                        Array(224*224*3).fill(0.3)
+                    ],
+                    description: 'Prove: Multi-image batch verified (audit compliance use case)'
+                },
+                edge: {
+                    inputs: [
+                        Array(224*224*3).fill(0.0),
+                        Array(224*224*3).fill(1.0),
+                        Array(224*224*3).fill(0.5)
+                    ],
+                    description: 'Prove: Extreme inputs handled (safety certification use case)'
+                }
+            },
+            efficientnet: {
+                legit: {
+                    inputs: Array(224*224*3).fill(0.5),
+                    description: 'Prove: Deep neural network inference (production deployment use case)'
+                },
+                fraud: {
+                    inputs: Array(224*224*3).fill(0.0).map((_, i) => Math.random()),
+                    description: 'Prove: Noise resilience tested (robustness use case)'
+                },
+                mixed: {
+                    inputs: [
+                        Array(224*224*3).fill(0.5),
+                        Array(224*224*3).fill(0.0).map((_, i) => Math.random()),
+                        Array(224*224*3).fill(0.3)
+                    ],
+                    description: 'Prove: Multi-image batch verified (audit compliance use case)'
+                },
+                edge: {
+                    inputs: [
+                        Array(224*224*3).fill(0.0),
+                        Array(224*224*3).fill(1.0),
+                        Array(224*224*3).fill(0.5)
+                    ],
+                    description: 'Prove: Extreme inputs handled (safety certification use case)'
+                }
+            },
+            resnet50: {
+                legit: {
+                    inputs: Array(224*224*3).fill(0.5),
+                    description: 'Prove: Deep neural network inference (production deployment use case)'
+                },
+                fraud: {
+                    inputs: Array(224*224*3).fill(0.0).map((_, i) => Math.random()),
+                    description: 'Prove: Noise resilience tested (robustness use case)'
+                },
+                mixed: {
+                    inputs: [
+                        Array(224*224*3).fill(0.5),
+                        Array(224*224*3).fill(0.0).map((_, i) => Math.random()),
+                        Array(224*224*3).fill(0.3)
+                    ],
+                    description: 'Prove: Multi-image batch verified (audit compliance use case)'
+                },
+                edge: {
+                    inputs: [
+                        Array(224*224*3).fill(0.0),
+                        Array(224*224*3).fill(1.0),
+                        Array(224*224*3).fill(0.5)
+                    ],
+                    description: 'Prove: Extreme inputs handled (safety certification use case)'
+                }
+            },
+            vgg16: {
+                legit: {
+                    inputs: Array(224*224*3).fill(0.5),
+                    description: 'Prove: Deep neural network inference (production deployment use case)'
+                },
+                fraud: {
+                    inputs: Array(224*224*3).fill(0.0).map((_, i) => Math.random()),
+                    description: 'Prove: Noise resilience tested (robustness use case)'
+                },
+                mixed: {
+                    inputs: [
+                        Array(224*224*3).fill(0.5),
+                        Array(224*224*3).fill(0.0).map((_, i) => Math.random()),
+                        Array(224*224*3).fill(0.3)
+                    ],
+                    description: 'Prove: Multi-image batch verified (audit compliance use case)'
+                },
+                edge: {
+                    inputs: [
+                        Array(224*224*3).fill(0.0),
+                        Array(224*224*3).fill(1.0),
+                        Array(224*224*3).fill(0.5)
+                    ],
+                    description: 'Prove: Extreme inputs handled (safety certification use case)'
                 }
             }
         };
@@ -598,6 +771,9 @@
                 const fileMap = {
                     'authorization': 'authorization_model.onnx',
                     'mnist': 'mnist-12.onnx',
+                    'simplecnn': 'simple_cnn.onnx',
+                    'tinymobilenet': 'tiny_mobilenet.onnx',
+                    'tinyresnet': 'tiny_resnet.onnx',
                     'mobilenetv2': 'mobilenetv2-12.onnx'
                 };
 
