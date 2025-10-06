@@ -35,20 +35,25 @@ No blockchain. No agents. No simulations. Just ONNX verification with real zero-
 
 **Current Limitation**: Proofs are verified during generation but cannot be independently re-verified later due to JOLT-Atlas not supporting proof serialization. See [LIMITATIONS.md](LIMITATIONS.md) for details.
 
-### ✨ NEW: WASM Verifier (Browser Verification)
+### ✨ WASM Verifier (Automatic Browser Verification)
 
-**Client-side cryptographic verification** without re-running the model:
+**Client-side cryptographic verification** runs automatically after proof generation:
 
-- 🌐 **Browser-based** - 108KB WASM module, runs entirely in browser
-- 🔐 **Cryptographic checks** - Model binding, I/O integrity, proof validity
-- ⚡ **Sub-millisecond** - Fast verification without backend
-- 🎯 **Demo**: [http://localhost:9101/wasm-demo.html](http://localhost:9101/wasm-demo.html)
+- 🌐 **Browser-based** - 108KB WASM module (built with wasm-pack)
+- 🔐 **Cryptographic checks** - Model binding, I/O integrity, proof validity, timestamp
+- ⚡ **Sub-millisecond** - Instant verification without backend (<1ms)
+- 🎯 **Automatic** - Runs immediately after proof generation
+- 📦 **Claims Manifest** - JOLT-compatible `{ model_hash, input_hash, output_hash, panic }`
 
 **What it verifies:**
-1. Model Binding - Proof matches specific ONNX model hash
-2. I/O Integrity - Input/output cryptographically bound via SHA3-256
-3. Proof Validity - Verified flag from JOLT generation
-4. Timestamp Freshness - Proof is recent (< 1 hour)
+1. **Model Binding** - Proof matches specific ONNX model hash (SHA3-256)
+2. **I/O Integrity** - Input/output cryptographically bound (SHA3-256)
+3. **Proof Validity** - Verified flag from JOLT generation
+4. **Timestamp Freshness** - Proof is recent (< 1 hour)
+5. **Claims Manifest** - Matches JOLT verifier closure parameters
+
+**Main UI**: [http://localhost:9101/](http://localhost:9101/) (automatic WASM verification)
+**Standalone Demo**: [http://localhost:9101/wasm-demo.html](http://localhost:9101/wasm-demo.html) (manual testing)
 
 See [LIMITATIONS.md](LIMITATIONS.md) for details on WASM vs full JOLT verification.
 
@@ -58,7 +63,8 @@ See [LIMITATIONS.md](LIMITATIONS.md) for details on WASM vs full JOLT verificati
 👉 **[PROPRIETARY_MODELS.md](PROPRIETARY_MODELS.md)** - Complete guide on using your own models
 👉 **[VERIFICATION.md](VERIFICATION.md)** - Verify this uses REAL zkML (not simulated)
 ⚠️ **[LIMITATIONS.md](LIMITATIONS.md)** - Current limitations and what's being worked on
-🌐 **[WASM Demo](http://localhost:9101/wasm-demo.html)** - Try browser verification
+🌐 **[Main UI](http://localhost:9101/)** - Generate proofs with automatic WASM verification
+🔬 **[WASM Demo](http://localhost:9101/wasm-demo.html)** - Standalone WASM verifier testing
 
 ## Installation
 
