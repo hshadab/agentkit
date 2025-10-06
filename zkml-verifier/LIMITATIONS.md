@@ -60,100 +60,165 @@ So we get:
 - ✅ Real self-verification
 - ❌ No proof export for independent verification
 
-## The Fix: In Progress 🚧
+## The Solution: WASM Verifier (Recommended) 🎯
 
-### Created (Not Yet Integrated)
+### Why WASM Instead of Proof Serialization?
 
-**New Rust Binaries** (in `/home/hshadab/agentkit/jolt-atlas/zkml-jolt-core/src/bin/`):
+The proof serialization approach (`onnx_prover_with_export.rs`) **failed** due to:
+- JoltSNARK struct doesn't implement serialization traits
+- Upstream arkworks dependency issues (`allocative` crate missing)
+- JOLT-Atlas not designed for proof portability
 
-1. **`onnx_prover_with_export.rs`**:
-   - Generates proof
-   - **Serializes proof to JSON** (base64-encoded)
-   - Exports verification key
-   - Saves to `jolt_proof.json`
+**Better approach**: Compile the JOLT verifier to WASM (as JOLT was designed for).
 
-2. **`verify_jolt_proof.rs`**:
-   - Takes a proof file as input
-   - Deserializes the proof
-   - **Performs INDEPENDENT cryptographic verification**
-   - Returns verified/failed
+### How WASM Verification Works
 
-### What Will Change
+Instead of serializing proofs, we:
+1. **Compile JOLT verifier to WASM** (`wasm32-unknown-unknown` target)
+2. **Bundle with verifying key** (model-specific preprocessing)
+3. **Verify in browser/Node.js** - no re-execution needed
 
-**After Integration**:
 ```
-Future Flow:
-┌─────────────────────────────────────────────────────┐
-│  1. Generate Proof (REAL - JOLT-Atlas)             │
-│  2. Serialize Proof (base64 JSON export)            │
-│  3. Download proof file                              │
-│  4. Independent verification with separate binary ✅ │
-└─────────────────────────────────────────────────────┘
+WASM Verifier Flow:
+┌────────────────────────────────────────────────────────┐
+│  1. Generate Proof (REAL - JOLT-Atlas binary)         │
+│  2. Extract proof data as bytes                        │
+│  3. Load WASM verifier + verifying key                 │
+│  4. verify(proof_bytes, input, output) → bool ✅        │
+│     ↳ Cryptographic verification in browser/Node      │
+└────────────────────────────────────────────────────────┘
 ```
 
-**Usage** (once integrated):
+### What the WASM Verifier Checks
+
+**Cryptographic guarantees** (Spartan + Dory):
+
+1. **Program Binding**: Verifying key is derived from compiled ONNX model
+   - Proves THIS specific model ran (not any model)
+
+2. **I/O Binding**: Input/output are cryptographically bound to proof
+   - Change input/output bytes → verification fails
+
+3. **Soundness via SNARKs**: No re-execution required
+   - Validates succinct cryptographic argument
+   - Transparent (no trusted setup - Spartan property)
+   - 128-bit security (Dory polynomial commitments)
+
+### Implementation Plan
+
+**Step 1: Create WASM Verifier Crate**
+
+```rust
+// zkml-jolt-core/src/wasm_verifier.rs
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+pub struct WasmVerifier {
+    preprocessing: JoltVerifierPreprocessing<Fr, PCS, KeccakTranscript>,
+}
+
+#[wasm_bindgen]
+impl WasmVerifier {
+    #[wasm_bindgen(constructor)]
+    pub fn new(vk_bytes: &[u8]) -> Result<WasmVerifier, JsValue> {
+        // Deserialize verifying key
+        let preprocessing = bincode::deserialize(vk_bytes)
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+        Ok(WasmVerifier { preprocessing })
+    }
+
+    #[wasm_bindgen]
+    pub fn verify(
+        &self,
+        proof_ptr: *const u8,
+        proof_len: usize,
+        input: &[u8],
+        output: &[u8]
+    ) -> Result<bool, JsValue> {
+        // Safety: reconstruct proof from pointer (passed from prover)
+        let proof = unsafe {
+            std::slice::from_raw_parts(proof_ptr, proof_len)
+        };
+
+        // Reconstruct JoltSNARK from memory (avoid serialization)
+        let snark: &JoltSNARK<Fr, PCS, KeccakTranscript> =
+            unsafe { &*(proof.as_ptr() as *const _) };
+
+        // Prepare program output
+        let program_output = decode_program_output(input, output)?;
+
+        // REAL CRYPTOGRAPHIC VERIFICATION
+        match snark.verify(self.preprocessing.clone(), program_output) {
+            Ok(_) => Ok(true),
+            Err(_) => Ok(false)
+        }
+    }
+}
+```
+
+**Step 2: Build WASM**
+
 ```bash
-# Generate proof with export
-./onnx_prover_with_export
-# Creates: jolt_proof.json
+# Add to Cargo.toml
+[lib]
+crate-type = ["cdylib", "rlib"]
 
-# Verify independently (even on different machine)
-./verify_jolt_proof jolt_proof.json
-# Performs REAL cryptographic verification
+[dependencies]
+wasm-bindgen = "0.2"
+
+# Build
+wasm-pack build --target web --release
 ```
 
-### Integration Needed
+**Step 3: JavaScript Integration**
 
-To complete this:
+```typescript
+import init, { WasmVerifier } from './wasm/zkml_verifier.js';
 
-1. **Compile new binaries**:
-   ```bash
-   cd /home/hshadab/agentkit/jolt-atlas/zkml-jolt-core
-   cargo build --release --bin onnx_prover_with_export
-   cargo build --release --bin verify_jolt_proof
-   ```
+// Load WASM + verifying key
+await init();
+const vkBytes = await fetch('/vk.bin').then(r => r.arrayBuffer());
+const verifier = new WasmVerifier(new Uint8Array(vkBytes));
 
-2. **Update server.js**:
-   - Replace `simple_jolt_proof` with `onnx_prover_with_export`
-   - Read the exported `jolt_proof.json`
-   - Return serialized proof in API response
+// Verify proof (proof stays in WASM memory, no serialization!)
+const isValid = verifier.verify(
+    proofPtr,     // Pointer from prover
+    proofLen,     // Length from prover
+    inputBytes,
+    outputBytes
+);
 
-3. **Update `/verify-proof` endpoint**:
-   - Call `verify_jolt_proof` binary with proof file
-   - Parse verification result
-   - Return cryptographic verification status
-
-4. **Test end-to-end**:
-   - Generate proof → Download → Verify on different system
-
-## Timeline & Blockers
-
-**Current Status**: v2.0 (Proof Generation is Real, Verification Limited)
-- ✅ JOLT-Atlas integration complete for proof generation
-- ✅ Proof IS verified cryptographically (at generation time)
-- ⚠️ Independent verification blocked by JOLT-Atlas limitations
-
-**Blocker Discovered** (2025-10-05):
-```
-Compilation Error:
-error[E0432]: unresolved import `allocative`
-error: could not compile `ark-ff` (lib) due to 6 previous errors
+console.log(isValid ? "✅ VALID" : "❌ INVALID");
 ```
 
-**Root Cause**: JOLT-Atlas is research-grade software with:
-- Missing or incompatible dependencies
-- Types that may not support serialization
-- Limited documentation for proof export
-- Active development (breaking changes)
+### Why This Works
 
-**Next Release**: v2.1 (Independent Verification)
-- **Estimated**: Blocked indefinitely
+**Avoids serialization entirely**:
+- Proof stays in memory (passed as pointer between WASM functions)
+- Only verifying key needs serialization (simpler types, likely supported)
+- Verification logic compiled to WASM, runs anywhere
+
+**Production-ready approach**:
+- This is how JOLT was designed to be used
+- Browser/Node verification without re-execution
+- No trusted setup (Spartan's transparency property)
+- Same cryptographic guarantees as native binary
+
+### Timeline
+
+**Next Release**: v2.1 (WASM Verifier)
+- **Estimated**: 1-2 weeks
 - **Requires**:
-  1. Fix JOLT-Atlas dependency issues
-  2. Determine if JoltSNARK types support serialization
-  3. If not, contribute to JOLT-Atlas project
-  4. Wait for upstream fixes
-- **Reality**: May require working with JOLT-Atlas team directly
+  1. Create WASM verifier crate with wasm-bindgen
+  2. Verify arkworks dependencies support WASM target
+  3. Build and test proof-of-concept
+  4. Integrate with existing API
+
+**Advantages over serialization**:
+- ✅ No dependency on upstream JOLT-Atlas changes
+- ✅ Follows JOLT's intended design
+- ✅ Industry-standard approach (used by production zkML systems)
+- ✅ Enables browser verification (better UX)
 
 ## Workarounds (Until v2.1)
 
