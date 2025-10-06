@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WASM zkML Verifier Demo</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #e0e0e0;
+        }
+        .container {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid #333;
+        }
+        h1 {
+            color: #00d4aa;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #222;
+            border-radius: 8px;
+            border-left: 4px solid #00d4aa;
+        }
+        button {
+            background: #00d4aa;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #00b894;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .success {
+            border-left: 4px solid #00d4aa;
+        }
+        .error {
+            border-left: 4px solid #ff6b6b;
+        }
+        .info-box {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .info-box strong {
+            color: #00d4aa;
+        }
+        input {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #e0e0e0;
+            padding: 10px;
+            border-radius: 6px;
+            width: 100%;
+            margin: 10px 0;
+        }
+        textarea {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #e0e0e0;
+            padding: 10px;
+            border-radius: 6px;
+            width: 100%;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            color: #888;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 WASM zkML Verifier</h1>
+        <p class="subtitle">Client-side cryptographic verification of ML inference</p>
+
+        <div class="section">
+            <h2>What This Does</h2>
+            <div class="info-box">
+                <strong>Cryptographic Verification:</strong> This WASM module verifies zkML proofs entirely in your browser.<br><br>
+                <strong>Checks Performed:</strong>
+                <ul>
+                    <li>Model Binding - Proof matches specific model hash</li>
+                    <li>I/O Integrity - Input/output hashes are cryptographically bound</li>
+                    <li>Proof Validity - Verified flag from JOLT generation</li>
+                    <li>Timestamp Freshness - Proof is recent (< 1 hour)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Demo: Verify a Proof</h2>
+
+            <label>Model Hash (from ONNX model):</label>
+            <input type="text" id="modelHash" value="0x1234567890abcdef" placeholder="0x...">
+
+            <label>Proof JSON:</label>
+            <textarea id="proofJson" rows="8" placeholder='{"model_hash": "0x...", ...}'>{
+  "model_hash": "0x1234567890abcdef",
+  "proof_hash": "0xabcd1234",
+  "input_hash": "0x...",
+  "output_hash": "0x...",
+  "timestamp": 0,
+  "verified": true
+}</textarea>
+
+            <label>Input Data (will be hashed):</label>
+            <input type="text" id="inputData" value="test input" placeholder="Enter input data">
+
+            <label>Output Data (will be hashed):</label>
+            <input type="text" id="outputData" value="test output" placeholder="Enter output data">
+
+            <button onclick="runDemo()">🔍 Verify Proof</button>
+            <button onclick="generateTestProof()">📝 Generate Test Proof</button>
+
+            <div id="result"></div>
+        </div>
+
+        <div class="section">
+            <h2>WASM Module Info</h2>
+            <div id="wasmInfo">Loading WASM module...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import init, { WasmVerifier, ProofData, hash_data, get_timestamp } from './wasm/zkml_wasm_verifier.js';
+
+        let verifier = null;
+
+        async function loadWasm() {
+            try {
+                await init();
+                const modelHash = document.getElementById('modelHash').value;
+                verifier = new WasmVerifier(modelHash);
+
+                document.getElementById('wasmInfo').innerHTML = `
+                    <div class="info-box success">
+                        ✅ WASM module loaded successfully!<br>
+                        Verifier initialized for model: ${modelHash}
+                    </div>
+                `;
+            } catch (e) {
+                document.getElementById('wasmInfo').innerHTML = `
+                    <div class="info-box error">
+                        ❌ Error loading WASM: ${e.message}
+                    </div>
+                `;
+            }
+        }
+
+        window.runDemo = async function() {
+            if (!verifier) {
+                alert('WASM module not loaded yet!');
+                return;
+            }
+
+            try {
+                const proofJson = document.getElementById('proofJson').value;
+                const inputData = new TextEncoder().encode(document.getElementById('inputData').value);
+                const outputData = new TextEncoder().encode(document.getElementById('outputData').value);
+
+                const startTime = performance.now();
+                const isValid = verifier.verify_json(proofJson, inputData, outputData);
+                const verifyTime = (performance.now() - startTime).toFixed(2);
+
+                const resultDiv = document.getElementById('result');
+                if (isValid) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            ✅ <strong>Proof VALID</strong><br>
+                            Verification time: ${verifyTime}ms<br>
+                            All cryptographic checks passed!
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            ❌ <strong>Proof INVALID</strong><br>
+                            Verification time: ${verifyTime}ms<br>
+                            One or more checks failed.
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                document.getElementById('result').innerHTML = `
+                    <div class="result error">
+                        ❌ <strong>Error:</strong> ${e.message}
+                    </div>
+                `;
+            }
+        };
+
+        window.generateTestProof = async function() {
+            const inputData = new TextEncoder().encode(document.getElementById('inputData').value);
+            const outputData = new TextEncoder().encode(document.getElementById('outputData').value);
+
+            const inputHash = hash_data(inputData);
+            const outputHash = hash_data(outputData);
+            const modelHash = document.getElementById('modelHash').value;
+            const timestamp = get_timestamp();
+
+            const proofJson = {
+                model_hash: modelHash,
+                proof_hash: "0xjolt_proof_" + Math.random().toString(16).slice(2, 10),
+                input_hash: inputHash,
+                output_hash: outputHash,
+                timestamp: timestamp,
+                verified: true
+            };
+
+            document.getElementById('proofJson').value = JSON.stringify(proofJson, null, 2);
+
+            document.getElementById('result').innerHTML = `
+                <div class="result success">
+                    ✅ Test proof generated!<br>
+                    Click "Verify Proof" to validate it.
+                </div>
+            `;
+        };
+
+        // Load WASM on page load
+        loadWasm();
+    </script>
+</body>
+</html>
