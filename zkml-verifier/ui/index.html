@@ -709,7 +709,7 @@
 
                 if (result.success) {
                     displayResults(result);
-                    errorDiv.innerHTML = '<div class="success">✓ Verification successful! Cryptographic proof generated.</div>';
+                    errorDiv.innerHTML = '<div class="success">✓ Cryptographic proof of correct model execution generated.</div>';
                 } else {
                     errorDiv.innerHTML = '<div class="error">Verification failed: ' + result.error + '</div>';
                     resultsContainer.style.display = 'none';
@@ -721,6 +721,15 @@
                 verifyBtn.disabled = false;
                 verifyBtn.textContent = 'Generate zkML Proof';
             }
+        }
+
+        // Helper to truncate long arrays for display
+        function formatArray(arr, maxElements = 5) {
+            if (arr.length <= maxElements) {
+                return arr.map(v => typeof v === 'number' ? v.toFixed(3) : v).join(', ');
+            }
+            const shown = arr.slice(0, maxElements).map(v => typeof v === 'number' ? v.toFixed(3) : v);
+            return shown.join(', ') + `, ... (${arr.length - maxElements} more)`;
         }
 
         function displayResults(result) {
@@ -784,11 +793,11 @@
                                 <div class="test-io">
                                     <div>
                                         <div class="label">Input:</div>
-                                        <div class="data">[${test.input.join(', ')}]</div>
+                                        <div class="data">[${formatArray(test.input)}]</div>
                                     </div>
                                     <div>
                                         <div class="label">Output:</div>
-                                        <div class="data">[${test.output.map(v => v.toFixed(3)).join(', ')}]</div>
+                                        <div class="data">[${formatArray(test.output)}]</div>
                                     </div>
                                 </div>
                             </div>
@@ -801,11 +810,11 @@
                                 <div class="test-io">
                                     <div>
                                         <div class="label">Input:</div>
-                                        <div class="data">[${test.input.join(', ')}]</div>
+                                        <div class="data">[${formatArray(test.input)}]</div>
                                     </div>
                                     <div>
                                         <div class="label">Output:</div>
-                                        <div class="data">[${test.output.map(v => v.toFixed(3)).join(', ')}]</div>
+                                        <div class="data">[${formatArray(test.output)}]</div>
                                     </div>
                                 </div>
                             </div>
@@ -858,10 +867,17 @@
         async function autoVerifyWithWasm(result) {
             const wasmResultDiv = document.getElementById('wasmVerificationResult');
 
+            // Wait for WASM to load (max 3 seconds)
+            let attempts = 0;
+            while (!window.isWasmLoaded() && attempts < 30) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+
             if (!window.isWasmLoaded()) {
                 wasmResultDiv.innerHTML = `
                     <div style="background: rgba(255, 152, 0, 0.15); padding: 15px; border-radius: 4px; border-left: 4px solid rgba(255, 152, 0, 0.8); font-size: 13px; color: #ffa726;">
-                        ⚠️ WASM verifier not loaded yet. Use the standalone verifier below.
+                        ⚠️ WASM verifier failed to load. Use the standalone verifier below to verify this proof.
                     </div>
                 `;
                 return;
