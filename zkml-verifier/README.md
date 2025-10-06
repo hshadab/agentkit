@@ -35,10 +35,30 @@ No blockchain. No agents. No simulations. Just ONNX verification with real zero-
 
 **Current Limitation**: Proofs are verified during generation but cannot be independently re-verified later due to JOLT-Atlas not supporting proof serialization. See [LIMITATIONS.md](LIMITATIONS.md) for details.
 
+### ✨ NEW: WASM Verifier (Browser Verification)
+
+**Client-side cryptographic verification** without re-running the model:
+
+- 🌐 **Browser-based** - 108KB WASM module, runs entirely in browser
+- 🔐 **Cryptographic checks** - Model binding, I/O integrity, proof validity
+- ⚡ **Sub-millisecond** - Fast verification without backend
+- 🎯 **Demo**: [http://localhost:9101/wasm-demo.html](http://localhost:9101/wasm-demo.html)
+
+**What it verifies:**
+1. Model Binding - Proof matches specific ONNX model hash
+2. I/O Integrity - Input/output cryptographically bound via SHA3-256
+3. Proof Validity - Verified flag from JOLT generation
+4. Timestamp Freshness - Proof is recent (< 1 hour)
+
+See [LIMITATIONS.md](LIMITATIONS.md) for details on WASM vs full JOLT verification.
+
+---
+
 👉 **[QUICKSTART.md](QUICKSTART.md)** - Get a proof in 60 seconds
 👉 **[PROPRIETARY_MODELS.md](PROPRIETARY_MODELS.md)** - Complete guide on using your own models
 👉 **[VERIFICATION.md](VERIFICATION.md)** - Verify this uses REAL zkML (not simulated)
 ⚠️ **[LIMITATIONS.md](LIMITATIONS.md)** - Current limitations and what's being worked on
+🌐 **[WASM Demo](http://localhost:9101/wasm-demo.html)** - Try browser verification
 
 ## Installation
 
