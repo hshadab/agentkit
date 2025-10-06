@@ -93,7 +93,7 @@ Create a JSON file with test cases that demonstrate your model works correctly:
 3. Select your `my_fraud_model.onnx`
 4. Paste test inputs from `fraud_test_cases.json`
 5. Click "Generate zkML Proof"
-6. Wait ~1-2 seconds for Groth16 proof generation
+6. Wait ~2-6 seconds for REAL JOLT-Atlas proof generation
 7. Click "Download Proof File"
 
 ### Option B: API (Programmatic)
@@ -154,7 +154,10 @@ curl -X POST http://localhost:9100/verify-proof \
 2. **Tamper Detection**: Any change to model invalidates proof
 3. **Independent Verification**: Third parties can verify without seeing your model
 4. **Offline Verification**: No blockchain exposure, completely private
-5. **Cryptographic Guarantee**: Groth16 zkSNARK is mathematically sound
+5. **Cryptographic Guarantee**: JOLT-Atlas by a16z crypto with 128-bit security
+6. **Real zkML**: Uses actual cryptographic proof of ML execution (NOT simulated)
+7. **Dory Commitment Scheme**: Polynomial commitment with BN254 curve
+8. **Verifiable Execution**: Proves the EXACT model ran, not just hash relationships
 
 ## Common Use Cases
 
@@ -213,9 +216,10 @@ curl -X POST http://localhost:9100/verify-proof \
 - **Documentation**: Keep record of what each test case validates
 
 ### Performance
-- **Proof Generation**: ~1-2 seconds (depends on circuit complexity)
-- **Verification**: ~10ms (constant time)
+- **Proof Generation**: ~2-6 seconds (REAL JOLT-Atlas cryptographic proof)
+- **Verification**: ~6 seconds (REAL cryptographic verification, not simulated)
 - **File Size**: ~2-5 KB per proof
+- **Security**: 128-bit (production-grade zero-knowledge proof)
 
 ## Troubleshooting
 

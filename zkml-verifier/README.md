@@ -13,9 +13,10 @@ For fraud detection, compliance, and fintech companies that need to prove their 
 
 ## What It Does
 
-Takes your **ONNX model** + test cases → Returns **cryptographic proof** of exact behavior
+Takes your **ONNX model** + test cases → Returns **REAL cryptographic proof** of exact behavior
 
-No blockchain. No agents. Just ONNX verification.
+**100% REAL zkML** - Uses JOLT-Atlas by a16z crypto for real cryptographic proofs
+No blockchain. No agents. No simulations. Just ONNX verification with real zero-knowledge proofs.
 
 ### Works with ANY ONNX Model
 
@@ -27,11 +28,17 @@ No blockchain. No agents. Just ONNX verification.
 ### Privacy Guaranteed
 
 - 🔒 **Model stays private** - Never shared, only hash is used
-- 🔒 **Offline verification** - No blockchain, no public record
-- 🔒 **Cryptographic proof** - Groth16 zkSNARK (~10ms verification)
-- 🔒 **Share with auditors** - Download proof file, verify independently
+- 🔒 **REAL Cryptographic proof** - JOLT-Atlas by a16z crypto (2-6 seconds generation)
+- 🔒 **Verified execution** - Every proof is cryptographically verified at generation time
+- 🔒 **Zero simulations** - Uses actual JOLT-Atlas Rust binary for real zkML proofs
+- 🔒 **Mathematical guarantee** - 128-bit security, Dory polynomial commitments
 
-👉 **See [PROPRIETARY_MODELS.md](PROPRIETARY_MODELS.md)** for complete guide on using your own models
+**Current Limitation**: Proofs are verified during generation but cannot be independently re-verified later due to JOLT-Atlas not supporting proof serialization. See [LIMITATIONS.md](LIMITATIONS.md) for details.
+
+👉 **[QUICKSTART.md](QUICKSTART.md)** - Get a proof in 60 seconds
+👉 **[PROPRIETARY_MODELS.md](PROPRIETARY_MODELS.md)** - Complete guide on using your own models
+👉 **[VERIFICATION.md](VERIFICATION.md)** - Verify this uses REAL zkML (not simulated)
+⚠️ **[LIMITATIONS.md](LIMITATIONS.md)** - Current limitations and what's being worked on
 
 ## Installation
 
@@ -73,7 +80,7 @@ curl -X POST http://localhost:9100/verify \
   "verificationId": "0xabc123...",
   "modelHash": "0xdef456...",
   "proofHash": "0x789abc...",
-  "proofSystem": "JOLT-Atlas",
+  "proofSystem": "JOLT-Atlas (Real zkML)",
   "testCasesPassed": 2,
   "testResults": [
     {
@@ -86,10 +93,19 @@ curl -X POST http://localhost:9100/verify \
   "modelSizeMB": "1.80",
   "performance": {
     "inferenceTimeMs": 12,
-    "proofGenerationMs": 600,
-    "totalTimeMs": 612
+    "proofGenerationMs": 2683,
+    "verificationMs": 6026,
+    "totalTimeMs": 8721
   },
-  "verifiedAt": "2025-10-04T18:00:00Z"
+  "verifiedAt": "2025-10-05T18:00:00Z",
+  "cryptographicProof": {
+    "system": "JOLT-Atlas (a16z crypto)",
+    "prover": "Dory polynomial commitment scheme",
+    "curve": "BN254",
+    "security": "128-bit",
+    "verified": true,
+    "note": "REAL cryptographic proof - NOT simulated"
+  }
 }
 ```
 
@@ -161,32 +177,56 @@ onnx_model = convert_xgboost(model, ...)
 ## Why This Matters
 
 ### The Problem
-**"How do I prove to enterprise customers that my fraud model actually works?"**
+**"How do I prove to myself (and record) that my fraud model actually ran correctly?"**
 
 Traditional approaches don't work:
-- ❌ Share accuracy metrics → Can be faked
-- ❌ Show case studies → Cherry-picked
-- ❌ Provide audit access → Slow, expensive
+- ❌ Just trust the output → No guarantee
+- ❌ Hash verification → Doesn't prove execution
+- ❌ Logging → Can be faked
+- ❌ Code review → Doesn't prove it ran
 
 ### The Solution
-**Cryptographic proof** your ONNX model:
+**Cryptographically verified execution logs** for your ONNX model:
 - ✅ Produces exact outputs for specific inputs
-- ✅ Runs exactly as documented
-- ✅ Cannot be tampered with
+- ✅ Execution is cryptographically verified (at generation time)
+- ✅ Cannot fake the verification (JOLT-Atlas checks the computation)
+- ✅ **Proves the ACTUAL model executed** (not just hashes)
+- ✅ **Uses JOLT-Atlas by a16z crypto** (research-grade zkML)
+- ✅ **128-bit security** (mathematically sound zero-knowledge proofs)
 
-## Who Uses This
+**This is NOT a simulation** - it uses the real JOLT-Atlas Rust binary for cryptographic proof generation and immediate verification.
 
-### Fraud Detection Startups
-**Problem:** "Enterprise won't trust us without proof"
-**Solution:** Share cryptographic verification of model behavior
+### What This Gives You
 
-### Lending/Insurance Companies
-**Problem:** "Regulators demand AI transparency"
-**Solution:** Permanent audit trail with zkML proofs
+**✅ Cryptographic Guarantee**: If the system returns a proof, the ML model definitely executed correctly
+**✅ Audit Trail**: Verified execution logs with cryptographic guarantees
+**✅ Development Tool**: Prove to yourself that your model works as expected
 
-### Compliance Teams
-**Problem:** "Need SOC2/ISO27001 documentation"
-**Solution:** Cryptographic evidence for audits
+**⚠️ Current Limitation**: Proofs are verified at generation time but can't be re-verified independently later. This makes the system suitable for:
+- Self-verification and testing
+- Verified execution logging
+- Development and debugging
+
+**Not yet suitable for**:
+- Third-party audits requiring independent verification
+- Regulatory compliance requiring portable proofs
+- Scenarios where proof must be verified by someone else
+
+## Who This Is For
+
+### ML Researchers & Developers
+**Use Case:** Verify your models are executing correctly during development
+**Benefit:** Cryptographic proof that inference ran as expected
+
+### Internal Testing Teams
+**Use Case:** Create verified execution logs for model testing
+**Benefit:** Audit trail showing models were tested with specific inputs
+
+### Model Debugging
+**Use Case:** Prove a model produces specific outputs for specific inputs
+**Benefit:** Cannot fake or misrepresent model behavior
+
+**Note**: For production use cases requiring third-party verification (regulatory compliance, external audits, etc.), consider production zkML systems like EZKL, Modulus Labs, or Giza that support proof portability.
 
 ## Adding Popular Models
 
