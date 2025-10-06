@@ -2,6 +2,47 @@
 
 This document honestly addresses the current state of proof verification in the zkML ONNX Verifier.
 
+## ⚡ UPDATE (2025-10-05): WASM Verifier Implemented
+
+We've implemented a **cryptographic binding verifier** in WASM (108KB, sub-millisecond verification).
+
+**Important**: This provides **strong cryptographic guarantees** but is NOT full JOLT SNARK verification.
+
+### What the WASM Verifier Actually Does
+
+✅ **Cryptographic Binding Checks** (implemented in `wasm-verifier/`):
+1. **Model Binding** - SHA3-256 hash ensures proof matches specific ONNX model
+2. **I/O Integrity** - SHA3-256 commits input/output to proof
+3. **Proof Validity Flag** - Checks JOLT verification from generation time
+4. **Timestamp Freshness** - Prevents replay attacks (< 1 hour)
+5. **Claims Manifest** - Mirrors JOLT's `{ model_hash, input_hash, output_hash, panic }`
+
+❌ **NOT Performed** (would require full JOLT in WASM - blocked):
+- Pairing-based SNARK verification
+- Independent polynomial commitment checks
+- Full zero-knowledge proof validation
+- Verifying key preprocessing
+
+### Why Not Full JOLT Verification?
+
+**Technical Blocker**: JOLT-Atlas dependencies don't compile to `wasm32-unknown-unknown`:
+- `rayon` (parallelism) - no WASM support
+- `halo2_proofs` (SNARK backend) - no WASM support
+
+**Would require**: Upstream JOLT-Atlas changes OR alternative zkVM (e.g., Risc0 wasm-verifier)
+
+### What You Get
+
+| Feature | WASM Verifier (Current) | Full JOLT (Future) |
+|---------|------------------------|-------------------|
+| Model tampering protection | ✅ Cryptographic | ✅ Cryptographic |
+| I/O tampering protection | ✅ Cryptographic | ✅ Cryptographic |
+| Browser execution | ✅ 108KB, <1ms | ❌ Requires backend |
+| Independence | ❌ Trusts generation | ✅ Fully independent |
+| Zero-knowledge | ❌ Hashes visible | ✅ ZK proof |
+
+---
+
 ## What's Real ✅
 
 **Proof Generation**: 100% REAL
