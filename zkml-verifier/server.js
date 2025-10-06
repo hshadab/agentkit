@@ -15,7 +15,7 @@ const path = require('path');
 const snarkjs = require('snarkjs');
 
 const app = express();
-const PORT = 9100;
+const PORT = process.env.PORT || 9100;
 
 // Configure file upload (increased for large models like VGG-16, ResNet-50)
 const upload = multer({

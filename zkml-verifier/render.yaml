@@ -4,11 +4,10 @@ services:
     name: zkml-verifier-api
     env: node
     plan: starter
+    rootDir: zkml-verifier
     buildCommand: npm install
     startCommand: node server.js
     envVars:
-      - key: PORT
-        value: 9100
       - key: NODE_ENV
         value: production
     healthCheckPath: /health
@@ -18,11 +17,10 @@ services:
     name: zkml-verifier-ui
     env: node
     plan: starter
-    buildCommand: cd ui && npm install
-    startCommand: cd ui && node server.js
+    rootDir: zkml-verifier/ui
+    buildCommand: npm install
+    startCommand: node server.js
     envVars:
-      - key: PORT
-        value: 9101
       - key: API_URL
         value: https://zkml-verifier-api.onrender.com
     healthCheckPath: /
