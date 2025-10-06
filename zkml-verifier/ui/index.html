@@ -477,15 +477,19 @@
         // Initialize WASM module
         async function initWasm() {
             try {
+                console.log('[WASM] Starting to load verifier module...');
                 await init();
                 wasmLoaded = true;
-                console.log('[WASM] Verifier module loaded successfully');
+                console.log('[WASM] ✅ Verifier module loaded successfully');
+                console.log('[WASM] Testing hash_data function:', typeof window.hash_data);
             } catch (e) {
-                console.error('[WASM] Failed to load verifier:', e);
+                console.error('[WASM] ❌ Failed to load verifier:', e);
+                console.error('[WASM] Error details:', e.message, e.stack);
             }
         }
 
         // Initialize on page load
+        console.log('[WASM] Initializing WASM verifier on page load...');
         initWasm();
 
         // Make functions available globally
@@ -867,21 +871,29 @@
         async function autoVerifyWithWasm(result) {
             const wasmResultDiv = document.getElementById('wasmVerificationResult');
 
+            console.log('[WASM] Auto-verification starting, WASM loaded:', window.isWasmLoaded());
+
             // Wait for WASM to load (max 3 seconds)
             let attempts = 0;
             while (!window.isWasmLoaded() && attempts < 30) {
                 await new Promise(resolve => setTimeout(resolve, 100));
                 attempts++;
+                if (attempts % 10 === 0) {
+                    console.log(`[WASM] Still waiting for WASM... attempt ${attempts}/30`);
+                }
             }
 
             if (!window.isWasmLoaded()) {
+                console.error('[WASM] Failed to load after 3 seconds');
                 wasmResultDiv.innerHTML = `
                     <div style="background: rgba(255, 152, 0, 0.15); padding: 15px; border-radius: 4px; border-left: 4px solid rgba(255, 152, 0, 0.8); font-size: 13px; color: #ffa726;">
-                        ⚠️ WASM verifier failed to load. Use the standalone verifier below to verify this proof.
+                        ⚠️ WASM verifier failed to load. Check browser console for errors. Use the standalone verifier below to verify this proof.
                     </div>
                 `;
                 return;
             }
+
+            console.log('[WASM] WASM loaded successfully, starting verification...');
 
             try {
                 wasmResultDiv.innerHTML = `
