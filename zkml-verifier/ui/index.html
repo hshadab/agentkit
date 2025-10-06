@@ -153,8 +153,14 @@
             border-radius: 4px;
             background: rgba(255, 255, 255, 0.05);
             cursor: pointer;
-            transition: all 0.3s;
+            transition: background 0.3s, border-color 0.3s;
             text-align: left;
+            box-sizing: border-box;
+            position: relative;
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .scenario-btn:hover {
@@ -165,6 +171,34 @@
         .scenario-btn.active {
             border-color: rgba(99, 102, 241, 0.8);
             background: rgba(99, 102, 241, 0.15);
+        }
+
+        .scenario-btn.loading {
+            border-color: rgba(99, 102, 241, 0.8);
+            background: rgba(99, 102, 241, 0.2);
+        }
+
+        .scenario-btn.loading::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            bottom: -1px;
+            border-radius: 4px;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.6);
+            animation: pulse-glow 1.5s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 1;
+            }
         }
 
         .scenario-btn .title {
@@ -334,34 +368,93 @@
             color: #94a3b8;
             margin-top: 5px;
         }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            color: #94a3b8;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(99, 102, 241, 0.3);
+            color: #cbd5e1;
+        }
+
+        .tab-btn.active {
+            background: rgba(99, 102, 241, 0.3);
+            border-color: rgba(99, 102, 241, 0.6);
+            color: #e2e8f0;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔒 ONNX Verifier</h1>
-            <div class="tagline">Cryptographic, client-side verification for ONNX models</div>
-            <div class="subtitle">
-                Upload an ONNX model, generate a cryptographic proof, and let anyone verify your model's predictions in the browser—no re-execution, no TEE, no trusted setup.
-                <br><br>
-                <strong>Why ONNX?</strong> Industry-standard format • Cross-platform • One-command export with <a href="https://huggingface.co/docs/optimum/exporters/onnx/usage_guides/export_a_model" style="color: #a5b4fc;" target="_blank">Hugging Face Optimum</a> • Active ecosystem on <a href="https://huggingface.co/onnx-community" style="color: #a5b4fc;" target="_blank">HF ONNX Community</a>
+            <div style="display: flex; gap: 25px; align-items: center; margin-bottom: 10px;">
+                <img src="https://onnx.ai/onnx/_static/onnx-horizontal-white.png" alt="ONNX" style="height: 36px;">
+                <img src="https://cdn.prod.website-files.com/65d52b07d5bc41614daa723f/665df12739c532f45b665fe7_logo-novanet.svg" alt="NovaNet" style="height: 27px;">
+                <h1 style="margin: 0;">ONNX zkML Verifier</h1>
             </div>
-            <div class="badges">
-                <span class="badge highlight">JOLT-Atlas zkML</span>
-                <span class="badge">No Trusted Setup</span>
-                <span class="badge">Browser Verification</span>
-                <span class="badge">108KB WASM</span>
-                <span class="badge">HuggingFace Ready</span>
-            </div>
+            <div class="tagline" style="margin-bottom: 8px;">Cryptographically prove your model produced specific outputs</div>
+            <div style="color: #94a3b8; font-size: 14px; line-height: 1.6;">
+                Upload an ONNX model, generate a proof, verify instantly in any browser · For API transparency, regulatory compliance, safety research, and verifiable AI testing.</div>
         </div>
 
-        <div class="main-grid">
+        <!-- Tab Navigation -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('prove')">Prove and Verify</button>
+            <button class="tab-btn" onclick="switchTab('verify')">Verify Existing Proof</button>
+            <button class="tab-btn" onclick="switchTab('docs')">Docs</button>
+        </div>
+
+        <!-- Prove Tab (Default) -->
+        <div id="prove-tab" class="tab-content active">
             <div class="card">
-                <h2>Select or Upload ONNX Model</h2>
+                <h2>Upload your own ONNX file or select an example model to generate a zkML proof and verification.</h2>
 
                 <div class="form-group">
-                    <label>Example Models</label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                    <label for="modelFile">Upload Custom ONNX Model (max 500MB)</label>
+                    <input type="file" id="modelFile" accept=".onnx">
+                    <div class="file-info" id="modelFileInfo">No file selected</div>
+                </div>
+
+                <div style="text-align: center; color: #94a3b8; font-size: 13px; margin: 15px 0;">
+                    — OR —
+                </div>
+
+                <div class="form-group">
+                    <label>Select Example Model</label>
+                    <p style="color: #94a3b8; font-size: 13px; margin: 8px 0 15px 0;">
+                        Test inputs are automatically loaded for example models.
+                    </p>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">
                         <button class="scenario-btn" onclick="loadExampleModel('authorization', event)">
                             <div class="title">🔒 Authorization</div>
                             <div class="desc">Fraud detection (1.8KB)</div>
@@ -389,94 +482,20 @@
                     </div>
                 </div>
 
-                <div style="text-align: center; color: #94a3b8; font-size: 13px; margin: 15px 0;">
-                    — OR —
-                </div>
-
-                <div class="form-group">
-                    <label for="modelFile">Upload Custom ONNX Model (max 50MB)</label>
-                    <input type="file" id="modelFile" accept=".onnx">
-                    <div class="file-info" id="modelFileInfo">No file selected</div>
-                </div>
-
                 <div class="form-group">
                     <label for="testInputs">Test Inputs (JSON array of arrays)</label>
-                    <textarea id="testInputs" placeholder='[[50.0, 0.2, 500.0, 3.0, 14.0], [450.0, 0.8, 5.0, 45.0, 3.0]]'></textarea>
+                    <textarea id="testInputs" placeholder='[[50.0, 0.2, 500.0, 3.0, 14.0]]'></textarea>
+                    <div style="font-size: 12px; color: #64748b; margin-top: 5px;">
+                        Example models automatically load appropriate test inputs. You can edit them manually or upload custom data.
+                    </div>
                 </div>
 
                 <button class="btn-primary" id="verifyBtn" onclick="verifyModel()">
-                    Generate zkML Proof
+                    Generate and Verify zkML Proof
                 </button>
 
                 <div id="errorMessage"></div>
             </div>
-
-            <div class="card">
-                <h2>Pre-Built Scenarios</h2>
-                <div class="scenario-selector">
-                    <button class="scenario-btn" onclick="loadScenario('legit', event)">
-                        <div class="title">✅ Legitimate Transaction</div>
-                        <div class="desc">$50, trusted merchant, established account</div>
-                    </button>
-                    <button class="scenario-btn" onclick="loadScenario('fraud', event)">
-                        <div class="title">❌ Fraudulent Transaction</div>
-                        <div class="desc">$450, risky merchant, new account</div>
-                    </button>
-                    <button class="scenario-btn" onclick="loadScenario('mixed', event)">
-                        <div class="title">📊 Mixed Test Set</div>
-                        <div class="desc">5 test cases with varied risk profiles</div>
-                    </button>
-                    <button class="scenario-btn" onclick="loadScenario('edge', event)">
-                        <div class="title">⚠️ Edge Cases</div>
-                        <div class="desc">Boundary conditions and corner cases</div>
-                    </button>
-                </div>
-
-                <div style="margin-top: 20px; padding: 15px; background: rgba(255, 255, 255, 0.03); border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.1);">
-                    <div style="font-weight: 600; color: #e2e8f0; margin-bottom: 10px;">
-                        Expected Input Format:
-                    </div>
-                    <div style="font-size: 13px; color: #94a3b8;">
-                        For fraud detection models:<br>
-                        <code style="background: rgba(255, 255, 255, 0.05); padding: 2px 6px; border-radius: 3px; color: #cbd5e1;">
-                            [amount, merchant_risk, account_age, txn_per_day, hour]
-                        </code>
-                    </div>
-                </div>
-
-                <div style="margin-top: 20px; padding: 15px; background: rgba(99, 102, 241, 0.1); border-radius: 4px; border: 1px solid rgba(99, 102, 241, 0.3);">
-                    <div style="font-weight: 600; color: #e2e8f0; margin-bottom: 10px;">
-                        📤 Export to ONNX (One Command)
-                    </div>
-                    <div style="font-size: 13px; color: #cbd5e1; line-height: 1.6;">
-                        <strong>Hugging Face Optimum:</strong><br>
-                        <code style="background: rgba(0, 0, 0, 0.3); padding: 4px 8px; border-radius: 3px; color: #a5b4fc; display: inline-block; margin-top: 5px;">
-                            optimum-cli export onnx --model bert-base-uncased onnx/
-                        </code>
-                        <br><br>
-                        <strong>PyTorch:</strong><br>
-                        <code style="background: rgba(0, 0, 0, 0.3); padding: 4px 8px; border-radius: 3px; color: #a5b4fc; display: inline-block; margin-top: 5px;">
-                            torch.onnx.export(model, dummy_input, "model.onnx")
-                        </code>
-                        <br><br>
-                        <a href="https://huggingface.co/docs/optimum/exporters/onnx/usage_guides/export_a_model" target="_blank" style="color: #a5b4fc; text-decoration: underline;">→ Full export guide</a>
-                    </div>
-                </div>
-
-                <div style="margin-top: 20px; padding: 15px; background: rgba(99, 102, 241, 0.1); border-radius: 4px; border: 1px solid rgba(99, 102, 241, 0.3); border-left: 4px solid rgba(99, 102, 241, 0.8);">
-                    <div style="font-weight: 600; color: #e2e8f0; margin-bottom: 10px;">
-                        What You Get:
-                    </div>
-                    <ul style="font-size: 13px; color: #cbd5e1; margin-left: 20px; line-height: 1.6;">
-                        <li>Cryptographic proof (JOLT-Atlas)</li>
-                        <li>Model hash for tamper detection</li>
-                        <li>Test case results with outputs</li>
-                        <li>Performance metrics</li>
-                        <li>Shareable verification ID</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
 
         <div id="resultsContainer" style="display: none;">
             <div class="results">
@@ -484,8 +503,12 @@
                 <div id="resultsContent"></div>
             </div>
         </div>
+        </div>
+        <!-- End Prove Tab -->
 
-        <div class="card" style="margin-top: 30px;">
+        <!-- Verify Tab -->
+        <div id="verify-tab" class="tab-content">
+        <div class="card">
             <h2>🔐 WASM Proof Verifier (Browser-based)</h2>
             <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">
                 <strong style="color: #a5b4fc;">Client-side cryptographic verification</strong> using our 108KB WASM module.<br>
@@ -508,6 +531,134 @@
 
             <div id="proofVerificationResult"></div>
         </div>
+        </div>
+        <!-- End Verify Tab -->
+
+        <!-- Docs Tab -->
+        <div id="docs-tab" class="tab-content">
+            <div class="card">
+                <h2>📚 Documentation</h2>
+
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: #e2e8f0; margin-bottom: 15px;">What This Verifies</h3>
+                    <p style="color: #94a3b8; line-height: 1.8; font-size: 14px;">
+                        This demo performs <strong style="color: #a5b4fc;">client-side cryptographic verification</strong> of JOLT-Atlas proofs that
+                        a specific ONNX model produced the claimed output from the claimed input.
+                    </p>
+                    <ul style="color: #cbd5e1; margin-left: 20px; margin-top: 15px; line-height: 1.8;">
+                        <li><strong>Program Binding:</strong> Proof cryptographically tied to your specific ONNX model (SHA-256 hash)</li>
+                        <li><strong>I/O Integrity:</strong> Input and output data cryptographically bound to the proof</li>
+                        <li><strong>Execution Proof:</strong> JOLT-Atlas guarantees the model actually executed (not simulated)</li>
+                        <li><strong>No Trusted Setup:</strong> Transparent zkML system, no pre-ceremony required</li>
+                        <li><strong>Browser Verification:</strong> 108KB WASM module verifies proofs instantly (&lt;1ms)</li>
+                    </ul>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: #e2e8f0; margin-bottom: 15px;">Why ONNX?</h3>
+                    <p style="color: #94a3b8; line-height: 1.8; font-size: 14px; margin-bottom: 15px;">
+                        <strong style="color: #a5b4fc;">Industry-standard format</strong> • Cross-platform • One-command export with
+                        <a href="https://huggingface.co/docs/optimum/exporters/onnx/usage_guides/export_a_model" style="color: #a5b4fc;" target="_blank">Hugging Face Optimum</a> •
+                        Active ecosystem on <a href="https://huggingface.co/onnx-community" style="color: #a5b4fc;" target="_blank">HF ONNX Community</a>
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: #e2e8f0; margin-bottom: 15px;">Export Your Models to ONNX</h3>
+                    <p style="color: #94a3b8; line-height: 1.8; font-size: 14px; margin-bottom: 20px;">
+                        Export from any framework in one command:
+                    </p>
+
+                    <div style="background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 4px; margin-bottom: 15px;">
+                        <div style="font-weight: 600; color: #a5b4fc; margin-bottom: 10px;">Hugging Face Optimum (Recommended)</div>
+                        <code style="color: #cbd5e1; font-size: 13px;">pip install optimum[exporters]<br>
+optimum-cli export onnx --model bert-base-uncased ./onnx/</code>
+                    </div>
+
+                    <div style="background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 4px; margin-bottom: 15px;">
+                        <div style="font-weight: 600; color: #a5b4fc; margin-bottom: 10px;">PyTorch</div>
+                        <code style="color: #cbd5e1; font-size: 13px;">import torch<br>
+torch.onnx.export(model, dummy_input, "model.onnx", opset_version=12)</code>
+                    </div>
+
+                    <div style="background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 4px; margin-bottom: 15px;">
+                        <div style="font-weight: 600; color: #a5b4fc; margin-bottom: 10px;">scikit-learn</div>
+                        <code style="color: #cbd5e1; font-size: 13px;">from skl2onnx import convert_sklearn<br>
+onnx_model = convert_sklearn(model, initial_types=[...])</code>
+                    </div>
+
+                    <p style="font-size: 13px; color: #94a3b8; margin-top: 20px;">
+                        <strong>Resources:</strong><br>
+                        • <a href="https://huggingface.co/docs/optimum/exporters/onnx/usage_guides/export_a_model" target="_blank" style="color: #a5b4fc;">Hugging Face ONNX Export Guide</a><br>
+                        • <a href="https://huggingface.co/onnx-community" target="_blank" style="color: #a5b4fc;">HF ONNX Community (1000+ models)</a><br>
+                        • <a href="https://onnxruntime.ai/" target="_blank" style="color: #a5b4fc;">ONNX Runtime Documentation</a>
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: #e2e8f0; margin-bottom: 15px;">Use Cases</h3>
+                    <div class="main-grid" style="margin-bottom: 0;">
+                        <div style="background: rgba(99, 102, 241, 0.1); padding: 15px; border-radius: 4px; border-left: 4px solid rgba(99, 102, 241, 0.8);">
+                            <div style="font-weight: 600; color: #a5b4fc; margin-bottom: 8px;">Model Testing & Debugging</div>
+                            <div style="font-size: 13px; color: #cbd5e1; line-height: 1.6;">
+                                Prove your model produces specific outputs for specific inputs during development and testing.
+                            </div>
+                        </div>
+                        <div style="background: rgba(99, 102, 241, 0.1); padding: 15px; border-radius: 4px; border-left: 4px solid rgba(99, 102, 241, 0.8);">
+                            <div style="font-weight: 600; color: #a5b4fc; margin-bottom: 8px;">Audit Trails</div>
+                            <div style="font-size: 13px; color: #cbd5e1; line-height: 1.6;">
+                                Create cryptographic evidence of model executions for compliance and regulatory requirements.
+                            </div>
+                        </div>
+                        <div style="background: rgba(99, 102, 241, 0.1); padding: 15px; border-radius: 4px; border-left: 4px solid rgba(99, 102, 241, 0.8);">
+                            <div style="font-weight: 600; color: #a5b4fc; margin-bottom: 8px;">Content Moderation</div>
+                            <div style="font-size: 13px; color: #cbd5e1; line-height: 1.6;">
+                                Prove an image classification model flagged specific content without revealing the model or image.
+                            </div>
+                        </div>
+                        <div style="background: rgba(99, 102, 241, 0.1); padding: 15px; border-radius: 4px; border-left: 4px solid rgba(99, 102, 241, 0.8);">
+                            <div style="font-weight: 600; color: #a5b4fc; margin-bottom: 8px;">AI Safety Research</div>
+                            <div style="font-size: 13px; color: #cbd5e1; line-height: 1.6;">
+                                Verify model behavior on adversarial inputs and edge cases with cryptographic guarantees.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: #e2e8f0; margin-bottom: 15px;">About JOLT-Atlas</h3>
+                    <p style="color: #94a3b8; line-height: 1.8; font-size: 14px;">
+                        This verifier uses <strong style="color: #a5b4fc;">JOLT-Atlas</strong>, a production zkVM (zero-knowledge virtual machine)
+                        developed by <a href="https://a16zcrypto.com/" target="_blank" style="color: #a5b4fc;">a16z crypto</a> for cryptographically
+                        proving program execution.
+                    </p>
+                    <ul style="color: #cbd5e1; margin-left: 20px; margin-top: 15px; line-height: 1.8;">
+                        <li><strong>No Trusted Setup:</strong> Transparent proof system using polynomial commitments</li>
+                        <li><strong>Production zkVM:</strong> Real cryptographic proofs, not simulations</li>
+                        <li><strong>RISC-V Execution:</strong> Proves ONNX Runtime inference at the instruction level</li>
+                        <li><strong>Fast Generation:</strong> 600ms - 3s per proof depending on model complexity</li>
+                    </ul>
+                    <p style="font-size: 13px; color: #94a3b8; margin-top: 15px;">
+                        <strong>Learn More:</strong><br>
+                        • <a href="https://github.com/a16z/jolt" target="_blank" style="color: #a5b4fc;">JOLT GitHub Repository</a><br>
+                        • <a href="https://jolt.a16zcrypto.com/" target="_blank" style="color: #a5b4fc;">JOLT Documentation</a><br>
+                        • <a href="https://a16zcrypto.com/posts/article/introducing-jolt/" target="_blank" style="color: #a5b4fc;">Introducing JOLT (a16z blog)</a>
+                    </p>
+                </div>
+
+                <div style="background: rgba(255, 152, 0, 0.1); padding: 20px; border-radius: 4px; border-left: 4px solid rgba(255, 152, 0, 0.8);">
+                    <div style="font-weight: 600; color: #ffb74d; margin-bottom: 10px;">⚡ Performance Notes</div>
+                    <div style="font-size: 13px; color: #cbd5e1; line-height: 1.8;">
+                        • <strong>Proof Generation:</strong> 600ms - 3s depending on model size and complexity<br>
+                        • <strong>WASM Verification:</strong> Sub-millisecond (&lt;1ms) in browser<br>
+                        • <strong>Max Model Size:</strong> 500MB ONNX file<br>
+                        • <strong>Browser Support:</strong> Chrome, Firefox, Safari, Edge (WASM required)
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Docs Tab -->
+
     </div>
 
     <script type="module">
@@ -547,6 +698,29 @@
     </script>
 
     <script>
+        // Tab switching function
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Remove active from all tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+
+            // Activate clicked button (find by tab name)
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                if (btn.textContent.toLowerCase() === tabName.toLowerCase()) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
         let currentModelType = 'authorization'; // Track which model type is selected
         let selectedExampleModel = null; // Store the example model blob
 
@@ -608,11 +782,11 @@
             mobilenetv2: {
                 legit: {
                     inputs: Array(224*224*3).fill(0.5),
-                    description: 'Prove: Mobile vision inference (edge deployment use case)'
+                    description: 'Mobile vision inference example'
                 },
                 fraud: {
                     inputs: Array(224*224*3).fill(0.0).map((_, i) => Math.random()),
-                    description: 'Prove: Adversarial input detected (security use case)'
+                    description: 'Random noise input'
                 },
                 mixed: {
                     inputs: [
@@ -620,7 +794,7 @@
                         Array(224*224*3).fill(0.0).map((_, i) => Math.random()),
                         Array(224*224*3).fill(0.3)
                     ],
-                    description: 'Prove: Batch processing results (audit trail use case)'
+                    description: 'Batch processing example'
                 },
                 edge: {
                     inputs: [
@@ -628,7 +802,25 @@
                         Array(224*224*3).fill(1.0),
                         Array(224*224*3).fill(0.5)
                     ],
-                    description: 'Prove: Boundary condition handling (robustness use case)'
+                    description: 'Edge cases example'
+                }
+            },
+            tinymobilenet: {
+                legit: {
+                    inputs: Array(224*224*3).fill(0.5),
+                    description: 'Efficient vision inference example'
+                }
+            },
+            simplecnn: {
+                legit: {
+                    inputs: Array(28*28).fill(0.5),
+                    description: 'Grayscale image example'
+                }
+            },
+            tinyresnet: {
+                legit: {
+                    inputs: Array(224*224*3).fill(0.5),
+                    description: 'ResNet-style inference example'
                 }
             },
             squeezenet: {
@@ -766,6 +958,15 @@
         async function loadExampleModel(modelType, event) {
             currentModelType = modelType;
 
+            // Add loading state with glow
+            const clickedBtn = event && event.target ? event.target.closest('.scenario-btn') : null;
+            if (clickedBtn) {
+                document.querySelectorAll('.scenario-btn').forEach(btn => {
+                    btn.classList.remove('active', 'loading');
+                });
+                clickedBtn.classList.add('loading');
+            }
+
             try {
                 // Map model types to actual filenames
                 const fileMap = {
@@ -794,18 +995,25 @@
                 // Clear custom file input
                 document.getElementById('modelFile').value = '';
 
-                // Load first scenario for this model type
-                loadScenario('legit', null);
+                // Load first scenario for this model type (if it exists)
+                if (scenarios[modelType]) {
+                    loadScenario('legit', null);
+                }
 
-                // Visual feedback for model selection
-                document.querySelectorAll('.card:first-child .scenario-btn').forEach(btn => btn.classList.remove('active'));
-                if (event && event.target) {
-                    event.target.closest('.scenario-btn').classList.add('active');
+                // Visual feedback for model selection - remove loading, add active
+                if (clickedBtn) {
+                    clickedBtn.classList.remove('loading');
+                    clickedBtn.classList.add('active');
                 }
 
             } catch (error) {
                 document.getElementById('modelFileInfo').textContent = 'Error loading example model: ' + error.message;
                 document.getElementById('modelFileInfo').style.color = '#fca5a5';
+
+                // Remove loading state on error
+                if (clickedBtn) {
+                    clickedBtn.classList.remove('loading');
+                }
             }
         }
 
@@ -888,8 +1096,11 @@
                 const result = await response.json();
 
                 if (result.success) {
+                    errorDiv.innerHTML = `
+                        <div class="success">✓ Cryptographic proof of correct model execution generated.</div>
+                        <div id="wasmVerificationResult" style="margin-top: 15px;"></div>
+                    `;
                     displayResults(result);
-                    errorDiv.innerHTML = '<div class="success">✓ Cryptographic proof of correct model execution generated.</div>';
                 } else {
                     errorDiv.innerHTML = '<div class="error">Verification failed: ' + result.error + '</div>';
                     resultsContainer.style.display = 'none';
@@ -899,7 +1110,7 @@
                 resultsContainer.style.display = 'none';
             } finally {
                 verifyBtn.disabled = false;
-                verifyBtn.textContent = 'Generate zkML Proof';
+                verifyBtn.textContent = 'Generate and Verify zkML Proof';
             }
         }
 
@@ -1006,21 +1217,6 @@
                         </button>
                     ` : ''}
                 </div>
-
-                <div id="wasmVerificationResult" style="margin-top: 20px;"></div>
-
-                <div style="margin-top: 30px; padding: 20px; background: rgba(99, 102, 241, 0.1); border-radius: 4px; border: 1px solid rgba(99, 102, 241, 0.3);">
-                    <div style="font-weight: 600; color: #e2e8f0; margin-bottom: 10px;">
-                        📥 Download Cryptographic Proof
-                    </div>
-                    <div style="font-size: 13px; color: #cbd5e1; margin-bottom: 15px;">
-                        Download the full JOLT-Atlas proof file for local verification or sharing with auditors.
-                        This proof can be verified offline without any blockchain interaction.
-                    </div>
-                    <button class="btn-primary" onclick="downloadProof('${result.verificationId}')" style="width: auto; padding: 10px 20px;">
-                        Download Proof File
-                    </button>
-                </div>
             `;
 
             document.getElementById('resultsContent').innerHTML = html;
@@ -1108,11 +1304,10 @@
                 const isValid = verifier.verify_json(proofJson, inputBytes, outputBytes);
                 const verifyTime = (performance.now() - startTime).toFixed(2);
 
-                if (isValid) {
-                    wasmResultDiv.innerHTML = `
-                        <div style="background: rgba(34, 197, 94, 0.15); padding: 15px; border-radius: 4px; border-left: 4px solid rgba(34, 197, 94, 0.8);">
+                const successHtml = `
+                        <div style="background: rgba(34, 197, 94, 0.15); padding: 15px; border-radius: 4px; border-left: 4px solid rgba(34, 197, 94, 0.8); margin-bottom: 15px;">
                             <div style="color: #86efac; font-weight: 600; margin-bottom: 8px;">
-                                ✅ WASM Verification Passed
+                                ✓ WASM Verification Passed
                             </div>
                             <div style="font-size: 13px; color: #cbd5e1; line-height: 1.6;">
                                 Verification time: ${verifyTime}ms ⚡<br>
@@ -1122,7 +1317,22 @@
                                 ✓ Timestamp fresh
                             </div>
                         </div>
+                        <div style="padding: 20px; background: rgba(99, 102, 241, 0.1); border-radius: 4px; border: 1px solid rgba(99, 102, 241, 0.3);">
+                            <div style="font-weight: 600; color: #e2e8f0; margin-bottom: 10px;">
+                                📥 Download Cryptographic Proof
+                            </div>
+                            <div style="font-size: 13px; color: #cbd5e1; margin-bottom: 15px;">
+                                Download the full JOLT-Atlas proof file for local verification or sharing with auditors.
+                                This proof can be verified offline without any blockchain interaction.
+                            </div>
+                            <button class="btn-primary" onclick="downloadProof('${result.verificationId}')" style="width: auto; padding: 10px 20px;">
+                                Download Proof File
+                            </button>
+                        </div>
                     `;
+
+                if (isValid) {
+                    wasmResultDiv.innerHTML = successHtml;
                 } else {
                     wasmResultDiv.innerHTML = `
                         <div style="background: rgba(220, 38, 38, 0.15); padding: 15px; border-radius: 4px; border-left: 4px solid rgba(220, 38, 38, 0.8);">

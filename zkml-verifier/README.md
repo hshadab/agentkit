@@ -53,8 +53,12 @@ No blockchain. No agents. No simulations. Just ONNX verification with real zero-
 4. **Timestamp Freshness** - Proof is recent (< 1 hour)
 5. **Claims Manifest** - Matches JOLT verifier closure parameters
 
-**Main UI**: [http://localhost:9101/](http://localhost:9101/) (automatic WASM verification)
-**Standalone Demo**: [http://localhost:9101/wasm-demo.html](http://localhost:9101/wasm-demo.html) (manual testing)
+**Main UI**: [http://localhost:9101/](http://localhost:9101/)
+
+The UI has three tabs:
+- **Prove and Verify**: Upload ONNX models or select examples, generate proofs with automatic WASM verification
+- **Verify Existing Proof**: Upload and verify previously generated proof files
+- **Docs**: Full documentation on how the system works
 
 See [LIMITATIONS.md](LIMITATIONS.md) for details on WASM vs full JOLT verification.
 
@@ -64,8 +68,6 @@ See [LIMITATIONS.md](LIMITATIONS.md) for details on WASM vs full JOLT verificati
 👉 **[PROPRIETARY_MODELS.md](PROPRIETARY_MODELS.md)** - Complete guide on using your own models
 👉 **[VERIFICATION.md](VERIFICATION.md)** - Verify this uses REAL zkML (not simulated)
 ⚠️ **[LIMITATIONS.md](LIMITATIONS.md)** - Current limitations and what's being worked on
-🌐 **[Main UI](http://localhost:9101/)** - Generate proofs with automatic WASM verification
-🔬 **[WASM Demo](http://localhost:9101/wasm-demo.html)** - Standalone WASM verifier testing
 
 ## Installation
 
