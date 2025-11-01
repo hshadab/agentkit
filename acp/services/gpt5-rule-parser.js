@@ -1,5 +1,5 @@
 /**
- * GPT-4 Spending Rule Parser
+ * Rule Parser Service (optional OpenAI)
  * Converts natural language spending rules into structured format
  * Port: 9005
  */
@@ -16,6 +16,7 @@ app.use(bodyParser.json());
 
 const PORT = process.env.GPT4_PARSER_PORT || 9005;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -147,12 +148,12 @@ app.post('/parse-rules', async (req, res) => {
     console.log(`📝 Parsing spending rules: "${text.substring(0, 100)}..."`);
 
     const startTime = Date.now();
-    let parsed, tokens_used = 0, model_used = 'gpt-4';
+    let parsed, tokens_used = 0, model_used = OPENAI_MODEL;
 
     try {
-      // Call GPT-5 to parse rules (fallback to GPT-4 if unavailable)
+      // Call OpenAI to parse rules (fallback to patterns if unavailable)
       const completion = await openai.chat.completions.create({
-        model: 'gpt-5',
+        model: OPENAI_MODEL,
         messages: [
           {
             role: 'system',
@@ -163,8 +164,8 @@ app.post('/parse-rules', async (req, res) => {
             content: text
           }
         ],
-        temperature: 1.0, // GPT-5 requires temperature=1.0 (does not support other values)
-        max_completion_tokens: 1000 // GPT-5 uses max_completion_tokens instead of max_tokens
+        temperature: 0.2,
+        max_tokens: 1000
       });
 
       const responseText = completion.choices[0].message.content.trim();
@@ -178,12 +179,12 @@ app.post('/parse-rules', async (req, res) => {
       }
 
       parsed = JSON.parse(jsonText);
-      tokens_used = completion.usage.total_tokens;
-      model_used = completion.model || 'gpt-5';
+      tokens_used = completion.usage?.total_tokens || 0;
+      model_used = completion.model || OPENAI_MODEL;
 
     } catch (apiError) {
       // Fallback: Use pattern matching for demo
-      console.log(`⚠️  GPT-4 API unavailable, using pattern matching: ${apiError.message}`);
+      console.log(`⚠️  OpenAI API unavailable, using pattern matching: ${apiError.message}`);
       model_used = 'pattern-matching';
 
       parsed = parseRulesWithPatterns(text);
@@ -218,7 +219,7 @@ app.post('/parse-rules', async (req, res) => {
         processing_time_ms: processingTime,
         model: 'pattern-matching',
         tokens_used: 0,
-        note: 'GPT-4 unavailable, used pattern matching'
+        note: 'OpenAI unavailable, used pattern matching'
       });
     } catch (fallbackError) {
       return res.status(500).json({
@@ -302,9 +303,9 @@ app.post('/convert-to-model-params', async (req, res) => {
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
-    service: 'gpt5-rule-parser',
+    service: 'rule-parser',
     openai_configured: !!OPENAI_API_KEY && !OPENAI_API_KEY.includes('your-key'),
-    model: 'gpt-4',
+    model: OPENAI_MODEL,
     uptime: process.uptime()
   });
 });
@@ -343,9 +344,9 @@ app.get('/examples', (req, res) => {
 // Start server
 app.listen(PORT, () => {
   console.log('');
-  console.log('🤖 GPT-5 Spending Rule Parser running on port', PORT);
+  console.log('🤖 Rule Parser Service running on port', PORT);
   console.log('🔗 OpenAI API:', OPENAI_API_KEY ? '✅ Configured' : '❌ Not configured');
-  console.log('✨ Model: GPT-5 (with GPT-4 fallback)');
+  console.log(`✨ Model: ${OPENAI_MODEL} (patterns fallback)`);
   console.log('');
   console.log('Endpoints:');
   console.log(`  POST http://localhost:${PORT}/parse-rules`);

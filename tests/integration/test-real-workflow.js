@@ -3,7 +3,7 @@
  * 
  * Tests the full 3-step workflow with REAL on-chain verification:
  * 1. JOLT-Atlas zkML proof generation
- * 2. PERMANENT on-chain verification (costs gas)
+ * 2. On-chain verification (testnet, costs gas)
  * 3. Circle Gateway payment (simulated)
  */
 
@@ -17,7 +17,7 @@ async function runRealWorkflow() {
     console.log('🚀 Testing REAL zkML Workflow (with gas costs)\n');
     console.log('This test will:');
     console.log('  1. Generate JOLT-Atlas zkML Proof');
-    console.log('  2. Create PERMANENT on-chain record (costs ~0.0005 ETH)');
+    console.log('  2. Create on-chain record (testnet, costs ~0.0005 ETH)');
     console.log('  3. Simulate Circle Gateway Payment\n');
     
     try {
@@ -101,7 +101,7 @@ async function runRealWorkflow() {
             throw new Error('On-chain verification failed');
         }
         
-        console.log('   ✅ PERMANENTLY VERIFIED ON-CHAIN');
+        console.log('   ✅ VERIFIED ON-CHAIN (testnet)');
         console.log('   Transaction Hash:', groth16Response.data.transactionHash);
         console.log('   Block Number:', groth16Response.data.blockNumber);
         console.log('   Proof ID:', groth16Response.data.proofId);
@@ -144,16 +144,16 @@ async function runRealWorkflow() {
         
         console.log('\n📋 Summary:');
         console.log('   1. zkML Proof: Generated with JOLT-Atlas');
-        console.log('   2. On-Chain: PERMANENTLY recorded on Ethereum');
+        console.log('   2. On-Chain: Recorded on Ethereum (testnet)');
         console.log('   3. Payment: Would transfer 4.00 USDC');
         
-        console.log('\n🔗 Permanent Proof:');
+        console.log('\n🔗 On-Chain Proof (testnet):');
         console.log('   Transaction:', groth16Response.data.transactionHash);
         console.log('   View:', groth16Response.data.etherscanUrl);
         
         console.log('\n💡 This is REAL:');
         console.log('   - Spent real gas (~' + groth16Response.data.totalCost + ')');
-        console.log('   - Created permanent blockchain record');
+        console.log('   - Created on-chain record (testnet)');
         console.log('   - Can be audited forever');
         console.log('   - Transaction hash proves verification happened');
         

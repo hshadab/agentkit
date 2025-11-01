@@ -1,6 +1,6 @@
-# Verification Guide - ACP × GPT-5 × zkML
+# Verification Guide - ACP × Rule Parser × zkML (Demo/Testnet)
 
-This guide provides **independently reproducible steps** to verify all claims about the ACP × GPT-5 × zkML implementation. No marketing language—just commands and evidence.
+This guide provides reproducible steps to test the ACP × Rule Parser × zkML demo/testnet setup. It focuses on commands and evidence rather than marketing language.
 
 ## What Is Real vs. What Is Not
 
@@ -8,7 +8,7 @@ This guide provides **independently reproducible steps** to verify all claims ab
 
 | Component | Status | Verification Method |
 |-----------|--------|---------------------|
-| GPT-5 API Calls | Real | Check logs for `gpt-5-2025-08-07` model, token usage |
+| Rule Parser (OpenAI optional) | Real when configured | Check logs for model name and usage |
 | Authorization Logic | Real | Deterministic 5-check evaluation (see golden tests) |
 | JOLT-Atlas Binary | Real | Binary exists at path, executes with real proofs |
 | On-Chain Verification | Real | Transaction hashes on Base Sepolia explorer |
@@ -35,15 +35,15 @@ This guide provides **independently reproducible steps** to verify all claims ab
 
 ## Verification Steps
 
-### 1. Verify GPT-5 Integration
+### 1. Verify Rule Parser Integration
 
-**Claim**: Uses OpenAI GPT-5 API for natural language parsing.
+**Claim**: Uses a local rule parser service that can optionally call the OpenAI API for natural language parsing.
 
 **Verification**:
 ```bash
 cd /home/hshadab/agentkit/acp
 
-# Start GPT-5 parser service
+# Start rule parser service
 node services/gpt5-rule-parser.js > logs/gpt5-parser.log 2>&1 &
 
 # Test parsing endpoint
@@ -51,14 +51,13 @@ curl -X POST http://localhost:9005/parse-rules \
   -H "Content-Type: application/json" \
   -d '{"text": "I trust Amazon and want to spend max $1000/month on books"}' | jq
 
-# Check logs for model name and token usage
+# Check logs for model name and usage (if OpenAI configured)
 tail -f logs/gpt5-parser.log
 ```
 
 **Expected Evidence**:
-- Response contains `"model": "gpt-5-2025-08-07"`
-- Logs show `"✅ Rules parsed in Xms"` with token count
-- Cost: ~$0.01 per parse (~800 tokens)
+- Response contains a `model` field (OpenAI) or `pattern-matching` fallback
+- Logs show `"✅ Rules parsed in Xms"`
 
 ---
 
@@ -144,7 +143,7 @@ grep "REAL JOLT" logs/proof-service.log
 
 ### 4. Verify On-Chain Verification
 
-**Claim**: Proofs verified on Base Sepolia blockchain with permanent records.
+**Claim**: Proofs verified on Base Sepolia (testnet) with on-chain records.
 
 **Verification**:
 ```bash
@@ -257,7 +256,7 @@ sleep 5
 npm run test:integration
 
 # 4. Check logs for evidence
-echo "=== GPT-5 Parser ==="
+echo "=== Rule Parser ==="
 grep "✅ Rules parsed" logs/gpt5-parser.log | tail -3
 
 echo "=== JOLT Proofs ==="
@@ -271,7 +270,7 @@ grep "Payment successful" logs/acp-openai.log | tail -3
 ```
 
 **Expected Runtime**: ~30 seconds
-**Expected Cost**: ~$0.01 (GPT-5) + ~0.0005 ETH (gas)
+**Expected Cost**: OpenAI usage (if enabled) + testnet gas (varies)
 
 ---
 
@@ -302,7 +301,7 @@ Measured on Ubuntu 22.04, 16GB RAM, Intel i7:
 
 | Operation | Average Time | Cost |
 |-----------|-------------|------|
-| GPT-5 Parsing | 5-7 seconds | ~$0.01 |
+| Rule Parsing (OpenAI) | varies | varies |
 | Authorization Evaluation | <1ms | Free |
 | JOLT Proof Generation | ~500ms | Free |
 | On-Chain Verification | ~3 seconds | ~0.0005 ETH |
@@ -313,13 +312,13 @@ Measured on Ubuntu 22.04, 16GB RAM, Intel i7:
 
 ## Common Verification Issues
 
-### Issue: "Model not found: gpt-5-2025-08-07"
+### Issue: OpenAI model errors
 
-**Cause**: OpenAI API key doesn't have GPT-5 access.
+**Cause**: OpenAI API model unavailable or misconfigured.
 
-**Fix**: Check API key tier or use GPT-4 fallback:
+**Fix**: Set an available model (e.g., gpt-4o-mini) or rely on pattern matching:
 ```bash
-export OPENAI_MODEL=gpt-4o
+export OPENAI_MODEL=gpt-4o-mini
 ```
 
 ### Issue: "JOLT binary not found"
@@ -359,7 +358,7 @@ To independently verify all claims:
 4. Run verification: `npm run verify:all`
 
 **Time required**: ~15 minutes
-**Cost**: ~$0.05 (GPT-5 + gas)
+**Cost**: OpenAI usage (if enabled) + testnet gas
 
 ---
 

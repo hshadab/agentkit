@@ -4,7 +4,7 @@ const path = require('path');
 
 // Configuration
 const RPC_URL = 'https://eth-sepolia.public.blastapi.io';
-const PRIVATE_KEY = '0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+const PRIVATE_KEY = process.env.DEPLOYER_PK || null; // set via env; do not commit keys
 
 // Address of the already deployed Groth16 verifier
 const GROTH16_VERIFIER = '0x1279FEDc2A21Ae16dC6bfE2bE0B89175f98BD308';
@@ -12,7 +12,7 @@ const GROTH16_VERIFIER = '0x1279FEDc2A21Ae16dC6bfE2bE0B89175f98BD308';
 async function deployVerifierWithStorage() {
     console.log('🚀 Deploying JOLT Decision Verifier with Storage to Sepolia...\n');
     console.log('This version WILL cost gas for verification but provides:');
-    console.log('  ✓ Permanent on-chain record of verification');
+    console.log('  ✓ On-chain record of verification (testnet)');
     console.log('  ✓ Event emission for proof');
     console.log('  ✓ Prevention of double-verification');
     console.log('  ✓ Verifier reputation tracking\n');
@@ -143,11 +143,11 @@ async function deployVerifierWithStorage() {
     
     console.log('\n📊 Comparison:');
     console.log('   View function (current): FREE but no on-chain record');
-    console.log('   State-changing (this): ~100-150k gas but permanent record');
+    console.log('   State-changing (this): ~100-150k gas with on-chain record (testnet)');
     
     console.log('\n🎉 Deployment complete!');
     console.log('\nNext steps:');
-    console.log('1. Update backend to use verifyAndStore for permanent records');
+    console.log('1. Update backend to use verifyAndStore for on-chain records');
     console.log('2. Or keep both: view function for checking, state function for recording');
     
     return address;

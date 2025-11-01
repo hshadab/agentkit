@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  * @dev ERC-8004 Validation Registry with zkML proof verification
  *
  * First monetizable zkML validation service implementing ERC-8004 standard.
- * Agents pay to get cryptographically validated and receive permanent on-chain certificates.
+ * Agents pay to get cryptographically validated and receive on-chain certificates (testnet in this demo).
  *
  * Features:
  * - ERC-8004 compliant interface

@@ -613,7 +613,7 @@
           <li><b>@secure_tool Decorator:</b> Circle's hook-based approval system with 5 sequential steps:</li>
           <li><b>&nbsp;&nbsp;1. before_invoke_tool() - Authorization:</b> ONNX decision enforced as policy (approve/deny based on risk)</li>
           <li><b>&nbsp;&nbsp;2. before_invoke_tool() - zkML Proof:</b> JOLT-Atlas Rust binary proves ML inference executed correctly (~600ms)</li>
-          <li><b>&nbsp;&nbsp;3. before_invoke_tool() - On-Chain:</b> Groth16 zk-SNARK verified on Ethereum Sepolia (0x1279...) for permanent audit</li>
+          <li><b>&nbsp;&nbsp;3. before_invoke_tool() - On-Chain:</b> Groth16 zk-SNARK verified on Ethereum Sepolia (testnet, 0x1279...) for public on-chain record</li>
           <li><b>&nbsp;&nbsp;4. send_usdc:</b> <span class="circle-badge">Circle</span> Execute USDC transfer on Base Sepolia if all checks pass</li>
           <li><b>&nbsp;&nbsp;5. after_invoke_tool():</b> Post-execution validation to verify transaction success and log results</li>
           <li><b>Workflow Manager:</b> Evaluates all @secure_tool results and makes final authorization decision</li>

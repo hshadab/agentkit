@@ -377,20 +377,20 @@
         </div>
         
         <div class="example-category">
-            <h4>Gateway zkML Workflow (100% REAL)</h4>
+            <h4>Gateway zkML Workflow (Demo/Testnet)</h4>
             <div class="example-item" onclick="sendMessage('gateway zkml workflow for multi-chain USDC transfer')">Full Gateway zkML Demo (JOLT-Atlas + On-chain)</div>
             <div class="example-item" onclick="sendMessage('Generate zkML proof for trading decision')">zkML Trading Proof</div>
         </div>
         
         <div class="example-category">
-            <h4>🏔️ Avalanche Medical Records (REAL ON-CHAIN)</h4>
+            <h4>🏔️ Avalanche Medical Records (Testnet On-Chain)</h4>
             <div class="example-item" onclick="sendMessage('Create medical record for patient 12345 on Avalanche')">Create Medical Record Commitment</div>
             <div class="example-item" onclick="sendMessage('Verify medical record integrity on Avalanche')">Verify Record Integrity with zkProof</div>
             <div class="example-item" onclick="sendMessage('Complete Avalanche medical workflow')">Full Medical Workflow (2 On-chain TXs)</div>
         </div>
         
         <div class="example-category">
-            <h4>🔵 Base AI Predictions (REAL GROTH16)</h4>
+            <h4>🔵 Base AI Predictions (Testnet Groth16)</h4>
             <div class="example-item" onclick="sendMessage('Make AI prediction on Base')">Commit AI Prediction On-Chain</div>
             <div class="example-item" onclick="sendMessage('Reveal AI prediction with proof')">Reveal with Groth16 Proof</div>
             <div class="example-item" onclick="sendMessage('Complete Base AI prediction workflow')">Full AI Prediction Workflow</div>
@@ -922,7 +922,7 @@
             if (demoState.chains.has('avalanche')) selected.push({ name: 'Avalanche', domain: 1 });
             if (demoState.chains.has('arbitrum')) selected.push({ name: 'Arbitrum', domain: 3 });
             const chains = selected.length ? selected : [{ name: 'Base', domain: 6 }];
-            const privateKey = '0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+            const privateKey = null; // do not hardcode keys; use wallet
             const userAddress = '0xE616B2eC620621797030E0AB1BA38DA68D78351C';
             const amount = (demoState.perChainValue).toFixed(2);
             
@@ -1283,7 +1283,7 @@
                     
                     document.getElementById(`step-content-${workflowId}`).innerHTML += `
                         <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(107,124,255,0.2);">
-                            <div style="color: #10b981; font-size: 13px; margin-bottom: 12px;">✅ Permanently verified on Ethereum</div>
+                            <div style="color: #10b981; font-size: 13px; margin-bottom: 12px;">✅ Verified on Ethereum (testnet)</div>
                             <div style="margin-bottom: 8px;">
                                 <a href="${etherscanUrl}" target="_blank" style="color: #8b9aff; font-size: 12px; text-decoration: none;">
                                     📜 Transaction: ${shortTx}

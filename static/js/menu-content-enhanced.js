@@ -246,7 +246,7 @@ export ZKENGINE_CACHE_SIZE=2048
     circuits: {
         title: "📐 Circuits Library",
         subtitle: "Pre-built circuits for common use cases",
-        description: "Optimized Circom circuits ready for production",
+        description: "Optimized Circom circuits for demos/testnets",
         content: {
             available: [
                 {

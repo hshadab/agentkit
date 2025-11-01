@@ -1,4 +1,4 @@
-# ACP × GPT-5 × zkML - Quick Start Guide
+# ACP × Rule Parser × zkML (Demo/Testnet) - Quick Start Guide
 
 ## 🚀 5-Minute Demo
 
@@ -7,7 +7,7 @@
 ```bash
 cd /home/hshadab/agentkit/acp
 
-# Start GPT-5 rule parser (Port 9005)
+# Start rule parser (Port 9005)
 node services/gpt5-rule-parser.js > logs/gpt5-parser.log 2>&1 &
 
 # Start ACP OpenAI server (Port 9006)
@@ -24,7 +24,7 @@ Open in browser: **http://localhost:8000/acp/static/index.html**
 
 ### Step 3: Try Natural Language Input
 
-Enter in the GPT-5 text box:
+Enter in the rule parser text box:
 ```
 I trust Amazon and want to spend max $1000/month on books
 ```
@@ -35,7 +35,7 @@ Click **"🚀 Generate Proof & Process Payment"**
 
 5 animated steps will execute:
 
-1. **Input Collection** - GPT-5 mode activated
+1. **Input Collection** - Rule parser mode activated
 2. **AI Authorization** - Rules parsed → Neural network decides
 3. **zkML Proof** - JOLT-Atlas generates cryptographic proof
 4. **Stripe Payment** - Payment processed (if authorized)
@@ -65,7 +65,7 @@ Max $50/day on coffee shops, no more than 5 transactions per hour
 
 ## 🔍 API Testing
 
-### Test GPT-5 Rule Parsing
+### Test Rule Parsing
 
 ```bash
 curl -X POST http://localhost:9005/parse-rules \
@@ -73,7 +73,7 @@ curl -X POST http://localhost:9005/parse-rules \
   -d '{"text": "I trust Amazon and want to spend max $1000/month on books"}'
 ```
 
-**Response**: GPT-5 parsed rules in ~5 seconds
+**Response**: Rule parser parsed rules
 
 ### Create ACP Checkout Session
 
@@ -111,7 +111,7 @@ POST http://localhost:9006/checkout_sessions/{id}/cancel
 ## 📊 Service Health Checks
 
 ```bash
-curl http://localhost:9005/health  # GPT-5 parser
+curl http://localhost:9005/health  # Rule parser
 curl http://localhost:9006/health  # ACP server
 curl http://localhost:9001/health  # Proof service
 ```
@@ -141,7 +141,7 @@ tail -f /home/hshadab/agentkit/acp/logs/gpt5-parser.log
 tail -f /home/hshadab/agentkit/acp/logs/acp-openai.log
 ```
 
-### Verify GPT-5 Access
+### Verify OpenAI Access (optional)
 
 ```bash
 node /home/hshadab/agentkit/acp/test-openai-models.js
@@ -151,7 +151,7 @@ node /home/hshadab/agentkit/acp/test-openai-models.js
 
 | Operation | Time |
 |-----------|------|
-| GPT-5 Parse | 4-5s |
+| Rule Parse (OpenAI) | varies |
 | ONNX Inference | 1-2ms |
 | zkML Proof | ~500ms |
 | On-Chain Verify | ~2s |
@@ -159,7 +159,7 @@ node /home/hshadab/agentkit/acp/test-openai-models.js
 
 ## 🎯 Key Features
 
-✅ Natural language spending rules (GPT-5)
+✅ Natural language spending rules (rule parser)
 ✅ Cryptographic authorization proofs (zkML)
 ✅ Full ACP specification compliance (5 endpoints)
 ✅ Stripe payment integration
@@ -170,7 +170,7 @@ node /home/hshadab/agentkit/acp/test-openai-models.js
 
 - **UI**: http://localhost:8000/acp/static/index.html
 - **ACP API**: http://localhost:9006
-- **GPT-5 Parser**: http://localhost:9005
+- **Rule Parser**: http://localhost:9005
 - **Verifier**: https://sepolia.basescan.org/address/0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944
 - **ACP Spec**: https://github.com/agentic-commerce-protocol/agentic-commerce-protocol
 
@@ -183,4 +183,4 @@ node /home/hshadab/agentkit/acp/test-openai-models.js
 
 ---
 
-**Built with**: OpenAI GPT-5 • JOLT-Atlas • ACP • Stripe • Base Sepolia
+**Built with**: OpenAI (optional) • JOLT-Atlas • ACP • Stripe (test mode) • Base Sepolia (testnet)

@@ -1,0 +1,434 @@
+diff --git a/src/app/(home)/layout.tsx b/src/app/(home)/layout.tsx
+index 7a4f9f3..2ed8f6d 100644
+--- a/src/app/(home)/layout.tsx
++++ b/src/app/(home)/layout.tsx
+@@ -29,6 +29,10 @@ export default function HomeLayout({
+             label: 'Ecosystem',
+             href: '/ecosystem',
+           },
++          {
++            label: 'Tools',
++            href: '/tools',
++          },
+         ]}
+       />
+       <div className="flex flex-col py-6 md:py-8 flex-1">{children}</div>
+diff --git a/src/app/(home)/tools/page.tsx b/src/app/(home)/tools/page.tsx
+new file mode 100644
+index 0000000..5ab8377
+--- /dev/null
++++ b/src/app/(home)/tools/page.tsx
+@@ -0,0 +1,234 @@
++"use client";
++
++import { useMemo, useState } from "react";
++import { useAccount, useSignTypedData, useWalletClient } from "wagmi";
++
++import { Button } from "@/components/ui/button";
++import { Input } from "@/components/ui/input";
++import { Label } from "@/components/ui/label";
++import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
++import { CopyCode } from "@/components/ui/copy-code";
++
++import {
++  buildAuthorization,
++  buildPaymentHeaderJson,
++  decodePaymentHeader,
++  encodePaymentHeader,
++  parseDecimalToUnits,
++  signAuthorization,
++  type X402PaymentHeader,
++} from "@/lib/x402/payment";
++
++const DEFAULTS = {
++  network: "base-sepolia",
++  chainId: 84532,
++  asset: "0x036CbD53842c5426634e7929541eC2318f3dCF7e" as const, // USDC Base Sepolia
++  payTo: "0x2e408ad62e30146404F4ED8A61253212f3f9A490" as const,
++  amountDecimal: "0.01",
++};
++
++export default function ToolsPage() {
++  const { address } = useAccount();
++  const { data: walletClient } = useWalletClient();
++  const { signTypedDataAsync } = useSignTypedData();
++
++  const [network, setNetwork] = useState<string>(DEFAULTS.network);
++  const [chainId, setChainId] = useState<number>(DEFAULTS.chainId);
++  const [asset, setAsset] = useState<string>(DEFAULTS.asset);
++  const [payTo, setPayTo] = useState<string>(DEFAULTS.payTo);
++  const [amountDecimal, setAmountDecimal] = useState<string>(DEFAULTS.amountDecimal);
++  const [validity, setValidity] = useState<number>(3600);
++  const [quoteId, setQuoteId] = useState<string>("");
++
++  const [header, setHeader] = useState<string>("");
++  const [headerJson, setHeaderJson] = useState<X402PaymentHeader | null>(null);
++  const [error, setError] = useState<string>("");
++
++  const canGenerate = useMemo(() => !!address && !!walletClient, [address, walletClient]);
++
++  const onGenerate = async () => {
++    setError("");
++    try {
++      if (!address || !walletClient) throw new Error("Connect your wallet first");
++
++      const value = parseDecimalToUnits(amountDecimal, 6); // USDC has 6 decimals
++
++      const authorization = buildAuthorization({
++        from: address as `0x${string}`,
++        to: payTo as `0x${string}`,
++        value,
++        validityWindowSeconds: validity,
++      });
++
++      const signature = await signAuthorization({
++        signTypedData: async p =>
++          signTypedDataAsync({
++            account: p.account,
++            domain: p.domain,
++            types: p.types as any,
++            primaryType: p.primaryType as any,
++            message: p.message as any,
++          }),
++        account: address as `0x${string}`,
++        asset: asset as `0x${string}`,
++        chainId,
++        authorization,
++      });
++
++      const json = buildPaymentHeaderJson({
++        network,
++        authorization,
++        signature,
++        quoteId: quoteId || undefined,
++      });
++      const encoded = encodePaymentHeader(json);
++      setHeader(encoded);
++      setHeaderJson(json);
++    } catch (e: any) {
++      setError(e?.message ?? String(e));
++    }
++  };
++
++  const [inspectInput, setInspectInput] = useState<string>("");
++  const [inspectResult, setInspectResult] = useState<X402PaymentHeader | null>(null);
++  const [inspectError, setInspectError] = useState<string>("");
++
++  const onInspect = () => {
++    setInspectError("");
++    try {
++      const json = decodePaymentHeader(inspectInput.trim());
++      setInspectResult(json);
++    } catch (e: any) {
++      setInspectError(e?.message ?? String(e));
++      setInspectResult(null);
++    }
++  };
++
++  return (
++    <div className="container mx-auto px-2 md:px-6 max-w-5xl">
++      <div className="grid gap-6 md:grid-cols-2">
++        <Card>
++          <CardHeader>
++            <CardTitle>Payment Header Builder</CardTitle>
++          </CardHeader>
++          <CardContent className="space-y-3">
++            <div className="grid grid-cols-2 gap-3">
++              <div>
++                <Label htmlFor="network">Network</Label>
++                <Input
++                  id="network"
++                  value={network}
++                  onChange={e => setNetwork(e.target.value)}
++                  placeholder="base | base-sepolia"
++                />
++              </div>
++              <div>
++                <Label htmlFor="chainId">Chain ID</Label>
++                <Input
++                  id="chainId"
++                  type="number"
++                  value={chainId}
++                  onChange={e => setChainId(parseInt(e.target.value || "0", 10))}
++                />
++              </div>
++            </div>
++            <div className="grid grid-cols-2 gap-3">
++              <div>
++                <Label htmlFor="asset">Asset (USDC)</Label>
++                <Input
++                  id="asset"
++                  value={asset}
++                  onChange={e => setAsset(e.target.value)}
++                  placeholder="USDC contract address"
++                />
++              </div>
++              <div>
++                <Label htmlFor="payTo">Pay To</Label>
++                <Input
++                  id="payTo"
++                  value={payTo}
++                  onChange={e => setPayTo(e.target.value)}
++                  placeholder="Recipient address"
++                />
++              </div>
++            </div>
++            <div className="grid grid-cols-2 gap-3">
++              <div>
++                <Label htmlFor="amount">Amount (USDC)</Label>
++                <Input
++                  id="amount"
++                  value={amountDecimal}
++                  onChange={e => setAmountDecimal(e.target.value)}
++                  placeholder="0.01"
++                />
++              </div>
++              <div>
++                <Label htmlFor="validity">Validity (s)</Label>
++                <Input
++                  id="validity"
++                  type="number"
++                  value={validity}
++                  onChange={e => setValidity(parseInt(e.target.value || "0", 10))}
++                />
++              </div>
++            </div>
++            <div>
++              <Label htmlFor="quoteId">Quote ID (optional)</Label>
++              <Input
++                id="quoteId"
++                value={quoteId}
++                onChange={e => setQuoteId(e.target.value)}
++                placeholder="Optional quoteId for idempotency"
++              />
++            </div>
++            <div className="flex gap-2 items-center">
++              <Button onClick={onGenerate} disabled={!canGenerate}>
++                {canGenerate ? "Generate Header" : "Connect Wallet"}
++              </Button>
++              {error && <span className="text-destructive text-sm">{error}</span>}
++            </div>
++            {header && (
++              <div className="space-y-2">
++                <Label>Encoded X-PAYMENT</Label>
++                <CopyCode code={header} toastMessage="Header copied" />
++                <Label>Decoded JSON</Label>
++                <CopyCode code={JSON.stringify(headerJson, null, 2)} toastMessage="JSON copied" />
++              </div>
++            )}
++          </CardContent>
++        </Card>
++
++        <Card>
++          <CardHeader>
++            <CardTitle>Payment Header Inspector</CardTitle>
++          </CardHeader>
++          <CardContent className="space-y-3">
++            <div>
++              <Label htmlFor="inspect">Paste X-PAYMENT header</Label>
++              <Input
++                id="inspect"
++                value={inspectInput}
++                onChange={e => setInspectInput(e.target.value)}
++                placeholder="Base64url-encoded header"
++              />
++            </div>
++            <div className="flex gap-2 items-center">
++              <Button variant="outline" onClick={onInspect}>
++                Decode
++              </Button>
++              {inspectError && (
++                <span className="text-destructive text-sm">{inspectError}</span>
++              )}
++            </div>
++            {inspectResult && (
++              <div className="space-y-2">
++                <Label>Decoded JSON</Label>
++                <CopyCode code={JSON.stringify(inspectResult, null, 2)} toastMessage="JSON copied" />
++              </div>
++            )}
++          </CardContent>
++        </Card>
++      </div>
++    </div>
++  );
++}
+diff --git a/src/lib/x402/payment.ts b/src/lib/x402/payment.ts
+new file mode 100644
+index 0000000..13607c7
+--- /dev/null
++++ b/src/lib/x402/payment.ts
+@@ -0,0 +1,173 @@
++import type { Address } from 'viem';
++
++// EIP-3009 TransferWithAuthorization payload
++export type TransferWithAuthorization = {
++  from: Address;
++  to: Address;
++  value: string; // uint256 as string
++  validAfter: string; // uint256 as string (unix seconds)
++  validBefore: string; // uint256 as string (unix seconds)
++  nonce: `0x${string}`; // bytes32
++};
++
++// Build an authorization with a validity window (in seconds)
++export const buildAuthorization = (params: {
++  from: Address;
++  to: Address;
++  value: bigint | string;
++  validityWindowSeconds?: number;
++}): TransferWithAuthorization => {
++  const now = Math.floor(Date.now() / 1000);
++  const validAfter = BigInt(now);
++  const validBefore = BigInt(now + (params.validityWindowSeconds ?? 3600));
++
++  // Random 32-byte nonce
++  const nonce =
++    (typeof crypto !== 'undefined' && 'getRandomValues' in crypto)
++      ? ((): `0x${string}` => {
++          const arr = new Uint8Array(32);
++          crypto.getRandomValues(arr);
++          return `0x${Array.from(arr)
++            .map(b => b.toString(16).padStart(2, '0'))
++            .join('')}` as const;
++        })()
++      : ((): `0x${string}` => {
++          // Fallback (Node env) — not used in client, but safe default
++          const bytes = Array.from({ length: 32 }, () =>
++            Math.floor(Math.random() * 256)
++          );
++          return `0x${bytes
++            .map(b => b.toString(16).padStart(2, '0'))
++            .join('')}` as const;
++        })();
++
++  const value = typeof params.value === 'bigint' ? params.value : BigInt(params.value);
++
++  return {
++    from: params.from,
++    to: params.to,
++    value: value.toString(),
++    validAfter: validAfter.toString(),
++    validBefore: validBefore.toString(),
++    nonce,
++  };
++};
++
++// viem/wagmi `signTypedData` compatible inputs
++type SignTypedData = (params: {
++  account: Address;
++  domain: {
++    name: string;
++    version: string;
++    chainId: number;
++    verifyingContract: Address;
++  };
++  types: Record<string, Array<{ name: string; type: string }>>;
++  primaryType: string;
++  message: TransferWithAuthorization;
++}) => Promise<`0x${string}`>;
++
++// Sign an EIP-3009 TransferWithAuthorization (USDC domain)
++export const signAuthorization = async (params: {
++  signTypedData: SignTypedData;
++  account: Address;
++  asset: Address;
++  chainId: number;
++  authorization: TransferWithAuthorization;
++}) => {
++  const domain = {
++    name: 'USDC',
++    version: '2',
++    chainId: params.chainId,
++    verifyingContract: params.asset,
++  } as const;
++
++  const types = {
++    TransferWithAuthorization: [
++      { name: 'from', type: 'address' },
++      { name: 'to', type: 'address' },
++      { name: 'value', type: 'uint256' },
++      { name: 'validAfter', type: 'uint256' },
++      { name: 'validBefore', type: 'uint256' },
++      { name: 'nonce', type: 'bytes32' },
++    ],
++  } as const;
++
++  return params.signTypedData({
++    account: params.account,
++    domain,
++    types,
++    primaryType: 'TransferWithAuthorization',
++    message: params.authorization,
++  });
++};
++
++export type X402PaymentHeader = {
++  x402Version: 1;
++  scheme: 'exact';
++  network: string; // e.g., 'base' | 'base-sepolia'
++  quoteId?: string;
++  payload: {
++    authorization: TransferWithAuthorization;
++    signature: `0x${string}`;
++  };
++};
++
++export const buildPaymentHeaderJson = (input: {
++  network: string;
++  authorization: TransferWithAuthorization;
++  signature: `0x${string}`;
++  quoteId?: string;
++}): X402PaymentHeader => ({
++  x402Version: 1,
++  scheme: 'exact',
++  network: input.network,
++  quoteId: input.quoteId,
++  payload: {
++    authorization: input.authorization,
++    signature: input.signature,
++  },
++});
++
++// Base64url utils (browser-friendly)
++const base64urlEncode = (str: string) => {
++  if (typeof window !== 'undefined' && typeof btoa === 'function') {
++    const b64 = btoa(unescape(encodeURIComponent(str)));
++    return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
++  }
++  // Node fallback
++  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
++  // @ts-ignore
++  return Buffer.from(str).toString('base64url');
++};
++
++const base64urlDecode = (b64url: string) => {
++  const b64 = b64url.replace(/-/g, '+').replace(/_/g, '/');
++  const pad = b64.length % 4 === 0 ? '' : '='.repeat(4 - (b64.length % 4));
++  const final = b64 + pad;
++  if (typeof window !== 'undefined' && typeof atob === 'function') {
++    return decodeURIComponent(escape(atob(final)));
++  }
++  // Node fallback
++  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
++  // @ts-ignore
++  return Buffer.from(final, 'base64').toString('utf8');
++};
++
++export const encodePaymentHeader = (json: X402PaymentHeader) => {
++  return base64urlEncode(JSON.stringify(json));
++};
++
++export const decodePaymentHeader = (header: string): X402PaymentHeader => {
++  const raw = base64urlDecode(header);
++  return JSON.parse(raw) as X402PaymentHeader;
++};
++
++export const parseDecimalToUnits = (value: string, decimals: number) => {
++  // Basic decimal parser: supports up to decimals precision
++  const [int, fracRaw = ''] = value.split('.');
++  const frac = (fracRaw + '0'.repeat(decimals)).slice(0, decimals);
++  const normalized = `${int}${frac}`.replace(/^0+/, '') || '0';
++  return BigInt(normalized);
++};
++

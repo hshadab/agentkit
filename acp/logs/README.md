@@ -9,7 +9,7 @@ All `.log` files are automatically ignored by git (see `.gitignore`).
 **Services generate the following logs:**
 - `proof-service.log` - JOLT-Atlas proof generation service (port 9001)
 - `acp-openai.log` - ACP OpenAI server (port 9006)
-- `gpt5-parser.log` - GPT-5 rule parser service (port 9005)
+- `gpt5-parser.log` - Rule parser service (legacy name, port 9005)
 - `onchain.log` - On-chain verification service (port 9004)
 - `http-server.log` - Static file server (port 9000)
 

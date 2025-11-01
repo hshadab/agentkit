@@ -1,38 +1,42 @@
-# ACP × JOLT-Atlas × GPT-5 Integration - COMPLETE
+# ACP × JOLT-Atlas × Rule Parser (Demo/Testnet)
+
+> Demo/Prototype Notice
+>
+> This document describes a demo/testnet integration. Some services are real (testnet) and others are simulated for illustration. References to “GPT‑5” in code identifiers are legacy names for a local rule‑parser service that may optionally call the OpenAI API; this is not an endorsement of any unreleased model.
 
 ## 🎯 Executive Summary
 
-We've built the **world's first ChatGPT-compatible commerce server** with cryptographic AI authorization proofs. This integration combines:
+This demo shows a ChatGPT‑compatible commerce server with cryptographic AI authorization proofs. It combines:
 
-- **OpenAI's Agentic Commerce Protocol (ACP)** - Official specification from OpenAI/Stripe
-- **JOLT-Atlas zkML Framework** - Zero-knowledge proofs of AI execution
-- **GPT-5 Natural Language Processing** - Convert plain English to spending rules
-- **Stripe Payments** - Real payment processing with proof metadata
-- **Base Sepolia Verification** - On-chain proof verification
+- **OpenAI’s Agentic Commerce Protocol (ACP)** — ACP‑compatible endpoints following the public docs
+- **JOLT‑Atlas zkML** — Zero‑knowledge proofs of AI execution (demo/testnet)
+- **Rule Parser Service** — Converts plain English to spending rules (OpenAI/regex)
+- **Stripe (test mode)** — Payment processing with proof metadata
+- **Base Sepolia (testnet)** — On‑chain proof verification
 
 ## 🚀 What Makes This Special
 
-### 1. Production-Grade ACP Implementation
+### 1. ACP‑Compatible Implementation (Demo)
 - ✅ **All 5 official endpoints** per OpenAI/Stripe specification
 - ✅ **Proper state machine**: not_ready_for_payment → ready_for_payment → completed
 - ✅ **Idempotency support** for reliable API calls
 - ✅ **Full error handling** and validation
 
-### 2. zkML Extensions (Unique to This Implementation)
+### 2. zkML Extensions (Demo)
 - ✅ **authorization_proof** field in all checkout sessions
-- ✅ **Cryptographic guarantee** of AI execution
+- ✅ Proof metadata plumbing for AI execution
 - ✅ **Pre-completion proof verification** before payments
 - ✅ **Proof metadata** stored in Stripe for audit trail
 
-### 3. GPT-5 Natural Language Integration
+### 3. Rule Parser Integration (OpenAI/regex)
 - ✅ **Plain English spending rules** → Structured JSON
-- ✅ **Real GPT-5 API** (gpt-5-2025-08-07)
+- ✅ Optional OpenAI API calls when configured
 - ✅ **Pattern-matching fallback** for reliability
 - ✅ **4-5 second parsing** with 800+ tokens
 
 ### 4. Complete UI with Animated Workflow
 - ✅ **5-step visual workflow** with progress tracking
-- ✅ **Natural language input field** with GPT-5 icon
+- ✅ Natural language input field with rule‑parser indicator
 - ✅ **Real-time status updates** for each step
 - ✅ **Clickable blockchain links** embedded in cards
 - ✅ **Responsive design** that fits all cards on screen
@@ -47,10 +51,9 @@ We've built the **world's first ChatGPT-compatible commerce server** with crypto
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│            GPT-5 Rule Parser (Port 9005)                     │
+│            Rule Parser Service (Port 9005)                   │
 │  • Converts natural language to structured rules            │
-│  • Model: gpt-5-2025-08-07                                  │
-│  • Fallback: Pattern matching                               │
+│  • Optional OpenAI API; fallback regex                      │
 └────────────────────┬────────────────────────────────────────┘
                      │ {monthly_limit: 1000, trusted_merchants...}
                      ▼
@@ -72,9 +75,9 @@ We've built the **world's first ChatGPT-compatible commerce server** with crypto
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
 │         JOLT-Atlas zkML Proof (Port 8002)                    │
-│  • Generates cryptographic proof of AI execution            │
-│  • Rust binary: ~500ms generation time                      │
-│  • Returns proof_hash for on-chain verification             │
+│  • Generates cryptographic proof of AI execution (demo)     │
+│  • Rust binary; timing varies by host                        │
+│  • Returns proof hash for on-chain verification (testnet)   │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
@@ -82,7 +85,7 @@ We've built the **world's first ChatGPT-compatible commerce server** with crypto
 │      Groth16 On-Chain Verifier (Base Sepolia)               │
 │  • Contract: 0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944    │
 │  • Verifies proof on-chain (~350k gas)                      │
-│  • Stores verification permanently                          │
+│  • Stores verification on-chain (testnet)                    │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
@@ -98,7 +101,7 @@ We've built the **world's first ChatGPT-compatible commerce server** with crypto
 
 | Service | Port | Purpose | Status |
 |---------|------|---------|--------|
-| **GPT-5 Parser** | 9005 | Natural language → structured rules | ✅ Running |
+| **Rule Parser** | 9005 | Natural language → structured rules | ✅ Running |
 | **ACP OpenAI Server** | 9006 | Official ACP specification + zkML | ✅ Running |
 | **ONNX Proof Service** | 9001 | Neural network authorization | ✅ Running |
 | **zkML Backend** | 8002 | JOLT-Atlas proof generation | ✅ Running |
@@ -135,7 +138,7 @@ curl -X POST http://localhost:9006/checkout_sessions \
   "amount": 45,
   "currency": "usd",
   "metadata": {
-    "gpt5_parsed_rules": true,
+    "gpt5_parsed_rules": true, // legacy field name; indicates rule parser used
     "original_rules_text": "I trust Amazon and want to spend max $1000/month on books"
   },
   "authorization_proof": {
@@ -149,7 +152,7 @@ curl -X POST http://localhost:9006/checkout_sessions \
 }
 ```
 
-### 2. Parse Natural Language Rules (GPT-5)
+### 2. Parse Natural Language Rules (Rule Parser)
 
 ```bash
 curl -X POST http://localhost:9005/parse-rules \
@@ -168,8 +171,7 @@ curl -X POST http://localhost:9005/parse-rules \
     "allowed_categories": ["books"],
     "trusted_merchants": {"amazon": 0.95}
   },
-  "model": "gpt-5-2025-08-07",
-  "tokens_used": 834,
+  "parser": "openai|regex",
   "processing_time_ms": 4516
 }
 ```
@@ -201,11 +203,11 @@ curl -X POST http://localhost:9006/checkout_sessions/cs_fa83ff989de2e2eb2bdc6f99
 ### Natural Language Input
 - **Location**: Top of transaction form in purple dashed box
 - **Placeholder**: "Example: I trust Amazon and want to spend max $1000/month on books, no more than $100 per transaction"
-- **Behavior**: If filled, GPT-5 parses rules; if empty, uses manual inputs
+- **Behavior**: If filled, the rule parser parses rules; if empty, uses manual inputs
 
 ### Workflow Steps (Left to Right)
 1. **Input Collection** - Shows amount, budget, trust score
-2. **AI Authorization** - GPT-5 parsing + neural network decision
+2. **AI Authorization** - Rule parser + neural network decision
 3. **zkML Proof** - JOLT-Atlas proof generation + verifier link
 4. **Stripe Payment** - Payment processing (if authorized)
 5. **Verification** - Final status + blockchain links
@@ -230,13 +232,13 @@ curl -X POST http://localhost:9006/checkout_sessions/cs_fa83ff989de2e2eb2bdc6f99
 - ✅ AI decision is **provably correct** (zkML proof)
 - ✅ Transaction details **never leave client** until authorized
 - ✅ Natural language rules **never stored** (only parsed output)
-- ✅ Proof verification is **permanent and immutable** (on Base Sepolia)
+- ✅ Proof verification is recorded on Base Sepolia (testnet)
 
 ## 📈 Performance Metrics
 
 | Operation | Time | Cost |
 |-----------|------|------|
-| GPT-5 Rule Parsing | 4-5 seconds | ~800 tokens |
+| Rule Parsing (OpenAI/regex) | varies | depends |
 | ONNX Neural Network | 1-2 ms | Free |
 | JOLT-Atlas Proof Gen | ~500 ms | Free |
 | Groth16 On-Chain Verify | ~2 seconds | ~0.0005 ETH |
@@ -268,11 +270,11 @@ curl -X POST http://localhost:9006/checkout_sessions/cs_fa83ff989de2e2eb2bdc6f99
 - ✅ **AI-native**: Built for autonomous agents, not humans
 - ✅ **Verifiable**: Every decision has cryptographic proof
 - ✅ **Natural Language**: No complex config files
-- ✅ **Auditable**: Permanent on-chain record
+- ✅ **Auditable**: On-chain testnet record
 
 ### vs. Other ACP Implementations
 - ✅ **Only one with zkML proofs** (authorization_proof extension)
-- ✅ **Only one with GPT-5 integration** (natural_language_rules)
+- ✅ Includes natural_language_rules field support
 - ✅ **Full 5-endpoint compliance** (not just basic checkout)
 - ✅ **Production-ready** (error handling, idempotency, validation)
 
@@ -280,7 +282,7 @@ curl -X POST http://localhost:9006/checkout_sessions/cs_fa83ff989de2e2eb2bdc6f99
 
 ### For Developers
 - **API Reference**: `/home/hshadab/agentkit/acp/services/acp-openai-server.js`
-- **GPT-5 Parser**: `/home/hshadab/agentkit/acp/services/gpt5-rule-parser.js`
+- **Rule Parser Service**: `/home/hshadab/agentkit/acp/services/gpt5-rule-parser.js` (legacy name)
 - **UI Code**: `/home/hshadab/agentkit/acp/static/index.html`
 - **Integration Guide**: This document
 
@@ -313,7 +315,7 @@ curl -X POST http://localhost:9006/checkout_sessions/cs_fa83ff989de2e2eb2bdc6f99
 "I trust Amazon and want to spend max $1000/month on books"
 
 ### 2. Click "Generate Proof & Process Payment"
-- Watch GPT-5 parse rules (Step 1)
+- Watch the rule parser process input (Step 1)
 - See AI authorization decision (Step 2)
 - Observe zkML proof generation (Step 3)
 - View Stripe payment processing (Step 4)
@@ -342,7 +344,7 @@ curl -X POST .../checkout_sessions/{id}/cancel        # Cancel
 
 ## 💡 Key Innovations
 
-1. **First GPT-5 + ACP Integration** - Natural language commerce
+1. Rule parser + ACP integration — natural language commerce (demo)
 2. **First zkML + ACP Integration** - Cryptographic authorization
 3. **Production-Quality Implementation** - Not just a demo
 4. **Complete Audit Trail** - NL input → Blockchain verification
@@ -356,7 +358,7 @@ curl -X POST .../checkout_sessions/{id}/cancel        # Cancel
 
 ---
 
-**Built with**: OpenAI GPT-5, JOLT-Atlas, ACP, Stripe, Base Sepolia
+**Built with**: OpenAI API (optional), JOLT‑Atlas, ACP, Stripe (test mode), Base Sepolia (testnet)
 **Status**: ✅ **PRODUCTION READY**
 **Date**: September 30, 2025
 **Version**: 1.0.0

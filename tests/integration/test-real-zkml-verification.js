@@ -7,7 +7,7 @@ async function testRealVerification() {
     
     // Connect to Sepolia
     const provider = new ethers.providers.JsonRpcProvider('https://eth-sepolia.g.alchemy.com/v2/M0G6DDVS6iWqq5zHMqOLp5GWHhceJBHT');
-    const PRIVATE_KEY = '0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+    const PRIVATE_KEY = process.env.TEST_PRIVATE_KEY || '0xYOUR_TEST_PRIVATE_KEY'; // do not commit secrets
     const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
     
     // Verifier contract

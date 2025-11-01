@@ -5,7 +5,7 @@ async function testRealGatewayAttestation() {
     
     // Gateway credentials
     const API_KEY = 'SAND_API_KEY:3dc2c2b70ae5bd1943212a8521638b3b:8bb8eebdb457b04f261990e34c49d838';
-    const wallet = new ethers.Wallet('0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab');
+    const wallet = new ethers.Wallet(process.env.TEST_PRIVATE_KEY || '0xYOUR_TEST_PRIVATE_KEY');
     
     // Check current balance
     console.log('Checking Gateway balance...');

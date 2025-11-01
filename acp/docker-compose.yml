@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # GPT-5 Rule Parser - Parses natural language spending rules
+  # Rule Parser (legacy service name gpt5-parser) - Parses natural language spending rules
   gpt5-parser:
     image: node:18-alpine
     container_name: acp-gpt5-parser
@@ -15,7 +15,7 @@ services:
     environment:
       - PORT=9005
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-5-2025-08-07}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
       - NODE_ENV=${NODE_ENV:-development}
     restart: unless-stopped
     healthcheck:

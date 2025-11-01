@@ -1,15 +1,15 @@
 # AgentKit Repository Status - What's Real vs What's Missing
 
 **Generated**: 2025-10-02
-**Purpose**: Comprehensive audit of what's production-ready vs conceptual
+**Purpose**: Comprehensive audit of what's real (testnet) vs demo/simulated
 
 ---
 
-## ✅ PRODUCTION READY (100% Real)
+## ✅ Real (Testnet) and Working Demos
 
 ### 1. ACP (Agentic Commerce Protocol) - `/acp/`
 
-**Status**: 🟢 **FULLY FUNCTIONAL**
+**Status**: 🟢 Working demo/testnet
 
 #### What's Real:
 - ✅ **ONNX Authorization Model** (`acp/models/authorization_model.onnx`)
@@ -26,7 +26,7 @@
 
 - ✅ **Running Services**:
   - `proof-service.js` (Port 9001) - JOLT proof generation
-  - `gpt5-rule-parser.js` (Port 9005) - NLP rules parsing
+  - `gpt5-rule-parser.js` (Port 9005) - Rule parser service (optional OpenAI)
   - `acp-openai-server.js` (Port 9006) - Full ACP server
   - `onchain-verification-service.js` (Port 9004) - On-chain verification
 
@@ -52,7 +52,7 @@
 4. Groth16 verifier contract validates on-chain (Base Sepolia)
 5. Stripe payment executes only if proof verifies
 
-**Gaps**: None - fully functional end-to-end
+**Gaps**: See per‑service notes; testnet setup required and some flows optional
 
 ---
 
@@ -338,7 +338,7 @@ These are decorator/class enhancements for Circle's OOAK library:
 
 1. ⚠️ **Real Agent Models**: Need ONNX models for each marketplace agent type
 2. ⚠️ **Blockchain USDC Escrow**: Need smart contract for trustless escrow
-3. ⚠️ **On-Chain Proof Registry**: Contract to store all proofs permanently
+3. ⚠️ **On-Chain Proof Registry**: Contract to store proofs on-chain (testnet)
 4. ⚠️ **Production Key Management**: All private keys hardcoded (test only)
 5. ⚠️ **Rate Limiting**: No API rate limits on any service
 6. ⚠️ **Error Recovery**: Limited retry logic, no circuit breakers
@@ -551,7 +551,7 @@ These are decorator/class enhancements for Circle's OOAK library:
 ### What's the Gap:
 
 - **Marketplace is Demo** - Works, but uses mocks for proofs/payments
-- **~30 hours of work** to make marketplace production-ready
+- **~30 hours of work** to make marketplace testnet-ready (then audit for production)
 - All pieces exist, just need to wire them together
 
 ---
@@ -559,7 +559,7 @@ These are decorator/class enhancements for Circle's OOAK library:
 ## ✅ CONCLUSION
 
 **Current State**:
-- 🟢 80% production-ready
+- 🟢 80% demo/testnet-ready
 - 🟡 15% needs integration
 - 🔴 5% needs new code
 

@@ -4,7 +4,7 @@
 
 The blockchain provides three critical features that make the proof bulletproof:
 
-1. **Immutable Timestamps**: Can't fake when the commitment was made
+1. **On-Chain Timestamps**: Public testnet timestamps for commitments
 2. **Public Verifiability**: Anyone can verify the commitment existed
 3. **Censorship Resistance**: Can't delete or hide failed predictions
 
@@ -131,8 +131,8 @@ ZK Proof proves:
 
 ## Security Properties
 
-1. **Can't Backdate**: Base blockchain timestamps are immutable
-2. **Can't Delete**: Once committed, it's permanent
+1. **Can't Backdate**: Base testnet timestamps are public records
+2. **Can't Delete**: Commitments are recorded on-chain (testnet)
 3. **Can't Cherry-pick**: Must reveal what you committed
 4. **Public Audit**: Anyone can verify on basescan.org
 

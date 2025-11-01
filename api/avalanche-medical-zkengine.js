@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * Avalanche Medical Records Backend with REAL zkEngine Proofs
- * Uses zkEngine binary to generate actual ZK proofs
+ * Avalanche Medical Records Backend (Demo/Testnet)
+ * Uses zkEngine binary to generate proofs; on‑chain verification is simulated in this demo
  * Port: 8003
  */
 
@@ -23,7 +23,7 @@ const PORT = 8003;
 // Avalanche Fuji testnet configuration
 const AVALANCHE_RPC = 'https://api.avax-test.network/ext/bc/C/rpc';
 const CHAIN_ID = 43113;
-const PRIVATE_KEY = '0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+// Private key is not required in this demo (verification simulated)
 
 // Track medical records
 const recordSessions = new Map();
@@ -279,7 +279,7 @@ app.post('/medical/generate-proof', async (req, res) => {
             proof: proofData.proof,
             publicSignals: proofData.publicSignals,
             recordHash: session.recordHash,
-            message: 'Real zkEngine proof generated incorporating on-chain hash'
+            message: 'zkEngine proof generated incorporating record hash (demo)'
         });
         
     } catch (error) {
@@ -313,7 +313,7 @@ app.post('/medical/verify', async (req, res) => {
         console.log('   Public signals:', session.publicSignals);
         
         // In production, this would call a smart contract with the proof
-        // For now, we simulate the verification
+        // For this demo, we simulate the verification
         const isValid = true; // zkEngine proofs are always valid if generated successfully
         
         // Simulate gas costs for Groth16 verification
@@ -337,7 +337,7 @@ app.post('/medical/verify', async (req, res) => {
                 blockNumber: Math.floor(Math.random() * 1000000) + 45000000,
                 gasUsed: gasUsed.toString(),
                 explorerUrl: `https://testnet.snowtrace.io/tx/${mockTxHash}`,
-                message: 'Real zkEngine proof verification completed'
+                message: 'Simulated on-chain verification of zkEngine proof (demo)'
             });
         } else {
             throw new Error('zkEngine proof verification failed');
@@ -354,20 +354,20 @@ app.post('/medical/verify', async (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-    console.log('🏔️ Avalanche Medical Records Backend with zkEngine');
+    console.log('🏔️ Avalanche Medical Records Backend (Demo/Testnet)');
     console.log(`   Port: ${PORT}`);
     console.log(`   Network: Avalanche Fuji Testnet`);
-    console.log(`   Version: 3.0 with REAL zkEngine Proofs`);
+    console.log(`   Version: 3.0 (zkEngine proofs; on-chain verification simulated)`);
     console.log(`   Explorer: https://testnet.snowtrace.io`);
     
     console.log('\n📊 Available Endpoints:');
     console.log('   POST /medical/create - Create medical record');
-    console.log('   POST /medical/generate-proof - Generate REAL zkEngine proof');
-    console.log('   POST /medical/verify - Verify zkEngine proof\n');
+    console.log('   POST /medical/generate-proof - Generate zkEngine proof');
+    console.log('   POST /medical/verify - Simulated on-chain verification\n');
     
     console.log('✨ Key Features:');
-    console.log('   • REAL zkEngine binary proof generation');
-    console.log('   • Groth16 zk-SNARK proofs');
-    console.log('   • Incorporates on-chain hash in proof');
-    console.log('   • No fake delays or simulations\n');
+    console.log('   • zkEngine binary proof generation (demo)');
+    console.log('   • Groth16-style proof objects');
+    console.log('   • Incorporates record hash in proof');
+    console.log('   • On-chain verification simulated in this demo\n');
 });

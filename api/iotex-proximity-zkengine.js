@@ -24,7 +24,7 @@ const PORT = 8005;
 // IoTeX testnet configuration
 const IOTEX_RPC = 'https://babel-api.testnet.iotex.io';
 const CHAIN_ID = 4690; // IoTeX testnet chain ID
-const PRIVATE_KEY = '0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+const PRIVATE_KEY = process.env.IOTEX_PRIVATE_KEY || null; // do not commit keys
 
 // Deployed contracts on IoTeX
 const DEVICE_VERIFIER = '0x5967d15c7a6fD3ef7F1f309e766f35252a9de10d';

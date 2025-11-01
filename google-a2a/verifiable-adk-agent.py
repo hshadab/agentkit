@@ -73,7 +73,7 @@ class NovaNetVerifier:
         # Poll for completion
         proof_data = await self._poll_for_proof(session_id)
         
-        # Step 2: Verify on-chain (optional, for permanent record)
+        # Step 2: Verify on-chain (optional, for a testnet record)
         tx_hash = None
         gas_used = None
         
@@ -156,7 +156,7 @@ class VerifiableADKAgent:
         This method:
         1. Processes the request using Gemini/Vertex AI
         2. Generates a zkML proof of the decision
-        3. Optionally verifies on-chain for permanent record
+        3. Optionally verifies on-chain to create a testnet record
         4. Returns both the decision and cryptographic proof
         """
         

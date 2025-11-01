@@ -215,7 +215,7 @@ app.post('/api/groth16/verify', async (req, res) => {
   }
 });
 
-// Store verification on-chain (Base Sepolia) - creates permanent record
+// Store verification on-chain (Base Sepolia testnet) - creates on-chain record
 app.post('/api/groth16/store', async (req, res) => {
   try {
     const { a, b, c, publicSignals } = req.body || {};

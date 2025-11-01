@@ -1,35 +1,36 @@
-# zkML System Documentation - 100% REAL Implementation
+# zkML System Documentation (Demo/Testnet)
+
+> Demo/Prototype Notice
+>
+> This zkML section documents a demo/testnet setup. Some paths use real binaries and testnet verification; others simulate behavior for illustration. Do not use in production. Where possible, labels indicate Real (testnet) vs Simulated.
 
 ## Overview
 
-AgentKit's zkML (Zero-Knowledge Machine Learning) system is a **production-ready, fully operational** implementation using JOLT-Atlas proofs with real Rust binary execution. This is NOT a simulation - every proof is cryptographically generated and verified on-chain with permanent records.
+AgentKit’s zkML (Zero‑Knowledge Machine Learning) pieces demonstrate how JOLT‑Atlas proofs and a Rust binary can be integrated. This is a demo/testnet setup, not production. Some flows are real (testnet), others are simulated; on‑chain verification where noted uses public testnets.
 
-## ✅ Proof This is REAL
+## ✅ What’s Real in This Demo (Testnets)
 
-- **Binary**: `/jolt-atlas/target/release/llm_prover` (compiled Rust, not mock)
-- **Proof Time**: ~500ms actual cryptographic computation
-- **On-Chain**: Permanent verification at `0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944`
-- **Example TX**: [`0x5bd91b0146b1e67e8a1a182a8295b574f3313ec989128c04ab07b93d234bd59f`](https://sepolia.etherscan.io/tx/0x5bd91b0146b1e67e8a1a182a8295b574f3313ec989128c04ab07b93d234bd59f)
-- **Gas Used**: 344,175 units (real ETH spent)
+- Binary: `/jolt-atlas/target/release/llm_prover` (compiled Rust)
+- Proof time: host‑dependent; example measurements are indicative only
+- On‑chain: Verification on testnets where addresses are provided
+- Example TX: [`0x5bd91b0146b1e67e8a1a182a8295b574f3313ec989128c04ab07b93d234bd59f`](https://sepolia.etherscan.io/tx/0x5bd91b0146b1e67e8a1a182a8295b574f3313ec989128c04ab07b93d234bd59f) (testnet)
+- Gas used: varies by network and contract (testnets)
 
-## 🚀 Key Features (ALL REAL)
+## 🚀 Key Features (Demo/Testnet)
 
-- ✅ ~500ms Rust computation (measured, not simulated)
-- ✅ JOLT-Atlas binary execution (actual process spawning)
-- ✅ Structured proofs with "JOLT" header (cryptographic output)
-- ✅ All 14 parameters validated (real verification logic)
-- ✅ On-chain verification with gas costs (~0.0005 ETH)
+- JOLT‑Atlas binary execution (actual process spawning)
+- Structured proof outputs including commitments/hashes
+- Example parameter validations and checks
+- On‑chain verification on testnets where configured
 
 ## 🏗️ Technology Stack
 
-### JOLT-Atlas Framework
-JOLT-Atlas is NovaNet's zkML framework that extends the [a16z JOLT proving system](https://github.com/a16z/jolt) to support ML inference verification. 
+### JOLT‑Atlas Framework
+JOLT‑Atlas builds on the [a16z JOLT proving system](https://github.com/a16z/jolt) to support ML inference verification in this demo context.
 
-- **Base System**: a16z's JOLT (Just One Lookup Table)
-- **Extensions**: NovaNet's modifications for ML verification
-- **Repository**: [github.com/ICME-Lab/jolt-atlas](https://github.com/ICME-Lab/jolt-atlas)
-- **Key Innovation**: Proves ML computations using lookup tables instead of arithmetic circuits
-- **Performance**: ~500ms for LLM decision proofs
+- Base System: a16z’s JOLT (Just One Lookup Table)
+- Repository: [github.com/ICME-Lab/jolt-atlas](https://github.com/ICME-Lab/jolt-atlas)
+- Notes: Performance depends on build and host machine
 
 ### Implementation Details
 
@@ -47,7 +48,7 @@ JOLT-Atlas is NovaNet's zkML framework that extends the [a16z JOLT proving syste
 
 ### What We Prove
 
-Our zkML system proves that an LLM agent:
+This demo aims to show how a system could prove that an LLM agent:
 1. **Correctly parsed** user requests
 2. **Applied authorization rules** (spending limits, allowlists)
 3. **Made decisions with high confidence** (not random)
@@ -105,10 +106,9 @@ Our zkML system proves that an LLM agent:
    ```
 
 3. **Proof Generation**
-   - Structured 256-byte proof
-   - Starts with "JOLT" header [74, 79, 76, 84]
-   - Contains decision, confidence, risk score
-   - Cryptographically secure random fill
+   - Structured proof output (length and layout depend on build)
+   - May include a fixed header and decision/confidence fields
+   - Contains commitments suitable for verification
 
 ## 💻 Implementation
 

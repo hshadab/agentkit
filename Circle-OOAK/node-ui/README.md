@@ -20,7 +20,7 @@ When an agent decides to spend USDC, the system cryptographically proves every s
 1. **ONNX Neural Network Inference** - Real AI decision using a trained authorization model
 2. **JOLT-Atlas zkML Proof** - Cryptographic proof the AI model actually executed (~600ms)
 3. **Groth16 Proof** - Zero-knowledge proof with public verification
-4. **On-Chain Verification** - Permanent record on Base Sepolia blockchain
+4. **On-Chain Verification** - On-chain record on Base Sepolia (testnet)
 5. **USDC Transfer** - Payment executes only after all proofs verify
 
 ## Why This Matters
@@ -30,14 +30,14 @@ When an agent decides to spend USDC, the system cryptographically proves every s
 **The zkML Solution**: Mathematical proof that:
 - The authorization model actually executed (not spoofed)
 - The decision matches the claimed inputs
-- Everything is permanently recorded on-chain
+- Everything is recorded on-chain (testnet)
 - Payments only execute after cryptographic verification
 
 **Use Cases**:
 - **Agent Marketplaces** - Safely use untrusted agents with USDC spending limits
 - **Autonomous Subscriptions** - Prove AI correctly authorized recurring payments
 - **Cross-Platform Agents** - Any agent SDK (not just OpenAI) can be made trustless
-- **Compliance & Audit** - Immutable cryptographic proof trail on Base blockchain
+- **Compliance & Audit** - Cryptographic proof trail on Base testnet
 
 ## Positioning: General-Purpose Trustless Agent Framework
 
@@ -51,7 +51,7 @@ This extends Circle's OOAK from **secure** (trust-based) to **trustless** (crypt
 
 **On-Chain Verification**:
 - Groth16 verifier validates proof cryptographically
-- ProofStorage contract stores verification permanently
+- ProofStorage contract stores verification on-chain (testnet)
 - Contract: `0x5572b2762ca2e975A6A96b416cc0D9f3bCe1d507` on Base Sepolia
 
 **USDC Integration**: Direct ERC20 transfer on Base Sepolia after all checks pass

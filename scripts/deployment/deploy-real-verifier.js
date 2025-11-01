@@ -12,7 +12,7 @@ async function deployRealVerifier() {
     );
     
     // Use the wallet with funds
-    const privateKey = '0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+    const privateKey = process.env.DEPLOYER_PK || null; // set via env; do not commit keys
     const wallet = new ethers.Wallet(privateKey, provider);
     
     console.log('Deployer address:', wallet.address);

@@ -1,14 +1,14 @@
-# Claude Assistant Guide - AgentKit v3.0
+# Claude Assistant Guide - AgentKit v3.0 (Demo/Testnet)
 
 ## Project Overview
-AgentKit is a **100% REAL production framework** for building verifiable AI agents with cryptographic proofs across multiple blockchains. The v3.0 release features **OpenAI's Agentic Commerce Protocol (ACP)** deeply integrated with JOLT-Atlas zkML proofs, enabling the world's first trustless autonomous agent marketplace.
+AgentKit is a demo/testnet project exploring verifiable AI agents with cryptographic proofs across blockchains. The v3.0 release features ACP‑compatible endpoints and JOLT‑Atlas zkML proofs integrated into example flows. Some components are real on testnets; others are simulated.
 
-**Latest Update**: 2025-10-05 - zkML ONNX Verifier with LOCAL VERIFICATION! Real Groth16 zkSNARK proofs using snarkjs. Download proof files and verify offline without blockchain - instant (~10ms), free, 100% private. Full workflow: ONNX inference → Groth16 proof generation (~1-2s) → Download proof.json → Local verification. Perfect for internal compliance, client audits, and confidential models. Zero blockchain dependency. Location: `zkml-verifier/` | UI: http://localhost:9101
+**Latest Update**: 2025-10-05 - zkML ONNX Verifier (demo). Groth16 zkSNARK proofs using snarkjs and local verification paths. Intended for testing on local/dev environments. Location: `zkml-verifier/` | UI: http://localhost:9101
 
 ## ⚠️ Implementation Policy: Show, Don't Tell
-**Verification Over Marketing**: Every claim is independently reproducible.
+**Verification Over Marketing**: Strive to include commands and references; consider claims illustrative unless linked to reproducible artifacts.
 
-- ✅ Real GPT-5 API calls → See logs for model name + token usage
+- ✅ Rule parser service (optional OpenAI) → See logs for model/usage when enabled
 - ✅ Real JOLT-Atlas binary → Binary exists, executes, generates proofs
 - ✅ Real Stripe payments → PaymentIntent IDs in Stripe Dashboard
 - ✅ Real on-chain verification → Transaction hashes on Basescan
@@ -17,7 +17,7 @@ AgentKit is a **100% REAL production framework** for building verifiable AI agen
 
 ## 🎯 Core Technologies Stack
 
-### 0. ACP × zkML Agent Marketplace (v3.0) - 100% REAL
+### 0. ACP × zkML Agent Marketplace (v3.0) — Demo/Testnet
 - **Location**: `acp/` directory
 - **Purpose**: The Agent Marketplace - Use ANY Agent Safely with zkML
 - **Concept**: Enable untrusted agents from marketplace to spend with cryptographic proof
@@ -37,7 +37,7 @@ AgentKit is a **100% REAL production framework** for building verifiable AI agen
    - Proof size: 524 bytes
    - File: `acp/services/proof-service.js`
 
-3. **GPT-5 Rule Parser** (Port 9005)
+3. **Rule Parser Service** (Port 9005)
    - Natural language → structured spending rules
    - Fallback: Regex pattern matching (when OpenAI unavailable)
    - File: `acp/services/gpt5-rule-parser.js`
@@ -64,7 +64,7 @@ AgentKit is a **100% REAL production framework** for building verifiable AI agen
 1. **Agent Chosen** - Select unverified agent from marketplace dropdown
 2. **AI Agent Inference** - ONNX neural network runs authorization (5 inputs → decision + confidence)
 3. **zkML Inference Proof** - JOLT-Atlas generates cryptographic proof (~600ms)
-4. **On-Chain Proof Verification** - Groth16 verifier contract on Base Sepolia (permanent record)
+4. **On-Chain Proof Verification** - Groth16 verifier contract on Base Sepolia (testnet record)
 5. **ACP Payment** - Real Stripe PaymentIntent only executes after verification succeeds
 
 **UI Features** (http://localhost:9000/index.html):
@@ -74,7 +74,7 @@ AgentKit is a **100% REAL production framework** for building verifiable AI agen
 - Live contract links: deployed verifier + explorer
 - Automatic test card integration (4242...)
 
-**Status**: 100% production-ready, NO mocks or simulations
+**Status**: Demo/Testnet; some parts simulated or optional
 
 ### 0.5. zkML ONNX Verifier - Standalone Model Verification (NEW)
 - **Location**: `zkml-verifier/` directory
@@ -190,9 +190,9 @@ cd ui && node server.js # UI on port 9101
 | Cost | Free | ~$0.50 gas |
 | Privacy | 100% private | Public record |
 | Offline | ✅ Yes | ❌ No |
-| Audit Trail | Manual storage | Permanent on-chain |
+| Audit Trail | Manual storage | On-chain (testnet) |
 
-**Status**: 100% production-ready, REAL ONNX inference + Groth16 zkSNARK proofs
+**Status**: Demo/Testnet; ONNX inference + Groth16 examples available
 
 ### 1. zkEngine - Universal Proof Generation
 - **Language**: Rust compiled to WASM
@@ -204,7 +204,7 @@ cd ui && node server.js # UI on port 9101
   - `zkengine/src/` - Rust source code
   - `zkengine/wasm/` - WASM compilation
 
-### 2. zkML System (JOLT-Atlas) - 100% REAL
+### 2. zkML System (JOLT-Atlas) — Demo/Testnet
 - **Model**: LLM Decision Proof Model (14 parameters)
 - **Framework**: JOLT-Atlas with recursive SNARKs
 - **Backend Port**: 8002
@@ -216,15 +216,15 @@ cd ui && node server.js # UI on port 9101
   - GET `/zkml/status/:sessionId` - Check proof status
 - **Performance**: 20x faster than previous implementation
 
-### 3. On-Chain JOLT Verifier (REAL)
+### 3. On-Chain JOLT Verifier (Testnet)
 - **Backend Port**: 3004
 - **Contract**: `0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944` on Ethereum Sepolia
-- **Purpose**: PERMANENT on-chain verification with audit trail
+- **Purpose**: On-chain verification (testnet) with audit trail
 - **Circuit**: Simplified (2 params: decision, confidence) for demo
 - **File**: `api/groth16-jolt-backend-real.js`
-- **Cost**: ~0.0005 ETH per verification (creates permanent record)
+- **Cost**: varies on testnet (creates a testnet record)
 - **Features**: 
-  - Stores verification on-chain permanently
+  - Stores verification on-chain (testnet)
   - Emits events for audit trail
   - Returns transaction hash as proof
   - Prevents double-verification
@@ -296,7 +296,7 @@ node api/gateway-balance-proxy.js
 
 ## 🏥 Use Case Examples
 
-### Avalanche - Medical Records (100% REAL Groth16 Verification)
+### Avalanche - Medical Records (Demo/Testnet Groth16 Verification)
 ```javascript
 // Three-step workflow with REAL Groth16 proof-of-proof verification
 // Backend: api/avalanche-medical-groth16.js (Port 8003)
@@ -411,9 +411,9 @@ const revealed = await aiContract.revealPrediction(
 - EIP-712 typed data for MetaMask
 - Links AI decision to HTTP micropayment
 
-#### Step 3: On-Chain Verification
-- Groth16 proof-of-proof on Base Sepolia
-- Creates permanent audit trail
+#### Step 3: On-Chain Verification (Testnet)
+- Groth16 proof-of-proof on Base Sepolia (testnet)
+- Creates a testnet audit trail
 - ~350k gas cost
 - Example: [0xcb0f2abf...](https://sepolia.basescan.org/tx/0xcb0f2abf65efb852a93413da261688d223856f1854546ba329542263033f1787)
 
@@ -423,10 +423,10 @@ const revealed = await aiContract.revealPrediction(
 - Real USDC on Base Sepolia
 - $0.01 per demo transaction
 
-### What Makes This Special
+### Notes
 - **Agent Authorization Model**: Proves agents CAN spend, not blocking fraud
-- **Real Transactions**: No simulations, actual on-chain verification
-- **Production x402**: Follows Coinbase specification exactly
+- Some flows may be simulated; on-chain examples use testnets
+- Reference implementation for x402-like flows
 
 ## 📊 Performance Metrics
 
@@ -577,7 +577,7 @@ node tests/integration/test-iotex-proximity.js
 
 ## 📝 Previous Updates
 
-### 2025-09-08 - IoTeX Proximity Verification 100% REAL Implementation
+### 2025-09-08 - IoTeX Proximity Verification Demo/Testnet Implementation
 - ✅ Created custom ProximityVerification.circom circuit outputting 6 signals
 - ✅ Generated trusted setup and zkey file for Groth16 proofs
 - ✅ Deployed ProximityGroth16Verifier: `0x9948D8d9Cc8848653c062a5Fdcfea931535DF81A`
@@ -627,12 +627,12 @@ node tests/integration/test-iotex-proximity.js
 - ✅ Recent verification TX: [0x30775278f457979fcf71f51c8726168f8929db699884761b84183a73ec92875c](https://sepolia.etherscan.io/tx/0x30775278f457979fcf71f51c8726168f8929db699884761b84183a73ec92875c)
 - ✅ All 3 workflow steps now complete successfully
 
-### 2025-08-29 - 100% REAL Implementation Complete
+### 2025-08-29 - Demo/Testnet Implementation Complete
 - ✅ Real zkML proof generation with Rust binary (~500ms)
 - ✅ Real on-chain verification with gas costs (~0.0005 ETH)
 - ✅ Permanent blockchain records with transaction hashes
 - ✅ Example TX: [0x5bd91b0146b1e67e8a1a182a8295b574f3313ec989128c04ab07b93d234bd59f](https://sepolia.etherscan.io/tx/0x5bd91b0146b1e67e8a1a182a8295b574f3313ec989128c04ab07b93d234bd59f)
-- ✅ NO simulations, NO fake delays, NO mock data
+- ✅ Where possible, real flows are used; some steps remain simulated for safety
 
 ### 2025-08-29 - On-Chain JOLT Verification
 - ✅ Deployed simplified JOLT verifier to Sepolia (0x1279FEDc2A21Ae16dC6bfE2bE0B89175f98BD308)

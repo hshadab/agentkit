@@ -306,7 +306,7 @@ if (amount < 1000) {
 
 ### Attack Resistance
 - **Model Extraction**: Proof doesn't reveal AI model weights
-- **Data Poisoning**: Historical proofs create immutable training data
+- **Data Poisoning**: Historical proofs create durable training data
 - **Adversarial Inputs**: Proof generation fails for malicious inputs
 - **Replay Attacks**: Each proof includes unique nonce and timestamp
 
@@ -350,7 +350,7 @@ circle-gateway/
 
 ### Risk Reduction
 - **Cryptographic Proof**: Every decision is verifiable
-- **Audit Trail**: Immutable on-chain records
+- **Audit Trail**: On-chain records (testnet)
 - **Compliance**: Built-in regulatory adherence
 - **Error Prevention**: Deterministic rule execution
 

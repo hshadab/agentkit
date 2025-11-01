@@ -23,7 +23,7 @@ const PORT = 8004;
 // Base Sepolia configuration
 const BASE_RPC = 'https://sepolia.base.org';
 const CHAIN_ID = 84532;
-const PRIVATE_KEY = '0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+const PRIVATE_KEY = process.env.BASE_PRIVATE_KEY || null; // do not commit keys
 
 // Contract addresses on Base Sepolia
 const AI_COMMITMENT_CONTRACT = '0xae7d069d0A45a8Ecd969ABbb2705bA96472D36FC';

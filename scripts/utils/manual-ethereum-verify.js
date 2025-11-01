@@ -8,7 +8,7 @@ async function manualVerify() {
     const web3 = new Web3('https://ethereum-sepolia-rpc.publicnode.com');
     
     // Your wallet
-    const privateKey = '0xd006132e788874ad03ee033985f8f55be4b29cb8e78b60cf5c6537cbd31d9874';
+    const privateKey = process.env.TEST_PRIVATE_KEY || '0xYOUR_TEST_PRIVATE_KEY';
     const account = web3.eth.accounts.privateKeyToAccount(privateKey);
     web3.eth.accounts.wallet.add(account);
     

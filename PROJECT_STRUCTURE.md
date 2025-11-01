@@ -26,7 +26,7 @@ agentkit/
 │   └── [proof-type]/            # Other proof circuits
 │
 ├── contracts/                    # Smart Contracts
-│   ├── JOLTDecisionVerifierWithStorage.sol   # Storage verifier (permanent records)
+│   ├── JOLTDecisionVerifierWithStorage.sol   # Storage verifier (on-chain records, testnet)
 │   ├── MedicalRecordsIntegrity_Avalanche.sol
 │   ├── IoTeXProximityVerifier.sol
 │   ├── AIPredictionGroth16Verifier.sol       # AI prediction verifier
@@ -95,7 +95,7 @@ agentkit/
 ### UI Integration
 - **Main UI**: `static/index-clean.html`
 - **JS**: `static/js/gateway-zkml-polling.js`
-- **Shows**: Transaction hash, gas costs, permanent record
+- **Shows**: Transaction hash, gas costs, on-chain record (testnet)
 
 ## 🚀 Starting Services
 
@@ -114,7 +114,7 @@ node api/gateway-balance-proxy.js                 # Port 8007 - Circle balance
 python3 scripts/utils/serve-no-cache.py           # Port 8000 - Web UI
 ```
 
-## ✅ Verification This is Real
+## ✅ Verification Notes (Testnet)
 
 1. **Check zkML Binary**: 
    ```bash
@@ -127,11 +127,7 @@ python3 scripts/utils/serve-no-cache.py           # Port 8000 - Web UI
 3. **Example Transaction**:
    https://sepolia.etherscan.io/tx/0x5bd91b0146b1e67e8a1a182a8295b574f3313ec989128c04ab07b93d234bd59f
 
-## 📝 No Simulations
+## 📝 Demo/Testnet Notes
 
-- ❌ NO setTimeout delays
-- ❌ NO mock responses
-- ❌ NO fake proofs
-- ✅ REAL Rust binary
-- ✅ REAL gas costs
-- ✅ REAL blockchain records
+- Some flows may simulate parts of the workflow
+- Rust binaries and on-chain examples use public testnets

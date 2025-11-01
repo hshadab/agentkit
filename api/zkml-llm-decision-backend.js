@@ -384,7 +384,7 @@ app.get('/zkml/proof/:sessionId', (req, res) => {
         riskScore: session.riskScore,
         model: 'llm_decision_proof',
         parameters: 14,
-        framework: 'JOLT-Atlas (REAL)'
+        framework: 'JOLT-Atlas (Demo/Testnet)'
     });
 });
 
@@ -394,14 +394,14 @@ app.listen(PORT, () => {
     
     console.log(`
 ╔══════════════════════════════════════════════════════════════╗
-║     zkML LLM Decision Proof Backend - REAL JOLT-Atlas       ║
+║     zkML LLM Decision Proof Backend - JOLT-Atlas (Demo)     ║
 ║                                                              ║
 ║     Model: LLM Decision Proof (14 parameters)               ║
 ║     Framework: JOLT-Atlas (Recursive SNARKs)                ║
 ║     Port: ${PORT}                                           ║
 ║     Binary: ${binaryExists ? '✅ FOUND' : '❌ MISSING'}                                 ║
 ║                                                              ║
-║     100% REAL - Using Rust JOLT-Atlas Binary                ║
+║     Using Rust JOLT-Atlas Binary when available             ║
 ╚══════════════════════════════════════════════════════════════╝
     `);
     

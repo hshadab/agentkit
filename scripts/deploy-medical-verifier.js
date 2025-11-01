@@ -4,7 +4,7 @@ const path = require('path');
 
 // Avalanche Fuji configuration
 const AVALANCHE_RPC = 'https://api.avax-test.network/ext/bc/C/rpc';
-const PRIVATE_KEY = '0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+const PRIVATE_KEY = process.env.DEPLOYER_PK || null; // set via env; do not commit keys
 
 async function deploy() {
     console.log('🚀 Deploying Medical Groth16 Verifier to Avalanche Fuji...\n');

@@ -1,14 +1,14 @@
-# x402 Agent Authorization System with zkML
+# x402 Agent Authorization System with zkML (Demo/Testnet)
 
 ## Overview
 Reference demo of the [Coinbase x402 Payment Protocol](https://github.com/coinbase/x402) with an experimental Agent Authorization (zkML) extension. It demonstrates AI authorization → zk proof → attestation → optional on‑chain anchor → payment using EIP‑3009 `transferWithAuthorization`.
 
-Note: This is a reference demo, not a spec‑verified or security‑hardened implementation.
+Note: This is a reference demo/testnet, not a spec‑verified or security‑hardened implementation.
 
 ### Deep x402 + zkML Integration (PoP anchored)
 - Real ONNX inference integrated into the flow (Step 1): proof‑gate calls your ONNX service for a decision+confidence before proving.
 - Proof‑of‑Proof commitment: Jolt‑Atlas proof bytes are hashed and reduced mod BN254; the Groth16 circuit exposes `[decision, confidence, proofHash]` as public signals.
-- On‑chain anchor (Step 4): the storage verifier on Base Sepolia enforces the 3rd signal, permanently anchoring the exact Jolt proof commitment.
+- On‑chain anchor (Step 4): the storage verifier on Base Sepolia (testnet) enforces the 3rd signal, anchoring the exact Jolt proof commitment.
 - v2 circuit (5 signals): optionally includes `modelHash` (ONNX bytes) and `policyHash` (Accepts hash) as public signals alongside `[decision, confidence, proofHash]` for stronger binding on‑chain.
 - Attestation binding (Step 3): attestation binds `proofHash`, `intentHash` (method+path+body), and `acceptsHash` (price/network/asset/payTo). This prevents TOCTOU and ties the AI decision to the precise x402 payment intent and server policy.
 - Session‑bound verification: the anchor job uses the in‑memory SNARK proof and public signals from the same session that generated the Jolt commitment, eliminating file races.
@@ -19,7 +19,7 @@ Note: This is a reference demo, not a spec‑verified or security‑hardened imp
 - ✅ **Agent Authorization Model**: AI agents prove they can spend based on rules
 - ✅ **x402-Compatible Flow**: EIP-3009 `transferWithAuthorization` support
 - ✅ **zkML Spending Rules**: Verifies budget, risk, categories via JOLT-Atlas
-- ✅ **On-chain Verification**: Groth16 proof-of-proof creates audit trail
+- ✅ **On-chain Verification**: Groth16 proof-of-proof creates a testnet audit trail
 - ✅ **MetaMask Integration**: EIP-712 signing for gasless USDC transfers
 - ✅ **Real USDC Transfers**: Live on Base Sepolia with transaction links
 
@@ -418,7 +418,7 @@ Response (Paid): {
 - Commerce data (cart, merchant, client) is cryptographically bound
 - Server policy is bound via `acceptsHash` (price/network/asset/payTo)
 - Replay protection via nonces and timestamps
-- On-chain verification creates permanent audit trail
+ - On-chain verification creates a testnet audit trail
 
 ## Troubleshooting
 

@@ -1,4 +1,4 @@
-# Verifiable Agent Kit v7.2.1 - Complete System Specification & Handoff Document
+# Verifiable Agent Kit v7.2.1 (Demo/Testnet) - System Specification & Handoff
 
 ## Table of Contents
 1. [Executive Summary](#executive-summary)
@@ -20,7 +20,7 @@
 
 ## Executive Summary
 
-The Verifiable Agent Kit v7.2.1 is a production-ready system that generates real zero-knowledge proofs using actual business logic for KYC compliance, location verification, and AI content authentication. The system uses WebSocket communication to prevent timeouts and properly compiled WASM files from C source code.
+This document describes a demo/testnet system for generating zero‑knowledge proofs using example business logic (KYC, location, AI content). It is not production‑ready. WebSocket communication and WASM compilation are used in example flows.
 
 ### Key Achievements in v7.2.1
 - ✅ **Real Business Logic**: Compiled WASM files from C source code

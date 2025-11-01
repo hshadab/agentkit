@@ -1,8 +1,8 @@
-# Verifiable Agent Kit - Technical Architecture Document
+# Verifiable Agent Kit - Technical Architecture (Demo/Testnet)
 
 ## Overview
 
-The Verifiable Agent Kit is a production-ready framework for generating and verifying zero-knowledge proofs with multi-chain support and automated USDC transfers. This document provides a comprehensive technical overview of the system architecture, components, and implementation details.
+This document describes a demo/testnet framework for generating and verifying zero‑knowledge proofs with multi‑chain support and automated transfers. It is not production‑ready. Some flows are real on public testnets; others are simulated for illustration.
 
 ## Table of Contents
 

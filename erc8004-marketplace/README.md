@@ -2,7 +2,7 @@
 
 **First monetizable zkML validation service implementing ERC-8004 standard**
 
-Cryptographic proof system that enables trustless AI agent validation through zero-knowledge machine learning proofs. Agents pay to get verified and receive permanent on-chain certificates.
+Cryptographic proof system that enables trustless AI agent validation through zero-knowledge machine learning proofs. Agents pay to get verified and receive on-chain certificates (testnet in this demo).
 
 ## 🎯 What This Is
 

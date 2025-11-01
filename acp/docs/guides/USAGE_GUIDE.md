@@ -1,4 +1,6 @@
-# 🚀 Usage Guide - ACP × GPT-5 × zkML
+# 🚀 Usage Guide - ACP × Rule Parser × zkML (Demo/Testnet)
+
+Note: This guide refers to a local rule parser service (legacy filename `gpt5-rule-parser.js`) that can optionally call the OpenAI API. It is a demo/testnet setup.
 
 ## Quick Start (3 Steps)
 
@@ -7,7 +9,7 @@
 ```bash
 cd /home/hshadab/agentkit/acp
 
-# Start GPT-5 Parser
+# Start Rule Parser
 node services/gpt5-rule-parser.js > logs/gpt5-parser.log 2>&1 &
 
 # Start ACP OpenAI Server
@@ -17,7 +19,7 @@ node services/acp-openai-server.js > logs/acp-openai.log 2>&1 &
 node services/proof-service.js > logs/proof-service.log 2>&1 &
 
 # Verify all running
-curl http://localhost:9005/health  # GPT-5 Parser
+curl http://localhost:9005/health  # Rule Parser
 curl http://localhost:9006/health  # ACP Server
 curl http://localhost:9001/health  # Proof Service
 ```
@@ -45,7 +47,7 @@ I trust Amazon and want to spend max $1000/month on books
 ```
 
 **What happens**:
-- GPT-5 parses: `{monthly_limit: 1000, trusted_merchants: {amazon: 0.95}, allowed_categories: ["books"]}`
+- Rule parser: `{monthly_limit: 1000, trusted_merchants: {amazon: 0.95}, allowed_categories: ["books"]}`
 - AI checks: Budget ✅ (plenty remaining), Trust ✅ (95%), Amount ✅ ($45 < $500/day), Category ✅ (books allowed)
 - Result: **AUTHORIZED** at 80% confidence
 - Card element appears for payment
@@ -62,7 +64,7 @@ Spend max $500/week on groceries from trusted stores, no more than $100 per tran
 ```
 
 **What happens**:
-- GPT-5 parses: `{weekly_limit: 500, per_transaction_max: 100, trusted_merchants: {whole_foods: 0.95, trader_joes: 0.95}}`
+- Rule parser: `{weekly_limit: 500, per_transaction_max: 100, trusted_merchants: {whole_foods: 0.95, trader_joes: 0.95}}`
 - AI converts: $500/week = ~$71/day
 - Result: **AUTHORIZED** if amount < $71
 
@@ -78,7 +80,7 @@ No entertainment spending, and ask me before buying anything over $200
 ```
 
 **What happens**:
-- GPT-5 parses: `{blocked_categories: ["entertainment"], require_approval_above: 200}`
+- Rule parser: `{blocked_categories: ["entertainment"], require_approval_above: 200}`
 - AI checks: Category ❌ (entertainment blocked), Amount ✅
 - Result: **DENIED** at 40% confidence
 - No payment processed
@@ -95,7 +97,7 @@ Max $50/day on coffee shops, no more than 5 transactions per hour
 ```
 
 **What happens**:
-- GPT-5 parses: `{daily_limit: 50, velocity_limit: 5}`
+- Rule parser: `{daily_limit: 50, velocity_limit: 5}`
 - AI checks: Budget ✅, Velocity ✅ (first transaction today)
 - Result: **AUTHORIZED** at 80% confidence
 
@@ -111,7 +113,7 @@ I trust Etsy sellers, max $2000/month on crafts and home goods
 ```
 
 **What happens**:
-- GPT-5 parses: `{monthly_limit: 2000, trusted_merchants: {etsy: 0.95}, allowed_categories: ["crafts", "home-goods"]}`
+- Rule parser: `{monthly_limit: 2000, trusted_merchants: {etsy: 0.95}, allowed_categories: ["crafts", "home-goods"]}`
 - AI converts: $2000/month = ~$66/day
 - Result: **AUTHORIZED** if amount < $66
 
@@ -127,7 +129,7 @@ Max 3 transactions per day, $100 daily budget
 ```
 
 **What happens**:
-- GPT-5 parses: `{daily_limit: 100, velocity_limit: 3}`
+- Rule parser: `{daily_limit: 100, velocity_limit: 3}`
 - AI checks: Velocity ❌ (already 4 transactions today)
 - Result: **DENIED** at 60% confidence
 
@@ -199,13 +201,13 @@ CVC: Any 3 digits
 ### Check Service Logs
 
 ```bash
-# GPT-5 Parser
+# Rule Parser
 tail -f logs/gpt5-parser.log
 # Shows: "✅ Rules parsed in 5141ms" with model name
 
 # ACP Server
 tail -f logs/acp-openai.log
-# Shows: "🤖 Parsing rules with GPT-5..."
+# Shows: "🤖 Parsing rules with rule parser..."
 # Shows: "✅ zkML proof generated: AUTHORIZED (0.85)"
 
 # Proof Service
@@ -226,7 +228,7 @@ curl http://localhost:9001/health | jq
 
 ## 🧪 Advanced Testing
 
-### Test 1: GPT-5 Parser Only
+### Test 1: Rule Parser Only
 
 ```bash
 curl -X POST http://localhost:9005/parse-rules \
@@ -243,8 +245,7 @@ curl -X POST http://localhost:9005/parse-rules \
     "allowed_categories": ["books"],
     "trusted_merchants": {"amazon": 0.95}
   },
-  "model": "gpt-5-2025-08-07",
-  "tokens_used": 834
+  "parser": "openai|regex"
 }
 ```
 
@@ -304,7 +305,7 @@ curl -X POST http://localhost:9006/checkout_sessions/cs_abc123/complete \
    - Shows: Amount, Budget, Trust score
 
 2. **Step 2: AI Authorization** (5-7 seconds)
-   - GPT-5 parses natural language
+   - Rule parser processes natural language
    - AI evaluates 5 checks
    - Shows: Decision, Confidence, Session ID
 
@@ -348,7 +349,7 @@ node services/proof-service.js > logs/proof-service.log 2>&1 &
 
 ---
 
-### Issue: GPT-5 Not Working
+### Issue: Rule Parser Not Working
 
 ```bash
 # Check API key is set
@@ -406,7 +407,7 @@ open http://localhost:8000/acp/static/index.html
 
 # 5. Watch workflow (10 seconds)
 # Step 1: ✅ Input collected
-# Step 2: ✅ GPT-5 parsed + AI authorized (85%)
+# Step 2: ✅ Rule parser processed + AI authorized (85%)
 # Step 3: ✅ JOLT proof generated
 
 # 6. Enter test card (20 seconds)
@@ -432,14 +433,14 @@ Total: ~60 seconds
 2. **Use test card immediately**: Have 4242... card info ready
 3. **Check logs for debugging**: `tail -f logs/*.log`
 4. **Test without natural language**: Leave field empty, use manual inputs
-5. **Monitor GPT-5 tokens**: Each parse uses ~800 tokens (~$0.01)
+5. **Monitor OpenAI usage**: If using OpenAI, track token costs
 
 ---
 
 ## 📚 Next Steps
 
 - **Customize UI**: Edit `static/index.html`
-- **Add more rules**: Extend GPT-5 parser patterns
+- **Add more rules**: Extend rule parser patterns
 - **Deploy to production**: Use real Stripe keys
 - **Add more merchants**: Update trust scores
 - **Integrate with apps**: Use ACP API endpoints

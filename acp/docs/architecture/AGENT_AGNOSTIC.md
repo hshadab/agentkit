@@ -139,7 +139,7 @@ It does **not** prove which agent made the request (intentionally).
 The backend services were already agent-agnostic:
 - `acp-openai-server.js` → Name is misleading, but code is universal
 - `proof-service.js` → No agent-specific logic
-- `gpt5-rule-parser.js` → GPT-5 API used for parsing, not agent identification
+- `gpt5-rule-parser.js` → Rule parser service (optional OpenAI), not agent identification
 
 ### Documentation
 - Updated README.md with agent-agnostic architecture

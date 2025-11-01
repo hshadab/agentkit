@@ -13,7 +13,7 @@ interface IGroth16Verifier {
 /**
  * @title VerificationRegistry
  * @notice Stores on-chain records of all zkML proof verifications
- * @dev Each verification creates a permanent transaction with gas cost
+ * @dev Each verification creates an on-chain transaction with gas cost (testnet in this demo)
  */
 contract VerificationRegistry {
     IGroth16Verifier public immutable verifier;

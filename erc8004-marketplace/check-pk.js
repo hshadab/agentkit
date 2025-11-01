@@ -1,6 +1,6 @@
 const { ethers } = require('ethers');
 
-const privateKey = "0xe04571b0c9adb6b75c63296fda1de67ab76e163530056c646a590a9cb07d31e5";
+const privateKey = process.env.TEST_PRIVATE_KEY || "0xYOUR_TEST_PRIVATE_KEY";
 const wallet = new ethers.Wallet(privateKey);
 
 console.log(`\nPrivate Key: ${privateKey}`);

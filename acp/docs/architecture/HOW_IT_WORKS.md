@@ -8,11 +8,11 @@ This document explains exactly how the system processes a payment authorization 
 
 ## Overview
 
-The demo showcases **trustless AI agent payment authorization** using:
-- **Real neural network inference** (ONNX Runtime)
-- **Real zkML proofs** (JOLT-Atlas)
-- **Real payment processing** (Stripe)
-- **Real on-chain verification** (Base Sepolia)
+The demo showcases AI agent payment authorization concepts using:
+- ONNX neural network inference (demo)
+- zkML proofs via JOLT‑Atlas (where configured)
+- Stripe (test mode)
+- On‑chain verification on Base Sepolia (testnet)
 
 ---
 
@@ -199,7 +199,7 @@ payment.proof_hash = authorization_proof.proof_hash;
 
 **What happens:**
 - For high-value transactions, proof can be verified on Base Sepolia
-- Creates permanent blockchain record
+- Creates on-chain blockchain record (testnet)
 - Costs ~0.0005 ETH in gas
 
 **Behind the scenes:**
@@ -319,11 +319,11 @@ From actual test logs:
 
 | Operation | Time | Type |
 |-----------|------|------|
-| Neural Network Inference | ~1ms | REAL (ONNX Runtime) |
-| zkML Proof Generation | 724ms | REAL (JOLT-Atlas) |
-| Stripe Payment Creation | ~200ms | REAL (Stripe API) |
-| On-Chain Verification | ~3s | REAL (Base Sepolia) |
-| **Total End-to-End** | **~1s** | **100% REAL** |
+| Neural Network Inference | ~1ms | Demo (ONNX Runtime) |
+| zkML Proof Generation | varies | Demo/Testnet (JOLT‑Atlas) |
+| Stripe Payment Creation | ~200ms | Test mode |
+| On-Chain Verification | ~3s | Testnet (Base Sepolia) |
+| **Total End-to-End** | **varies** | **Demo/Testnet** |
 
 ---
 
@@ -376,7 +376,7 @@ From actual test logs:
 │  ┌──────────────────────────────────────────────────────┐   │
 │  │  6. Groth16 On-Chain Verification (~3s)              │   │
 │  │     → Call Base Sepolia verifier contract            │   │
-│  │     → Create permanent blockchain record             │   │
+│  │     → Create testnet blockchain record               │   │
 │  │     → Cost: ~0.0005 ETH                              │   │
 │  └──────────────────────────────────────────────────────┘   │
 └──────────────────────────┬──────────────────────────────────┘
@@ -392,16 +392,16 @@ From actual test logs:
 
 ## What Makes This Unique
 
-### 1. Proof-of-Authorization (Novel Concept)
-- First system to bind zkML proofs to payment authorizations
+### 1. Proof-of-Authorization (Concept)
+- Binds zkML proofs to payment authorizations (demo)
 - Creates cryptographic link between AI decision and payment
 - Enables trustless AI agent commerce
 
-### 2. Real Implementation (No Simulations)
-- Real ONNX neural network inference
-- Real JOLT-Atlas zkML proofs
-- Real Stripe payment processing
-- Real Groth16 on-chain verification
+### 2. Demo/Testnet Implementation
+- ONNX neural network inference (demo)
+- JOLT‑Atlas zkML proofs (where configured)
+- Stripe (test mode)
+- Groth16 on‑chain verification (testnet)
 
 ### 3. End-to-End Integration
 - Combines 4 major technologies seamlessly:
@@ -410,7 +410,7 @@ From actual test logs:
   - Payment Processing (Stripe)
   - Blockchain (Base Sepolia)
 
-### 4. Production-Ready Architecture
+### 4. Demo Architecture
 - Microservices design (4 independent services)
 - Error handling and fallbacks
 - Comprehensive logging
@@ -440,4 +440,4 @@ Every component is **verifiable**:
 
 ---
 
-**🎉 You now understand exactly how the world's first zkML × ACP payment authorization system works!**
+**🎉 You now understand how this demo zkML × ACP payment authorization system works (testnet).**

@@ -88,7 +88,7 @@ const response = await axios.post(
 1. **Proof Generation**: zkEngine creates real cryptographic proof
 2. **Commitment Creation**: SHA256 hash of proof data
 3. **Smart Contract Call**: Real transaction with gas fees
-4. **Blockchain Storage**: Permanent on-chain record
+4. **Blockchain Storage**: On-chain record (testnet)
 5. **Event Emission**: Verifiable events on blockchain
 
 #### You Can Verify Yourself:
@@ -138,11 +138,11 @@ To prove everything is real:
 
 ## Conclusion
 
-**100% REAL Implementation**
-- Real zero-knowledge proof generation via zkEngine
-- Real smart contracts deployed on 5 testnets
-- Real USDC transfers via Circle API
-- Real blockchain transactions with verifiable hashes
-- No simulations, no mocks, no fake data
+**Demo/Testnet Implementation**
+- Zero-knowledge proof generation via zkEngine (demo)
+- Smart contracts deployed on testnets
+- USDC transfers via Circle API (test/sandbox)
+- Blockchain transactions with verifiable hashes on testnets
+- Some steps may be simulated for safety
 
 You can independently verify every component by checking the blockchain explorers and running the system yourself.

@@ -333,7 +333,7 @@ app.post('/verify-and-store', async (req, res) => {
       network: 'base-sepolia',
       chain_id: 84532,
       note: 'Proof verified on-chain. Storage contract not yet deployed.',
-      todo: 'Deploy ProofStorage contract for permanent on-chain records'
+      todo: 'Deploy ProofStorage contract for on-chain records (testnet)'
     });
 
     console.log(`✅ Proof verified on-chain (${verificationTime}ms)`);

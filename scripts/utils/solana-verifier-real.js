@@ -98,7 +98,7 @@ class RealSolanaVerifier {
                 signature: signature,
                 explorerUrl: `https://explorer.solana.com/tx/${signature}?cluster=devnet`,
                 proofAccount: proofPDA.toString(),
-                message: 'Proof permanently recorded on Solana!'
+                message: 'Proof recorded on Solana (testnet)!'
             };
             
         } catch (error) {

@@ -290,7 +290,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
         
         const timestamp = Date.now();
         const wfId = `gateway-zkml-${timestamp}`;
-        const privateKey = '0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+        const privateKey = null; // Do not hardcode keys in client; use wallet
         const userAddress = '0xE616B2eC620621797030E0AB1BA38DA68D78351C';
         
         // Create the workflow UI (same as original)

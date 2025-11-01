@@ -1,8 +1,8 @@
-# 🎉 Circle Gateway Integration Complete
+# 🎉 Circle Gateway Integration (Demo/Testnet)
 
 ## ✅ **INTEGRATION DELIVERED**
 
-The Circle Gateway workflow has been **fully integrated** with the existing UI, following the CCTP workflow card design and implementing the complete **real zkEngine → on-chain verification → Gateway transfer** flow.
+The Circle Gateway workflow has been integrated with the existing UI, following the CCTP workflow card design and implementing a demo **zkEngine → on‑chain verification (testnet) → Gateway transfer** flow. Some steps may be simulated for safety.
 
 ## 🔧 **What's Been Added**
 
@@ -107,14 +107,12 @@ The Gateway workflow is now **fully integrated** and ready for testing:
 - Multi-chain support across 3 testnets (7 mainnet chains ready)
 - Explorer links for all supported networks
 
-## 🚀 **Production Ready**
+## 🚀 **Demo/Testnet Status**
 
-The Gateway integration is **complete and production-ready**:
+- zkEngine: proof generation integrated for demo
+- Verification: testnet verification where configured
+- Gateway: Circle Gateway sandbox/test usage
+- Transfers: may be simulated to avoid unintended sends
+- UI: workflow cards and status updates wired
 
-- **Real proofs**: zkEngine generates actual cryptographic proofs
-- **Real verification**: Ethereum Sepolia blockchain verification  
-- **Real Gateway**: Circle Gateway API with confirmed 1.0 USDC balance
-- **Real transfers**: Multi-chain USDC transfers (simulated for demo safety)
-- **Real UI**: Complete workflow cards with live status updates
-
-**🎊 Mission Accomplished: Circle Gateway integration is complete and ready for live testing!**
+**🎊 Ready for local testing: use with sandbox keys and testnets.**

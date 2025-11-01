@@ -1,4 +1,6 @@
-# On-Chain Verification: View vs State-Changing Functions
+# On-Chain Verification: View vs State-Changing Functions (Demo/Testnet Note)
+
+Note: In this repository, on‑chain examples use public testnets (e.g., Sepolia/Base). “Permanent record” below refers to the testnet context.
 
 ## The Confusion: "Gasless" Verification
 
@@ -15,9 +17,9 @@ function verifyProof(...) external view returns (bool)
 - ✅ **FREE** - No gas cost
 - ✅ Instant result
 - ✅ No wallet/signing needed
-- ❌ **No permanent record** on blockchain
+- ❌ **No on-chain record** (view call only)
 - ❌ No events emitted
-- ❌ No proof that verification happened
+- ❌ No transaction proof that verification happened
 - ❌ Anyone can claim they verified
 
 **Use Cases:**
@@ -33,7 +35,7 @@ function verifyAndStore(...) external returns (bool)
 
 **Characteristics:**
 - ❌ **Costs gas** (~0.0005 ETH on Sepolia)
-- ✅ **Permanent record** on blockchain
+- ✅ **On-chain record** (transaction stored by the network)
 - ✅ Events emitted (queryable logs)
 - ✅ Proof of verification exists forever
 - ✅ Prevents double-spending of proofs
@@ -97,7 +99,7 @@ const response = await fetch('/groth16/workflow', {
     })
 });
 
-// COSTS GAS - Creating permanent record
+// COSTS GAS - Creating on-chain record
 const response = await fetch('/groth16/workflow', {
     method: 'POST', 
     body: JSON.stringify({

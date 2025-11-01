@@ -1,7 +1,7 @@
 const { ethers } = require('ethers');
 
 async function testCircleTransfer() {
-    const privateKey = '0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+    const privateKey = process.env.TEST_PRIVATE_KEY || '0xYOUR_TEST_PRIVATE_KEY';
     const userAddress = '0xE616B2eC620621797030E0AB1BA38DA68D78351C';
     
     // Test transfer to Base (domain 6)

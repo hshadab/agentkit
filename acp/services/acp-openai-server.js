@@ -1,9 +1,6 @@
 /**
- * Official ACP (Agentic Commerce Protocol) Server
- * Implements OpenAI/Stripe specification with zkML authorization proofs
- *
- * World's First: zkML-Powered ChatGPT-Compatible Commerce Server
- *
+ * ACP (Agentic Commerce Protocol) Demo Server
+ * Implements ACP‑compatible endpoints with zkML authorization hooks (demo/testnet)
  * Port: 9006
  */
 
@@ -125,7 +122,7 @@ app.post('/checkout_sessions', async (req, res) => {
       metadata,
       idempotency_key,
       spending_rules,  // zkML Extension
-      natural_language_rules  // GPT-5 Extension
+      natural_language_rules  // Rule parser (optional OpenAI)
     } = req.body;
 
     // Validate required fields
@@ -163,16 +160,16 @@ app.post('/checkout_sessions', async (req, res) => {
       try {
         let rules = spending_rules;
 
-        // If natural language provided, parse with GPT-5
+        // If natural language provided, parse with rule parser
         if (natural_language_rules) {
-          console.log(`🤖 Parsing rules with GPT-5: "${natural_language_rules.substring(0, 50)}..."`);
+          console.log(`🤖 Parsing rules with rule parser: "${natural_language_rules.substring(0, 50)}..."`);
 
           const parseResponse = await axios.post(`${GPT5_PARSER_URL}/parse-rules`, {
             text: natural_language_rules
           });
 
           rules = parseResponse.data.rules;
-          session.metadata.gpt5_parsed_rules = true;
+          session.metadata.gpt5_parsed_rules = true; // legacy flag name
           session.metadata.original_rules_text = natural_language_rules;
         }
 
@@ -548,10 +545,10 @@ app.get('/health', (req, res) => {
     status: 'healthy',
     service: 'acp-openai-server',
     specification: 'OpenAI ACP v1.0',
-    extensions: ['zkml-authorization', 'gpt5-rule-parsing'],
+    extensions: ['zkml-authorization', 'rule-parsing'],
     proof_service: PROOF_SERVICE_URL,
     verification_service: VERIFICATION_SERVICE_URL,
-    gpt5_parser: GPT5_PARSER_URL,
+    rule_parser: GPT5_PARSER_URL,
     active_sessions: sessions.size,
     uptime: process.uptime()
   });
@@ -573,7 +570,7 @@ app.get('/stats', (req, res) => {
       canceled: allSessions.filter(s => s.state === 'canceled').length
     },
     with_zkml_proof: allSessions.filter(s => s.authorization_proof).length,
-    with_gpt5_parsing: allSessions.filter(s => s.metadata.gpt5_parsed_rules).length,
+    with_rule_parsing: allSessions.filter(s => s.metadata.gpt5_parsed_rules).length,
     total_amount: allSessions.reduce((sum, s) => sum + (s.state === 'completed' ? s.amount : 0), 0)
   };
 
@@ -587,12 +584,12 @@ app.listen(PORT, () => {
   console.log('🚀 ACP (Agentic Commerce Protocol) Server - OpenAI/Stripe Spec');
   console.log('═══════════════════════════════════════════════════════════');
   console.log('');
-  console.log('🌟 World\'s First: zkML-Powered ChatGPT-Compatible Commerce');
+  // Demo/Testnet server
   console.log('');
   console.log(`📍 Port: ${PORT}`);
   console.log(`🔗 Proof Service: ${PROOF_SERVICE_URL}`);
   console.log(`🔗 Verification: ${VERIFICATION_SERVICE_URL}`);
-  console.log(`🤖 GPT-5 Parser: ${GPT5_PARSER_URL}`);
+  console.log(`🤖 Rule Parser: ${GPT5_PARSER_URL}`);
   console.log('');
   console.log('📋 Official ACP Endpoints:');
   console.log(`   POST   http://localhost:${PORT}/checkout_sessions`);
@@ -603,7 +600,7 @@ app.listen(PORT, () => {
   console.log('');
   console.log('✨ zkML Extensions:');
   console.log('   - authorization_proof field in all responses');
-  console.log('   - Natural language rule parsing with GPT-5');
+  console.log('   - Natural language rule parsing (optional OpenAI)');
   console.log('   - Pre-completion proof verification');
   console.log('   - Stripe metadata includes proof hash & confidence');
   console.log('');

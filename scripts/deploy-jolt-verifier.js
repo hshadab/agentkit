@@ -4,7 +4,7 @@ const path = require('path');
 
 // Configuration
 const RPC_URL = 'https://eth-sepolia.public.blastapi.io';
-const PRIVATE_KEY = '0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab'; // Test wallet with ETH
+const PRIVATE_KEY = process.env.DEPLOYER_PK || null; // set via env; do not commit keys
 
 async function deployJOLTVerifier() {
     console.log('🚀 Deploying JOLT Decision Verifier to Sepolia...\n');

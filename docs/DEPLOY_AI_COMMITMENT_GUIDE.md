@@ -186,7 +186,7 @@ cat deployment-ai-commitment-base.json
 
 1. **Monitor Your Commitments**:
    - View all transactions at your contract address
-   - Each commitment is permanently timestamped
+   - Each commitment is timestamped on-chain (testnet)
 
 2. **Build Applications**:
    - AI prediction markets

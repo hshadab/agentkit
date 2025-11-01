@@ -23,7 +23,7 @@ const PORT = 8003;
 // Avalanche Fuji testnet configuration
 const AVALANCHE_RPC = 'https://api.avax-test.network/ext/bc/C/rpc';
 const CHAIN_ID = 43113;
-const PRIVATE_KEY = '0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+const PRIVATE_KEY = process.env.AVALANCHE_PRIVATE_KEY || null; // do not commit keys
 
 // Deployed Groth16 verifier contract
 let VERIFIER_ADDRESS = '0xe285dA4D9808DEabb0608Fb2f8F99256Bd80e0ea';

@@ -1,26 +1,29 @@
 # AgentKit - Universal Verifiable AI Agent Framework
 
+> Demo/Prototype Notice
+>
+> This repository is a demo and research prototype. It mixes real testnet integrations with simulated and stubbed components. Do not use this code in production. Where possible, files, endpoints, and UI label flows as Real (testnet) or Simulated. See REPO_STATUS.md for a breakdown of what’s real vs. conceptual.
+
 <div align="center">
   <img src="https://cdn.prod.website-files.com/65d52b07d5bc41614daa723f/665df12739c532f45b665fe7_logo-novanet.svg" alt="Novanet" width="150"/>
   
-  <h3>Build Trustless AI Agents with Cryptographic Proof Across Any Blockchain</h3>
+  <h3>Demo: Verifiable AI Agent Concepts (testnets + simulations)</h3>
   
   [![Version](https://img.shields.io/badge/version-3.0.0-purple.svg)](https://github.com/hshadab/agentkit)
   [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
   [![zkEngine](https://img.shields.io/badge/zkEngine-Rust--WASM-orange.svg)](zkengine/)
   [![zkML](https://img.shields.io/badge/zkML-JOLT--Atlas-green.svg)](https://github.com/ICME-Lab/jolt-atlas)
   [![ACP](https://img.shields.io/badge/ACP-OpenAI%2FStripe-brightgreen.svg)](https://github.com/agentic-commerce-protocol/agentic-commerce-protocol)
-  [![GPT-5](https://img.shields.io/badge/GPT--5-Enabled-blue.svg)](https://openai.com)
 </div>
 
 ## 🌟 Overview
 
-AgentKit is a **100% REAL production framework** for building verifiable AI agents with cryptographic proofs. The latest v3.0 implementation features **OpenAI's Agentic Commerce Protocol (ACP)** deeply integrated with JOLT-Atlas zkML proofs, enabling the world's first trustless autonomous agent marketplace.
+AgentKit is a demo/prototype for exploring verifiable AI agents with cryptographic proofs. The current implementation includes examples of OpenAI’s Agentic Commerce Protocol (ACP) coupled with JOLT‑Atlas/zkML proof generation and on‑chain verification on public testnets. Some flows are real (testnet), and others are simulated; each section below calls this out explicitly.
 
-### 🚀 NEW: ACP × zkML Deep Integration (v3.0)
+### 🚀 ACP × zkML Integration (Demo)
 **The Agent Marketplace Problem**: How do you safely use unverified third-party agents for purchases?
 
-**Our Solution**: Every agent decision is cryptographically proven before payment execution.
+**Concept**: Agent decisions can be accompanied by cryptographic proofs before payment execution. In this demo, some verification paths are real (testnet) and others are simulated.
 
 #### 🎯 5-Step Trustless Commerce Workflow
 
@@ -34,38 +37,37 @@ AgentKit is a **100% REAL production framework** for building verifiable AI agen
    - Real-time decision: AUTHORIZED or DENIED with confidence score
 
 3. **🔐 zkML Proof Generation**
-   - JOLT-Atlas generates cryptographic proof in ~600ms
-   - Proves the AI model ran correctly with given inputs
-   - 524-byte proof with model hash + input hash commitments
+   - JOLT‑Atlas generates cryptographic proofs (testnet demo; timing varies by machine)
+   - Proves that a given model executed with specific inputs
+   - Proof output includes model/input commitments
 
 4. **⛓️ On-Chain Verification**
-   - Groth16 verifier contract on Base Sepolia
-   - Permanent blockchain record for auditability
-   - Contract: `0xf752509cb5af017f465B42053d41B730991c6624`
+   - Groth16 verifier contract on Base Sepolia (testnet)
+   - Testnet blockchain record for auditability
+   - Contract: `0xf752509cb5af017f465B42053d41B730991c6624` (testnet)
 
 5. **💳 ACP Payment Processing**
-   - Extended ACP protocol includes authorization proof metadata
-   - Real Stripe integration (test mode)
-   - Payment only executes after on-chain verification succeeds
+   - ACP workflow extended with authorization‑proof metadata
+   - Stripe integration in test mode
+   - Demo UI blocks payment when verification fails; always validate in your own environment
 
-#### 🔗 Deep zkML Integration Features
+#### 🔗 Integration Features (What’s Real vs Simulated)
 
-- **Real ONNX Model**: PyTorch neural network trained on transaction patterns, not random decisions
-- **Cryptographic Binding**: zkML proof hash embedded in ACP payment metadata
-- **Verifiable Marketplace**: Any agent can be trusted with cryptographic guarantees
-- **GPT-5 Natural Language**: Optional natural language rule parsing
-- **Production-Ready**: Zero mocks, zero simulations, all real cryptography
+- ONNX model example: Small PyTorch→ONNX model bundled for demo (real inference in some paths)
+- Cryptographic binding: Proof hash may be embedded in ACP metadata (test/demo)
+- Verifiable marketplace: Concept demo only; see REPO_STATUS.md for mocked parts
+- Natural‑language rule parsing: Experimental; uses OpenAI API when available (not “GPT‑5”)
+- Mixed reality: Some flows are real (testnet), others are simulated; see notes per section
 
-**Demo**: http://localhost:9000/index.html (after starting services)
+**Demo UI**: http://localhost:9000/index.html (after starting services)
 
 📍 **Location**: `/acp/` directory - Complete integration implementation
 
-### 🎯 Core Features
-- 🧠 **Real AI Authorization**: ONNX neural networks (not random!)
-- 🤖 **Real-time Inference**: Budget, risk, amount, category, velocity evaluation
-- 🔐 **zkML Proofs**: Cryptographic guarantee of AI execution
-- ✅ **Multi-chain Support**: Ethereum, Base, Avalanche, IoTeX, Solana
-- 💡 **x402 HTTP Micropayments**: Trustless agent-to-API payments
+### 🎯 Core Features (Demo)
+- AI authorization example via ONNX model
+- zkML proof generation and on‑chain verification on testnets (where noted)
+- Multi‑chain demos: Ethereum/Base Sepolia, Avalanche Fuji, IoTeX Testnet
+- x402 HTTP micropayments: example flows with optional proof gating
 
 ## 🔐 Environment Variables
 
@@ -133,11 +135,11 @@ IOTEX_PRIVATE_KEY=0xYOUR_EVM_PRIVATE_KEY
 
 ### Recent Changes (Unified 8001 Backend)
 - Unified Rust backend on port `8001` now serves UI, WebSocket, and all APIs.
-- zkML endpoints (`/zkml/*`) now run locally via JOLT‑Atlas `llm_prover` (no external proxy on 8002). On‑chain verify is available via `POST /zkml/verify`.
-- IoTeX proximity, Avalanche medical, and Base AI endpoints are wired to run real zkEngine proofs (WASM) locally:
-  - IoTeX step1 uses `zkengine/example_wasms/prove_location.wasm` (step 1000).
-  - Avalanche `/medical/generate-proof` uses `wasm_files/medical_integrity.wasm` (step 10).
-  - Base `/ai/generate-zkengine-proof` uses `wasm_files/ai_predictor.wasm` (step 100).
+- zkML endpoints (`/zkml/*`) can run locally via JOLT‑Atlas `llm_prover`. On‑chain verify is available via `POST /zkml/verify` (testnet).
+- IoTeX proximity, Avalanche medical, and Base AI endpoints can run zkEngine proofs (WASM) locally in the demo:
+  - IoTeX step1 uses `zkengine/example_wasms/prove_location.wasm`
+  - Avalanche `/medical/generate-proof` uses `wasm_files/medical_integrity.wasm`
+  - Base `/ai/generate-zkengine-proof` uses `wasm_files/ai_predictor.wasm`
 - Groth16 flows remain via CLI helpers and real on-chain verification.
 
 ### How To Test (Quick)
@@ -169,7 +171,7 @@ IOTEX_PRIVATE_KEY=0xYOUR_EVM_PRIVATE_KEY
 - Import your EVM account in MetaMask once: Account icon → Import account → paste your `PRIVATE_KEY` from `.env`.
 - Note: Browser wallets require local user approval; networks/tokens must be approved in MetaMask.
 
-### Avalanche Fuji (Real On‑Chain Verification)
+### Avalanche Fuji (On‑Chain Verification — Testnet)
 - Medical records workflow (UI) performs two real Fuji transactions:
   - Step 1: Create medical record on chain.
   - Step 3: Verify integrity on chain (contract call).
@@ -181,42 +183,42 @@ IOTEX_PRIVATE_KEY=0xYOUR_EVM_PRIVATE_KEY
   - Real Groth16 Verifier (view): `0xE0Add318E32F65936b8bD74DC122758f543b8166`
   - Groth16 Storage Wrapper (verifyAndStore): `0x6121Fd93594C316B78e74B91B89A06d3Bb682a8F`
 
-### 🆕 ACP × zkML: Deep Integration Details
+### 🆕 ACP × zkML: Integration Details (Demo/Testnet)
 
 **Location**: `/acp/` directory
 
-**The Innovation**: Extend OpenAI's Agentic Commerce Protocol with cryptographic proof requirements. Every autonomous agent must prove its authorization logic ran correctly before payment execution.
+**Concept**: Extend OpenAI’s Agentic Commerce Protocol with proof requirements. In this demo, agent authorization can be accompanied by proofs before payment execution.
 
 #### Architecture Components
 
 **1. ONNX Authorization Model** (`acp/models/authorization_model.onnx`)
-- Real PyTorch neural network (5→16→8→2 architecture)
+- Example PyTorch neural network (5→16→8→2 architecture)
 - Inputs: budget_remaining, merchant_trust, amount, category_score, velocity
 - Outputs: authorized (0-1), confidence (0-1)
 - 1.8KB model file, deterministic execution
 
-**2. JOLT-Atlas Proof Service** (Port 9001)
-- Binary: `jolt-atlas/target/debug/llm_prover`
-- Generates cryptographic proof of ONNX model execution
-- ~600ms generation time, 524-byte proof size
+**2. JOLT‑Atlas Proof Service** (Port 9001)
+- Binary: `jolt-atlas/target/{release,debug}/llm_prover`
+- Generates cryptographic proof of ONNX model execution (demo)
+- Timing/proof size vary by build and host
 - Includes model hash commitment for integrity
 
-**3. Groth16 Verifier Contract** (Base Sepolia)
+**3. Groth16 Verifier Contract** (Base Sepolia testnet)
 - Address: `0xf752509cb5af017f465B42053d41B730991c6624`
-- Deployed verifier for zkML decision proofs
-- View function: no gas cost for verification
-- Creates permanent audit trail when used with transactions
+- Deployed verifier for zkML decision proofs (testnet)
+- View function (read‑only) for verification
+- Creates a testnet audit trail when used with transactions
 
 **4. ACP OpenAI Server** (Port 9006)
-- Extended ACP specification with zkML fields
-- Real Stripe integration (test mode)
-- Embeds proof metadata in payment intents
-- GPT-5 natural language rule parsing (optional)
+- ACP‑compatible endpoints with zkML fields (demo)
+- Stripe integration (test mode)
+- Embeds proof metadata in payment intents (demo)
+- Optional natural‑language rule parsing via OpenAI (experimental)
 
-**5. On-Chain Verification Service** (Port 9004)
-- Calls deployed Groth16 verifier
+**5. On‑Chain Verification Service** (Port 9004)
+- Calls deployed Groth16 verifier (testnet)
 - Returns verification status + optional transaction hash
-- Blocks payment execution if verification fails
+- Demo logic blocks payment execution if verification fails
 
 #### Quick Start (3 Steps)
 
@@ -235,7 +237,7 @@ open http://localhost:9000/index.html
 # Step 3: Select agent + scenario, click "Run Agent Inference"
 ```
 
-#### Test Scenarios
+#### Test Scenarios (Demo)
 
 The UI includes pre-configured scenarios demonstrating zkML decision making:
 
@@ -253,7 +255,7 @@ The UI includes pre-configured scenarios demonstrating zkML decision making:
 - **ML Decision**: DENIED despite available budget
 - **Why**: Neural network detects fraud signals
 
-**Test Card**: `4242 4242 4242 4242` with any future expiry/CVC
+**Stripe Test Card**: `4242 4242 4242 4242` with any future expiry/CVC
 
 #### Documentation
 
@@ -281,17 +283,15 @@ The UI includes pre-configured scenarios demonstrating zkML decision making:
 
 ### OpenAI Orchestration (Scope)
 - OpenAI (default model `gpt-4o-mini`) is used only for parsing free‑form chat into a strict JSON intent that maps to allowed workflows.
-- All proofs (zkEngine/JOLT‑Atlas) and on‑chain verification are real and run independently of OpenAI.
+- Proof generation and on‑chain verification run independently of OpenAI.
 - Direct REST calls and UI shortcuts do not require OpenAI.
 
 
-### ⚠️ 100% REAL Implementation Policy
-**NO MOCKS. NO SIMULATIONS. NO DEMOS.** Every component in AgentKit is:
-- ✅ Real cryptographic proofs with verifiable mathematics
-- ✅ Real smart contracts deployed on actual testnets/mainnets
-- ✅ Real transactions visible on blockchain explorers
-- ✅ Real gas costs paid from actual wallets
-- ✅ Real zkEngine binary execution, not simulated delays
+### What’s Real vs Simulated
+- Cryptographic proofs: Real proofs exist in several flows; see REPO_STATUS.md and per‑directory READMEs for which endpoints are real (testnet) vs simulated.
+- Smart contracts: Testnet contracts are deployed and verifiable on explorers where noted.
+- Transactions: Example testnet transactions are linked where available.
+- Simulations: Some demos simulate delays or verification; these are marked in code/docs.
 
 ## 🎯 Core Technologies
 
@@ -302,12 +302,12 @@ Our Rust-based zkEngine compiles to WASM for browser execution, enabling:
 - **Cross-platform compatibility** (browser, Node.js, mobile)
 - **Memory-efficient execution** with streaming verification
 
-### zkML with JOLT-Atlas (100% REAL)
+### zkML with JOLT-Atlas (Demo/Testnet)
 Production-ready zero-knowledge machine learning:
 - **14-parameter LLM decision model** with real Rust implementation
 - **~500ms proof generation** using compiled binary (not simulated)
 - **Recursive SNARKs** with lookup tables for efficiency
-- **On-chain verification** with permanent records (costs ~0.0005 ETH)
+- **On-chain verification** on testnets (costs vary)
 
 ### Multi-Chain Architecture
 Deploy once, verify everywhere:
@@ -321,7 +321,7 @@ Deploy once, verify everywhere:
 
 ### Avalanche - Healthcare & Medical Records
 ```javascript
-// 100% REAL: Groth16 proof-of-proof verification on-chain
+// Example: Groth16 proof-of-proof verification on-chain (testnet)
 // Step 1: Create medical record on-chain (costs AVAX)
 const record = await createMedicalRecord({
     patientId: 3,
@@ -418,25 +418,20 @@ graph LR
     C --> I[IoTeX: W3bstream]
 ```
 
-## ✅ 100% Real Implementation
+## Reality of This Demo
 
-This is a **production-grade system** with no simulations:
+### zkML Proof Generation (Real/Testnet)
+- Binary: `/jolt-atlas/target/release/llm_prover` (Rust compiled)
+- Proof time depends on host and build
+- Verification: On‑chain on testnets where noted
 
-### Real zkML Proof Generation
-- **Binary**: `/jolt-atlas/target/release/llm_prover` (Rust compiled)
-- **Proof Time**: ~500ms actual cryptographic computation
-- **Verification**: On-chain with permanent records
+### On‑Chain Verification (Testnets)
+- Example contracts/transactions are on public testnets (e.g., Sepolia/Base, Fuji). Links are included where available.
+- Gas costs and timings vary and are for demonstration.
 
-### Real On-Chain Verification
-- **Contract**: [`0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944`](https://sepolia.etherscan.io/address/0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944)
-- **Gas Cost**: ~344,175 gas (~0.0005 ETH)
-- **Latest TX**: [`0x30775278f457979fcf71f51c8726168f8929db699884761b84183a73ec92875c`](https://sepolia.etherscan.io/tx/0x30775278f457979fcf71f51c8726168f8929db699884761b84183a73ec92875c)
-- **Result**: Permanent blockchain record with events
-
-### Real Circle Gateway Integration
-- **Balance Tracking**: 18.80 → 10.80 USDC (verified transfers working)
-- **Transfer Cost**: 2 USDC + 2.001 fee per chain
-- **Attestations**: 498-character cryptographic proofs returned instantly
+### Circle Gateway Integration (Test Mode)
+- Uses Stripe/Circle test/sandbox where applicable.
+- Values, fees, and balances in docs are illustrative and may change.
 
 ## 🚀 Quick Start
 
@@ -450,12 +445,12 @@ cd agentkit
 npm install
 cargo build --release
 
-# Start unified backend + real services
+# Start unified backend + services
 cargo run                                   # Port 8001 - UI + unified API (proxies + OpenAI parsing)
-node api/zkml-llm-decision-backend.js       # Port 8002 - REAL zkML proof (JOLT‑Atlas)
+node api/zkml-llm-decision-backend.js       # Port 8002 - zkML backend (JOLT‑Atlas)
 ```
 
-### Run zkML Gateway (REAL)
+### Run zkML Gateway (Demo/Testnet)
 ```bash
 # 1) Start services (in separate terminals)
 cargo run                                   # http://localhost:8001/
@@ -466,9 +461,9 @@ export CIRCLE_GATEWAY_API_KEY='SAND_API_KEY:...'  # Circle sandbox key
 open http://localhost:8001/
 
 # 3) In the UI, trigger "Circle Gateway zkML Workflow"
-#    Step 1: REAL zkML proof
-#    Step 2: REAL on‑chain verification → returns transaction hash + Etherscan link
-#    Step 3: REAL Circle Gateway attestation via Rust (keeps API key server‑side)
+#    Step 1: zkML proof (local JOLT‑Atlas)
+#    Step 2: On‑chain verification (testnet) → returns transaction hash + explorer link
+#    Step 3: Circle Gateway attestation (test/sandbox; server‑side API key)
 ```
 
 ### Circle Gateway Testnet Fees & Values (Observed)
@@ -542,7 +537,7 @@ agentkit/
 └── examples/         # Usage examples
 ```
 
-## 📈 Performance Metrics
+## 📈 Performance Notes (Demo)
 
 | Operation | Time | Gas Cost | Chains |
 |-----------|------|----------|---------|
@@ -554,11 +549,9 @@ agentkit/
 
 ## 🔐 Security Considerations
 
-- **Audited Circuits**: All Circom circuits audited by Trail of Bits
-- **Formal Verification**: Key components formally verified
-- **Multi-sig Deployment**: All contracts deployed via multi-sig
-- **Rate Limiting**: Built-in DoS protection
-- **Privacy Preserving**: No PII stored on-chain
+- No formal audits. Do not use in production.
+- Keys must be provided via local `.env` for demos; never commit secrets.
+- Example contracts are on testnets; production key management, audits, and monitoring are out of scope.
 
 ## 🛠️ Development
 

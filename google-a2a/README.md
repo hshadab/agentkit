@@ -34,11 +34,11 @@ agent1.send({
   decision: "approve_loan",
   confidence: 0.95,
   zkProof: "0x4a3f2b1c...",  // Verifiable proof
-  onChainTx: "0x5bd91b01..."  // Permanent record
+  onChainTx: "0x5bd91b01..."  // Testnet on-chain record
 });
 // ✅ Cryptographic proof of analysis
 // ✅ Verifiable decision logic
-// ✅ Immutable audit trail
+// ✅ On-chain audit trail (testnet)
 ```
 
 ## 🚀 Integration Architecture
@@ -226,7 +226,7 @@ spec:
 
 ### For Enterprise Customers
 - **Reduced Liability**: Cryptographic proof of AI decisions
-- **Regulatory Compliance**: Immutable audit trails
+- **Regulatory Compliance**: On-chain audit records (testnet)
 - **Vendor Independence**: Verification across any cloud
 - **Cost Efficiency**: Only ~$0.0005 per verification
 

@@ -117,7 +117,7 @@ Create a new checkout session with optional natural language spending rules.
     "generated_at": "2025-09-30T12:34:56.789Z"
   },
   "metadata": {
-    "gpt5_parsed_rules": true,
+    "gpt5_parsed_rules": true, // legacy flag name for rule parser usage
     "rules_parsing_time_ms": 5234
   },
   "success_url": "https://example.com/success",
@@ -127,8 +127,8 @@ Create a new checkout session with optional natural language spending rules.
 }
 ```
 
-**GPT-5 Extension**: If `natural_language_rules` provided:
-- Automatically calls GPT-5 parser on port 9005
+**Rule Parser Extension**: If `natural_language_rules` provided:
+- Calls the local rule parser on port 9005 (optional OpenAI)
 - Parses natural language → structured rules
 - Includes parsed rules in metadata
 
@@ -138,7 +138,7 @@ Create a new checkout session with optional natural language spending rules.
 - Proof includes decision, confidence, hash
 
 **Timing**:
-- GPT-5 parsing: 5-7 seconds
+- Rule parsing: varies (OpenAI or patterns)
 - Proof generation: ~500ms
 - Total: ~6-8 seconds
 
@@ -329,7 +329,7 @@ Added to checkout session:
 
 ### 2. Natural Language Rule Parsing
 
-GPT-5 integration for parsing spending rules:
+Rule parser integration for parsing spending rules (optional OpenAI):
 ```json
 {
   "natural_language_rules": "I trust Amazon, max $1000/month",
@@ -444,7 +444,7 @@ curl -X POST http://localhost:9006/checkout_sessions/cs_abc123/complete \
 
 ### Required Services
 
-1. **GPT-5 Rule Parser** (Port 9005)
+1. **Rule Parser Service** (Port 9005)
    - Parses natural language spending rules
    - Optional: Falls back to default rules if unavailable
 
@@ -461,7 +461,7 @@ curl -X POST http://localhost:9006/checkout_sessions/cs_abc123/complete \
 ```bash
 # Check all services
 curl http://localhost:9006/health   # ACP Server
-curl http://localhost:9005/health   # GPT-5 Parser
+curl http://localhost:9005/health   # Rule Parser
 curl http://localhost:9001/health   # Proof Service
 ```
 
@@ -476,7 +476,7 @@ curl http://localhost:9001/health   # Proof Service
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_PUBLISHABLE_KEY=pk_test_...
 
-# OpenAI (for GPT-5 parser)
+# OpenAI (optional, for rule parser)
 OPENAI_API_KEY=sk-...
 
 # Services
@@ -510,7 +510,7 @@ This implementation follows the OpenAI/Stripe ACP specification with extensions:
 ### Extensions
 
 - zkML authorization proofs (non-standard)
-- GPT-5 natural language parsing (non-standard)
+- Natural language rule parsing (non-standard)
 - Deterministic authorization logic (non-standard)
 
 ---

@@ -20,7 +20,7 @@ const CHAIN_ID = 11155111; // Sepolia
 
 // LLM Decision Verifier Contract (deployed on Sepolia)
 const VERIFIER_ADDRESS = '0x77676818D13D05275Cb7D7D3A5BD95BA55814a41'; // REAL verifier with submitProof function
-const PRIVATE_KEY = '0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+const PRIVATE_KEY = process.env.SEPOLIA_PRIVATE_KEY || null; // do not commit keys
 
 // Connect to Ethereum
 const provider = new ethers.providers.StaticJsonRpcProvider(RPC_URL, CHAIN_ID);

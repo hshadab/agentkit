@@ -290,7 +290,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
         
         const timestamp = Date.now();
         const wfId = `gateway-zkml-${timestamp}`;
-        const privateKey = '0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab';
+        const privateKey = null; // Do not hardcode keys in client; use wallet
         const userAddress = '0xE616B2eC620621797030E0AB1BA38DA68D78351C';
         
         // Create the workflow UI (same as original)
@@ -558,7 +558,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             const proofHash = zkmlData.proof?.hash || ('0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join(''));
             
             // Call Groth16 backend for REAL on-chain verification (costs gas)
-            console.log('Creating permanent on-chain verification record...');
+            console.log('Creating on-chain verification record (testnet)...');
             const response = await fetch('http://localhost:3004/groth16/workflow', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -579,7 +579,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             
             if (data.success) {
                 if (data.transactionHash) {
-                    // REAL on-chain verification with permanent record
+                    // Testnet on-chain verification with on-chain record
                     console.log('Transaction hash:', data.transactionHash);
                     console.log('Gas used:', data.gasUsed);
                     console.log('Cost:', data.totalCost);
@@ -660,7 +660,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
             const content = document.getElementById('gateway-step-content-onchain_verify');
             if (content) {
                 content.innerHTML = `
-                    <div style="font-size: 12px; color: #9ca3af;">🔄 Creating permanent on-chain verification...</div>
+                    <div style="font-size: 12px; color: #9ca3af;">🔄 Creating on-chain verification (testnet)...</div>
                     <div style="font-size: 10px; color: #6b7280; margin-top: 4px;">⛽ This will cost ~0.0005 ETH gas</div>
                 `;
             }
@@ -692,7 +692,7 @@ window.GatewayZKMLHandler = window.GatewayZKMLHandler || {};
                     const contractAddr = verifyResult.contractAddress || '0xDCBbFCDE276cBEf449D8Fc35FFe5f51cf7dD9944';
                     
                     content.innerHTML = `
-                        <div style="font-size: 12px; color: #10b981; margin-bottom: 8px;">✅ Permanently verified on Ethereum</div>
+                        <div style="font-size: 12px; color: #10b981; margin-bottom: 8px;">✅ Verified on Ethereum (testnet)</div>
                         <div style="margin-bottom: 6px;">
                             <a href="${etherscanUrl}" target="_blank" style="color: #8b9aff; font-size: 11px; text-decoration: none;">
                                 📜 Transaction: ${shortTx}

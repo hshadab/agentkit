@@ -3,7 +3,7 @@ const Web3 = require('web3');
 async function transferUSDC() {
     const web3 = new Web3('https://ethereum-sepolia-rpc.publicnode.com');
     
-    const account = web3.eth.accounts.privateKeyToAccount('0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab');
+    const account = web3.eth.accounts.privateKeyToAccount(process.env.TEST_PRIVATE_KEY || '0xYOUR_TEST_PRIVATE_KEY');
     web3.eth.accounts.wallet.add(account);
     
     const USDC_ADDRESS = '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238';

@@ -1,25 +1,23 @@
-# Trustless Agentic Commerce
-## Zero knowledge proofs for verifiable agents
+# Trustless Agentic Commerce (Demo)
+## Zero-knowledge proofs for verifiable agents (testnet + simulations)
 
-This integration combines the **Agentic Commerce Protocol (ACP)** with **NovaNet zkML** to create cryptographically verifiable payment authorization for **any AI agent** from an open marketplace.
+This directory contains a demo integration that combines the Agentic Commerce Protocol (ACP) with zkML to explore cryptographically verifiable payment authorization for agents. It mixes real testnet components with simulated logic. Do not use in production. Each section below notes whether a component is real (testnet) or simulated/experimental.
 
 ### ⚡ Implementation Status (Updated 2025-10-01)
 
-**100% REAL Production Components**:
-- ✅ **ONNX Neural Network** - Real PyTorch model for authorization decisions (1.8KB, 5→16→8→2 architecture)
-- ✅ **JOLT-Atlas zkML Proofs** - Real Rust binary execution (~550-600ms, 524-byte proofs)
-- ✅ **Groth16 Verifier Contract** - Deployed to Base Sepolia: `0x3c4323fdBd592aaCF37C33dbF90e492CEe249599`
-- ✅ **VerificationRegistry Contract** - Deployed to Base Sepolia: `0xf967B83385300E95484ae8e1885FF7836Cc34ce1`
-- ✅ **On-Chain Verification** - Real blockchain transactions with gas costs (~$0.01-0.05)
-- ✅ **Stripe Payments** - Real Stripe API integration (test mode with real card processing)
-- ✅ **GPT-5 Rule Parser** - Pattern matching parser with OpenAI API integration
-- ✅ **Base Sepolia Wallet** - Real gas payments from funded wallet
-
-**NO MOCKS OR SIMULATIONS** - All components use real cryptography, real blockchain, real payments.
+Components overview (Demo/Testnet):
+- ONNX Neural Network — Small demo model for authorization decisions (real inference in some flows)
+- JOLT‑Atlas zkML proofs — Real Rust binary execution when available; performance varies by host
+- Groth16 Verifier Contract — Deployed to Base Sepolia (testnet): `0x3c4323fdBd592aaCF37C33dbF90e492CEe249599`
+- VerificationRegistry Contract — Deployed to Base Sepolia (testnet): `0xf967B83385300E95484ae8e1885FF7836Cc34ce1`
+- On‑Chain Verification — Testnet transactions with gas costs (varies)
+- Stripe Payments — Test mode only (Stripe test cards)
+- Rule Parser Service — Local service that can call OpenAI for parsing (not “GPT‑5”)
+- Base Sepolia Wallet — Testnet wallet (do not reuse for production)
 
 ---
 
-## 🏪 Why zkML Matters: The Agent Trust Bottleneck
+## 🏪 Why zkML Matters: The Agent Trust Bottleneck (Concept)
 
 ### The Problem
 
@@ -41,11 +39,11 @@ Cryptographic proof, not brand reputation. Every decision is verifiable with mat
 Anyone can build payment-enabled agents. No permission needed from payment processors or tech giants.
 
 #### 📜 On-Chain Audit Trail
-Every proof verifiable forever. Permanent record of all authorization decisions on Base Sepolia blockchain.
+Public testnet records on Base Sepolia for authorization decisions.
 
 ---
 
-## 🔄 How zkML Enhances ACP
+## 🔄 How zkML Enhances ACP (Demo)
 
 ### Standard ACP Flow
 1. Agent decides to authorize
@@ -62,7 +60,7 @@ Every proof verifiable forever. Permanent record of all authorization decisions 
 
 ---
 
-## Without zkML vs With zkML
+## Without zkML vs With zkML (Concept)
 
 ### ❌ Without zkML
 - 🔒 Only trust OpenAI/Anthropic agents
@@ -74,13 +72,13 @@ Every proof verifiable forever. Permanent record of all authorization decisions 
 ### ✅ With zkML
 - 🏪 Choose from 100+ specialized agents
 - 🔐 Cryptographic proof of compliance
-- 📜 Permanent on-chain audit trail
+- 📜 On-chain audit trail (testnet)
 - 🚀 Open agent marketplace
 - ✅ Zero trust model
 
 ---
 
-## Architecture
+## Architecture (Demo/Testnet)
 
 ### 5-Step Workflow
 
@@ -96,7 +94,7 @@ Step 1: Configure Transaction
    ↓
 Step 2: Agent Decision (ML Inference)
    │
-   ├─ Parse natural language rules (GPT-5 or regex)
+   ├─ Parse natural language rules (OpenAI or regex; experimental)
    ├─ Run ONNX neural network inference
    ├─ Evaluate 5-parameter model:
    │    • Budget remaining
@@ -109,25 +107,25 @@ Step 2: Agent Decision (ML Inference)
    ↓
 Step 3: zkML Proof Generation
    │
-   ├─ Execute REAL JOLT-Atlas binary
-   ├─ Generate cryptographic proof (~550ms)
-   ├─ Proof size: 524 bytes
+   ├─ Execute JOLT‑Atlas binary (when available)
+   ├─ Generate cryptographic proof (timing varies by host/build)
+   ├─ Proof output includes hashed commitments
    └─ Proof hash: 4a4f4c54016400...
    │
    ↓
 Step 4: On-Chain Verification
    │
-   ├─ Submit proof to VerificationRegistry
-   ├─ Network: Base Sepolia
-   ├─ Gas cost: ~$0.01-0.05
-   ├─ Creates permanent on-chain record
+   ├─ Submit proof to VerificationRegistry (testnet)
+   ├─ Network: Base Sepolia (testnet)
+   ├─ Gas cost: varies (testnet)
+   ├─ Creates testnet chain record
    └─ Returns transaction hash
    │
    ↓
 Step 5: Complete Transaction
    │
    ├─ Display verification result
-   ├─ Show transaction links
+   ├─ Show transaction links (testnet explorers)
    │    • Verification TX on Basescan
    │    • Verifier contract source code
    └─ Authorized ✅ or Denied ❌
@@ -136,20 +134,19 @@ Step 5: Complete Transaction
 ### Key Components
 
 1. **ONNX Authorization Model** (`models/authorization_model.onnx`)
-   - Real PyTorch neural network (5→16→8→2 architecture)
+   - Demo PyTorch neural network (5→16→8→2 architecture)
    - Inputs: [budget_remaining, merchant_trust, amount, category_score, velocity]
    - Outputs: [authorized (0-1), confidence (0-1)]
    - Training: Initialized with authorization logic, sigmoid outputs
 
-2. **JOLT-Atlas Proof Service** (`services/proof-service.js`, Port 9001)
-   - Executes `/home/hshadab/agentkit/jolt-atlas/target/release/llm_prover`
-   - Real Rust binary for zkML proof generation
-   - Performance: 550-600ms per proof
-   - Output: 524-byte cryptographic proofs
+2. **JOLT‑Atlas Proof Service** (`services/proof-service.js`, Port 9001)
+   - Executes `/home/hshadab/agentkit/jolt-atlas/target/release/llm_prover` when present
+   - Real Rust binary for zkML proof generation (timing varies)
+   - Output includes proof and commitments
 
-3. **GPT-5 Rule Parser** (`services/gpt5-rule-parser.js`, Port 9005)
+3. **Rule Parser Service** (`services/gpt5-rule-parser.js`, Port 9005)
    - Converts natural language to structured spending rules
-   - Fallback: Regex pattern matching when OpenAI API unavailable
+   - Uses OpenAI when available; otherwise regex fallbacks
    - Extracts: budgets, categories, merchants, velocity limits
 
 4. **ACP OpenAI Server** (`services/acp-openai-server.js`, Port 9006)
@@ -157,13 +154,12 @@ Step 5: Complete Transaction
    - Stripe integration with real PaymentIntent creation
    - Session management with zkML proof binding
 
-5. **On-Chain Verification Service** (`services/onchain-verification-service.js`, Port 9004)
-   - Calls deployed Groth16 verifier contract
-   - Submits verification to VerificationRegistry
-   - Creates real blockchain transactions
+5. **On‑Chain Verification Service** (`services/onchain-verification-service.js`, Port 9004)
+   - Calls deployed Groth16 verifier contract (testnet)
+   - Submits verification to VerificationRegistry (testnet)
    - Returns verification TX hash and status
 
-## Smart Contracts (Base Sepolia)
+## Smart Contracts (Base Sepolia testnet)
 
 ### Groth16Verifier
 - **Address:** `0x3c4323fdBd592aaCF37C33dbF90e492CEe249599`
@@ -172,14 +168,14 @@ Step 5: Complete Transaction
 
 ### VerificationRegistry
 - **Address:** `0xf967B83385300E95484ae8e1885FF7836Cc34ce1`
-- **Purpose:** Stores verification results on-chain with permanent audit trail
+- **Purpose:** Stores verification results on-chain (testnet audit trail)
 - **Features:**
   - Calls verifier contract for proof verification
   - Stores verification ID, timestamp, authorized status, proof hash
   - Emits ProofVerified events for indexing
   - Returns unique verification ID for each proof
 
-## Quick Start
+## Quick Start (Demo/Testnet)
 
 ### Prerequisites
 - Node.js 18+
@@ -234,9 +230,9 @@ curl -X POST http://localhost:9001/generate-proof \
    - JOLT-Atlas creates cryptographic proof (~550ms)
    - Proof hash: `4a4f4c54016400...`
 
-4. **Verify On-Chain**
-   - Submit to VerificationRegistry
-   - Gas cost: ~$0.01-0.05
+4. **Verify On‑Chain (testnet)**
+   - Submit to VerificationRegistry on Base Sepolia
+   - Gas cost: varies (testnet)
    - TX: https://sepolia.basescan.org/tx/0xae35dc...
 
 5. **View Results**
@@ -276,11 +272,11 @@ The demo showcases scenarios that **cannot** be solved with simple if/then rules
 5. Emits ProofVerified event
 6. Returns transaction hash for user
 
-### Gas Costs
+### Gas Costs (Testnet)
 
-- Verification transaction: ~$0.01-0.05 (Base Sepolia testnet)
-- Block confirmation: ~3-5 seconds
-- Permanent on-chain record: Forever
+- Verification transaction: varies on Base Sepolia
+- Block confirmation: varies
+- Testnet on‑chain record: public, subject to testnet retention policies
 
 ## Project Structure
 
@@ -356,9 +352,9 @@ BASE_REGISTRY_ADDRESS=0xf967B83385300E95484ae8e1885FF7836Cc34ce1
 OPENAI_API_KEY=sk-proj-...
 ```
 
-## Production Deployments
+## Deployments (Testnet)
 
-### Base Sepolia Testnet
+### Base Sepolia (testnet)
 - **Groth16Verifier:** `0x3c4323fdBd592aaCF37C33dbF90e492CEe249599`
 - **VerificationRegistry:** `0xf967B83385300E95484ae8e1885FF7836Cc34ce1`
 - **Chain ID:** 84532
@@ -370,11 +366,10 @@ OPENAI_API_KEY=sk-proj-...
 
 ## Security Notes
 
-⚠️ **Test Environment Only**
-- Private keys in code for testing
-- Use environment variables in production
-- Never expose keys client-side
-- All circuits need audit before mainnet
+⚠️ Demo/Testnet only
+- Private keys must not be committed; use environment variables
+- Never expose keys client‑side
+- No audits; do not deploy to mainnet based on this demo
 
 ## Additional Documentation
 
@@ -412,4 +407,4 @@ OPENAI_API_KEY=sk-proj-...
 
 **Last Updated:** 2025-10-01
 **Version:** 2.0.0
-**Status:** Production Ready (Testnet)
+**Status:** Demo/Testnet only

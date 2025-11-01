@@ -1,4 +1,8 @@
-# x402 Agent Authorization System - Plain English Guide
+# x402 Agent Authorization System - Plain English Guide (Demo/Testnet)
+
+> Demo/Prototype Notice
+>
+> This guide explains a demo/testnet setup. Some parts run on public testnets, others may be simulated for illustration. Do not use this as production guidance.
 
 ## Table of Contents
 1. [Executive Summary](#executive-summary)
@@ -16,7 +20,7 @@
 
 The x402 Agent Authorization System enables **AI agents to make autonomous financial decisions** while providing mathematical proof they're following predetermined rules. This isn't science fiction - it's a working system that combines artificial intelligence, cryptography, and blockchain technology to create trustless autonomous commerce.
 
-Think of it as giving an AI assistant spending authority, but with an unbreakable mathematical guarantee that it will only spend money exactly as you've authorized. Every transaction creates permanent, verifiable proof that the AI followed your rules.
+Think of it as giving an AI assistant spending authority, but with proofs and checks to ensure it spends only as authorized. In this repo’s demo, transactions can create verifiable testnet records that you can inspect on public explorers.
 
 ## The Problem We're Solving
 
@@ -39,10 +43,10 @@ Imagine these scenarios:
 
 ### Our Solution: Mathematical Proof
 
-Instead of trusting or hoping, our system makes the AI **prove mathematically** that it's authorized to spend, before any money moves. This proof is:
+Instead of trusting or hoping, the system aims to have the AI **prove mathematically** that it's authorized to spend, before any money moves. In this demo, proofs and verifications are:
 - Unforgeable (cryptographically secured)
 - Verifiable by anyone (on public blockchain)
-- Permanent (immutable record)
+- Recorded on public testnets (subject to network policies)
 - Privacy-preserving (doesn't reveal your spending rules)
 
 ## How the System Works
@@ -61,7 +65,7 @@ The system uses three breakthrough technologies:
 
 1. **Neural Network AI**: Real artificial intelligence that evaluates transactions
 2. **Zero-Knowledge Proofs (zkML)**: Mathematical proofs that the AI ran correctly without revealing private data
-3. **Blockchain Smart Contracts**: Automated execution and permanent records
+3. **Blockchain Smart Contracts**: Automated execution and on-chain records (testnets in this demo)
 
 ## The Five-Step Authorization Process
 
@@ -191,17 +195,17 @@ Message to Sign:
 **Cost: ~$0.0005 in gas fees**
 
 #### What Happens
-The proof gets permanently recorded on Base Sepolia blockchain. This creates an immutable audit trail that anyone can verify forever.
+The proof is recorded on the Base Sepolia testnet. This creates a public testnet record that anyone can check via explorers.
 
 #### The Verification Process
 1. **Submit Proof**: Send cryptographic proof to smart contract
 2. **Groth16 Verification**: Contract runs mathematical verification
 3. **State Update**: Record "Payment #12345 authorized by AI"
 4. **Event Emission**: Broadcast to all blockchain nodes
-5. **Transaction Receipt**: Get permanent transaction hash
+5. **Transaction Receipt**: Get a transaction hash (testnet)
 
 #### Why Blockchain?
-- **Permanence**: Can never be deleted or altered
+- **Record**: Stored on a public testnet and viewable on explorers
 - **Transparency**: Anyone can audit
 - **Decentralization**: No single point of failure
 - **Timestamping**: Cryptographic proof of when it happened
@@ -321,7 +325,7 @@ Imagine hiring a math tutor for your child:
 - AI evaluates if you should buy snack
 - Proves it checked your dietary rules
 - Authorizes only if rules satisfied
-- Creates permanent record of compliance
+- Creates a testnet on-chain record of compliance
 
 ## Why Each Component Matters
 
@@ -352,7 +356,7 @@ Imagine hiring a math tutor for your child:
 ### Blockchain Recording
 
 **Why not a regular database?**
-- **Immutable**: Can't delete inconvenient records
+- **On-chain**: Public testnet records
 - **Distributed**: No single point of failure
 - **Transparent**: Public accountability
 - **Timestamped**: Cryptographic proof of when
@@ -515,13 +519,13 @@ Rules for AI:
 - Complete audit trail
 - Proof of authorization
 - Timestamp evidence
-- Immutable records
+- On-chain records (testnet)
 
 **Satisfies Requirements:**
 - KYC/AML: Identity verification possible
 - Tax reporting: All transactions recorded
 - Consumer protection: Dispute evidence available
-- Data retention: Permanent blockchain storage
+- Data retention: Recorded on public testnets
 
 ## Economic Impact
 
@@ -618,7 +622,7 @@ Imagine a world where:
 - Every payment is intelligent
 - Every transaction is verified
 - Every rule is enforced
-- Every record is permanent
+- Public testnet records are visible via explorers
 
 This isn't about replacing humans - it's about augmenting human capability with trustless, autonomous systems that handle the mundane while we focus on the meaningful.
 

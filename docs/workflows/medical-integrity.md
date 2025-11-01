@@ -2,12 +2,12 @@
 
 ## Overview
 
-The Medical Integrity Workflow is a zero-knowledge proof system that enables secure verification of medical records on the Avalanche blockchain. This workflow creates an immutable audit trail for medical records while preserving patient privacy through zero-knowledge proofs.
+The Medical Integrity Workflow is a zero-knowledge proof system that demonstrates verification of medical records on the Avalanche testnet. This workflow creates an on-chain testnet record for medical records while preserving patient privacy through zero-knowledge proofs.
 
 ## Features
 
 - **Privacy-Preserving**: Uses zero-knowledge proofs to verify medical record integrity without revealing sensitive patient data
-- **Blockchain-Based**: Creates immutable commitments on Avalanche blockchain
+- **Blockchain-Based**: Creates on-chain commitments on Avalanche (testnet)
 - **Two-Step Verification**: Separates record commitment from integrity verification
 - **Real-Time Processing**: Generates proofs using zkEngine in ~20 seconds
 
@@ -39,7 +39,7 @@ Create medical record for patient 12345 and verify integrity
 
 1. **Record Creation**: The system generates a random record hash and creates a commitment on Avalanche
 2. **Proof Generation**: zkEngine generates a zero-knowledge proof of the medical record's integrity
-3. **On-Chain Verification**: The proof is verified on Avalanche, creating a permanent record
+3. **On-Chain Verification**: The proof is verified on Avalanche (testnet), creating an on-chain record
 
 ### Transaction Links
 

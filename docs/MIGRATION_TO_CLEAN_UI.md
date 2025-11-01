@@ -80,7 +80,7 @@ This guide documents the migration from the legacy `index.html` interface to the
 
 #### Phase 1: Testing (Completed!)
 - [x] Port all proof generation functions
-- [x] Add Gateway zkML workflows (100% REAL)
+- [x] Add Gateway zkML workflows (Demo/Testnet)
 - [x] Implement KYC-gated transfers
 - [x] Add proof/verification history
 - [x] Test SES compliance

@@ -66,7 +66,7 @@ async function testLLMDecisionProof() {
     
     // Verify on-chain
     if (statusData.status === 'completed' && statusData.proof) {
-        console.log('\n4. Verifying proof on-chain...');
+    console.log('\n4. Verifying proof on testnet (if configured)...');
         
         const verifyResponse = await fetch('http://localhost:3003/verify', {
             method: 'POST',
@@ -95,7 +95,7 @@ async function testLLMDecisionProof() {
     console.log('\n✅ LLM Decision Proof test complete!');
     console.log('   Model: JOLT-Atlas LLM Decision Proof');
     console.log('   Parameters: 14 (Input: 5, Decision: 5, Validation: 4)');
-    console.log('   100% REAL - No simulations');
+    console.log('   Demo/Testnet: Some steps may be simulated');
 }
 
 testLLMDecisionProof().catch(console.error);

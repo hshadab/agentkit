@@ -202,7 +202,7 @@ Result: ONE proof containing entire decision chain
 
 - **Zero-Knowledge Proofs**: No sensitive data exposed
 - **Recursive Verification**: Each step cryptographically linked
-- **On-Chain Finality**: Immutable authorization records
+- **On-Chain Finality**: On-chain authorization records (testnet)
 - **Multi-Agent Consensus**: No single point of failure
 - **Merkle Tree Accumulation**: Tamper-proof decision history
 

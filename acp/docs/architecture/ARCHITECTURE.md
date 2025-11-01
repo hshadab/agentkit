@@ -379,7 +379,7 @@ Threat Model & Mitigations
                                    └──────────────────────────┘
 
 Benefits:
-• Permanent verification record
+• On-chain verification record (testnet)
 • Automated dispute resolution
 • Cross-chain settlement
 • Decentralized trust

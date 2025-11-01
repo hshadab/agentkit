@@ -1,0 +1,213 @@
+diff --git a/src/app/(home)/layout.tsx b/src/app/(home)/layout.tsx
+index 7a4f9f3..2ed8f6d 100644
+--- a/src/app/(home)/layout.tsx
++++ b/src/app/(home)/layout.tsx
+@@ -29,6 +29,10 @@ export default function HomeLayout({
+             label: 'Ecosystem',
+             href: '/ecosystem',
+           },
++          {
++            label: 'Tools',
++            href: '/tools',
++          },
+         ]}
+       />
+       <div className="flex flex-col py-6 md:py-8 flex-1">{children}</div>
+diff --git a/src/app/(home)/tools/page.tsx b/src/app/(home)/tools/page.tsx
+new file mode 100644
+index 0000000..e4bf407
+--- /dev/null
++++ b/src/app/(home)/tools/page.tsx
+@@ -0,0 +1,192 @@
++"use client";
++
++import { useMemo, useState } from "react";
++import { Button } from "@/components/ui/button";
++import { Input } from "@/components/ui/input";
++import { Label } from "@/components/ui/label";
++import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
++import { CopyCode } from "@/components/ui/copy-code";
++import { createPublicClient, http } from "viem";
++
++const DEFAULTS = {
++  verifier: "0x6121Fd93594C316B78e74B91B89A06d3Bb682a8F" as const, // From zkML verifier in this repo
++  rpcUrl: "https://base-sepolia-rpc.publicnode.com" as const,
++  chainId: 84532,
++};
++
++const SNARK_FIELD = BigInt(
++  "21888242871839275222246405745257275088548364400416034343698204186575808495617"
++);
++
++const hexToField = (hex: string) => {
++  try {
++    const clean = String(hex || "0x").replace(/^0x/i, "");
++    if (!clean) return "0";
++    const n = BigInt("0x" + clean);
++    const r = n % SNARK_FIELD;
++    return r.toString();
++  } catch (e) {
++    return "0";
++  }
++};
++
++const sha256Hex = async (file: File) => {
++  const buf = await file.arrayBuffer();
++  const digest = await crypto.subtle.digest("SHA-256", buf);
++  const bytes = new Uint8Array(digest);
++  return (
++    "0x" + Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join("")
++  );
++};
++
++export default function ToolsPage() {
++  // Jolt Atlas proof hash tool
++  const [file, setFile] = useState<File | null>(null);
++  const [hash, setHash] = useState<string>("");
++  const [fieldElem, setFieldElem] = useState<string>("");
++  const [hashErr, setHashErr] = useState<string>("");
++
++  const onComputeHash = async () => {
++    setHashErr("");
++    setHash("");
++    setFieldElem("");
++    try {
++      if (!file) throw new Error("Select a Jolt proof file first");
++      const h = await sha256Hex(file);
++      setHash(h);
++      setFieldElem(hexToField(h));
++    } catch (e: any) {
++      setHashErr(e?.message ?? String(e));
++    }
++  };
++
++  // On-chain verification count (verifier storage)
++  const [verifier, setVerifier] = useState<string>(DEFAULTS.verifier);
++  const [rpcUrl, setRpcUrl] = useState<string>(DEFAULTS.rpcUrl);
++  const [addressToCheck, setAddressToCheck] = useState<string>("");
++  const [count, setCount] = useState<string>("");
++  const [countErr, setCountErr] = useState<string>("");
++  const canCheck = useMemo(
++    () => verifier && rpcUrl && addressToCheck && addressToCheck.startsWith("0x"),
++    [verifier, rpcUrl, addressToCheck]
++  );
++
++  const onCheckCount = async () => {
++    setCountErr("");
++    setCount("");
++    try {
++      const client = createPublicClient({
++        chain: {
++          id: DEFAULTS.chainId,
++          name: "base-sepolia",
++          nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
++          rpcUrls: { default: { http: [rpcUrl] } },
++        },
++        transport: http(rpcUrl),
++      });
++      const abi = [
++        {
++          type: "function",
++          stateMutability: "view",
++          name: "verificationCount",
++          inputs: [{ name: "", type: "address" }],
++          outputs: [{ name: "", type: "uint256" }],
++        },
++      ] as const;
++      const result = await client.readContract({
++        address: verifier as `0x${string}`,
++        abi,
++        functionName: "verificationCount",
++        args: [addressToCheck as `0x${string}`],
++      });
++      setCount((result as bigint).toString());
++    } catch (e: any) {
++      setCountErr(e?.message ?? String(e));
++    }
++  };
++
++  return (
++    <div className="container mx-auto px-2 md:px-6 max-w-5xl">
++      <div className="grid gap-6 md:grid-cols-2">
++        <Card>
++          <CardHeader>
++            <CardTitle>Jolt Atlas • Proof Hash</CardTitle>
++          </CardHeader>
++          <CardContent className="space-y-3">
++            <div>
++              <Label htmlFor="proof">Jolt proof file</Label>
++              <Input
++                id="proof"
++                type="file"
++                onChange={e => setFile(e.target.files?.[0] ?? null)}
++              />
++            </div>
++            <div className="flex items-center gap-2">
++              <Button onClick={onComputeHash}>Compute SHA-256</Button>
++              {hashErr && <span className="text-destructive text-sm">{hashErr}</span>}
++            </div>
++            {hash && (
++              <div className="space-y-2">
++                <Label>Proof SHA-256 (hex)</Label>
++                <CopyCode code={hash} toastMessage="Hash copied" />
++                <Label>BN254 Field Element (mod p)</Label>
++                <CopyCode code={fieldElem} toastMessage="Field element copied" />
++              </div>
++            )}
++            <p className="text-xs text-muted-foreground">
++              The field element is the value used as the proofHash public signal
++              in Option B circuits, as in the x402 zkML flow.
++            </p>
++          </CardContent>
++        </Card>
++
++        <Card>
++          <CardHeader>
++            <CardTitle>On-chain • Verification Count</CardTitle>
++          </CardHeader>
++          <CardContent className="space-y-3">
++            <div className="grid grid-cols-2 gap-3">
++              <div>
++                <Label htmlFor="verifier">Verifier contract</Label>
++                <Input
++                  id="verifier"
++                  value={verifier}
++                  onChange={e => setVerifier(e.target.value)}
++                />
++              </div>
++              <div>
++                <Label htmlFor="rpc">RPC URL</Label>
++                <Input id="rpc" value={rpcUrl} onChange={e => setRpcUrl(e.target.value)} />
++              </div>
++            </div>
++            <div>
++              <Label htmlFor="address">Address to check</Label>
++              <Input
++                id="address"
++                value={addressToCheck}
++                onChange={e => setAddressToCheck(e.target.value)}
++                placeholder="0x..."
++              />
++            </div>
++            <div className="flex items-center gap-2">
++              <Button onClick={onCheckCount} disabled={!canCheck}>
++                {canCheck ? "Check" : "Enter inputs"}
++              </Button>
++              {countErr && <span className="text-destructive text-sm">{countErr}</span>}
++            </div>
++            {count && (
++              <div className="space-y-2">
++                <Label>verificationCount</Label>
++                <CopyCode code={count} toastMessage="Copied" />
++              </div>
++            )}
++            <p className="text-xs text-muted-foreground">
++              Reads verifier.verificationCount(address). Useful for confirming that
++              a verification transaction was stored by the zkML verifier.
++            </p>
++          </CardContent>
++        </Card>
++      </div>
++    </div>
++  );
++}

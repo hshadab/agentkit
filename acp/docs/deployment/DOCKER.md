@@ -1,6 +1,6 @@
 # Docker Setup Guide
 
-Run the complete ACP × GPT-5 × zkML stack with a single command.
+Run the complete ACP × Rule Parser × zkML stack (demo/testnet) with a single command.
 
 ## Quick Start
 
@@ -34,7 +34,7 @@ The stack includes 5 services:
 
 | Service | Container Name | Port | Purpose |
 |---------|----------------|------|---------|
-| gpt5-parser | acp-gpt5-parser | 9005 | Parses natural language spending rules |
+| gpt5-parser | acp-gpt5-parser | 9005 | Parses natural language spending rules (legacy name for rule parser) |
 | proof-service | acp-proof-service | 9001 | Generates zkML authorization proofs |
 | acp-server | acp-openai-server | 9006 | Main ACP API server |
 | groth16-verifier | acp-groth16-verifier | 3004 | On-chain proof verification |
@@ -59,7 +59,7 @@ Includes:
 Edit `.env` file:
 
 ```bash
-# OpenAI (required for GPT-5 parsing)
+# OpenAI (optional for rule parser)
 OPENAI_API_KEY=sk-...
 
 # Stripe (required for payments)
@@ -73,8 +73,8 @@ GROTH16_PRIVATE_KEY=0x...
 ### Optional Variables
 
 ```bash
-# OpenAI Model (defaults to GPT-5)
-OPENAI_MODEL=gpt-5-2025-08-07
+# OpenAI Model (optional)
+OPENAI_MODEL=gpt-4o-mini
 
 # Ethereum RPC (defaults to public endpoint)
 ETH_RPC=https://eth-sepolia.public.blastapi.io
@@ -156,7 +156,7 @@ docker-compose ps
 ### Manual Health Checks
 
 ```bash
-# GPT-5 Parser
+# Rule Parser
 curl http://localhost:9005/health
 
 # Proof Service
@@ -217,7 +217,7 @@ Services communicate via internal network:
 
 ```
 acp-network (bridge)
-├── gpt5-parser:9005
+├── gpt5-parser:9005  # legacy name for rule parser
 ├── proof-service:9001
 ├── acp-server:9006
 ├── groth16-verifier:3004
@@ -225,7 +225,7 @@ acp-network (bridge)
 ```
 
 **From inside containers**:
-- GPT-5 Parser: `http://gpt5-parser:9005`
+- Rule Parser: `http://gpt5-parser:9005` (legacy service name)
 - Proof Service: `http://proof-service:9001`
 - ACP Server: `http://acp-server:9006`
 

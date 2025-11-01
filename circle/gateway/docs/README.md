@@ -1,8 +1,8 @@
-# Circle Gateway Integration
+# Circle Gateway Integration (Demo/Testnet)
 
 ## Overview
 
-This directory contains AgentKit's integration with Circle Gateway for programmatic multi-chain USDC transfers. AI agents can autonomously manage assets across blockchains with cryptographic attestations.
+This directory contains a demo/testnet integration with Circle Gateway for programmatic multi-chain USDC transfers. Some examples use sandbox/test APIs or simulated steps for safety.
 
 ## 🔬 Technical Architecture
 
@@ -434,14 +434,10 @@ We welcome contributions! Priority areas:
 
 See [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
 
-## 🏆 Achievements
+## Notes
 
-- **First production zkML + Circle Gateway integration**
-- **10x faster proof generation** than competitors
-- **3.5x gas reduction** for verification
-- **Real-world deployment** with live users
-- **ETHGlobal Finalist** - Best zkML Implementation
-- **Circle Developer Award** - Most Innovative Gateway Integration
+- This is a demo/testnet integration; performance numbers and claims vary by setup.
+- Some steps may be simulated to avoid unintended transfers.
 
 ## 📄 License
 
@@ -477,5 +473,5 @@ MIT License - see [LICENSE](../LICENSE)
 <h3>Built for zkML and Circle developers by developers</h3>
 <p>Making cross-chain transfers verifiable, instant, and accessible</p>
 <br>
-<strong>🚀 Ready for production • 🔐 Cryptographically secure • ⚡ Lightning fast</strong>
+<strong>🧪 Demo/Testnet • 🔐 Experimental • ⚡ Best‑effort</strong>
 </div>

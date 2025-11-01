@@ -231,7 +231,7 @@ zkML proofs provide:
 **Protections**:
 - ✅ Agent cannot forge authorization decisions
 - ✅ Merchant can verify proof independently
-- ✅ Immutable audit trail (if on-chain)
+- ✅ On-chain audit trail (testnet)
 
 **Not Protected**:
 - ❌ Agent identity spoofing (use existing API auth)
@@ -286,7 +286,7 @@ User spending rules and transaction details remain private.
 
 **Value**:
 - Proof meets regulatory requirements (e.g., FDA, HIPAA)
-- Immutable audit trail for inspections
+- On-chain audit records for inspections (testnet)
 - Liability protection for all parties
 
 ### 7.3 Multi-Agent Coordination

@@ -2,7 +2,7 @@ const { ethers } = require('ethers');
 
 async function checkBalance() {
     const provider = new ethers.providers.JsonRpcProvider('https://eth-sepolia.g.alchemy.com/v2/demo');
-    const wallet = new ethers.Wallet('0xc3d22f444c7fb8339d3b16ed642e5297059a694437d7effd22d55ea5e60dc9ab', provider);
+    const wallet = new ethers.Wallet(process.env.TEST_PRIVATE_KEY || '0xYOUR_TEST_PRIVATE_KEY', provider);
     
     const usdcContract = new ethers.Contract(
         '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
