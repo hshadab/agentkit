@@ -17,7 +17,6 @@ npm-debug.log*
 
 # Rust
 target/
-Cargo.lock
 
 # Build/IDE
 .DS_Store
@@ -28,6 +27,9 @@ Cargo.lock
 
 # Logs
 *.log
+logs/
+run/
+.pid-*
 
 # Proofs (optional - remove if you want to include example proofs)
 proofs/

@@ -178,7 +178,7 @@ X402_GROTH_ZKEY_PATH=/abs/path/to/decision_with_commitment_final.zkey
 1. **Services not running**: Use `./scripts/restart-x402.sh`
 2. **MetaMask wrong network**: Switch to Base Sepolia (chainId: 84532)
 3. **Insufficient balance**: Need 0.01 USDC + ETH for gas
-4. **Port conflicts**: Check `.pid-*` files and kill old processes
+4. **Port conflicts**: Check `run/*.pid` files and kill old processes
 
 ### Debug Commands
 ```bash
@@ -186,8 +186,8 @@ X402_GROTH_ZKEY_PATH=/abs/path/to/decision_with_commitment_final.zkey
 ps aux | grep -E "(8001|8002|8610)"
 
 # View logs
-tail -f logs-proof-gate-8602.log
-tail -f logs-backend-8001.log
+tail -f logs/proof-gate-8602.log
+tail -f logs/backend-8001.log
 
 # Test endpoints manually
 curl http://localhost:8610/health

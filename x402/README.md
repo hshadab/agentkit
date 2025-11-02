@@ -437,7 +437,7 @@ Response (Paid): {
 ### Connection Errors
 - Verify all services running (ports 8001, 8002, 8610)
 - Check RPC endpoint connectivity
-- Review logs: `logs-proof-gate-8602.log`
+- Review logs: `logs/proof-gate-8602.log`
 
 ## Conformance + Extension
 - Core x402 behavior aims to be compatible with the official spec (402 challenge → `accepts` → client `X-PAYMENT` → server settlement). The fallback route now returns HTTP 402 with structured `accepts[]` and processes `X-PAYMENT` when present.
